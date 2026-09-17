@@ -53,7 +53,7 @@
 3. Continue CP2 with session/auth flows and typed data access only after the migration is locally verified.
 
 ## Last verified commit
-- `0b97819e62ac797bf9cb792d1704fcdf74dfe608` — `Record native bundle verification`.
+- `c135dcad19bd4321e9744c077072faf438efdf9f` — `Start Supabase persistence foundation` (implementation verified by app typecheck/lint/config checks; local DB execution still pending Docker).
 
 ## Tests/builds last run
 - Existing full CP1 verification before this run: root typecheck PASS, lint PASS, core tests 3/3 PASS, plugin tests 2/2 PASS, Expo Doctor 21/21 PASS, Android export PASS, iOS export PASS.
