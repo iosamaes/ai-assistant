@@ -39,37 +39,34 @@
 - Fix any concrete responsive/RTL defect found and run final CP1 gate checks.
 
 ## CP2 independent progress while CP1 is human-blocked
-- Added `.env.example` with public-only Supabase URL/publishable-key variables and validation for missing/malformed configuration.
-- Added `@supabase/supabase-js` 2.116.0 and Expo SDK 57-compatible `expo-secure-store` 57.0.4.
-- Added a universal Supabase client boundary with persisted sessions: SecureStore on native and browser storage on Web.
+- Added `.env.example`, public Supabase config validation, Supabase JS, and Expo SecureStore-backed universal session storage.
 - Added `supabase/migrations/0001_vertical_slice.sql` for profiles, domain preferences, observations, action events, feedback outcomes, and plugin settings.
-- RLS is enabled on every client-visible table; CRUD policies constrain ownership to `auth.uid()`.
-- Feedback insertion/update additionally verifies the referenced action event belongs to the same authenticated user.
+- RLS is enabled on every client-visible table with ownership-constrained CRUD policies; feedback writes also verify ownership of the referenced action event.
+- Added an application-owned auth boundary for session restore, sign-up, sign-in, password reset, sign-out, and auth-state subscription with safe failure classification.
+- Added typed data-access functions for profiles/preferences, observations, action events, feedback outcomes, and plugin settings; UI components do not import Supabase directly.
 - Local database migration/policy execution is not yet verified because Docker Desktop's Linux engine is not running.
 
 ## Exact next executable action
 1. When the Windows session is unlocked, complete the CP1 Arabic/English interaction and true phone-width verification through GPT Agent + Opera.
 2. Start local Docker/Supabase when available, apply/lint `0001_vertical_slice.sql`, then add cross-user policy checks.
-3. Continue CP2 with session/auth flows and typed data access only after the migration is locally verified.
+3. Continue CP2 by wiring session restoration/auth UI to the application shell after the migration is locally verified.
 
 ## Last verified commit
-- `c135dcad19bd4321e9744c077072faf438efdf9f` — `Start Supabase persistence foundation` (implementation verified by app typecheck/lint/config checks; local DB execution still pending Docker).
+- `c135dcad19bd4321e9744c077072faf438efdf9f` — previous Supabase persistence foundation commit; current auth/data-access additions are verified locally but not yet committed at this ledger update.
 
 ## Tests/builds last run
-- Existing full CP1 verification before this run: root typecheck PASS, lint PASS, core tests 3/3 PASS, plugin tests 2/2 PASS, Expo Doctor 21/21 PASS, Android export PASS, iOS export PASS.
-- After the Supabase foundation changes: app `typecheck` PASS.
-- After the Supabase foundation changes: app `lint` PASS.
-- After the Supabase foundation changes: `expo config --type public --json` PASS with `expo-secure-store` configured.
-- `npm audit --omit=dev`: 14 moderate advisories, 0 high, 0 critical; reported fixes would move Expo packages outside the supported SDK 57 family, so no incompatible forced fix was applied.
-- Supabase CLI available through `npx` at 2.117.0; local DB validation is pending because Docker Desktop is not running.
+- Existing CP1 gate evidence: root typecheck PASS, lint PASS, core tests 3/3 PASS, plugin tests 2/2 PASS, Expo Doctor 21/21 PASS, Android export PASS, iOS export PASS.
+- Current auth/data-access additions: app `typecheck` PASS.
+- Current auth/data-access additions: app `lint` PASS.
+- Supabase CLI available through `npx` at 2.117.0; local DB validation remains pending because Docker Desktop is not running.
 
 ## Known technical risks / temporary compromises
 - CP1 is blocked only on owner unlock for physical responsive/locale verification; useful independent CP2 work continues under the mission rules.
-- The Windows desktop returned to the normal lock screen during attempted window resizing; no PIN/lock bypass was attempted.
-- App state is intentionally in-memory until CP2 auth/persistence is wired.
-- Supabase client/config and migration are present but not yet wired into authentication or applied to a verified local database.
-- The moderate npm advisories are in the current Expo/Expo Router dependency chain; no high/critical advisory is reported and compatibility-breaking downgrades were rejected.
-- No production/cloud Supabase credential is required for the current local-first CP2 work.
+- GPT Agent still reports `Windows Default Lock Screen`; no PIN/lock bypass was attempted.
+- Supabase migration and typed client boundaries are present but not yet exercised against a verified local database.
+- Auth boundary is implemented but not yet wired to production UI/session routing; that remains CP2 work after DB verification.
+- App state is intentionally in-memory until authenticated persistence is wired.
+- The moderate npm advisories remain in the supported Expo dependency chain; no high/critical advisory was previously reported.
 
 ## Evidence
 - `docs/cp1-wide.png`
