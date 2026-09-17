@@ -34,6 +34,21 @@ export default function TodayScreen() {
       {syncMessage ? <MizanText muted>{syncMessage}</MizanText> : null}
 
       <Card>
+        <MizanText variant="title">{t('checkInPromptTitle')}</MizanText>
+        <MizanText muted>{t('checkInPromptBody')}</MizanText>
+        <Link href="/check-in" asChild>
+          <Pressable
+            accessibilityRole="button"
+            style={({ pressed }) => [
+              styles.primaryAction,
+              { backgroundColor: palette.accent, opacity: pressed ? 0.82 : 1 },
+            ]}>
+            <MizanText variant="label" style={styles.primaryActionText}>{t('checkInStart')}</MizanText>
+          </Pressable>
+        </Link>
+      </Card>
+
+      <Card>
         <View style={[styles.statusRow, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
           <View style={[styles.dot, { backgroundColor: palette.accent }]} />
           <MizanText variant="label" muted>{t('learningState')}</MizanText>
@@ -61,6 +76,8 @@ const styles = StyleSheet.create({
   topRow: { alignItems: 'center', justifyContent: 'space-between', gap: Spacing.lg },
   heading: { flex: 1, gap: Spacing.xs },
   settingsButton: { minHeight: 44, justifyContent: 'center', paddingHorizontal: Spacing.lg, borderWidth: 1, borderRadius: Radius.pill },
+  primaryAction: { minHeight: 48, borderRadius: Radius.md, alignItems: 'center', justifyContent: 'center', paddingHorizontal: Spacing.xl },
+  primaryActionText: { color: '#FFFFFF', textAlign: 'center' },
   statusRow: { alignItems: 'center', gap: Spacing.sm },
   dot: { width: 8, height: 8, borderRadius: 4 },
   section: { gap: Spacing.lg },
