@@ -1,4 +1,5 @@
 import type { Session } from '@supabase/supabase-js';
+import * as Linking from 'expo-linking';
 import {
   createContext,
   PropsWithChildren,
@@ -11,7 +12,11 @@ import {
 } from 'react';
 
 import { Locale, TranslationKey, translations } from '@/i18n';
-import { getCurrentSession, subscribeToAuthSession } from '@/infrastructure/supabase/auth';
+import {
+  consumeAuthRedirectUrl,
+  getCurrentSession,
+  subscribeToAuthSession,
+} from '@/infrastructure/supabase/auth';
 import {
   loadDomainPreferences,
   loadProfile,
@@ -102,9 +107,26 @@ export function AppStateProvider({ children }: PropsWithChildren) {
 
   useEffect(() => {
     void refreshSession();
-    return subscribeToAuthSession((session) => {
+
+    const unsubscribeAuth = subscribeToAuthSession((_event, session) => {
       void hydrateSession(session);
     });
+
+    const consumeUrl = async (url: string | null) => {
+      if (!url) return;
+      const result = await consumeAuthRedirectUrl(url);
+      if (result.ok && result.value) await hydrateSession(result.value);
+    };
+
+    void Linking.getInitialURL().then(consumeUrl);
+    const linkingSubscription = Linking.addEventListener('url', ({ url }) => {
+      void consumeUrl(url);
+    });
+
+    return () => {
+      unsubscribeAuth();
+      linkingSubscription.remove();
+    };
   }, [hydrateSession, refreshSession]);
 
   const persistSnapshot = useCallback(

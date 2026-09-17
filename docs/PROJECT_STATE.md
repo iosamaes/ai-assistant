@@ -45,22 +45,25 @@
 - Live project inspection confirms all six vertical-slice tables exist and RLS is enabled on every one.
 - Live project inspection confirms ownership CRUD policies exist for the six tables, including the feedback/action ownership guard.
 - Supabase security advisors previously returned no security lints for the project.
-- Added `supabase/tests/rls_cross_user.sql`, a rollback-only verification script that checks own-row visibility/writes, cross-user read/update/insert denial, and prevention of feedback linkage to another user's action event.
-- Added an application-owned auth boundary for session restore, sign-up, sign-in, password reset request, sign-out, and auth-state subscription with safe failure classification.
-- Added typed data-access functions for profiles/preferences, observations, action events, feedback outcomes, and plugin settings; UI components do not import Supabase directly.
-- Wired session restoration into the application shell. Signed-out/error states route to a bilingual auth surface; signed-in state routes through persisted onboarding state.
-- Wired authenticated profile/domain-preference hydration and serialized persistence through the application-owned data boundary. Locale, onboarding completion, and enabled domains now follow the authenticated user instead of remaining only in memory.
-- Added sign-out from settings and safe loading/saving states around persisted transitions.
-- The new auth/session/persistence wiring has not been executed by workers because current execution policy reserves product/database test execution for owner validation unless TASK.md explicitly requires otherwise.
+- Added `supabase/tests/rls_cross_user.sql`, a rollback-only verification script covering own-row access, cross-user denial, and feedback/action ownership.
+- Added application-owned auth/session and typed data-access boundaries; UI components do not import Supabase directly.
+- Added bilingual sign-in/sign-up/recovery-request UI, session restoration, global authenticated-route guarding, and sign-out.
+- Authenticated profile/domain-preference hydration and serialized persistence now keep locale, onboarding state, and enabled domains with the user account.
+- Added native/Web auth redirect handling: Expo custom-scheme links can establish a Supabase session from access/refresh tokens; Web retains URL-session detection.
+- Signup confirmation now supplies an application redirect; password reset supplies an `/update-password` redirect.
+- Added authenticated password-update UI with minimum-length/match checks and safe backend error copy.
+- Auth redirect allow-list activation is recorded once in `automation/HUMAN_REQUIRED.md`; code work continues independently.
+- Current auth/session/recovery changes have not been executed by workers because execution policy reserves product/database tests/builds for owner validation unless TASK.md explicitly requires otherwise.
 
 ## Exact next executable action
-1. When the Windows session is unlocked, complete the CP1 Arabic/English interaction and true phone-width verification through the owner validation path.
-2. During owner validation, execute `supabase/tests/rls_cross_user.sql` against a disposable/local Supabase database after migrations are applied.
-3. Owner-validate sign-up/sign-in/session restore/sign-out and persisted locale/domain preferences against the authorized Supabase project.
-4. Continue CP2 with the authenticated password-recovery completion/deep-link flow and any concrete auth-state defects found during owner validation.
+1. When the Windows session is unlocked, complete CP1 Arabic/English interaction and true phone-width verification through the owner validation path.
+2. Owner-validate sign-up/sign-in/session restore/sign-out, confirmation deep links, recovery deep links/password update, and persisted locale/domain preferences against the authorized Supabase project after the listed Auth redirect URLs are configured.
+3. During owner validation, execute `supabase/tests/rls_cross_user.sql` against a disposable/local Supabase database after migrations are applied.
+4. Continue CP2 with seed/dev fixtures and explicit auth-expired/offline persistence behavior while owner-only validation remains pending.
 
 ## Last verified commit
-- `0fc4fa3b319300403a241d5f31c39e0895962822` — added CP2 cross-user RLS verification script. Later GitHub-native control-plane commits and the current auth wiring remain owner-validation pending.
+- `0fc4fa3b319300403a241d5f31c39e0895962822` — added CP2 cross-user RLS verification script.
+- Newer GitHub-native auth/session/persistence/recovery commits are implemented but remain owner-validation pending; do not label them verified until the reserved validation path runs.
 
 ## Tests/builds last run
 - Existing CP1 gate evidence: root typecheck PASS, lint PASS, core tests 3/3 PASS, plugin tests 2/2 PASS, Expo Doctor 21/21 PASS, Android export PASS, iOS export PASS.
@@ -68,12 +71,13 @@
 - Current worker run did not execute product/cloud tests or builds, per worker execution policy.
 
 ## Known technical risks / temporary compromises
-- CP1 is blocked only on owner unlock for physical responsive/locale verification; useful independent CP2 work continues under the mission rules.
-- Auth UI/session routing and profile/preferences persistence are implemented but still require owner-side runtime validation.
-- Password reset currently requests the recovery email; the authenticated recovery callback/new-password completion flow remains to be implemented and validated.
-- Data-access persistence returns typed failures, but the current preference UI intentionally keeps a simple optimistic local experience; richer sync/error recovery belongs in the later reliability checkpoint.
-- The cross-user SQL verification exists in-repo but still requires owner-side execution evidence before that gate can be considered verified.
-- The moderate npm advisories remain in the supported Expo dependency chain; no high/critical advisory was previously reported.
+- CP1 is blocked only on owner unlock for physical responsive/locale verification; useful independent CP2 work continues.
+- Current auth, route-guard, profile/preference persistence, and recovery code requires owner-side runtime/typecheck validation before checkpoint credit.
+- Hosted Supabase Auth must allow the `mizan` custom scheme and local Web redirect before email confirmation/recovery can be verified end-to-end; see `automation/HUMAN_REQUIRED.md`.
+- Recovery-link handling currently supports the hosted implicit access/refresh-token redirect used by the client setup; any later switch to PKCE must add code-exchange handling deliberately.
+- Data-access persistence returns typed failures, but preference UI intentionally remains optimistic; richer sync/error recovery belongs in CP8.
+- The cross-user SQL verification exists in-repo but still requires owner-side execution evidence.
+- Moderate npm advisories remain in the supported Expo dependency chain; no high/critical advisory was previously reported.
 
 ## Evidence
 - `docs/cp1-wide.png`
