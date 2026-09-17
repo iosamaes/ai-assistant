@@ -144,6 +144,18 @@ export async function insertObservation(userId: string, input: ObservationInput)
   return { ok: true, value: data.id as string };
 }
 
+export async function insertObservations(
+  userId: string,
+  inputs: readonly ObservationInput[],
+): Promise<DataResult<string[]>> {
+  if (inputs.length === 0) return { ok: true, value: [] };
+  if (!supabase) return unavailable();
+  const rows = inputs.map((input) => ({ user_id: userId, ...input }));
+  const { data, error } = await supabase.from('observations').insert(rows).select('id');
+  if (error) return dataFailure(error);
+  return { ok: true, value: (data ?? []).map((row) => row.id as string) };
+}
+
 export async function insertActionEvent(userId: string, input: ActionEventInput): Promise<DataResult<string>> {
   if (!supabase) return unavailable();
   const { data, error } = await supabase
