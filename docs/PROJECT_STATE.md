@@ -62,3 +62,7 @@
 - App state is intentionally in-memory during CP1; real ownership/session persistence belongs to CP2.
 - The current responsive screenshots do not yet prove the required true narrow-phone class.
 - No Supabase cloud credentials are required for CP1; CP2 will introduce local/backend configuration and only record owner action if cloud activation becomes necessary.
+
+## Additional CP1 verification
+- `npx expo-doctor` — PASS: 21/21 checks, no dependency/configuration issues detected.
+- Physical GPT Agent input was not used after Windows presented the normal lock screen; browser-content inspection continued without attempting to bypass the lock.
