@@ -23,6 +23,7 @@ export default function RootLayout() {
               contentStyle: { backgroundColor: palette.background },
             }}>
             <Stack.Screen name="index" />
+            <Stack.Screen name="auth" />
             <Stack.Screen name="onboarding" />
             <Stack.Screen name="today" />
             <Stack.Screen name="settings" />

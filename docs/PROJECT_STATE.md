@@ -2,10 +2,10 @@
 
 ## Current checkpoint
 - CP1 — Universal application foundation
-- Status: BLOCKED_HUMAN
+- Status: BLOCKED_HUMAN (CP2 progressing independently)
 - Product source authority: GitHub `iosamaes/ai-assistant` on `main`
 - Owner-only local mirror/testing copy: `C:\Users\bofo_\Documents\automation\ai assistant`
-- Task digest: `cc997c2a8549f43a5c4738d97189fad2ba3f23ead713018c8458f595b5c60055`
+- Task digest: `c823e4d1031ac5f3f7230ed4e2de236b4446817a`
 
 ## Checkpoints
 - [x] CP0 — Reconnaissance, product model, executable plan
@@ -44,31 +44,35 @@
 - The corresponding `vertical_slice` migration is present on the authorized Supabase project `olfhjnropdrnujgpidfi`.
 - Live project inspection confirms all six vertical-slice tables exist and RLS is enabled on every one.
 - Live project inspection confirms ownership CRUD policies exist for the six tables, including the feedback/action ownership guard.
-- Supabase security advisors currently return no security lints for the project.
+- Supabase security advisors previously returned no security lints for the project.
 - Added `supabase/tests/rls_cross_user.sql`, a rollback-only verification script that checks own-row visibility/writes, cross-user read/update/insert denial, and prevention of feedback linkage to another user's action event.
-- Added an application-owned auth boundary for session restore, sign-up, sign-in, password reset, sign-out, and auth-state subscription with safe failure classification.
+- Added an application-owned auth boundary for session restore, sign-up, sign-in, password reset request, sign-out, and auth-state subscription with safe failure classification.
 - Added typed data-access functions for profiles/preferences, observations, action events, feedback outcomes, and plugin settings; UI components do not import Supabase directly.
-- The new RLS verification script has not been executed by workers because current execution policy reserves product/database test execution for owner validation unless TASK.md explicitly requires otherwise.
+- Wired session restoration into the application shell. Signed-out/error states route to a bilingual auth surface; signed-in state routes through persisted onboarding state.
+- Wired authenticated profile/domain-preference hydration and serialized persistence through the application-owned data boundary. Locale, onboarding completion, and enabled domains now follow the authenticated user instead of remaining only in memory.
+- Added sign-out from settings and safe loading/saving states around persisted transitions.
+- The new auth/session/persistence wiring has not been executed by workers because current execution policy reserves product/database test execution for owner validation unless TASK.md explicitly requires otherwise.
 
 ## Exact next executable action
 1. When the Windows session is unlocked, complete the CP1 Arabic/English interaction and true phone-width verification through the owner validation path.
 2. During owner validation, execute `supabase/tests/rls_cross_user.sql` against a disposable/local Supabase database after migrations are applied.
-3. Continue CP2 by wiring session restoration/auth UI to the application shell and persisting authenticated profile/preferences state.
+3. Owner-validate sign-up/sign-in/session restore/sign-out and persisted locale/domain preferences against the authorized Supabase project.
+4. Continue CP2 with the authenticated password-recovery completion/deep-link flow and any concrete auth-state defects found during owner validation.
 
 ## Last verified commit
-- `0fc4fa3b319300403a241d5f31c39e0895962822` — added CP2 cross-user RLS verification script on current `main`.
+- `0fc4fa3b319300403a241d5f31c39e0895962822` — added CP2 cross-user RLS verification script. Later GitHub-native control-plane commits and the current auth wiring remain owner-validation pending.
 
 ## Tests/builds last run
 - Existing CP1 gate evidence: root typecheck PASS, lint PASS, core tests 3/3 PASS, plugin tests 2/2 PASS, Expo Doctor 21/21 PASS, Android export PASS, iOS export PASS.
 - Earlier auth/data-access additions: app `typecheck` PASS and app `lint` PASS.
-- Current run did not execute product/cloud tests or builds, per worker execution policy.
-- Live Supabase verification this run: migration listed, all six required tables present, RLS enabled on all six, ownership policies present, security advisors returned zero lints.
+- Current worker run did not execute product/cloud tests or builds, per worker execution policy.
 
 ## Known technical risks / temporary compromises
 - CP1 is blocked only on owner unlock for physical responsive/locale verification; useful independent CP2 work continues under the mission rules.
-- Auth boundary is implemented but not yet wired to production UI/session routing.
-- App state is intentionally in-memory until authenticated persistence is wired.
-- The cross-user SQL verification now exists in-repo but still requires owner-side execution evidence before that gate can be considered verified.
+- Auth UI/session routing and profile/preferences persistence are implemented but still require owner-side runtime validation.
+- Password reset currently requests the recovery email; the authenticated recovery callback/new-password completion flow remains to be implemented and validated.
+- Data-access persistence returns typed failures, but the current preference UI intentionally keeps a simple optimistic local experience; richer sync/error recovery belongs in the later reliability checkpoint.
+- The cross-user SQL verification exists in-repo but still requires owner-side execution evidence before that gate can be considered verified.
 - The moderate npm advisories remain in the supported Expo dependency chain; no high/critical advisory was previously reported.
 
 ## Evidence

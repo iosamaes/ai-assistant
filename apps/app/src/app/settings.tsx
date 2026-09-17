@@ -1,17 +1,39 @@
 import { router } from 'expo-router';
+import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { ChoiceChip, MizanText, PrimaryButton } from '@/components/mizan-ui';
 import { Screen } from '@/components/screen';
 import { Spacing } from '@/constants/theme';
+import { signOut } from '@/infrastructure/supabase/auth';
 import { useAppState } from '@/state/app-state';
 
 export default function SettingsScreen() {
-  const { enabledDomains, isRtl, locale, resetOnboarding, setLocale, t } = useAppState();
+  const { enabledDomains, isRtl, locale, refreshSession, resetOnboarding, setLocale, t } = useAppState();
+  const [busy, setBusy] = useState(false);
+  const [message, setMessage] = useState<string | null>(null);
 
-  const editPriorities = () => {
-    resetOnboarding();
+  const editPriorities = async () => {
+    if (busy) return;
+    setBusy(true);
+    await resetOnboarding();
+    setBusy(false);
     router.replace('/onboarding');
+  };
+
+  const logout = async () => {
+    if (busy) return;
+    setBusy(true);
+    setMessage(null);
+    const result = await signOut();
+    if (!result.ok) {
+      setMessage(t('authErrorGeneric'));
+      setBusy(false);
+      return;
+    }
+    await refreshSession();
+    setBusy(false);
+    router.replace('/auth');
   };
 
   return (
@@ -35,8 +57,11 @@ export default function SettingsScreen() {
         <MizanText muted>{enabledDomains.map((domainId) => t(domainId)).join(' · ')}</MizanText>
       </View>
 
+      {message ? <MizanText muted>{message}</MizanText> : null}
+
       <View style={styles.actions}>
-        <PrimaryButton label={t('resetOnboarding')} onPress={editPriorities} />
+        <PrimaryButton label={busy ? t('saving') : t('resetOnboarding')} onPress={() => void editPriorities()} disabled={busy} />
+        <PrimaryButton label={t('signOut')} onPress={() => void logout()} disabled={busy} />
         <MizanText
           variant="label"
           style={styles.backLink}

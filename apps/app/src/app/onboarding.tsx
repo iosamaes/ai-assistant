@@ -1,4 +1,5 @@
 import { router } from 'expo-router';
+import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { ChoiceChip, MizanText, PrimaryButton } from '@/components/mizan-ui';
@@ -10,9 +11,12 @@ const domainOrder: readonly DomainId[] = ['recovery', 'connection', 'work', 'mar
 
 export default function OnboardingScreen() {
   const { completeOnboarding, enabledDomains, isRtl, locale, setLocale, t, toggleDomain } = useAppState();
+  const [saving, setSaving] = useState(false);
 
-  const finish = () => {
-    completeOnboarding();
+  const finish = async () => {
+    if (saving) return;
+    setSaving(true);
+    await completeOnboarding();
     router.replace('/today');
   };
 
@@ -47,7 +51,7 @@ export default function OnboardingScreen() {
       </View>
 
       <View style={styles.footer}>
-        <PrimaryButton label={t('continue')} onPress={finish} />
+        <PrimaryButton label={saving ? t('saving') : t('continue')} onPress={() => void finish()} disabled={saving} />
       </View>
     </Screen>
   );
