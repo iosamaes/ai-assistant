@@ -45,6 +45,7 @@ function AppNavigator() {
         <Stack.Screen name="update-password" />
         <Stack.Screen name="onboarding" />
         <Stack.Screen name="today" />
+        <Stack.Screen name="check-in" />
         <Stack.Screen name="settings" />
       </Stack>
     </>

@@ -39,6 +39,17 @@ export type ObservationInput = {
   value_boolean?: boolean;
   unit?: string | null;
 };
+export type StoredObservation = {
+  id: string;
+  user_id: string;
+  source: ObservationInput['source'];
+  metric: string;
+  value_number: number | null;
+  value_text: string | null;
+  value_boolean: boolean | null;
+  unit: string | null;
+  observed_at: string;
+};
 
 export type ActionEventInput = {
   action_key: string;
@@ -131,6 +142,23 @@ export async function upsertDomainPreferences(
     .select('*');
   if (error) return dataFailure(error);
   return { ok: true, value: (data ?? []) as DomainPreference[] };
+}
+
+export async function loadRecentObservations(
+  userId: string,
+  since: string,
+  limit = 200,
+): Promise<DataResult<StoredObservation[]>> {
+  if (!supabase) return unavailable();
+  const { data, error } = await supabase
+    .from('observations')
+    .select('id,user_id,source,metric,value_number,value_text,value_boolean,unit,observed_at')
+    .eq('user_id', userId)
+    .gte('observed_at', since)
+    .order('observed_at', { ascending: false })
+    .limit(Math.max(1, Math.min(limit, 500)));
+  if (error) return dataFailure(error);
+  return { ok: true, value: (data ?? []) as StoredObservation[] };
 }
 
 export async function insertObservation(userId: string, input: ObservationInput): Promise<DataResult<string>> {
