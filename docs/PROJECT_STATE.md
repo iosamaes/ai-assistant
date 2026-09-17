@@ -52,7 +52,7 @@
 3. Continue CP2 by wiring session restoration/auth UI to the application shell after the migration is locally verified.
 
 ## Last verified commit
-- `c135dcad19bd4321e9744c077072faf438efdf9f` — previous Supabase persistence foundation commit; current auth/data-access additions are verified locally but not yet committed at this ledger update.
+- `08b21de` — Supabase auth and typed data access; app typecheck/lint passed for the affected changes.
 
 ## Tests/builds last run
 - Existing CP1 gate evidence: root typecheck PASS, lint PASS, core tests 3/3 PASS, plugin tests 2/2 PASS, Expo Doctor 21/21 PASS, Android export PASS, iOS export PASS.
