@@ -2,7 +2,7 @@
 
 ## Current checkpoint
 - CP1 — Universal application foundation
-- Status: BLOCKED_HUMAN (CP2 implementation progressing independently)
+- Status: BLOCKED_HUMAN (CP2 validation pending; CP3 implementation progressing independently)
 - Product source authority: GitHub `iosamaes/ai-assistant` on `main`
 - Owner-only local mirror/testing copy: `C:\Users\bofo_\Documents\automation\ai assistant`
 - Task digest: `c823e4d1031ac5f3f7230ed4e2de236b4446817a`
@@ -60,20 +60,33 @@
 - Added `supabase/dev/vertical_slice_fixture.sql`, an idempotent dev-only deterministic fixture that refuses to run until an explicit existing non-production `auth.users` UUID is supplied.
 - Current auth/session/recovery/offline changes have not been executed by workers because execution policy reserves product/database tests/builds for owner validation unless `TASK.md` explicitly requires otherwise.
 
+## CP3 independent progress while earlier runtime gates are owner-blocked
+- Added a pure TypeScript deterministic engine foundation in `packages/core/src/engine.ts`.
+- Missing/invalid observations remain unknown (`null` + `insufficient`) rather than silently becoming zero.
+- Human State Vector derivation now exposes explicit evidence, source classification, freshness-aware confidence, and conservative inferred overload risk only when both energy and mental-load evidence exist.
+- Personal baselines use a bounded 90-day window, robust median/quartiles, explicit `cold_start` / `learning` / `personalized` maturity, and evidence-backed confidence.
+- Added `packages/core/src/temporal.ts` with deterministic day/7-day/28-day/90-day windows plus polarity-aware momentum from recent-vs-prior evidence; missing windows stay unknown.
+- Added `packages/core/src/leverage.ts` with centralized documented leverage weights, deterministic candidate scoring, stable tie-breaking, inspectable reason payloads, alternatives, evidence, and a no-candidate refusal path for `The One Move`.
+- Exported the new engine/temporal/leverage modules from `@mizan/core`.
+- Added deterministic unit specifications in `engine.test.ts` and `temporal-leverage.test.ts` covering missing data, sparse evidence, inferred overload, robust outlier handling, stale confidence, temporal momentum, lower-is-better orientation, deterministic leverage ranking, explanation payloads, and refusal to fabricate a recommendation.
+- These new CP3 tests/type checks have intentionally not been executed by workers under the current execution policy; no PASS claim is made yet.
+
 ## Exact next executable action
 1. When the Windows session is unlocked, complete CP1 Arabic/English interaction and true phone-width verification through the owner validation path.
 2. Owner-validate sign-up/sign-in/session restore/sign-out, confirmation deep links, recovery deep links/password update, persisted locale/domain preferences, account-switch isolation, temporary-offline messaging/retry, and expired-session routing against the authorized Supabase project after the listed Auth redirect URLs are configured.
 3. During owner validation, execute `supabase/tests/rls_cross_user.sql` against a disposable/local Supabase database after migrations are applied, and load `supabase/dev/vertical_slice_fixture.sql` only after replacing its guarded placeholder with an existing dev user UUID.
-4. While those owner-only gates remain blocked, begin the earliest safe CP3 deterministic-core subtask after re-reading the current repository state; do not claim CP1/CP2 checkpoint completion until their reserved validation evidence exists.
+4. Continue CP3 with the earliest safe unfinished deterministic-core requirements: user-season-relative Balance, then conservative Life Debt / buffer-resilience / interaction-risk models, followed by owner-run core typecheck/tests before CP3 can receive checkpoint credit.
 
 ## Last verified commit
 - `0fc4fa3b319300403a241d5f31c39e0895962822` — added CP2 cross-user RLS verification script.
-- Newer GitHub-native auth/session/persistence/recovery/offline commits are implemented but remain owner-validation pending; do not label them verified until the reserved validation path runs.
+- Newer GitHub-native auth/session/persistence/recovery/offline and CP3 deterministic-core commits are implemented but remain owner-validation pending; do not label them verified until the reserved validation path runs.
+- Latest CP3 public-export commit in this worker run: `eef5d58400fa9e3f476b1522dbfc99ac377022f9`.
 
 ## Tests/builds last run
 - Existing CP1 gate evidence: root typecheck PASS, lint PASS, core tests 3/3 PASS, plugin tests 2/2 PASS, Expo Doctor 21/21 PASS, Android export PASS, iOS export PASS.
 - Earlier auth/data-access additions: app `typecheck` PASS and app `lint` PASS.
 - Current worker run did not execute product/cloud tests or builds, per worker execution policy.
+- New CP3 deterministic tests were added but remain unexecuted pending owner validation.
 
 ## Known technical risks / temporary compromises
 - CP1 is blocked only on owner unlock for physical responsive/locale verification; useful independent work can continue.
@@ -82,6 +95,7 @@
 - Recovery-link handling currently supports the hosted implicit access/refresh-token redirect used by the client setup; any later switch to PKCE must add code-exchange handling deliberately.
 - Offline preference changes are preserved only in the current app session and retry on a later mutation; durable queued offline writes remain CP8 work and are not claimed here.
 - The cross-user SQL verification and guarded dev fixture exist in-repo but still require owner-side execution evidence.
+- New CP3 engine modules are deliberately conservative and deterministic, but their new type/tests have not yet been executed under the worker transport policy.
 - Moderate npm advisories remain in the supported Expo dependency chain; no high/critical advisory was previously reported.
 
 ## Evidence
@@ -90,3 +104,8 @@
 - `supabase/migrations/0001_vertical_slice.sql`
 - `supabase/tests/rls_cross_user.sql`
 - `supabase/dev/vertical_slice_fixture.sql`
+- `packages/core/src/engine.ts`
+- `packages/core/src/engine.test.ts`
+- `packages/core/src/temporal.ts`
+- `packages/core/src/leverage.ts`
+- `packages/core/src/temporal-leverage.test.ts`
