@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "generation": 0,
+  "stale_after_seconds": 900,
+  "owner_worker": null,
+  "owner_run_id": null,
+  "heartbeat_at": null,
+  "lease_task_digest": null,
+  "candidate_worker": null,
+  "candidate_task_digest": null,
+  "completed_task_digest": null,
+  "runtime_issue_number": 1,
+  "notes": "GitHub-native optimistic-lock state. Mutate only according to automation/WORKER.md."
+}
