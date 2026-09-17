@@ -2,7 +2,7 @@
 
 ## Current checkpoint
 - CP1 — Universal application foundation
-- Status: IN_PROGRESS
+- Status: BLOCKED_HUMAN
 - Active worktree: `C:\Users\bofo_\Documents\automation\ai assistant`
 - Branch: `main`
 - Task digest: `0bc9007eb9509e66a18c36fdd6c5099a379cbf1713c7761df98c98fa4cf3bb03`
@@ -23,53 +23,55 @@
 - [ ] CP12 — Independent final review and handoff
 
 ## CP0 verification
-- Repository architecture, domain vocabulary, first vertical slice, provider/plugin boundaries, initial Supabase entity map, and ownership/RLS rules are documented in `docs/ARCHITECTURE.md`.
-- Deterministic fixtures cover cold start, normal history, sparse data, and overloaded/recovery context.
-- Official Expo SDK 57 compatibility family remains Expo 57 / React Native 0.86 / React 19.2 / React Native Web 0.21.
-- Local runtime verified with Node `v24.15.0` and npm `11.12.1`; both satisfy the root Node minimum.
+- Architecture, domain vocabulary, vertical slice, provider/plugin boundaries, entity map, ownership/RLS rules, and deterministic fixture intent are documented.
+- Official compatibility remains Expo 57 / React Native 0.86 / React 19.2 / React Native Web 0.21.
 
 ## CP1 completed so far
-- Workspace scripts resolve `@mizan/app`, `@mizan/core`, and `@mizan/plugins` under strict TypeScript settings.
-- Universal Expo Router shell is wired to real onboarding, Today, and settings routes with Arabic default and English locale support.
-- Shared design tokens, safe-area responsive screen primitive, RTL-aware text/layout, light/dark palette, error boundary, and app-level state are present.
-- Web is rendering the Arabic Today surface on `localhost:8087`; browser evidence is stored at `docs/cp1-wide.png` and `docs/cp1-narrow.png`.
-- `npx expo config --type public --json` resolves successfully with both iOS bundle identifier and Android package configured.
-- Android and iOS Metro/Hermes export bundles resolve successfully from the universal app without generating committed native projects.
+- Workspace scripts resolve app/core/plugins under strict TypeScript settings.
+- Universal Expo Router shell has real onboarding, Today, and settings routes with Arabic default and English locale support.
+- Shared tokens, responsive safe-area screen primitive, RTL-aware text/layout, light/dark palette, error boundary, and app-level state are present.
+- Web renders Arabic Today on `localhost:8087`; compact/wide evidence exists, but true phone-width evidence is still required.
+- Expo public config resolves with Android/iOS identifiers; Android and iOS Metro/Hermes export bundles resolve.
 
 ## CP1 remaining
-- Treat `docs/cp1-narrow.png` as compact-Web evidence only; capture a true narrow-phone representative layout before declaring the responsive gate complete.
-- Verify onboarding and settings interactions in both Arabic RTL and English at representative widths.
-- Add the smallest non-speculative environment validation when CP2 introduces real Supabase configuration; do not invent unused variables now.
-- Keep the product shell placeholder-free while preparing the CP2 auth/persistence boundary.
+- Capture true narrow-phone representative evidence.
+- Exercise onboarding -> Today -> settings in Arabic RTL and English at representative widths.
+- Fix any concrete responsive/RTL defect found and run final CP1 gate checks.
+
+## CP2 independent progress while CP1 is human-blocked
+- Added `.env.example` with public-only Supabase URL/publishable-key variables and validation for missing/malformed configuration.
+- Added `@supabase/supabase-js` 2.116.0 and Expo SDK 57-compatible `expo-secure-store` 57.0.4.
+- Added a universal Supabase client boundary with persisted sessions: SecureStore on native and browser storage on Web.
+- Added `supabase/migrations/0001_vertical_slice.sql` for profiles, domain preferences, observations, action events, feedback outcomes, and plugin settings.
+- RLS is enabled on every client-visible table; CRUD policies constrain ownership to `auth.uid()`.
+- Feedback insertion/update additionally verifies the referenced action event belongs to the same authenticated user.
+- Local database migration/policy execution is not yet verified because Docker Desktop's Linux engine is not running.
 
 ## Exact next executable action
-1. When the Windows user session is unlocked, exercise onboarding -> Today -> settings in Arabic and English through the running Web app and fix any concrete RTL/responsive defect found.
-2. Capture true phone-width evidence for a primary route through the approved GPT Agent + Opera workflow.
-3. Run the final CP1 gate checks required by TASK.md after UI verification.
-4. Start CP2 only after the CP1 gate is honestly satisfied.
+1. When the Windows session is unlocked, complete the CP1 Arabic/English interaction and true phone-width verification through GPT Agent + Opera.
+2. Start local Docker/Supabase when available, apply/lint `0001_vertical_slice.sql`, then add cross-user policy checks.
+3. Continue CP2 with session/auth flows and typed data access only after the migration is locally verified.
 
 ## Last verified commit
-- `bc6a2cb` — `Remove unused Expo starter assets`.
+- `0b97819e62ac797bf9cb792d1704fcdf74dfe608` — `Record native bundle verification`.
 
 ## Tests/builds last run
-- `npm run typecheck` — PASS across app/core/plugins.
-- `npm run lint` — PASS for the Expo app.
-- `npm run test` — PASS: core 3/3, plugins 2/2.
-- `npx expo config --type public --json` — PASS.
-- `npx expo export --platform android` — PASS; Hermes bundle emitted under `%TEMP%\mizan-auto2-android`.
-- `npx expo export --platform ios` — PASS; Hermes bundle emitted under `%TEMP%\mizan-auto2-ios`.
-- Web accessibility tree confirmed the Arabic Today route renders on `127.0.0.1:8087/today`.
+- Existing full CP1 verification before this run: root typecheck PASS, lint PASS, core tests 3/3 PASS, plugin tests 2/2 PASS, Expo Doctor 21/21 PASS, Android export PASS, iOS export PASS.
+- After the Supabase foundation changes: app `typecheck` PASS.
+- After the Supabase foundation changes: app `lint` PASS.
+- After the Supabase foundation changes: `expo config --type public --json` PASS with `expo-secure-store` configured.
+- `npm audit --omit=dev`: 14 moderate advisories, 0 high, 0 critical; reported fixes would move Expo packages outside the supported SDK 57 family, so no incompatible forced fix was applied.
+- Supabase CLI available through `npx` at 2.117.0; local DB validation is pending because Docker Desktop is not running.
 
 ## Known technical risks / temporary compromises
-- App state is intentionally in-memory during CP1; real ownership/session persistence belongs to CP2.
-- The current responsive screenshots do not yet prove the required true narrow-phone class.
-- The Windows desktop is currently on the normal lock screen, so physical GPT Agent interaction is correctly paused until the owner unlocks the session; this is tracked non-blockingly in `HUMAN_REQUIRED.md`.
-- No Supabase cloud credentials are required for CP1; CP2 will introduce local/backend configuration and only record owner action if cloud activation becomes necessary.
+- CP1 is blocked only on owner unlock for physical responsive/locale verification; useful independent CP2 work continues under the mission rules.
+- The Windows desktop returned to the normal lock screen during attempted window resizing; no PIN/lock bypass was attempted.
+- App state is intentionally in-memory until CP2 auth/persistence is wired.
+- Supabase client/config and migration are present but not yet wired into authentication or applied to a verified local database.
+- The moderate npm advisories are in the current Expo/Expo Router dependency chain; no high/critical advisory is reported and compatibility-breaking downgrades were rejected.
+- No production/cloud Supabase credential is required for the current local-first CP2 work.
 
-## Additional CP1 verification
-- `npx expo-doctor` — PASS: 21/21 checks, no dependency/configuration issues detected.
-- Physical GPT Agent input was not used after Windows presented the normal lock screen; browser-content inspection continued without attempting to bypass the lock.
-- Removed unreferenced Expo starter artwork/tab/tutorial assets while preserving every asset still referenced by `app.json`.
-- Post-cleanup verification: typecheck PASS, lint PASS, Expo Doctor 21/21 PASS, and the Arabic Today route still renders through the running Web app.
-- Native bundle verification: Android export emitted `_expo/static/js/android/*.hbc`; iOS export emitted `_expo/static/js/ios/*.hbc`, confirming both JS/native bundle graphs resolve without signing credentials or generated native projects.
-- Opera Browser Connector still renders the Arabic Today surface while the Windows lock screen prevents approved physical input; no lock/PIN bypass was attempted.
+## Evidence
+- `docs/cp1-wide.png`
+- `docs/cp1-narrow.png` (compact Web evidence only; not accepted as true phone-width proof)
+- `C:\Users\bofo_\Documents\Agents\GPT-Agent\auto2-screen.png` (normal Windows lock-screen blocker evidence)
