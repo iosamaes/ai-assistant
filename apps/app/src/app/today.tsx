@@ -7,9 +7,10 @@ import { Palette, Radius, Spacing } from '@/constants/theme';
 import { DomainId, useAppState } from '@/state/app-state';
 
 export default function TodayScreen() {
-  const { enabledDomains, isRtl, t } = useAppState();
+  const { enabledDomains, isRtl, syncStatus, t } = useAppState();
   const scheme = useColorScheme();
   const palette = Palette[scheme === 'dark' ? 'dark' : 'light'];
+  const syncMessage = syncStatus === 'offline' ? t('syncOffline') : syncStatus === 'error' ? t('syncError') : null;
 
   return (
     <Screen>
@@ -29,6 +30,8 @@ export default function TodayScreen() {
           </Pressable>
         </Link>
       </View>
+
+      {syncMessage ? <MizanText muted>{syncMessage}</MizanText> : null}
 
       <Card>
         <View style={[styles.statusRow, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>

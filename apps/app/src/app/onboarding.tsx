@@ -10,13 +10,15 @@ import { DomainId, useAppState } from '@/state/app-state';
 const domainOrder: readonly DomainId[] = ['recovery', 'connection', 'work', 'margin'];
 
 export default function OnboardingScreen() {
-  const { completeOnboarding, enabledDomains, isRtl, locale, setLocale, t, toggleDomain } = useAppState();
+  const { completeOnboarding, enabledDomains, isRtl, locale, setLocale, syncStatus, t, toggleDomain } = useAppState();
   const [saving, setSaving] = useState(false);
+  const syncMessage = syncStatus === 'offline' ? t('syncOffline') : syncStatus === 'error' ? t('syncError') : null;
 
   const finish = async () => {
     if (saving) return;
     setSaving(true);
     await completeOnboarding();
+    setSaving(false);
     router.replace('/today');
   };
 
@@ -49,6 +51,8 @@ export default function OnboardingScreen() {
           ))}
         </View>
       </View>
+
+      {syncMessage ? <MizanText muted>{syncMessage}</MizanText> : null}
 
       <View style={styles.footer}>
         <PrimaryButton label={saving ? t('saving') : t('continue')} onPress={() => void finish()} disabled={saving} />

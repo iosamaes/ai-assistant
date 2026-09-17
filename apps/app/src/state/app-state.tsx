@@ -22,10 +22,19 @@ import {
   loadProfile,
   upsertDomainPreferences,
   upsertProfile,
+  type DataFailureKind,
 } from '@/infrastructure/supabase/data-access';
 
 export type DomainId = 'recovery' | 'connection' | 'work' | 'margin';
-export type SessionStatus = 'loading' | 'signed-in' | 'signed-out' | 'not-configured' | 'error';
+export type SessionStatus =
+  | 'loading'
+  | 'signed-in'
+  | 'signed-out'
+  | 'offline'
+  | 'expired'
+  | 'not-configured'
+  | 'error';
+export type SyncStatus = 'idle' | 'saving' | 'saved' | 'offline' | 'expired' | 'error';
 
 const domainOrder: readonly DomainId[] = ['recovery', 'connection', 'work', 'margin'];
 const defaultDomains: readonly DomainId[] = ['recovery', 'connection', 'work'];
@@ -38,12 +47,17 @@ function currentTimezone() {
   }
 }
 
+function collectFailures(...failures: Array<DataFailureKind | null>) {
+  return failures.filter((failure): failure is DataFailureKind => failure !== null);
+}
+
 interface AppStateValue {
   locale: Locale;
   isRtl: boolean;
   onboardingCompleted: boolean;
   enabledDomains: readonly DomainId[];
   sessionStatus: SessionStatus;
+  syncStatus: SyncStatus;
   userId: string | null;
   setLocale: (locale: Locale) => void;
   toggleDomain: (domainId: DomainId) => void;
@@ -60,44 +74,101 @@ export function AppStateProvider({ children }: PropsWithChildren) {
   const [onboardingCompleted, setOnboardingCompleted] = useState(false);
   const [enabledDomains, setEnabledDomains] = useState<readonly DomainId[]>(defaultDomains);
   const [sessionStatus, setSessionStatus] = useState<SessionStatus>('loading');
+  const [syncStatus, setSyncStatus] = useState<SyncStatus>('idle');
   const [userId, setUserId] = useState<string | null>(null);
+  const activeUserRef = useRef<string | null>(null);
   const persistenceQueue = useRef<Promise<void>>(Promise.resolve());
 
-  const hydrateSession = useCallback(async (session: Session | null) => {
-    if (!session) {
-      setUserId(null);
-      setSessionStatus('signed-out');
-      return;
-    }
-
-    const nextUserId = session.user.id;
-    setUserId(nextUserId);
-    setSessionStatus('loading');
-
-    const [profileResult, preferenceResult] = await Promise.all([
-      loadProfile(nextUserId),
-      loadDomainPreferences(nextUserId),
-    ]);
-
-    if (profileResult.ok && profileResult.value) {
-      setLocaleState(profileResult.value.locale);
-      setOnboardingCompleted(profileResult.value.onboarding_completed);
-    }
-
-    if (preferenceResult.ok && preferenceResult.value.length > 0) {
-      const enabled = domainOrder.filter((domainId) =>
-        preferenceResult.value.some((preference) => preference.domain_id === domainId && preference.enabled),
-      );
-      if (enabled.length > 0) setEnabledDomains(enabled);
-    }
-
-    setSessionStatus('signed-in');
+  const resetUserState = useCallback(() => {
+    setLocaleState('ar');
+    setOnboardingCompleted(false);
+    setEnabledDomains(defaultDomains);
   }, []);
+
+  const hydrateSession = useCallback(
+    async (session: Session | null) => {
+      if (!session) {
+        activeUserRef.current = null;
+        setUserId(null);
+        resetUserState();
+        setSyncStatus('idle');
+        setSessionStatus('signed-out');
+        return;
+      }
+
+      const nextUserId = session.user.id;
+      const isNewUser = activeUserRef.current !== nextUserId;
+      activeUserRef.current = nextUserId;
+      setUserId(nextUserId);
+      setSessionStatus('loading');
+
+      if (isNewUser) {
+        resetUserState();
+        setSyncStatus('idle');
+      }
+
+      const [profileResult, preferenceResult] = await Promise.all([
+        loadProfile(nextUserId),
+        loadDomainPreferences(nextUserId),
+      ]);
+      const failures = collectFailures(
+        profileResult.ok ? null : profileResult.error.kind,
+        preferenceResult.ok ? null : preferenceResult.error.kind,
+      );
+
+      if (failures.includes('session-expired')) {
+        activeUserRef.current = null;
+        setUserId(null);
+        setSyncStatus('expired');
+        setSessionStatus('expired');
+        return;
+      }
+
+      if (profileResult.ok) {
+        if (profileResult.value) {
+          setLocaleState(profileResult.value.locale);
+          setOnboardingCompleted(profileResult.value.onboarding_completed);
+        } else {
+          setLocaleState('ar');
+          setOnboardingCompleted(false);
+        }
+      }
+
+      if (preferenceResult.ok) {
+        const enabled = domainOrder.filter((domainId) =>
+          preferenceResult.value.some((preference) => preference.domain_id === domainId && preference.enabled),
+        );
+        setEnabledDomains(enabled.length > 0 ? enabled : defaultDomains);
+      }
+
+      if (failures.includes('unavailable')) {
+        setSyncStatus('offline');
+        setSessionStatus('offline');
+        return;
+      }
+
+      if (failures.length > 0) {
+        setSyncStatus('error');
+        setSessionStatus('signed-in');
+        return;
+      }
+
+      setSyncStatus('saved');
+      setSessionStatus('signed-in');
+    },
+    [resetUserState],
+  );
 
   const refreshSession = useCallback(async () => {
     setSessionStatus('loading');
     const result = await getCurrentSession();
     if (!result.ok) {
+      if (result.error.kind === 'network' && activeUserRef.current) {
+        setSyncStatus('offline');
+        setSessionStatus('offline');
+        return;
+      }
+      activeUserRef.current = null;
       setUserId(null);
       setSessionStatus(result.error.kind === 'not-configured' ? 'not-configured' : 'error');
       return;
@@ -131,17 +202,19 @@ export function AppStateProvider({ children }: PropsWithChildren) {
 
   const persistSnapshot = useCallback(
     (nextLocale: Locale, nextOnboardingCompleted: boolean, nextDomains: readonly DomainId[]) => {
-      if (!userId || sessionStatus !== 'signed-in') return Promise.resolve();
+      if (!userId) return Promise.resolve();
+      const targetUserId = userId;
 
       const persist = async () => {
-        await Promise.all([
-          upsertProfile(userId, {
+        setSyncStatus('saving');
+        const [profileResult, preferenceResult] = await Promise.all([
+          upsertProfile(targetUserId, {
             locale: nextLocale,
             timezone: currentTimezone(),
             onboarding_completed: nextOnboardingCompleted,
           }),
           upsertDomainPreferences(
-            userId,
+            targetUserId,
             domainOrder.map((domainId, index) => ({
               domain_id: domainId,
               enabled: nextDomains.includes(domainId),
@@ -150,12 +223,41 @@ export function AppStateProvider({ children }: PropsWithChildren) {
             })),
           ),
         ]);
+
+        if (activeUserRef.current !== targetUserId) return;
+
+        const failures = collectFailures(
+          profileResult.ok ? null : profileResult.error.kind,
+          preferenceResult.ok ? null : preferenceResult.error.kind,
+        );
+
+        if (failures.includes('session-expired')) {
+          activeUserRef.current = null;
+          setUserId(null);
+          setSyncStatus('expired');
+          setSessionStatus('expired');
+          return;
+        }
+
+        if (failures.includes('unavailable')) {
+          setSyncStatus('offline');
+          setSessionStatus('offline');
+          return;
+        }
+
+        if (failures.length > 0) {
+          setSyncStatus('error');
+          return;
+        }
+
+        setSyncStatus('saved');
+        setSessionStatus('signed-in');
       };
 
       persistenceQueue.current = persistenceQueue.current.then(persist, persist);
       return persistenceQueue.current;
     },
-    [sessionStatus, userId],
+    [userId],
   );
 
   const setLocale = useCallback(
@@ -197,6 +299,7 @@ export function AppStateProvider({ children }: PropsWithChildren) {
       onboardingCompleted,
       enabledDomains,
       sessionStatus,
+      syncStatus,
       userId,
       setLocale,
       toggleDomain,
@@ -214,6 +317,7 @@ export function AppStateProvider({ children }: PropsWithChildren) {
       resetOnboarding,
       sessionStatus,
       setLocale,
+      syncStatus,
       toggleDomain,
       userId,
     ],

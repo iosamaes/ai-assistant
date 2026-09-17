@@ -18,7 +18,7 @@ type AuthMode = 'sign-in' | 'sign-up' | 'reset';
 export default function AuthScreen() {
   const scheme = useColorScheme();
   const palette = Palette[scheme === 'dark' ? 'dark' : 'light'];
-  const { isRtl, locale, refreshSession, setLocale, t } = useAppState();
+  const { isRtl, locale, refreshSession, sessionStatus, setLocale, t } = useAppState();
   const [mode, setMode] = useState<AuthMode>('sign-in');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -87,6 +87,7 @@ export default function AuthScreen() {
         <MizanText variant="label" muted>{t('appName')}</MizanText>
         <MizanText variant="display">{t('authTitle')}</MizanText>
         <MizanText muted>{t('authBody')}</MizanText>
+        {sessionStatus === 'expired' ? <MizanText muted>{t('authSessionExpired')}</MizanText> : null}
       </View>
 
       <View style={styles.section}>

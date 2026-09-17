@@ -2,7 +2,14 @@ import type { PostgrestError } from '@supabase/supabase-js';
 
 import { supabase } from './client';
 
-export type DataFailureKind = 'not-configured' | 'unauthorized' | 'conflict' | 'invalid' | 'unavailable' | 'unknown';
+export type DataFailureKind =
+  | 'not-configured'
+  | 'session-expired'
+  | 'unauthorized'
+  | 'conflict'
+  | 'invalid'
+  | 'unavailable'
+  | 'unknown';
 export type DataResult<T> =
   | { ok: true; value: T }
   | { ok: false; error: { kind: DataFailureKind; code?: string } };
@@ -53,11 +60,26 @@ export type PluginSettingInput = {
   consented_at?: string | null;
   settings?: Record<string, unknown>;
 };
+
 function classifyPostgrestError(error: PostgrestError): DataFailureKind {
+  const message = error.message.toLowerCase();
+
+  if (error.code === 'PGRST301' || error.code === 'PGRST302' || error.code === 'PGRST303') {
+    return 'session-expired';
+  }
   if (error.code === '42501') return 'unauthorized';
   if (error.code === '23505') return 'conflict';
   if (error.code.startsWith('22') || error.code.startsWith('23')) return 'invalid';
-  if (error.code.startsWith('08')) return 'unavailable';
+  if (
+    error.code.startsWith('08') ||
+    error.code === 'PGRST000' ||
+    error.code === 'PGRST001' ||
+    error.code === 'PGRST002' ||
+    message.includes('failed to fetch') ||
+    message.includes('network')
+  ) {
+    return 'unavailable';
+  }
   return 'unknown';
 }
 
@@ -110,6 +132,7 @@ export async function upsertDomainPreferences(
   if (error) return dataFailure(error);
   return { ok: true, value: (data ?? []) as DomainPreference[] };
 }
+
 export async function insertObservation(userId: string, input: ObservationInput): Promise<DataResult<string>> {
   if (!supabase) return unavailable();
   const { data, error } = await supabase

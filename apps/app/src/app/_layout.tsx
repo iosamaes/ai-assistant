@@ -12,15 +12,16 @@ function AppNavigator() {
   const scheme = useColorScheme();
   const palette = Palette[scheme === 'dark' ? 'dark' : 'light'];
   const segments = useSegments();
-  const { onboardingCompleted, sessionStatus } = useAppState();
+  const { onboardingCompleted, sessionStatus, userId } = useAppState();
 
   useEffect(() => {
     if (sessionStatus === 'loading') return;
 
     const firstSegment = segments[0];
     const isAuthRoute = firstSegment === 'auth';
+    const hasUsableSession = sessionStatus === 'signed-in' || (sessionStatus === 'offline' && Boolean(userId));
 
-    if (sessionStatus !== 'signed-in') {
+    if (!hasUsableSession) {
       if (!isAuthRoute) router.replace('/auth');
       return;
     }
@@ -28,7 +29,7 @@ function AppNavigator() {
     if (isAuthRoute) {
       router.replace(onboardingCompleted ? '/today' : '/onboarding');
     }
-  }, [onboardingCompleted, segments, sessionStatus]);
+  }, [onboardingCompleted, segments, sessionStatus, userId]);
 
   return (
     <>

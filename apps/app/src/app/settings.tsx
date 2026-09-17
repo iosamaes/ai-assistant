@@ -9,9 +9,10 @@ import { signOut } from '@/infrastructure/supabase/auth';
 import { useAppState } from '@/state/app-state';
 
 export default function SettingsScreen() {
-  const { enabledDomains, isRtl, locale, refreshSession, resetOnboarding, setLocale, t } = useAppState();
+  const { enabledDomains, isRtl, locale, refreshSession, resetOnboarding, setLocale, syncStatus, t } = useAppState();
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
+  const syncMessage = syncStatus === 'offline' ? t('syncOffline') : syncStatus === 'error' ? t('syncError') : null;
 
   const editPriorities = async () => {
     if (busy) return;
@@ -57,6 +58,7 @@ export default function SettingsScreen() {
         <MizanText muted>{enabledDomains.map((domainId) => t(domainId)).join(' · ')}</MizanText>
       </View>
 
+      {syncMessage ? <MizanText muted>{syncMessage}</MizanText> : null}
       {message ? <MizanText muted>{message}</MizanText> : null}
 
       <View style={styles.actions}>
