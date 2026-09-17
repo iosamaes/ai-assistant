@@ -71,21 +71,25 @@
 - Added `packages/core/src/capacity.ts` with conservative domain-specific Life Debt accumulation/recovery, explicit snapshot-vs-tracked history semantics, bounded velocity, non-moralized urgency, and unknown preservation when required need data is missing.
 - Added Life Buffer/Fragility calculation that derives spare capacity from explicit capacity/load signals, requires meaningful evidence coverage, penalizes the weakest margin, and refuses a summary when evidence is too sparse.
 - Added transparent interaction-risk rules with explicit factor thresholds, evidence/confidence payloads, `hypothesis` downgrade for weak evidence, and `insufficient` instead of treating missing factors as safe zeros.
-- Exported the engine/temporal/leverage/balance/capacity modules from `@mizan/core`.
-- Added deterministic unit specifications covering missing data, sparse evidence, inferred overload, robust outlier handling, stale confidence, temporal momentum, lower-is-better orientation, deterministic leverage ranking, explanation payloads, refusal to fabricate a recommendation, season-relative balance, explicit-zero handling, confidence weighting, Life Debt accumulation/recovery, sparse-buffer refusal, weakest-margin fragility, and strong/weak/missing interaction-risk evidence.
+- Added `packages/core/src/learning.ts` with a deterministic paired-evidence relationship model that reports sample size, effect direction/estimate, time window, confidence, evidence, and explicit non-causal caveats.
+- N-of-1 experimental samples can strengthen a relationship hypothesis confidence without ever changing the output into a universal causal claim.
+- Added a feedback learning estimator that keeps completion as adherence-only evidence, learns usefulness only from explicit outcome benefit, applies bounded recency weighting, and preserves no-benefit data as unknown usefulness.
+- Exported the engine/temporal/leverage/balance/capacity/learning modules from `@mizan/core`.
+- Added deterministic unit specifications covering missing data, sparse evidence, inferred overload, robust outlier handling, stale confidence, temporal momentum, lower-is-better orientation, deterministic leverage ranking, explanation payloads, refusal to fabricate a recommendation, season-relative balance, explicit-zero handling, confidence weighting, Life Debt accumulation/recovery, sparse-buffer refusal, weakest-margin fragility, strong/weak/missing interaction-risk evidence, sparse/strong relationship evidence, N-of-1 confidence strengthening, missing pair values, completion-without-benefit, recency weighting, and action isolation.
 - These CP3 tests/type checks have intentionally not been executed by workers under the current execution policy; no PASS claim is made yet.
 
 ## Exact next executable action
 1. When the Windows session is unlocked, complete CP1 Arabic/English interaction and true phone-width verification through the owner validation path.
 2. Owner-validate sign-up/sign-in/session restore/sign-out, confirmation deep links, recovery deep links/password update, persisted locale/domain preferences, account-switch isolation, temporary-offline messaging/retry, and expired-session routing against the authorized Supabase project after the listed Auth redirect URLs are configured.
 3. During owner validation, execute `supabase/tests/rls_cross_user.sql` against a disposable/local Supabase database after migrations are applied, and load `supabase/dev/vertical_slice_fixture.sql` only after replacing its guarded placeholder with an existing dev user UUID.
-4. Continue CP3 with the earliest safe unfinished deterministic-core requirements: pattern/causal-hypothesis graph and feedback learning loop, then consolidate uncertainty/evidence behavior and deterministic fixtures before owner-run core typecheck/tests can grant CP3 checkpoint credit.
+4. CP3 implementation now has the initial required deterministic models; next owner validation should run core typecheck/tests and review confidence/evidence outputs. If those gates pass, grant CP3 checkpoint credit and proceed to CP4's first complete daily life loop; workers may continue independent CP4 code while runtime gates remain owner-blocked.
 
 ## Last verified commit
 - `0fc4fa3b319300403a241d5f31c39e0895962822` — added CP2 cross-user RLS verification script.
 - Newer GitHub-native auth/session/persistence/recovery/offline and CP3 deterministic-core commits are implemented but remain owner-validation pending; do not label them verified until the reserved validation path runs.
 - Latest CP3 season-relative Balance implementation commit: `c384e886a22aa888ab29de599eee9202d12c06e2`.
 - Latest CP3 Life Debt/Buffer/Interaction Risk implementation commit: `04d5868f92161ad7d4de2537696417474b6fd890`.
+- Latest CP3 relationship/feedback learning implementation commit: `28dc70d3e95a0409d253c02ddc2633e5138b9cb5`.
 
 ## Tests/builds last run
 - Existing CP1 gate evidence: root typecheck PASS, lint PASS, core tests 3/3 PASS, plugin tests 2/2 PASS, Expo Doctor 21/21 PASS, Android export PASS, iOS export PASS.
@@ -104,6 +108,8 @@
 - The Balance model intentionally refuses to emit an overall score until every active season target dimension has explicit current-allocation data and at least two target dimensions are comparable; this is conservative by design and should only be relaxed with an explicit missing-data model.
 - Life Debt snapshot mode deliberately reports amount without inventing historical direction/velocity; tracked direction begins only when a prior bounded debt amount exists.
 - The initial interaction-risk model is rule-based and intentionally narrow; it surfaces hypotheses under weak evidence rather than escalating lifestyle telemetry into diagnostic claims.
+- Relationship estimates currently consume already-paired observations; pairing raw asynchronous telemetry belongs at the application/data preparation boundary so the pure engine does not hide time-alignment assumptions.
+- Action usefulness uses explicit personal outcome benefit only; adherence without benefit remains visible but cannot raise usefulness.
 - Moderate npm advisories remain in the supported Expo dependency chain; no high/critical advisory was previously reported.
 
 ## Evidence
@@ -121,3 +127,5 @@
 - `packages/core/src/balance.test.ts`
 - `packages/core/src/capacity.ts`
 - `packages/core/src/capacity.test.ts`
+- `packages/core/src/learning.ts`
+- `packages/core/src/learning.test.ts`
