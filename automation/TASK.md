@@ -2,11 +2,11 @@
 
 ## 0. Authority and operating boundary
 
-This file is the sole mission authority for the active automation task.
-Product source authority is GitHub repo `iosamaes/ai-assistant` on branch `main`. The local copy at `C:\Users\bofo_\Documents\automation\ai assistant` is owner-only for later pull/testing; workers must not mutate it.
-Do not edit `TASK.md`, `WORKER.md`, `PLAN.md`, `control.py`, `.runtime`, or any automation-control file.
-The only automation-side file workers may update is `HUMAN_REQUIRED.md`, strictly under its existing rules.
-Track project progress inside the GitHub repository (`docs/PROJECT_STATE.md` on `main`), never by changing this task file.
+This file at `automation/TASK.md` on GitHub `iosamaes/ai-assistant@main` is the sole mission authority for the active automation task.
+Product source authority is the same GitHub repository on branch `main`. The local copy at `C:\Users\bofo_\Documents\automation\ai assistant` is owner-only for later pull/testing; workers must not mutate it.
+Automation control authority is `automation/README.md`, `automation/WORKER.md`, `automation/TASK.md`, `automation/HUMAN_REQUIRED.md`, and `automation/STATE.json` on GitHub `main`; workers must not depend on the old local `control.py`, `.runtime`, or SQLite state.
+Workers must not edit `automation/TASK.md` or `automation/WORKER.md` during mission execution. They may update `automation/HUMAN_REQUIRED.md` under its rules and `automation/STATE.json` only through the lease/fencing/completion protocol in `automation/WORKER.md`.
+Track product progress in `docs/PROJECT_STATE.md` on `main`, never by changing this task file.
 All four workers are interchangeable executors; continue from current GitHub `main` state instead of assuming a fixed worker role.
 
 Current worker execution mode: GitHub is source control only and GitHub Actions/cloud CI remain disabled. Workers may add/update tests but must not run cloud or local product tests/builds themselves. Execution-dependent quality gates remain pending owner validation after pulling `main` into the local mirror; workers must never invent or claim unrun test results. This transport rule does not relax any product-quality requirement.
