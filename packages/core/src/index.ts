@@ -4,3 +4,4 @@ export * from './engine';
 export * from './temporal';
 export * from './leverage';
 export * from './balance';
+export * from './capacity';
