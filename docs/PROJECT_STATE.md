@@ -66,3 +66,5 @@
 ## Additional CP1 verification
 - `npx expo-doctor` — PASS: 21/21 checks, no dependency/configuration issues detected.
 - Physical GPT Agent input was not used after Windows presented the normal lock screen; browser-content inspection continued without attempting to bypass the lock.
+- Removed unreferenced Expo starter artwork/tab/tutorial assets while preserving every asset still referenced by `app.json`.
+- Post-cleanup verification: typecheck PASS, lint PASS, Expo Doctor 21/21 PASS, and the Arabic Today route still renders through the running Web app.
