@@ -1,0 +1,22 @@
+{
+  "name": "mizan",
+  "version": "0.1.0",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "start": "npm --workspace @mizan/app run start",
+    "web": "npm --workspace @mizan/app run web",
+    "android": "npm --workspace @mizan/app run android",
+    "ios": "npm --workspace @mizan/app run ios",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "lint": "npm run lint --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present",
+    "check": "npm run typecheck && npm run lint && npm run test"
+  },
+  "engines": {
+    "node": ">=22.13.0"
+  }
+}
