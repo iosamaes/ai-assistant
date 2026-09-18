@@ -365,7 +365,7 @@ export default function ExperimentsScreen() {
       <View style={styles.section}>
         <MizanText variant="title">{activeExperiment ? labels.active : labels.history}</MizanText>
         {loading ? <MizanText accessibilityLiveRegion="polite" muted>{labels.loading}</MizanText> : null}
-        {!loading && history.length === 0 ? <MizanText muted>{labels.empty}</MizanText> : null}
+        {!loading && history.length === 0 ? <MizanText accessibilityLiveRegion="polite" muted>{labels.empty}</MizanText> : null}
         {history.map(renderExperiment)}
       </View>
 
