@@ -99,16 +99,17 @@ export default function CapacityScreen() {
 
   useEffect(() => {
     let active = true;
-    if (!userId) {
-      setSnapshot(null);
-      setStatus('ready');
-      return () => {
-        active = false;
-      };
-    }
+    void (async () => {
+      await Promise.resolve();
+      if (!active) return;
+      if (!userId) {
+        setSnapshot(null);
+        setStatus('ready');
+        return;
+      }
 
-    setStatus('loading');
-    void loadCapacitySnapshot(userId).then(async (result) => {
+      setStatus('loading');
+      const result = await loadCapacitySnapshot(userId);
       if (!active) return;
       if (result.ok) {
         setSnapshot(result.value);
@@ -117,7 +118,7 @@ export default function CapacityScreen() {
       }
       if (result.error.kind === 'session-expired') await refreshSession();
       if (active) setStatus('error');
-    });
+    })();
 
     return () => {
       active = false;

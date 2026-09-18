@@ -49,7 +49,7 @@ export async function loadLatestPendingAcceptedAction(
     .limit(boundedLimit);
   if (eventError) return failure(eventError);
 
-  const accepted = (events ?? []) as Array<{ id: string; action_key: string; occurred_at: string }>;
+  const accepted = (events ?? []) as { id: string; action_key: string; occurred_at: string }[];
   if (accepted.length === 0) return { ok: true, value: null };
 
   const { data: feedback, error: feedbackError } = await supabase

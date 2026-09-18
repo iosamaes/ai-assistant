@@ -43,7 +43,7 @@ export async function loadDomainBaselineTargets(
   if (error) return failure(error);
 
   const targets: DomainBaselineTargets = {};
-  for (const row of (data ?? []) as Array<{ domain_id: string; baseline_target_rating: unknown }>) {
+  for (const row of (data ?? []) as { domain_id: string; baseline_target_rating: unknown }[]) {
     if (isBaselineTargetRating(row.baseline_target_rating)) {
       targets[row.domain_id] = row.baseline_target_rating;
     }

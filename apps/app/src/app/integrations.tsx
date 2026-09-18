@@ -120,7 +120,14 @@ export default function IntegrationsScreen() {
   }, [refreshSession, userId]);
 
   useEffect(() => {
-    void reload();
+    let active = true;
+    void Promise.resolve().then(() => {
+      if (active) return reload();
+      return undefined;
+    });
+    return () => {
+      active = false;
+    };
   }, [reload]);
 
   const disable = async (connection: StoredIntegrationConnection) => {

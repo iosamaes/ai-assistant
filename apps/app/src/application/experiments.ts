@@ -102,7 +102,7 @@ export async function startExperiment(input: {
   };
   if (!validateExperimentPlan(plan)) return invalid();
 
-  const state = await loadCurrentHumanState(input.userId, now);
+  const state = await loadCurrentHumanState(input.userId, startedAt);
   if (!state.ok) return state;
 
   return createExperiment(input.userId, {

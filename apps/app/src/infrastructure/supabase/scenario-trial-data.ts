@@ -110,11 +110,11 @@ export async function loadScenarioTrialFeedback(
     .limit(boundedLimit);
   if (eventsError) return failure(eventsError);
 
-  const eventRows = (events ?? []) as Array<{
+  const eventRows = (events ?? []) as {
     id: string;
     context: Record<string, unknown> | null;
     occurred_at: string;
-  }>;
+  }[];
   if (eventRows.length === 0) return { ok: true, value: [] };
 
   const { data: feedback, error: feedbackError } = await supabase
@@ -130,11 +130,11 @@ export async function loadScenarioTrialFeedback(
   const eventById = new Map(eventRows.map((event) => [event.id, event]));
   return {
     ok: true,
-    value: ((feedback ?? []) as Array<{
+    value: ((feedback ?? []) as {
       action_event_id: string;
       usefulness: number | null;
       observed_at: string;
-    }>).flatMap((row) => {
+    }[]).flatMap((row) => {
       const event = eventById.get(row.action_event_id);
       if (!event || row.usefulness === null) return [];
       const context = event.context ?? {};

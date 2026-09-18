@@ -97,16 +97,17 @@ export default function ValueAlignmentScreen() {
 
   useEffect(() => {
     let active = true;
-    if (!userId || personalValues.length === 0) {
-      setSummaries([]);
-      setStatus('ready');
-      return () => {
-        active = false;
-      };
-    }
+    void (async () => {
+      await Promise.resolve();
+      if (!active) return;
+      if (!userId || personalValues.length === 0) {
+        setSummaries([]);
+        setStatus('ready');
+        return;
+      }
 
-    setStatus('loading');
-    void loadPersonalValueAlignments(userId, personalValues, enabledDomains).then(async (result) => {
+      setStatus('loading');
+      const result = await loadPersonalValueAlignments(userId, personalValues, enabledDomains);
       if (!active) return;
       if (!result.ok) {
         if (result.error.kind === 'session-expired') await refreshSession();
@@ -115,7 +116,7 @@ export default function ValueAlignmentScreen() {
       }
       setSummaries(result.value);
       setStatus('ready');
-    });
+    })();
 
     return () => {
       active = false;

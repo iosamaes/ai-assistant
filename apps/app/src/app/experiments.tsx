@@ -141,7 +141,7 @@ export default function ExperimentsScreen() {
   const { isRtl, locale, refreshSession, userId } = useAppState();
   const labels = copy[locale];
   const [selected, setSelected] = useState<ExperimentTemplateId>('earlier-bedtime');
-  const [hypothesis, setHypothesis] = useState(labels.templates['earlier-bedtime'].hypothesis);
+  const [hypothesis, setHypothesis] = useState<string>(labels.templates['earlier-bedtime'].hypothesis);
   const [consented, setConsented] = useState(false);
   const [history, setHistory] = useState<ExperimentWithEvaluation[]>([]);
   const [ratingById, setRatingById] = useState<Record<string, number>>({});
@@ -166,13 +166,15 @@ export default function ExperimentsScreen() {
   }, [labels.loadError, refreshSession, userId]);
 
   useEffect(() => {
-    void load();
+    let active = true;
+    void Promise.resolve().then(() => {
+      if (active) return load();
+      return undefined;
+    });
+    return () => {
+      active = false;
+    };
   }, [load]);
-
-  useEffect(() => {
-    setHypothesis(labels.templates[selected].hypothesis);
-    setConsented(false);
-  }, [labels.templates, selected]);
 
   const activeExperiment = useMemo(
     () => history.find((item) => item.experiment.status === 'active') ?? null,
@@ -310,7 +312,11 @@ export default function ExperimentsScreen() {
                 key={id}
                 label={labels.templates[id].label}
                 selected={selected === id}
-                onPress={() => setSelected(id)}
+                onPress={() => {
+                  setSelected(id);
+                  setHypothesis(labels.templates[id].hypothesis);
+                  setConsented(false);
+                }}
               />
             ))}
           </View>

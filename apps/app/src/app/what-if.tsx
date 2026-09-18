@@ -161,19 +161,20 @@ export default function WhatIfScreen() {
 
   useEffect(() => {
     let active = true;
-    if (!userId) {
-      setStatus('error');
-      setProjection(null);
-      return () => {
-        active = false;
-      };
-    }
+    void (async () => {
+      await Promise.resolve();
+      if (!active) return;
+      if (!userId) {
+        setStatus('error');
+        setProjection(null);
+        return;
+      }
 
-    setStatus('loading');
-    void Promise.all([
-      loadCurrentHumanState(userId),
-      loadPersonalScenarioEffects(userId, selected),
-    ]).then(async ([stateResult, personalResult]) => {
+      setStatus('loading');
+      const [stateResult, personalResult] = await Promise.all([
+        loadCurrentHumanState(userId),
+        loadPersonalScenarioEffects(userId, selected),
+      ]);
       if (!active) return;
       if (!stateResult.ok) {
         if (stateResult.error.kind === 'session-expired') await refreshSession();
@@ -194,7 +195,7 @@ export default function WhatIfScreen() {
         personalEffects: personalResult.ok ? personalResult.value : [],
       }));
       setStatus('ready');
-    });
+    })();
 
     return () => {
       active = false;

@@ -153,16 +153,17 @@ export default function WhyScreen() {
 
   useEffect(() => {
     let active = true;
-    if (!userId) {
-      setExplanation(null);
-      setStatus('ready');
-      return () => {
-        active = false;
-      };
-    }
+    void (async () => {
+      await Promise.resolve();
+      if (!active) return;
+      if (!userId) {
+        setExplanation(null);
+        setStatus('ready');
+        return;
+      }
 
-    setStatus('loading');
-    void loadWhyExplanation(userId).then(async (result) => {
+      setStatus('loading');
+      const result = await loadWhyExplanation(userId);
       if (!active) return;
       if (result.ok) {
         setExplanation(result.value);
@@ -171,7 +172,7 @@ export default function WhyScreen() {
       }
       if (result.error.kind === 'session-expired') await refreshSession();
       if (active) setStatus('error');
-    });
+    })();
 
     return () => {
       active = false;

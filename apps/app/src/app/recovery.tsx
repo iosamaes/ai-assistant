@@ -122,11 +122,22 @@ export default function RecoveryScreen() {
   }, [labels.loadError, refreshSession, userId]);
 
   useEffect(() => {
-    void load();
+    let active = true;
+    void Promise.resolve().then(() => {
+      if (active) return load();
+      return undefined;
+    });
+    return () => {
+      active = false;
+    };
   }, [load]);
 
   const currentStep = plan?.steps[stepIndex] ?? null;
-  const needText = plan ? labels[plan.need] : null;
+  const needText = plan
+    ? plan.need === 'insufficient_evidence'
+      ? labels.insufficient
+      : labels[plan.need]
+    : null;
   const reasonLabels = useMemo(
     () => plan?.reasons.map((reason) => labels.reason[reason.key as RecoveryReasonKey]) ?? [],
     [labels.reason, plan],

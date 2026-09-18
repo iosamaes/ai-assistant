@@ -12,13 +12,13 @@ export function useSpiritualGroundingPreference(userId: string | null) {
 
   useEffect(() => {
     let active = true;
+    void Promise.resolve().then(() => {
+      if (!active) return;
 
-    if (!userId) {
+      if (!userId) {
       setChoice(null);
       setStatus('idle');
-      return () => {
-        active = false;
-      };
+      return;
     }
 
     setStatus('loading');
@@ -30,6 +30,7 @@ export function useSpiritualGroundingPreference(userId: string | null) {
       }
       setChoice(result.value ? result.value.enabled : null);
       setStatus('ready');
+    });
     });
 
     return () => {

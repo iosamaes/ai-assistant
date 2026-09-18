@@ -33,10 +33,14 @@ function clamp(value: number, min: number, max: number): number {
 }
 
 function median(values: readonly number[]): number {
-  if (values.length === 0) return 0;
   const sorted = [...values].sort((left, right) => left - right);
+  if (sorted.length === 0) return 0;
   const middle = Math.floor(sorted.length / 2);
-  return sorted.length % 2 === 0 ? (sorted[middle - 1] + sorted[middle]) / 2 : sorted[middle];
+  const upper = sorted[middle];
+  if (upper === undefined) return 0;
+  if (sorted.length % 2 === 1) return upper;
+  const lower = sorted[middle - 1] ?? upper;
+  return (lower + upper) / 2;
 }
 
 function confidenceLevel(score: number): Confidence['level'] {

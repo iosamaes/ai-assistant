@@ -8,7 +8,7 @@ import {
 } from '@/infrastructure/supabase/data-access';
 import { loadOnboardingContext } from '@/infrastructure/supabase/onboarding-context';
 
-function firstFailure(...failures: Array<DataFailureKind | null>): DataFailureKind | null {
+function firstFailure(...failures: (DataFailureKind | null)[]): DataFailureKind | null {
   return failures.find((failure): failure is DataFailureKind => failure !== null) ?? null;
 }
 

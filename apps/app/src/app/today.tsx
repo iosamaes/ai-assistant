@@ -156,16 +156,17 @@ export default function TodayScreen() {
 
   useEffect(() => {
     let active = true;
-    if (!userId) {
-      setDailySnapshot(null);
-      setDailyLoadStatus('ready');
-      return () => {
-        active = false;
-      };
-    }
+    void (async () => {
+      await Promise.resolve();
+      if (!active) return;
+      if (!userId) {
+        setDailySnapshot(null);
+        setDailyLoadStatus('ready');
+        return;
+      }
 
-    setDailyLoadStatus('loading');
-    void loadDailySnapshot(userId).then(async (result) => {
+      setDailyLoadStatus('loading');
+      const result = await loadDailySnapshot(userId);
       if (!active) return;
       if (result.ok) {
         setDailySnapshot(result.value);
@@ -177,7 +178,7 @@ export default function TodayScreen() {
         setDailySnapshot(null);
         setDailyLoadStatus('error');
       }
-    });
+    })();
 
     return () => {
       active = false;
@@ -196,20 +197,21 @@ export default function TodayScreen() {
 
   useEffect(() => {
     let active = true;
-    if (!userId || !humanState) {
-      setRecommendation(null);
-      setRecommendationLoadStatus('ready');
-      return () => {
-        active = false;
-      };
-    }
+    void (async () => {
+      await Promise.resolve();
+      if (!active) return;
+      if (!userId || !humanState) {
+        setRecommendation(null);
+        setRecommendationLoadStatus('ready');
+        return;
+      }
 
-    setRecommendationLoadStatus('loading');
-    void loadPersonalizedDailyRecommendation(userId, humanState).then((nextRecommendation) => {
+      setRecommendationLoadStatus('loading');
+      const nextRecommendation = await loadPersonalizedDailyRecommendation(userId, humanState);
       if (!active) return;
       setRecommendation(nextRecommendation);
       setRecommendationLoadStatus('ready');
-    });
+    })();
 
     return () => {
       active = false;
@@ -218,21 +220,22 @@ export default function TodayScreen() {
 
   useEffect(() => {
     let active = true;
-    if (!userId) {
-      setFeedbackTarget(null);
-      return () => {
-        active = false;
-      };
-    }
+    void (async () => {
+      await Promise.resolve();
+      if (!active) return;
+      if (!userId) {
+        setFeedbackTarget(null);
+        return;
+      }
 
-    void recoverPendingActionFeedback(userId).then(async (result) => {
+      const result = await recoverPendingActionFeedback(userId);
       if (!active) return;
       if (!result.ok) {
         if (result.error.kind === 'session-expired') await refreshSession();
         return;
       }
-      if (active) setFeedbackTarget(result.value);
-    });
+      setFeedbackTarget(result.value);
+    })();
 
     return () => {
       active = false;
@@ -240,14 +243,28 @@ export default function TodayScreen() {
   }, [refreshSession, userId]);
 
   useEffect(() => {
-    setSelectedActionId(recommendation?.primary.actionId ?? null);
-    setDecisionStatus('idle');
+    let active = true;
+    void Promise.resolve().then(() => {
+      if (!active) return;
+      setSelectedActionId(recommendation?.primary.actionId ?? null);
+      setDecisionStatus('idle');
+    });
+    return () => {
+      active = false;
+    };
   }, [recommendation?.primary.actionId]);
 
   useEffect(() => {
-    setFeedbackUsefulness(null);
-    setFeedbackNote('');
-    setFeedbackStatus('idle');
+    let active = true;
+    void Promise.resolve().then(() => {
+      if (!active) return;
+      setFeedbackUsefulness(null);
+      setFeedbackNote('');
+      setFeedbackStatus('idle');
+    });
+    return () => {
+      active = false;
+    };
   }, [feedbackTarget?.actionEventId]);
 
   const recommendationOptions = recommendation

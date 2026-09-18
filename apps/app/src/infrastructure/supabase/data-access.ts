@@ -245,12 +245,12 @@ export async function loadActionOutcomeFeedback(
     .limit(boundedLimit);
   if (eventError) return dataFailure(eventError);
 
-  const eventRows = (events ?? []) as Array<{
+  const eventRows = (events ?? []) as {
     id: string;
     action_key: string;
     event_type: ActionEventInput['event_type'];
     occurred_at: string;
-  }>;
+  }[];
   if (eventRows.length === 0) return { ok: true, value: [] };
 
   const eventById = new Map(eventRows.map((event) => [event.id, event]));
@@ -264,13 +264,13 @@ export async function loadActionOutcomeFeedback(
     .limit(boundedLimit);
   if (feedbackError) return dataFailure(feedbackError);
 
-  const rows = (feedback ?? []) as Array<{
+  const rows = (feedback ?? []) as {
     id: string;
     action_event_id: string;
     usefulness: number | null;
     outcome_note: string | null;
     observed_at: string;
-  }>;
+  }[];
 
   return {
     ok: true,

@@ -139,16 +139,17 @@ export default function OnboardingScreen() {
 
   useEffect(() => {
     let active = true;
-    if (!userId) {
-      setBaselineTargets({});
-      setBaselineStatus('idle');
-      return () => {
-        active = false;
-      };
-    }
+    void (async () => {
+      await Promise.resolve();
+      if (!active) return;
+      if (!userId) {
+        setBaselineTargets({});
+        setBaselineStatus('idle');
+        return;
+      }
 
-    setBaselineStatus('loading');
-    void loadDomainBaselineTargets(userId).then((result) => {
+      setBaselineStatus('loading');
+      const result = await loadDomainBaselineTargets(userId);
       if (!active) return;
       if (result.ok) {
         setBaselineTargets(result.value);
@@ -156,7 +157,7 @@ export default function OnboardingScreen() {
       } else {
         setBaselineStatus('error');
       }
-    });
+    })();
 
     return () => {
       active = false;

@@ -102,7 +102,7 @@ export async function recordExplicitActionOutcome(
   const saved = await insertFeedbackOutcome(userId, {
     action_event_id: actionEventId,
     usefulness,
-    outcome_note: note.length > 0 ? note : undefined,
+    ...(note.length > 0 ? { outcome_note: note } : {}),
     observed_at: observedAt,
   });
   if (!saved.ok) return saved;

@@ -120,7 +120,13 @@ export default function LifeSeasonsScreen() {
   const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle');
 
   useEffect(() => {
-    setSelectedSeason(lifeSeason ?? 'balanced');
+    let active = true;
+    void Promise.resolve().then(() => {
+      if (active) setSelectedSeason(lifeSeason ?? 'balanced');
+    });
+    return () => {
+      active = false;
+    };
   }, [lifeSeason]);
 
   const reload = useCallback(async () => {
@@ -143,7 +149,14 @@ export default function LifeSeasonsScreen() {
   }, [refreshSession, userId]);
 
   useEffect(() => {
-    void reload();
+    let active = true;
+    void Promise.resolve().then(() => {
+      if (active) return reload();
+      return undefined;
+    });
+    return () => {
+      active = false;
+    };
   }, [reload]);
 
   const enabledSet = useMemo(() => new Set(enabledDomains), [enabledDomains]);

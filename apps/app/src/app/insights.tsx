@@ -149,14 +149,17 @@ export default function InsightsScreen() {
 
   useEffect(() => {
     let active = true;
-    if (!userId) {
-      setSnapshot(null);
-      setStatus('ready');
-      return () => { active = false; };
-    }
+    void (async () => {
+      await Promise.resolve();
+      if (!active) return;
+      if (!userId) {
+        setSnapshot(null);
+        setStatus('ready');
+        return;
+      }
 
-    setStatus('loading');
-    void loadInsightsSnapshot(userId).then(async (result) => {
+      setStatus('loading');
+      const result = await loadInsightsSnapshot(userId);
       if (!active) return;
       if (result.ok) {
         setSnapshot(result.value);
@@ -165,7 +168,7 @@ export default function InsightsScreen() {
       }
       if (result.error.kind === 'session-expired') await refreshSession();
       if (active) setStatus('error');
-    });
+    })();
 
     return () => { active = false; };
   }, [refreshSession, userId]);

@@ -55,7 +55,7 @@ function currentTimezone() {
   }
 }
 
-function collectFailures(...failures: Array<DataFailureKind | null>) {
+function collectFailures(...failures: (DataFailureKind | null)[]) {
   return failures.filter((failure): failure is DataFailureKind => failure !== null);
 }
 
@@ -224,10 +224,16 @@ export function AppStateProvider({ children }: PropsWithChildren) {
   }, [hydrateSession]);
 
   useEffect(() => {
-    void refreshSession();
+    let active = true;
+    void Promise.resolve().then(() => {
+      if (active) return refreshSession();
+      return undefined;
+    });
 
     const unsubscribeAuth = subscribeToAuthSession((_event, session) => {
-      void hydrateSession(session);
+      setTimeout(() => {
+        void hydrateSession(session);
+      }, 0);
     });
 
     const consumeUrl = async (url: string | null) => {
@@ -242,6 +248,7 @@ export function AppStateProvider({ children }: PropsWithChildren) {
     });
 
     return () => {
+      active = false;
       unsubscribeAuth();
       linkingSubscription.remove();
     };

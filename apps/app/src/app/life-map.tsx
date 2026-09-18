@@ -182,16 +182,17 @@ export default function LifeMapScreen() {
 
   useEffect(() => {
     let active = true;
-    if (!userId) {
-      setSnapshot(null);
-      setStatus('ready');
-      return () => {
-        active = false;
-      };
-    }
+    void (async () => {
+      await Promise.resolve();
+      if (!active) return;
+      if (!userId) {
+        setSnapshot(null);
+        setStatus('ready');
+        return;
+      }
 
-    setStatus('loading');
-    void loadLifeMapSnapshot(userId, enabledDomains).then(async (result) => {
+      setStatus('loading');
+      const result = await loadLifeMapSnapshot(userId, enabledDomains);
       if (!active) return;
       if (result.ok) {
         setSnapshot(result.value);
@@ -200,7 +201,7 @@ export default function LifeMapScreen() {
       }
       if (result.error.kind === 'session-expired') await refreshSession();
       if (active) setStatus('error');
-    });
+    })();
 
     return () => {
       active = false;

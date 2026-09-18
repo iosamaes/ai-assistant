@@ -120,16 +120,17 @@ export default function PersonalLearningScreen() {
 
   useEffect(() => {
     let active = true;
-    if (!userId) {
-      setActions([]);
-      setStatus('ready');
-      return () => {
-        active = false;
-      };
-    }
+    void (async () => {
+      await Promise.resolve();
+      if (!active) return;
+      if (!userId) {
+        setActions([]);
+        setStatus('ready');
+        return;
+      }
 
-    setStatus('loading');
-    void loadPersonalLearning(userId).then(async (result) => {
+      setStatus('loading');
+      const result = await loadPersonalLearning(userId);
       if (!active) return;
       if (!result.ok) {
         if (result.error.kind === 'session-expired') await refreshSession();
@@ -138,7 +139,7 @@ export default function PersonalLearningScreen() {
       }
       setActions(result.value);
       setStatus('ready');
-    });
+    })();
 
     return () => {
       active = false;

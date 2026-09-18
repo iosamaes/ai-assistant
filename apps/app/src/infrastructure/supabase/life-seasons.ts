@@ -69,14 +69,14 @@ export async function loadLifeSeasonHistory(
     .limit(Math.max(1, Math.min(limit, 50)));
 
   if (error) return failure(error);
-  const rows = (data ?? []) as Array<{
+  const rows = (data ?? []) as {
     id: string;
     user_id: string;
     season: StoredLifeSeason;
     target_snapshot: unknown;
     started_at: string;
     ended_at: string | null;
-  }>;
+  }[];
 
   return {
     ok: true,

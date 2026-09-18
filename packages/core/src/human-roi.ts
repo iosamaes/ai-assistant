@@ -158,7 +158,10 @@ export function assessHumanROI(input: HumanROIInput): HumanROIAssessment {
     };
   }
 
-  const delta = input.benefitRating - input.effortRating;
+  const benefitRating = input.benefitRating as number;
+  const effortRating = input.effortRating as number;
+  const timeMinutesPerWeek = input.timeMinutesPerWeek as number;
+  const delta = benefitRating - effortRating;
   const status: HumanROIStatus =
     delta >= 2 ? 'benefit_heavier' : delta <= -2 ? 'cost_heavier' : 'mixed';
   const reason: HumanROIReason =
@@ -171,9 +174,9 @@ export function assessHumanROI(input: HumanROIInput): HumanROIAssessment {
   return {
     status,
     reason,
-    benefitRating: input.benefitRating,
-    effortRating: input.effortRating,
-    timeMinutesPerWeek: input.timeMinutesPerWeek,
+    benefitRating,
+    effortRating,
+    timeMinutesPerWeek,
     benefitEffortDelta: delta,
     protectedMeaning: false,
     confidence,

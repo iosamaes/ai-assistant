@@ -42,7 +42,7 @@ export function buildDailyCheckInObservations(
       observed_at: observedAt,
       value_number: ratingToScore(rating),
       unit: 'score_0_100',
-      client_mutation_id: clientMutationId,
+      ...(clientMutationId ? { client_mutation_id: clientMutationId } : {}),
     }];
   });
 }

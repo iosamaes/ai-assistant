@@ -94,7 +94,7 @@ export async function syncHealthData(
       ok: false,
       error: {
         kind: mappedKind,
-        code: persistResult.error.code,
+        ...(persistResult.error.code ? { code: persistResult.error.code } : {}),
       },
     };
   }
@@ -118,7 +118,7 @@ export async function syncHealthData(
       ok: false,
       error: {
         kind: mappedKind,
-        code: stateResult.error.code,
+        ...(stateResult.error.code ? { code: stateResult.error.code } : {}),
       },
     };
   }
@@ -144,7 +144,7 @@ export async function disableIntegrationConnection(
       ok: false,
       error: {
         kind: mapDataFailure(result.error.kind),
-        code: result.error.code,
+        ...(result.error.code ? { code: result.error.code } : {}),
       },
     };
   }

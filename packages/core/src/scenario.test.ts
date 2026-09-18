@@ -94,10 +94,10 @@ describe('simulateScenario', () => {
   it('rejects weak personal estimates and clamps projected values to the state scale', () => {
     const highState: HumanStateVector = {
       ...state,
-      components: [{ ...state.components[0], value: 98 }],
+      components: [{ ...state.components[0]!, value: 98 }],
     };
     const result = simulateScenario({
-      definition: { ...definition, priorEffects: [definition.priorEffects[0]] },
+      definition: { ...definition, priorEffects: [definition.priorEffects[0]!] },
       currentState: highState,
       personalEffects: [
         {
@@ -111,7 +111,7 @@ describe('simulateScenario', () => {
       ],
     });
 
-    expect(result.effects[0].source).toBe('conservative_prior');
-    expect(result.effects[0].projectedMax).toBe(100);
+    expect(result.effects[0]!.source).toBe('conservative_prior');
+    expect(result.effects[0]!.projectedMax).toBe(100);
   });
 });

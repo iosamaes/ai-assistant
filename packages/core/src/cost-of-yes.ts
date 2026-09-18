@@ -116,8 +116,8 @@ export function assessCostOfYes(input: CostOfYesInput): CostOfYesAssessment {
     };
   }
 
-  const commitment = input.commitmentMinutesPerWeek;
-  const margin = input.availableMarginMinutesPerWeek;
+  const commitment = input.commitmentMinutesPerWeek as number;
+  const margin = input.availableMarginMinutesPerWeek as number;
   const remaining = Math.max(0, margin - commitment);
   const displaced = Math.max(0, commitment - margin);
   const marginUsedPercent =

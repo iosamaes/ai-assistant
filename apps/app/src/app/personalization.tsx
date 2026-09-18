@@ -76,16 +76,17 @@ export default function PersonalizationScreen() {
 
   useEffect(() => {
     let active = true;
-    if (!userId) {
-      setState(null);
-      setStatus('ready');
-      return () => {
-        active = false;
-      };
-    }
+    void (async () => {
+      await Promise.resolve();
+      if (!active) return;
+      if (!userId) {
+        setState(null);
+        setStatus('ready');
+        return;
+      }
 
-    setStatus('loading');
-    void loadCurrentHumanState(userId).then(async (result) => {
+      setStatus('loading');
+      const result = await loadCurrentHumanState(userId);
       if (!active) return;
       if (!result.ok) {
         if (result.error.kind === 'session-expired') await refreshSession();
@@ -94,7 +95,7 @@ export default function PersonalizationScreen() {
       }
       setState(result.value);
       setStatus('ready');
-    });
+    })();
 
     return () => {
       active = false;
