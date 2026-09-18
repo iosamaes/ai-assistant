@@ -56,12 +56,15 @@
 - Refactored both authentication entry and password-update recovery screens to use the shared `MizanTextInput`; local duplicates of standard input height, border, radius, padding, typography, palette colors, and RTL text alignment were removed without changing auth/session behavior.
 - Replaced text-only Settings back actions in Capacity and Cost of Yes with the shared `SecondaryButton`, centralizing touch target, accessibility role/state, radius/border, and pressed-state behavior without changing either feature's domain calculations.
 - Updated Insights' Link-owned controls to consume `Controls.minimumTouchHeight`, `Controls.actionHeight`, `Controls.borderWidth`, `Interaction.subtlePressed`, `Interaction.pressed`, and semantic `palette.onAccent` instead of screen-local `44`, `48`, `1`, `0.72`, `0.82`, and `#FFFFFF` values.
-- Recommendation selection, persistence, confidence/evidence display, feedback behavior, auth/session behavior, capacity/debt calculations, Cost of Yes math, and insight relationship logic remain outside generic UI primitives; no application/business logic moved into presentation abstractions.
-- Updated `docs/CP9_PRESENTATION_ARCHITECTURE.md` with Today, authentication/recovery, Capacity, Cost of Yes, and Insights audit evidence plus the remaining proof boundary.
+- Replaced Human ROI's remaining text-only Settings navigation with compact `SecondaryButton`; its explicit evidence ratings, protected-meaning logic, assessment, and metric composition remain feature-local.
+- Replaced Life Seasons' remaining text-only Settings navigation with compact `SecondaryButton`; season selection, target persistence/history, and balance-related domain behavior remain outside the shared UI primitive.
+- Replaced Recovery / Save My Day's text-only skip and back actions with standard/compact `SecondaryButton`, centralizing accessibility/touch/interaction treatment while keeping recovery evidence and step sequencing local.
+- Recommendation selection, persistence, confidence/evidence display, feedback behavior, auth/session behavior, capacity/debt calculations, Cost of Yes math, Human ROI assessment, Life Seasons persistence, Recovery sequencing, and insight relationship logic remain outside generic UI primitives; no application/business logic moved into presentation abstractions.
+- Updated `docs/CP9_PRESENTATION_ARCHITECTURE.md` with Today, authentication/recovery, Capacity, Cost of Yes, Insights, Human ROI, Life Seasons, and Recovery audit evidence plus the remaining proof boundary.
 - The TASK-required final design-swap proof is **not yet claimed** because a substantially different visual direction still requires owner-side visual/runtime review.
 
 ## Exact next executable action
-1. Continue the remaining primary-screen audit with Human ROI and Life Seasons first: replace text-only pressable navigation with existing shared controls where semantics match, then inspect experiments, recovery, scenarios, integrations, Invisible Wins, value alignment, and Settings for repeated global color/typography/control/opacity values.
+1. Continue the remaining primary-screen audit with experiments, scenarios, integrations, Invisible Wins, value alignment, Settings, and other remaining surfaces; replace repeated text-only controls or magic global visual values only where existing semantic tokens/primitives clearly match.
 2. Continue Arabic/English RTL, semantic icon direction, truncation, dynamic type, keyboard/focus, screen-reader-label, light/dark, and representative-width audits from static code where useful.
 3. Complete the design-swap proof only during owner visual/runtime validation after Today, Life Map, WHY, and Check-in are exercised against a substantially different visual direction without edits to `packages/core`, application intelligence/data contracts, Supabase/data-access, or provider adapters.
 4. Leave CP1–CP8 execution-dependent checkpoint evidence and CP9 visual/runtime validation to owner validation under the current task policy.
@@ -75,7 +78,7 @@ Current worker policy:
 - No app tests, builds, typechecks, database scripts, cloud CI, or GitHub Actions were executed for the post-baseline CP2–CP9 work.
 - Earlier CP8 commits: `98a987259cfbb5e653477495d2fba49af1a6a3b5`, `54e2e644bff98f5780bbdca3260e322a13446266`, `94a637bf0386d1846af401b96363314704432da3`, `ca363297b0c17487243fd4fa4500d9682ed5a23d`, and `26bbbfcf1f099038b0337968318caf081843f2fb`.
 - Current auto3 CP8 commits: `9fca718f3e4099d2325438f027f0762da3712d0c` (queued check-in presentation), `ad21321618caeaba31a1dccb24856fda511153a3` (concurrent experiment lifecycle guard), and `94db687cde151e38ec3cd5471e415accdc4d8997` (preservation/concurrency audit ledger).
-- Current auto3 CP9 commits: `5505075d418a84061740fcb910290cbe212a1197` (semantic presentation tokens), `47ecd506e321b809e0150a4be673e75177c7fc7c` (shared primitives consume tokens), `d65d1f52060bb543895e3eefcc8abcaecf28d232` (responsive Screen layout tokens), `3b345a91a42fb8d48bcc24b7a4321d8362d3d8ae` (shared secondary button), `8ebd350e53651401a1a4f68b0280dc5c368fe36c` (Life Map controls), `616121223a33cc3b3790ba4215ca38d5766889b8` (WHY controls), `1c80a971da9022ff98b4b6aae84d85c35aaefac2` (Check-in secondary navigation), and `669a584feff4a8a63f8f38b58eff9e42e3f3dac0` (CP9 audit document).
+- Current auto3 CP9 commits: `5505075d418a84061740fcb910290cbe212a1197` (semantic presentation tokens), `47ecd506e321b809e0150a4be673e75177c7fc7c` (shared primitives consume tokens), `d65d1f52060bb543895e3eefcc8abcaecf28d232` (responsive Screen layout tokens), `3b345a91a42fb8d48bcc24b7a4321d8362d3d8ae` (shared secondary button), `8ebd350e53651401a1a4f68b0280dc5c368fe36c` (Life Map controls), `616121223a33cc3b3790ba4215ca38d5766889b8` (WHY controls), `1c80a971da9022ff98b4b6aae84d85c35aaefac2` (Check-in secondary navigation), `669a584feff4a8a63f8f38b58eff9e42e3f3dac0` (CP9 audit document), `b63d9da0e0d8f5a71e4e55509a1bc7e029839eb3` (Human ROI secondary navigation), `a089c77042a1734cff33c69316a954abebf03fdc` (Life Seasons secondary navigation), `c19d9960986b5379c449d6a85ed4f761c7a4c711` (Recovery secondary actions), and `69ca00ea5c65f86c5a61e2d0b35e1b5d6dc24790` (expanded CP9 presentation audit).
 - Current auto2 CP9 commits: `28e0eb587904cba1118ecedba426d6c68caa5a6f` (Today shared control/input consolidation), `4aadff5a7ddf954797256f16346933e3be09868b` (Today audit documentation), `d32be600a0d96332efe8a6fc15ae9c3884c5b91b` (Capacity secondary navigation), `220fff20ea592bf19c47d483e474d8f049ed86ba` (Cost of Yes secondary navigation), `3ccdcfc29c04bcf1c643b434d86236d7acace760` (Insights semantic control tokens), and `149d7a5a3964f86c367f52476ffa8827f211f7e4` (expanded CP9 audit documentation).
 - Current auto4 CP9 commits: `729d83355297b3740379eef52ed7bd67f8b7b137` (auth shared semantic input), `557660e52e119ee6ba1d1555ffc7c386e1f69b95` (password-update shared semantic input), and `126516eecd7aa02d8cbd3f6bf2b18a58bc05cdf8` (auth/recovery presentation audit documentation).
 
@@ -101,6 +104,9 @@ Current worker policy:
 - `apps/app/src/app/today.tsx`
 - `apps/app/src/app/capacity.tsx`
 - `apps/app/src/app/cost-of-yes.tsx`
+- `apps/app/src/app/human-roi.tsx`
+- `apps/app/src/app/life-seasons.tsx`
+- `apps/app/src/app/recovery.tsx`
 - `apps/app/src/app/insights.tsx`
 - `apps/app/src/infrastructure/offline/pending-mutations.ts`
 - `apps/app/src/infrastructure/offline/recent-daily-snapshot.ts`
