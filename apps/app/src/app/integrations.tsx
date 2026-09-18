@@ -6,7 +6,7 @@ import {
   disableIntegrationConnection,
   loadIntegrationSettings,
 } from '@/application/integrations';
-import { Card, MizanText, PrimaryButton } from '@/components/mizan-ui';
+import { Card, MizanText, PrimaryButton, SecondaryButton } from '@/components/mizan-ui';
 import { Screen } from '@/components/screen';
 import { Spacing } from '@/constants/theme';
 import type { StoredIntegrationConnection } from '@/infrastructure/supabase/integrations';
@@ -189,9 +189,7 @@ export default function IntegrationsScreen() {
 
       {message ? <MizanText muted>{message}</MizanText> : null}
       <MizanText variant="caption" muted>{labels.privacy}</MizanText>
-      <MizanText variant="label" style={styles.link} onPress={() => router.replace('/settings')}>
-        {labels.back}
-      </MizanText>
+      <SecondaryButton compact label={labels.back} onPress={() => router.replace('/settings')} />
     </Screen>
   );
 }
@@ -199,5 +197,4 @@ export default function IntegrationsScreen() {
 const styles = StyleSheet.create({
   hero: { gap: Spacing.md, paddingTop: Spacing.xl },
   details: { gap: Spacing.sm },
-  link: { textAlign: 'center', paddingVertical: Spacing.md },
 });
