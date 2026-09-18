@@ -24,15 +24,7 @@
 ## CP8 current implementation
 Detailed ledger: `docs/CP8_RELIABILITY.md`.
 
-Implemented and statically reviewed for the current scope:
-- durable per-user retry for check-ins and Invisible Wins;
-- stable client mutation IDs plus migration `0008_offline_mutation_idempotency.sql` for duplicate-safe replay;
-- serialized retry that removes only confirmed successful queue items;
-- idempotent normalized integration ingestion with bounded transient retry;
-- durable recent Today snapshot with user scoping, runtime validation, seven-day expiry, malformed/future-date rejection, and fallback only for `unavailable` / `not-configured`;
-- explicit cached-source/timestamp presentation and queued-check-in presentation;
-- experiment terminal-state conflict guard and atomic Life Season transitions;
-- reliability specifications for cache, queue/reconnect, idempotency, partial integration state, and concurrent experiment lifecycle behavior.
+Current implementation includes durable per-user retry for check-ins and Invisible Wins, stable client mutation IDs with migration `0008_offline_mutation_idempotency.sql`, serialized duplicate-safe replay, normalized integration idempotency, recent Today snapshot caching with validation/expiry, explicit cached/queued presentation, experiment terminal-state conflict protection, atomic Life Season transitions, and recorded reliability specifications for reconnect/restart/concurrency behavior.
 
 CP8 is not credited `DONE` until owner/runtime evidence confirms restart/reload and offline/reconnect behavior.
 
@@ -41,46 +33,34 @@ Presentation boundary already in place:
 - semantic palette, typography, spacing, radii, controls/touch sizing, border, interaction, and responsive layout tokens in `apps/app/src/constants/theme.ts`;
 - shared `MizanText`, `Card`, `MizanTextInput`, `PrimaryButton`, `SecondaryButton`, and `ChoiceChip` primitives;
 - centralized responsive `Screen` behavior;
-- representative consolidation across Today, Life Map, WHY, Check-in, auth/recovery, Capacity, Cost of Yes, Insights, Human ROI, Life Seasons, Recovery, Invisible Wins, Value Alignment, Integrations, Experiments, What If, Settings, Personal Learning, Personalization, Onboarding, entry routing, and root render-failure fallback;
+- representative consolidation across all current primary routes;
 - navigation shell honors reduced-motion preference;
-- confidence/status localization has been progressively removed from raw engine enums in shipped surfaces;
-- semantic RTL fixes exist for grouped metric layouts and date-direction presentation;
-- async accessibility live announcements now cover the principal asynchronous status/error/empty-state transitions across the reviewed product surfaces.
+- confidence/status localization is progressively removed from raw engine enums;
+- semantic RTL fixes cover grouped metric/date presentation where concrete issues were found;
+- async accessibility live announcements cover loading/error/empty/status transitions across the reviewed product surfaces.
 
 Latest static CP9 work:
-- **Numeric choice control accessibility:** `ChoiceChip` now supports a semantic accessibility label distinct from its visible label. Check-in and Human ROI rating chips now announce the metric plus rating instead of a bare number while preserving the existing visual UI and selected-state semantics.
-- **Insights async accessibility:** loading, load-error, and asynchronous no-supported-relationship feedback now use polite accessibility live regions, matching the already-reviewed WHY/Life Map pattern without changing relationship evidence, confidence, or causality semantics.
-- **Capacity async accessibility:** loading, load-error, and asynchronous insufficient-buffer feedback now use polite accessibility live regions so screen-reader users are informed when the capacity result changes; capacity math, confidence, and evidence handling are unchanged.
-- **Life Seasons async accessibility:** Arabic/English loading copy was added and loading plus asynchronous empty-history feedback now use polite accessibility live regions. Season selection, target persistence, history data, and Balance-related behavior are unchanged.
-- **Entry routing accessibility:** the bootstrap/session loading message on the entry route now uses a polite accessibility live region so assistive technology is informed while authentication state resolves; routing behavior is unchanged.
-- **Personalization async accessibility:** loading, load-error, and no-state feedback now use polite accessibility live regions. Personalization maturity calculation, confidence/evidence semantics, and navigation are unchanged.
-- **Onboarding async accessibility:** baseline-target persistence errors, Spiritual Grounding preference errors, and sync/offline feedback now use polite accessibility live regions. Onboarding selection, persistence, and completion behavior are unchanged.
-- **Personal Learning async accessibility:** loading, load-error, and asynchronous empty-result feedback now use polite accessibility live regions. Personal-response estimates, confidence labels, outcome history, and learning logic are unchanged.
-- **Today:** sync/offline, cached snapshot, current-state, One Move, decision, and feedback outcomes are live-announced; key controls have explicit accessible naming; shared semantic border/control tokens replace remaining local foundational values found in the audit.
-- **Life Map / WHY / Experiments / Recovery / What If / Settings:** identified asynchronous loading/error/empty-state gaps were converted to polite live announcements without moving domain behavior into presentation code.
-- **Capacity / Cost of Yes / Human ROI / Life Seasons:** semantic RTL direction and date/metric presentation were reviewed and corrected where concrete issues existed.
-- **Auth/recovery, Check-in, Value Alignment, Invisible Wins, Integrations:** shared controls and asynchronous accessibility feedback are in place for the reviewed flows.
+- **Invisible Wins:** its asynchronous no-reflections result now uses a polite accessibility live region, so the transition from loading to an empty history is announced without changing reflection persistence, offline queue behavior, or category semantics.
+- **Integrations:** the asynchronous no-connections result now announces its empty-state title through a polite accessibility live region. Provider lifecycle, consent, sync, disconnect, and persistence behavior are unchanged.
+- **Value Alignment:** the asynchronous no-alignment/no-values result now uses a polite accessibility live region while preserving alignment evidence, confidence, and identity-drift interpretation unchanged.
+- **Numeric choice controls:** shared `ChoiceChip` supports a semantic accessibility label distinct from its visible label; Check-in and Human ROI rating chips announce metric plus rating instead of a bare number.
+- **Async-state coverage:** Today, Life Map, WHY, Insights, Capacity, Life Seasons, Entry, Personalization, Onboarding, Personal Learning, Experiments, Recovery, What If, Settings, Auth/recovery, Check-in, Value Alignment, Invisible Wins, and Integrations have received static accessibility-state review and targeted live-region fixes where concrete gaps were identified.
 
 Latest static product commits from this pass (not runtime-verified):
-- `c72917c172289583d73fd641d361d15401dcddb9` — allow semantic accessibility labels on shared `ChoiceChip` while preserving visible labels.
-- `c04dc3de9097a6b2c339e1d3774e24f4a594c995` — give Check-in numeric rating chips metric-aware screen-reader labels.
-- `8cfd836767586eed5e2b3fb8b4096b575dcdb38d` — give Human ROI benefit/effort rating chips metric-aware screen-reader labels.
-- `6af8b8b8047ff31a5b2d753695c826827a9e0629` — announce Insights loading/error/empty async states.
-- `bf6bbc579a67f992c39cc4ac618acb61e052b43a` — announce Capacity loading/error/insufficient-buffer async states.
-- `a319eed9a287c9d81840350d69ffe0524f674909` — announce Life Seasons loading/empty-history async states.
-- `05bc6c3fd1a742950f2ca675f88058111a48e63b` — announce entry-session loading state.
-- `5933a06f19aa9b55118463ae7c74c02d3becda36` — announce Personalization loading/error/empty states.
-- `60d8e6f6155e3b63a6251c56a712a7be53040f44` — announce Onboarding persistence/sync error states.
-- `4c85570f607947fe09b7d14fa2643f87185dd183` — announce Personal Learning loading/error/empty states.
-
-Recent cross-worker CP9 evidence also includes:
-- `b0031ecd62c23c45b44fb930e1c826f504ed2848` — WHY async loading/error/empty announcements;
-- `98b0d3c3590fe9a6ef74aa93beea082b607f2a39` — Life Map accessibility and semantic border treatment;
-- `c3c65bf647b5520012ea659e41399b078b47d4b5` — Today accessibility/control/border treatment;
-- `d3556859a71fd4cac0afde2a9ed8f024f4674357` — What If async state;
-- `df4b760e8ee1780a3ab6be952fe3431470afc76d` — Settings async state;
-- `92687f6edd8f1da4a780d7f6253fa8d845c4e6ba` — Experiments loading/error state;
-- `a431f06f2ad66ad99fa4e87b7ddfafd914f6ed6a` — Recovery loading/error state.
+- `b9bbec5292980bbf693115e96a2e6b3c19b46041` — announce Invisible Wins empty history.
+- `5b1e3169b344eb593e4375534764fe3328915bec` — announce Integrations empty state.
+- `c9723f5cfd115f43a17722acfafd798bb9568800` — announce Value Alignment empty state.
+- `c72917c172289583d73fd641d361d15401dcddb9` — allow semantic accessibility labels on shared `ChoiceChip`.
+- `c04dc3de9097a6b2c339e1d3774e24f4a594c995` — metric-aware Check-in rating labels.
+- `8cfd836767586eed5e2b3fb8b4096b575dcdb38d` — metric-aware Human ROI rating labels.
+- `6af8b8b8047ff31a5b2d753695c826827a9e0629` — Insights async announcements.
+- `bf6bbc579a67f992c39cc4ac618acb61e052b43a` — Capacity async announcements.
+- `a319eed9a287c9d81840350d69ffe0524f674909` — Life Seasons async announcements.
+- `05bc6c3fd1a742950f2ca675f88058111a48e63b` — entry-session loading announcement.
+- `5933a06f19aa9b55118463ae7c74c02d3becda36` — Personalization async announcements.
+- `60d8e6f6155e3b63a6251c56a712a7be53040f44` — Onboarding persistence/sync announcements.
+- `4c85570f607947fe09b7d14fa2643f87185dd183` — Personal Learning async announcements.
+- `c3c65bf647b5520012ea659e41399b078b47d4b5` — Today accessibility/control/border treatment.
 
 The TASK-required final design-swap proof is **not claimed**. It still requires owner visual/runtime validation using a substantially different visual direction and representative device widths.
 
@@ -89,8 +69,8 @@ The TASK-required final design-swap proof is **not claimed**. It still requires 
 - Those suites have **not** been executed by workers under the current task policy; no PASS is claimed from their presence alone.
 
 ## Exact next executable action
-1. Continue the repository-wide CP9 static review for untranslated production literals, semantic RTL issues, missing accessibility labels/states/live announcements, truncation/dynamic-type risks, duplicated global visual values, and unjustified local control treatments outside already-reviewed surfaces.
-2. Revisit already-audited screens only when static inspection finds a concrete remaining defect; numeric choice controls in Check-in and Human ROI now expose metric-aware screen-reader labels through the shared chip primitive.
+1. Continue the repository-wide CP9 static review for untranslated production literals, semantic RTL issues, missing accessibility labels/states/live announcements, truncation/dynamic-type risks, duplicated global visual values, and unjustified local control treatments.
+2. Revisit an already-audited surface only when static inspection finds a concrete remaining defect; avoid abstraction-only cleanup.
 3. Leave representative-width runtime checks, post-baseline tests/builds/typechecks, CP1–CP8 execution-dependent evidence, and the final design-swap proof to owner validation under the active policy.
 
 ## Verification record
@@ -107,7 +87,7 @@ Previously recorded owner-side baseline evidence:
 Post-baseline status:
 - No worker-run app tests, builds, typechecks, database scripts, cloud CI, or GitHub Actions are claimed for CP2–CP9 changes.
 - Current CP9 evidence is static implementation/code-review evidence only until owner validation runs the validation matrix and representative device/browser/screen-reader checks.
-- No new automated test was added for these declarative accessibility-property substitutions; meaningful verification depends on pending runtime/screen-reader validation rather than duplicating React Native prop assertions.
+- No new automated test was added for the latest declarative `accessibilityLiveRegion` substitutions; meaningful verification depends on pending runtime/screen-reader validation rather than duplicating React Native prop assertions.
 
 ## Known blockers / risks
 - CP1: Windows session must be unlocked normally for true narrow-phone Arabic/English interaction evidence; see `automation/HUMAN_REQUIRED.md`.
@@ -140,6 +120,7 @@ Post-baseline status:
 - `apps/app/src/app/personal-learning.tsx`
 - `apps/app/src/app/personalization.tsx`
 - `apps/app/src/app/check-in.tsx`
+- `apps/app/src/app/value-alignment.tsx`
 - `apps/app/src/app/invisible-wins.tsx`
 - `apps/app/src/app/integrations.tsx`
 - `apps/app/src/app/settings.tsx`
