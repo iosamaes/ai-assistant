@@ -9,7 +9,7 @@ import {
 } from '@/application/personal-learning';
 import { Card, MizanText, SecondaryButton } from '@/components/mizan-ui';
 import { Screen } from '@/components/screen';
-import { Palette, Spacing } from '@/constants/theme';
+import { Controls, Palette, Spacing } from '@/constants/theme';
 import { useAppState } from '@/state/app-state';
 
 type LoadStatus = 'loading' | 'ready' | 'error';
@@ -224,7 +224,7 @@ const styles = StyleSheet.create({
   hero: { gap: Spacing.md },
   metrics: { gap: Spacing.sm },
   metricRow: { alignItems: 'center', justifyContent: 'space-between', gap: Spacing.md },
-  learningBox: { borderTopWidth: StyleSheet.hairlineWidth, paddingTop: Spacing.md, gap: Spacing.xs },
+  learningBox: { borderTopWidth: Controls.borderWidth, paddingTop: Spacing.md, gap: Spacing.xs },
   history: { gap: Spacing.sm },
-  outcome: { borderTopWidth: StyleSheet.hairlineWidth, paddingTop: Spacing.sm, gap: Spacing.xs },
+  outcome: { borderTopWidth: Controls.borderWidth, paddingTop: Spacing.sm, gap: Spacing.xs },
 });
