@@ -2,9 +2,8 @@
 
 ## Current checkpoint
 - CP1 — Universal application foundation
-- Status: `BLOCKED_HUMAN` for owner-side CP1/CP2 validation; CP3, CP4, and CP5 implementation slices are in place pending owner validation, while CP6 implementation is progressing independently on GitHub `main`.
+- Status: `BLOCKED_HUMAN` for owner-side CP1/CP2 validation; CP3, CP4, CP5 implementation slices are in place pending owner validation, while CP6 implementation is progressing independently on GitHub `main`.
 - Product authority: GitHub `iosamaes/ai-assistant` on `main`.
-- Owner-only local mirror/testing copy: `C:\Users\bofo_\Documents\automation\ai assistant`.
 - Task digest: `c823e4d1031ac5f3f7230ed4e2de236b4446817a`.
 
 ## Checkpoints
@@ -22,146 +21,71 @@
 - [ ] CP11 — Test matrix, performance, release readiness
 - [ ] CP12 — Independent final review and handoff
 
-## CP1 completed / remaining
-Completed:
-- Universal Expo Router shell with onboarding, Today, settings, auth, recovery/password-update routes.
-- Strict TypeScript workspace, shared tokens, responsive safe-area primitive, RTL-aware layout/text, Arabic default and English locale, error boundary, app state.
-- Existing evidence shows Web rendering and Android/iOS Metro/Hermes export resolution.
-
-Remaining gate:
-- True narrow-phone representative evidence and Arabic RTL / English interaction verification after the owner unlocks the Windows session.
-
-## CP2 independent progress
-- Supabase public environment validation, SecureStore-backed universal session storage, typed data access, auth/session/recovery flows, route guarding, password update, and account-specific preference hydration/persistence are implemented.
-- `0001_vertical_slice.sql`, `0002_onboarding_context.sql`, `0003_domain_baseline_targets.sql`, `0004_invisible_wins.sql`, and `0005_experiments.sql` define the current vertical-slice schema, RLS ownership model, onboarding context, optional per-domain baseline targets, reflection persistence, and user-owned experiment persistence.
-- `0002`, `0003`, `0004`, and `0005` are applied to Supabase project `olfhjnropdrnujgpidfi`; the experiments migration is present in hosted migration history.
-- `supabase/tests/rls_cross_user.sql` covers own-row access and cross-user denial, including reflection isolation; execution remains owner-validation pending.
+## CP1 / CP2 blocked owner validation
+- Universal Expo shell, Arabic-first RTL/English locale structure, auth/session/recovery flows, Supabase persistence, RLS migrations, and cross-user policy specifications are implemented.
+- CP1 still needs owner-side true narrow-phone Arabic/English interaction evidence after the Windows session is unlocked.
 - Supabase Auth redirect allow-list activation remains in `automation/HUMAN_REQUIRED.md`.
 
-## CP3 independent progress
-- Pure deterministic TypeScript core implements unknown-preserving Human State Vector, evidence/freshness confidence, robust baseline maturity, temporal windows/Momentum, Life Leverage/One Move, season-relative Balance, Life Debt, Buffer/Fragility, interaction-risk hypotheses, relationship evidence, N-of-1 strengthening, and explicit-outcome feedback learning.
-- `packages/core/src/alignment.ts` provides a conservative self-declared-value alignment summary that never converts missing signals into a score or morality judgment.
-- Deterministic alignment specifications cover missing evidence, possible drift, and steady/improving evidence; workers have not run them under the current execution policy.
-
-## CP4 independent progress
-- `/check-in` captures energy, recovery, mental load, and connection in under one minute; skipped values remain unknown.
-- Today renders evidence-backed state, confidence, Balance, Momentum, and an explainable One Move.
-- One Move supports accept/defer/decline/alternative and suppresses repeat decisions for the same evidence context after restart/login.
-- Explicit 1–5 usefulness feedback persists to `feedback_outcomes`; completion alone never creates benefit evidence.
-- Pending feedback recovers across restart/login, and explicit personal usefulness can only make a bounded confidence-weighted recommendation nudge.
-- Onboarding persists focus domain, life season, self-declared values, privacy mode, priority weights, optional baseline targets, and optional Spiritual Grounding consent.
-
-## CP5 independent progress
-Completed implementation slices:
-- Life Map with evidence-backed 28-day history, confidence, and Momentum.
-- WHY with ranked supported candidate factors and explicit non-diagnostic/non-causal language.
-- Insights with conservative paired-observation associations, evidence counts, windows, confidence, and suppression under sparse evidence.
-- Personal Learning from explicit outcome feedback only; bare completion remains adherence evidence, not benefit evidence.
-- Personalization Maturity surface driven by core `cold_start` / `learning` / `personalized` evidence stages without a user score.
-- Values & Identity alignment uses only the user's persisted self-declared values and compatible evidence; unsupported values remain explicitly insufficient.
-- Invisible Wins / reflection capture persists explicit user-authored entries in the separate `reflections` table; no points, streaks, or productivity score are produced.
-- `/invisible-wins` is Arabic/English and RTL-aware, supports intentional save plus recent reflection history, and explains that entries stay outside productivity scoring.
-
-CP5 remaining gate:
-- Owner-side type/runtime/responsive validation for all CP5 surfaces. Workers have not run product tests/builds under the current execution policy.
+## CP3 / CP4 / CP5 implemented slices pending owner validation
+- Deterministic core preserves unknown data and implements Human State Vector, confidence, personal baseline/maturity, temporal memory/Momentum, Balance, Life Leverage/One Move, Life Debt, Buffer/Fragility, interaction-risk hypotheses, value alignment, relationship evidence, and explicit-outcome feedback learning.
+- Daily loop implements onboarding context/targets, sub-minute check-in, Today state/Balance/Momentum/One Move, decision handling, explicit usefulness feedback, and restart/login recommendation-context suppression.
+- CP5 surfaces include Life Map, WHY, Insights, Personal Learning, Personalization Maturity, Values & Identity alignment, and Invisible Wins/reflection capture.
 
 ## CP6 independent progress
 ### What If / Digital Twin
-- `packages/core/src/scenario.ts` implements deterministic scenario projections with explicit assumptions, bounded delta ranges, evidence source, evidence count, confidence, and overall uncertainty.
-- Unknown current state remains unknown; the simulator never invents a starting value.
-- Personal effect estimates override conservative priors only after a minimum evidence/confidence threshold; weak evidence falls back to the prior.
-- `/what-if` is Arabic/English and wired to the current Human State Vector plus qualified personal effects.
-- Scenario learning requires explicit outcome feedback plus a compatible later observation before deriving a personal effect; completion alone never becomes benefit evidence.
+- Deterministic scenario projections expose assumptions, uncertainty ranges, evidence source/count, and confidence.
+- Unknown current state remains unknown; qualified personal effects require explicit outcome feedback plus a compatible later observation.
 
 ### Voluntary Experiment Engine
-- `packages/core/src/experiment.ts` defines validated experiment plans and conservative personal evaluation from pre/post medians, evidence counts, confidence, expected direction, and explicit limitations.
-- `packages/core/src/experiment.test.ts` specifies sparse-evidence suppression, robust median comparison, and lower-is-better handling; specifications are authored but unrun by workers.
-- `supabase/migrations/0005_experiments.sql` and `apps/app/src/infrastructure/supabase/experiments.ts` persist user-owned experiment hypothesis, metric, expected direction, duration, consent timestamp, lifecycle, and baseline snapshot under RLS.
-- The `experiments` migration is applied to project `olfhjnropdrnujgpidfi`.
-- `apps/app/src/application/experiments.ts` starts only explicitly consented valid experiments, captures the actual current-state baseline when known, supports stopping without punishment, records an explicit 1–5 outcome, and evaluates stored experiments from bounded baseline/follow-up observations.
-- Completed experiments create the real `what_if_trial` evidence contract consumed by scenario learning: scenario/experiment identity, baseline snapshot, explicit usefulness feedback, and later compatible observation are required before personalization can strengthen.
-- `/experiments` is now an Arabic/English, RTL-aware user surface for selecting a small reversible template, editing the hypothesis, giving explicit consent, starting one active experiment, stopping without penalty, recording outcome impact, and reviewing evidence-limited results/history.
-- The experiments route is registered with Expo Router and exposed from Settings.
+- Consent-based, time-bounded experiments persist under RLS and evaluate personal pre/post evidence conservatively.
+- `/experiments` supports start, stop without punishment, explicit impact feedback, and evidence-limited personal results.
+
+### Recovery / Save My Day
+- `packages/core/src/recovery.ts` now derives a deterministic recovery plan from the current Human State Vector.
+- Triggering is conservative: unsupported or low-confidence values do not become overload claims; missing evidence stays `insufficient_evidence`.
+- Supported overload, mental-load, energy, and recovery signals can raise the plan from available -> suggested -> strongly suggested using explicit thresholds and confidence.
+- The sequence intentionally reduces choice to at most three tiny optional steps: pause inputs, restore the body, and reduce near-term load.
+- `/recovery` is Arabic/English, explains confidence/evidence and non-medical limits, and lets the user advance, skip, or stop with no points, streaks, or punishment.
+- Recovery is registered in Expo Router and exposed from Settings.
+- `packages/core/src/recovery.test.ts` specifies insufficient-evidence behavior, likely overload triggering, weak-confidence suppression, and combined moderate signals. Per worker policy these specifications were authored but not executed.
 
 ## Exact next executable action
-1. Worker-safe CP6 path: implement Recovery / Save My Day with a low-cognitive-load sequence, conservative state-triggering, tiny optional actions, and no punishment for skipping/stopping.
-2. Then complete the remaining CP6 decision tools such as Cost of Yes / Human ROI where real schedule/context evidence exists, without forcing sacred/relationship time into optimization metrics.
-3. Owner path: unlock Windows and complete CP1 narrow-phone Arabic/English interaction verification.
-4. Owner path: configure Supabase Auth redirect allow-list from `automation/HUMAN_REQUIRED.md`, then validate auth/recovery/session/persistence and execute RLS verification.
-5. Owner path: run current core/app/plugin typechecks and tests before granting CP3/CP4/CP5/CP6 checkpoint credit.
+1. Continue CP6 with Cost of Yes using only real time/margin context; when schedule/context evidence is absent, show explicit insufficiency rather than inventing displaced time.
+2. Add Human ROI only where explicit user-reported benefit and effort/time evidence exist; never reduce relationships, worship, or sacred moments to compulsory optimization metrics.
+3. Then finish Life Seasons editing/history and recalculation of target balance if remaining gaps exist.
+4. Owner path: unlock Windows and complete CP1 narrow-phone Arabic/English interaction verification.
+5. Owner path: configure Supabase Auth redirect allow-list, then validate auth/recovery/session/persistence and execute RLS verification.
+6. Owner path: run current core/app/plugin typechecks and tests before granting CP3/CP4/CP5/CP6 checkpoint credit.
 
 ## Verification record
-Previously verified evidence:
+Previously verified baseline evidence:
 - CP1 root typecheck PASS, lint PASS, core tests 3/3 PASS, plugin tests 2/2 PASS, Expo Doctor 21/21 PASS, Android export PASS, iOS export PASS.
 - Earlier auth/data-access additions: app typecheck PASS and app lint PASS.
 
-Implemented after that verification and still awaiting owner validation:
-- CP2 auth/session/persistence/recovery work and current migrations/policy tests.
-- CP3 Balance, Capacity/Interaction Risk, relationship/feedback learning, recommendation-context stability, optional baseline targets, and value-alignment core/specifications.
-- CP4 check-in, state integration, One Move decision/feedback loop, onboarding context/targets, Balance/Momentum, Spiritual Grounding preference.
-- CP5 Life Map, WHY, Insights, Personal Learning, Personalization Maturity, Values & Identity alignment, and Invisible Wins/reflection capture.
-- CP6 deterministic What If scenario engine/specifications, qualified personal-effect learning/specifications, persisted trial-evidence bridge, `/what-if`, deterministic Experiment Engine/specifications, experiment persistence/application flow, and `/experiments`.
-- Supabase migrations `invisible_wins` and `experiments` are present in hosted migration history for project `olfhjnropdrnujgpidfi`.
-- Reflection RLS isolation checks were added to `supabase/tests/rls_cross_user.sql` but were not executed by workers.
+Implemented after that baseline and still awaiting owner validation:
+- CP2 auth/session/persistence/recovery additions and current migrations/policy tests.
+- CP3/CP4/CP5 implementation slices listed above.
+- CP6 What If, scenario learning, experiment engine/persistence/surface, and Recovery / Save My Day core/specifications/surface.
 - No product/database test script, cloud test, or build was run by workers for these post-baseline additions, per `automation/TASK.md`.
 
 ## Known technical risks / temporary compromises
 - CP1 remains blocked on owner-side physical responsive/locale verification.
 - Hosted Supabase Auth must allow `mizan://**`, `http://localhost:8087/**`, and the eventual production Web URL before confirmation/recovery can be verified end-to-end.
 - Cross-user SQL verification exists but lacks current owner-side execution evidence.
-- CP3/CP4/CP5/CP6 additions after the earlier verification baseline remain runtime/type validation pending.
-- Offline mutation durability beyond the current screen/session remains CP8 work; Invisible Wins and experiments currently require live persistence to save.
-- Restart-level One Move suppression is query/context based rather than a DB uniqueness constraint; concurrent-device double-submit prevention remains later hardening.
-- Spiritual Grounding currently covers consent/enablement only; selected practices and grounding observations remain later module work.
-- Insights is intentionally a small association slice, not a general causal graph.
-- Value alignment intentionally leaves values without a direct observation signal unknown rather than borrowing unrelated productivity data.
-- What If personal estimates remain conservative until completed consented experiment evidence includes explicit outcome feedback plus a later compatible observation; one-off or weak trials do not override priors.
-- Experiment evaluation is personal comparison evidence, not causal proof, and currently uses simple bounded observation windows rather than sophisticated causal adjustment.
+- Post-baseline CP3/CP4/CP5/CP6 additions remain runtime/type validation pending.
+- Offline mutation durability beyond the current screen/session remains CP8 work.
+- Recovery mode is deliberately stateless in this slice: skipping/stopping is never converted into a negative event, score, or adherence penalty.
 - Moderate npm advisories remain in the supported Expo dependency chain; no prior high/critical advisory was recorded.
 
 ## Evidence paths
-- `docs/cp1-wide.png`
-- `docs/cp1-narrow.png`
-- `supabase/migrations/0001_vertical_slice.sql`
-- `supabase/migrations/0002_onboarding_context.sql`
-- `supabase/migrations/0003_domain_baseline_targets.sql`
-- `supabase/migrations/0004_invisible_wins.sql`
-- `supabase/migrations/0005_experiments.sql`
-- `supabase/tests/rls_cross_user.sql`
-- `apps/app/src/application/check-in.ts`
-- `apps/app/src/application/daily-intelligence.ts`
-- `apps/app/src/application/daily-recommendation.ts`
-- `apps/app/src/application/action-feedback.ts`
-- `apps/app/src/application/personal-learning.ts`
-- `apps/app/src/application/user-targets.ts`
-- `apps/app/src/application/spiritual-grounding.ts`
-- `apps/app/src/application/life-map.ts`
-- `apps/app/src/application/why.ts`
-- `apps/app/src/application/insights.ts`
-- `apps/app/src/application/value-alignment.ts`
-- `apps/app/src/application/scenario-learning.ts`
-- `apps/app/src/application/experiments.ts`
-- `apps/app/src/infrastructure/supabase/reflections.ts`
-- `apps/app/src/infrastructure/supabase/scenario-trial-data.ts`
-- `apps/app/src/infrastructure/supabase/experiments.ts`
-- `apps/app/src/app/value-alignment.tsx`
-- `apps/app/src/app/invisible-wins.tsx`
+- `packages/core/src/recovery.ts`
+- `packages/core/src/recovery.test.ts`
+- `apps/app/src/application/recovery.ts`
+- `apps/app/src/app/recovery.tsx`
+- `apps/app/src/app/_layout.tsx`
+- `apps/app/src/app/settings.tsx`
+- `packages/core/src/scenario.ts`
+- `packages/core/src/experiment.ts`
 - `apps/app/src/app/what-if.tsx`
 - `apps/app/src/app/experiments.tsx`
-- `apps/app/src/app/settings.tsx`
-- `packages/core/src/alignment.ts`
-- `packages/core/src/alignment.test.ts`
-- `packages/core/src/scenario.ts`
-- `packages/core/src/scenario.test.ts`
-- `packages/core/src/scenario-learning.ts`
-- `packages/core/src/scenario-learning.test.ts`
-- `packages/core/src/experiment.ts`
-- `packages/core/src/experiment.test.ts`
-- `packages/core/src/engine.ts`
-- `packages/core/src/temporal.ts`
-- `packages/core/src/leverage.ts`
-- `packages/core/src/balance.ts`
-- `packages/core/src/capacity.ts`
-- `packages/core/src/learning.ts`
-- `packages/core/src/recommendation-context.ts`
-- `packages/plugins/src/index.ts`
+- `supabase/tests/rls_cross_user.sql`
