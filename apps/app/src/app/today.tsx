@@ -347,6 +347,7 @@ export default function TodayScreen() {
         </View>
         <Link href="/settings" asChild>
           <Pressable
+            accessibilityLabel={t('settings')}
             accessibilityRole="button"
             style={({ pressed }) => [
               styles.settingsButton,
@@ -361,10 +362,10 @@ export default function TodayScreen() {
         </Link>
       </View>
 
-      {syncMessage ? <MizanText muted>{syncMessage}</MizanText> : null}
+      {syncMessage ? <MizanText accessibilityLiveRegion="polite" muted>{syncMessage}</MizanText> : null}
       {snapshotMessage ? (
         <Card>
-          <MizanText variant="caption" muted>{snapshotMessage}</MizanText>
+          <MizanText accessibilityLiveRegion="polite" variant="caption" muted>{snapshotMessage}</MizanText>
         </Card>
       ) : null}
 
@@ -373,6 +374,7 @@ export default function TodayScreen() {
         <MizanText muted>{t('checkInPromptBody')}</MizanText>
         <Link href="/check-in" asChild>
           <Pressable
+            accessibilityLabel={t('checkInStart')}
             accessibilityRole="button"
             style={({ pressed }) => [
               styles.primaryAction,
@@ -388,8 +390,8 @@ export default function TodayScreen() {
       <Card>
         <MizanText variant="title">{t('currentStateTitle')}</MizanText>
         <MizanText muted>{t('currentStateBody')}</MizanText>
-        {dailyLoadStatus === 'loading' ? <MizanText muted>{t('loading')}</MizanText> : null}
-        {dailyLoadStatus === 'error' ? <MizanText muted>{t('currentStateError')}</MizanText> : null}
+        {dailyLoadStatus === 'loading' ? <MizanText accessibilityLiveRegion="polite" muted>{t('loading')}</MizanText> : null}
+        {dailyLoadStatus === 'error' ? <MizanText accessibilityLiveRegion="polite" muted>{t('currentStateError')}</MizanText> : null}
         {dailyLoadStatus === 'ready' && visibleState.length === 0 ? (
           <MizanText muted>{t('currentStateEmpty')}</MizanText>
         ) : null}
@@ -458,10 +460,10 @@ export default function TodayScreen() {
         <MizanText variant="title">{t('oneMoveTitle')}</MizanText>
         <MizanText muted>{t('oneMoveBody')}</MizanText>
         {dailyLoadStatus === 'loading' || recommendationLoadStatus === 'loading' ? (
-          <MizanText muted>{t('loading')}</MizanText>
+          <MizanText accessibilityLiveRegion="polite" muted>{t('loading')}</MizanText>
         ) : null}
         {dailyLoadStatus === 'ready' && recommendationLoadStatus === 'ready' && (!activeRecommendation || !activeActionLabel) ? (
-          <MizanText muted>{t('oneMoveEmpty')}</MizanText>
+          <MizanText accessibilityLiveRegion="polite" muted>{t('oneMoveEmpty')}</MizanText>
         ) : null}
         {activeRecommendation && activeActionLabel ? (
           <View style={styles.oneMoveContent}>
@@ -509,7 +511,7 @@ export default function TodayScreen() {
               </View>
             </View>
 
-            {decisionMessage ? <MizanText muted>{t(decisionMessage)}</MizanText> : null}
+            {decisionMessage ? <MizanText accessibilityLiveRegion="polite" muted>{t(decisionMessage)}</MizanText> : null}
           </View>
         ) : null}
 
@@ -525,6 +527,7 @@ export default function TodayScreen() {
                 return (
                   <Pressable
                     key={value}
+                    accessibilityLabel={`${t('feedbackUsefulness')}: ${value} / ${OUTCOME_RATINGS.length}`}
                     accessibilityRole="button"
                     accessibilityState={{ selected, disabled }}
                     disabled={disabled}
@@ -571,7 +574,7 @@ export default function TodayScreen() {
               disabled={feedbackUsefulness === null || feedbackStatus === 'saving' || feedbackStatus === 'saved'}
               onPress={() => void handleFeedback()}
             />
-            {feedbackMessage ? <MizanText muted>{t(feedbackMessage)}</MizanText> : null}
+            {feedbackMessage ? <MizanText accessibilityLiveRegion="polite" muted>{t(feedbackMessage)}</MizanText> : null}
           </View>
         ) : null}
       </Card>
@@ -611,20 +614,20 @@ const styles = StyleSheet.create({
     borderRadius: Radius.pill,
   },
   primaryAction: {
-    minHeight: Controls.actionHeight,
+    minHeight: Controls.standardHeight,
     borderRadius: Radius.md,
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: Spacing.xl,
   },
   primaryActionText: { textAlign: 'center' },
-  stateItem: { gap: Spacing.xs, borderTopWidth: StyleSheet.hairlineWidth, paddingTop: Spacing.md },
+  stateItem: { gap: Spacing.xs, borderTopWidth: Controls.borderWidth, paddingTop: Spacing.md },
   stateRow: { alignItems: 'center', justifyContent: 'space-between', gap: Spacing.md },
   oneMoveContent: { gap: Spacing.md },
   alternativeBlock: { gap: Spacing.sm },
   decisionRow: { flexWrap: 'wrap', gap: Spacing.sm },
   decisionButtonSlot: { flexGrow: 1, minWidth: 120 },
-  feedbackBlock: { gap: Spacing.md, borderTopWidth: StyleSheet.hairlineWidth, paddingTop: Spacing.lg },
+  feedbackBlock: { gap: Spacing.md, borderTopWidth: Controls.borderWidth, paddingTop: Spacing.lg },
   ratingRow: { flexWrap: 'wrap', gap: Spacing.sm },
   ratingButton: {
     minWidth: Controls.actionHeight,
