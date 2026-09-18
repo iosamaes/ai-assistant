@@ -21,10 +21,19 @@ const metricItems = [
   { metric: 'connection', label: 'checkInConnection' },
 ] as const;
 
-type SubmitState = 'idle' | 'saving' | 'offline' | 'error';
+const deliveryCopy = {
+  ar: {
+    queued: 'تم حفظ التسجيل بأمان على هذا الجهاز وسيحاول ميزان مزامنته تلقائيًا عند عودة الاتصال.',
+  },
+  en: {
+    queued: 'This check-in is safely stored on this device. MIZAN will retry syncing it when connection returns.',
+  },
+} as const;
+
+type SubmitState = 'idle' | 'saving' | 'queued' | 'offline' | 'error';
 
 export default function CheckInScreen() {
-  const { isRtl, refreshSession, t, userId } = useAppState();
+  const { isRtl, locale, refreshSession, t, userId } = useAppState();
   const [ratings, setRatings] = useState<DailyCheckInRatings>({});
   const [submitState, setSubmitState] = useState<SubmitState>('idle');
   const scheme = useColorScheme();
@@ -47,6 +56,11 @@ export default function CheckInScreen() {
     const result = await submitDailyCheckIn(userId, ratings);
 
     if (result.ok) {
+      if (result.value.delivery === 'queued') {
+        setRatings({});
+        setSubmitState('queued');
+        return;
+      }
       router.replace('/today');
       return;
     }
@@ -98,13 +112,14 @@ export default function CheckInScreen() {
         </Card>
       ))}
 
-      {answeredCount === 0 ? <MizanText muted>{t('checkInNeedOne')}</MizanText> : null}
+      {answeredCount === 0 && submitState !== 'queued' ? <MizanText muted>{t('checkInNeedOne')}</MizanText> : null}
+      {submitState === 'queued' ? <MizanText muted>{deliveryCopy[locale].queued}</MizanText> : null}
       {submitState === 'offline' ? <MizanText muted>{t('checkInOffline')}</MizanText> : null}
       {submitState === 'error' ? <MizanText muted>{t('checkInError')}</MizanText> : null}
 
       <PrimaryButton
         label={submitState === 'saving' ? t('saving') : t('checkInSave')}
-        disabled={answeredCount === 0 || submitState === 'saving' || !userId}
+        disabled={answeredCount === 0 || submitState === 'saving' || submitState === 'queued' || !userId}
         onPress={() => void handleSubmit()}
       />
 
