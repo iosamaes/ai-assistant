@@ -48,6 +48,8 @@ Presentation boundary already in place:
 - async accessibility live announcements now cover the principal asynchronous status/error/empty-state transitions across the reviewed product surfaces.
 
 Latest static CP9 work:
+- **Capacity async accessibility:** loading, load-error, and asynchronous insufficient-buffer feedback now use polite accessibility live regions so screen-reader users are informed when the capacity result changes; capacity math, confidence, and evidence handling are unchanged.
+- **Life Seasons async accessibility:** Arabic/English loading copy was added and loading plus asynchronous empty-history feedback now use polite accessibility live regions. Season selection, target persistence, history data, and Balance-related behavior are unchanged.
 - **Entry routing accessibility:** the bootstrap/session loading message on the entry route now uses a polite accessibility live region so assistive technology is informed while authentication state resolves; routing behavior is unchanged.
 - **Personalization async accessibility:** loading, load-error, and no-state feedback now use polite accessibility live regions. Personalization maturity calculation, confidence/evidence semantics, and navigation are unchanged.
 - **Onboarding async accessibility:** baseline-target persistence errors, Spiritual Grounding preference errors, and sync/offline feedback now use polite accessibility live regions. Onboarding selection, persistence, and completion behavior are unchanged.
@@ -58,6 +60,8 @@ Latest static CP9 work:
 - **Auth/recovery, Check-in, Value Alignment, Invisible Wins, Integrations:** shared controls and asynchronous accessibility feedback are in place for the reviewed flows.
 
 Latest static product commits from this pass (not runtime-verified):
+- `bf6bbc579a67f992c39cc4ac618acb61e052b43a` — announce Capacity loading/error/insufficient-buffer async states.
+- `a319eed9a287c9d81840350d69ffe0524f674909` — announce Life Seasons loading/empty-history async states.
 - `05bc6c3fd1a742950f2ca675f88058111a48e63b` — announce entry-session loading state.
 - `5933a06f19aa9b55118463ae7c74c02d3becda36` — announce Personalization loading/error/empty states.
 - `60d8e6f6155e3b63a6251c56a712a7be53040f44` — announce Onboarding persistence/sync error states.
@@ -80,7 +84,7 @@ The TASK-required final design-swap proof is **not claimed**. It still requires 
 
 ## Exact next executable action
 1. Continue the repository-wide CP9 static review for untranslated production literals, semantic RTL issues, missing accessibility labels/states/live announcements, truncation/dynamic-type risks, duplicated global visual values, and unjustified local control treatments outside already-reviewed surfaces.
-2. Revisit already-audited screens only when static inspection finds a concrete remaining defect; entry routing and Personalization now have the currently identified asynchronous announcement gaps addressed.
+2. Revisit already-audited screens only when static inspection finds a concrete remaining defect; Capacity and Life Seasons now have the identified asynchronous loading/error/empty-state announcement gaps addressed.
 3. Leave representative-width runtime checks, post-baseline tests/builds/typechecks, CP1–CP8 execution-dependent evidence, and the final design-swap proof to owner validation under the active policy.
 
 ## Verification record
