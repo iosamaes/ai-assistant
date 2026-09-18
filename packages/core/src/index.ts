@@ -10,3 +10,4 @@ export * from './recommendation-context';
 export * from './alignment';
 export * from './scenario';
 export * from './scenario-learning';
+export * from './experiment';
