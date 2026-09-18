@@ -40,6 +40,7 @@ Presentation boundary already in place:
 - async accessibility live announcements cover loading/error/empty/status transitions across the reviewed product surfaces.
 
 Latest static CP9 work:
+- **Shared semantic text direction:** `MizanText`, `MizanTextInput`, and primary-action labels now apply locale-aware `writingDirection` in addition to text alignment, so Arabic/English mixed punctuation and inline content follow the intended bidi paragraph direction across shared surfaces. Screen-specific semantic LTR overrides such as email remain possible because local styles are applied last.
 - **Recovery interaction flow:** advancing or skipping to a new recovery step now updates a polite accessibility live region on the step position, so screen-reader users receive an explicit transition cue instead of a silent in-place content replacement; recovery guidance and navigation behavior are unchanged.
 - **Life Map responsive/dynamic type:** the top navigation row, domain headers, and metric title/value rows now wrap instead of assuming a single horizontal line; long Arabic/English labels can shrink/wrap while values and navigation remain usable at narrow widths and larger text settings.
 - **WHY responsive/dynamic type:** the top navigation row and factor evidence rows now permit wrapping, and both label/value text can shrink within the row, reducing horizontal-overflow risk for Arabic, long evidence-window text, and accessibility text sizes without changing evidence interpretation.
@@ -56,6 +57,7 @@ Latest static CP9 work:
 - **Async-state coverage:** Today, Life Map, WHY, Insights, Capacity, Life Seasons, Entry, Personalization, Onboarding, Personal Learning, Experiments, Recovery, What If, Settings, Auth/recovery, Check-in, Value Alignment, Invisible Wins, and Integrations have received static accessibility-state review and targeted live-region fixes where concrete gaps were identified.
 
 Latest static product commits from this pass (not runtime-verified):
+- `3df3ca5dd8625fc21eca86296e2bf0b5a384477e` — enforce locale-aware writing direction in shared text, input, and primary-action primitives.
 - `c56f0427239dfbe1a07f7592a0a17fd9420d58ed` — announce Recovery step progression to assistive technology.
 - `de80dac980b0715716ab0b926376f3d18abb40f3` — make Check-in low/high scale labels wrap safely under narrow width and dynamic type.
 - `becc73e8b3902a3027e055a4be606c84177d96af` — harden WHY top/evidence rows for narrow width and large dynamic type.
