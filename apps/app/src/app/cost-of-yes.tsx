@@ -173,8 +173,10 @@ export default function CostOfYesScreen() {
 
       <Card>
         <MizanText variant="label" muted>{labels.assessment}</MizanText>
-        <MizanText variant="title">{statusTitle}</MizanText>
-        <MizanText>{statusBody}</MizanText>
+        <View accessibilityLiveRegion="polite" style={styles.assessmentStatus}>
+          <MizanText variant="title">{statusTitle}</MizanText>
+          <MizanText>{statusBody}</MizanText>
+        </View>
 
         {assessment.status !== 'insufficient' ? (
           <View style={[styles.metrics, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
@@ -222,6 +224,7 @@ export default function CostOfYesScreen() {
 const styles = StyleSheet.create({
   hero: { gap: Spacing.md, paddingTop: Spacing.xl },
   field: { gap: Spacing.sm },
+  assessmentStatus: { gap: Spacing.md },
   metrics: { flexWrap: 'wrap', gap: Spacing.md },
   metric: { flexGrow: 1, flexBasis: 140, minWidth: 120, gap: Spacing.xs },
 });
