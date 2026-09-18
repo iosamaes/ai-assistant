@@ -143,6 +143,28 @@ export async function disconnectIntegration(
   return { ok: true, value: null };
 }
 
+export async function markIntegrationSyncError(
+  userId: string,
+  capability: IntegrationCapability,
+  providerId: string,
+  errorCode: string,
+): Promise<DataResult<null>> {
+  if (!supabase) return unavailable();
+  const safeErrorCode = errorCode.trim().slice(0, 120) || 'sync-error';
+  const { error } = await supabase
+    .from('integration_connections')
+    .update({
+      status: 'error',
+      last_error_code: safeErrorCode,
+      updated_at: new Date().toISOString(),
+    })
+    .eq('user_id', userId)
+    .eq('capability', capability)
+    .eq('provider_id', providerId);
+  if (error) return failure(error);
+  return { ok: true, value: null };
+}
+
 export async function upsertNormalizedExternalObservations(
   userId: string,
   observations: readonly NormalizedExternalObservation[],
