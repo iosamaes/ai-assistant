@@ -29,7 +29,8 @@
 - Integration observation ingestion is idempotent by provider dedupe key; transient provider reads use bounded retry and lifecycle failures persist only safe normalized error codes.
 - A durable recent Today snapshot now persists derived Human State plus Balance/Momentum output, without raw reflection notes, provider payloads, or credentials.
 - Recent Today snapshots are user-scoped, runtime-validated, expire after seven days, and are discarded when malformed or implausibly future-dated.
-- Existing `loadCurrentHumanState` and `loadDailyOverview` paths now use the recent snapshot when live reads fail as `unavailable`, `not-configured`, or `session-expired`, allowing Today to remain meaningful across restart/temporary remote failure when a valid cache exists.
+- Existing `loadCurrentHumanState` and `loadDailyOverview` paths now use the recent snapshot when live reads fail as `unavailable` or `not-configured`, allowing Today to remain meaningful across restart/temporary remote failure when a valid cache exists.
+- `session-expired` deliberately remains an explicit error path so the existing Today session-refresh behavior is not hidden by cached data.
 - Authorization, invalid-data, conflict, and unknown failures do not fall back to cached state.
 - Detailed CP8 implementation ledger: `docs/CP8_RELIABILITY.md`.
 
@@ -52,8 +53,8 @@ Previously recorded execution evidence from the owner-side baseline:
 
 Current worker policy:
 - No app tests, builds, typechecks, database scripts, cloud CI, or GitHub Actions were executed for the post-baseline CP2–CP8 work.
-- Latest CP8 product commits from this run: `98a987259cfbb5e653477495d2fba49af1a6a3b5` (durable snapshot storage) and `54e2e644bff98f5780bbdca3260e322a13446266` (wire Today intelligence reads to cache fallback).
-- Latest CP8 documentation commit before this ledger update: `8248ff4951767501bf76a83433fd5c92829138c7`.
+- CP8 product commits from this run: `98a987259cfbb5e653477495d2fba49af1a6a3b5` (durable snapshot storage), `54e2e644bff98f5780bbdca3260e322a13446266` (wire Today intelligence reads to cache fallback), and `94a637bf0386d1846af401b96363314704432da3` (preserve explicit expired-session handling).
+- Latest CP8 documentation correction before this ledger update: `da9123ead785bef746b22b989db7cf6df071171b`.
 
 ## Known blockers / risks
 - CP1: Windows session must be unlocked normally for true narrow-phone Arabic/English interaction evidence; see `automation/HUMAN_REQUIRED.md`.
