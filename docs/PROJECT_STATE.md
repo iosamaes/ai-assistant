@@ -2,7 +2,7 @@
 
 ## Current checkpoint
 - CP1 — Universal application foundation
-- Status: `BLOCKED_HUMAN` for owner-side CP1/CP2 validation; CP3, CP4, and CP5 implementation slices are in place pending owner validation, while CP6 implementation has started independently on GitHub `main`.
+- Status: `BLOCKED_HUMAN` for owner-side CP1/CP2 validation; CP3, CP4, and CP5 implementation slices are in place pending owner validation, while CP6 implementation is progressing independently on GitHub `main`.
 - Product authority: GitHub `iosamaes/ai-assistant` on `main`.
 - Owner-only local mirror/testing copy: `C:\Users\bofo_\Documents\automation\ai assistant`.
 - Task digest: `c823e4d1031ac5f3f7230ed4e2de236b4446817a`.
@@ -73,10 +73,15 @@ CP5 remaining gate:
 - Personal effect estimates override conservative priors only after a minimum evidence/confidence threshold; weak personal evidence falls back to the prior rather than pretending to be personalized.
 - Projected state ranges are clamped to the existing 0–100 state scale and are framed as scenario estimates, not guaranteed outcomes.
 - Added deterministic `scenario.test.ts` specifications for prior fallback, unknown-state preservation, personal-evidence preference, and clamping. Tests were authored but not run by workers.
+- Added `/what-if`, an Arabic/English What If surface wired to the real current Human State Vector and the deterministic scenario engine.
+- The first UI slice offers three small reversible scenarios: earlier bedtime, a notification-free focus block, and a short calm walk. Each exposes assumptions, uncertainty, current value when actually known, projected range, source, and evidence count.
+- The surface explicitly says that the projection is not a forecast or causal proof and refuses to invent a current value when state evidence is missing.
+- Conservative priors are labeled as such; the UI is already prepared to label future qualified personal effect estimates separately.
+- The route is registered with Expo Router and exposed from Settings.
 
 ## Exact next executable action
-1. Worker-safe CP6 path: wire the scenario engine into an Arabic/English What If surface with a small set of reversible behavior scenarios, explicit assumptions/uncertainty, and clear non-prediction language; use current Human State Vector when available and never fabricate missing current values.
-2. Then extend personal effect estimates from explicit outcome/experiment evidence without treating simple completion as benefit.
+1. Worker-safe CP6 path: derive scenario-specific personal effect estimates only from explicit outcome feedback plus subsequent compatible observations, requiring minimum evidence/confidence before replacing conservative priors; never treat action completion alone as benefit.
+2. Then implement the voluntary Experiment Engine with a clear hypothesis, duration, observable outcome, consent, simple comparison logic, and limitations framing.
 3. Owner path: unlock Windows and complete CP1 narrow-phone Arabic/English interaction verification.
 4. Owner path: configure Supabase Auth redirect allow-list from `automation/HUMAN_REQUIRED.md`, then validate auth/recovery/session/persistence and execute RLS verification.
 5. Owner path: run current core/app/plugin typechecks and tests before granting CP3/CP4/CP5/CP6 checkpoint credit.
@@ -91,10 +96,10 @@ Implemented after that verification and still awaiting owner validation:
 - CP3 Balance, Capacity/Interaction Risk, relationship/feedback learning, recommendation-context stability, optional baseline targets, and value-alignment core/specifications.
 - CP4 check-in, state integration, One Move decision/feedback loop, onboarding context/targets, Balance/Momentum, Spiritual Grounding preference.
 - CP5 Life Map, WHY, Insights, Personal Learning, Personalization Maturity, Values & Identity alignment, and Invisible Wins/reflection capture.
-- CP6 deterministic What If scenario engine and specifications.
+- CP6 deterministic What If scenario engine/specifications plus the Arabic/English `/what-if` surface wired to current state.
 - Supabase migration `invisible_wins` was applied successfully to project `olfhjnropdrnujgpidfi`; direct policy inspection confirmed SELECT/INSERT/UPDATE/DELETE own-row policies on `public.reflections`.
 - Reflection RLS isolation checks were added to `supabase/tests/rls_cross_user.sql` but were not executed by the worker.
-- No product/database test script, cloud test, or build was run by auto3 in this run, per `automation/TASK.md`.
+- No product/database test script, cloud test, or build was run by workers for these post-baseline additions, per `automation/TASK.md`.
 
 ## Known technical risks / temporary compromises
 - CP1 remains blocked on owner-side physical responsive/locale verification.
@@ -107,7 +112,7 @@ Implemented after that verification and still awaiting owner validation:
 - Insights is intentionally a small association slice, not a general causal graph.
 - Value alignment intentionally leaves values without a direct observation signal unknown rather than borrowing unrelated productivity data.
 - Invisible Wins are intentionally stored outside `observations` and `action_events`; they are reflection history, not scoring evidence.
-- What If currently provides the pure deterministic projection contract only; application presets/UI and personal-effect extraction remain the next CP6 slice.
+- What If currently uses explicit conservative priors because scenario-specific personal effect extraction is not yet implemented; unknown current state remains unknown rather than being filled by a prior.
 - Moderate npm advisories remain in the supported Expo dependency chain; no prior high/critical advisory was recorded.
 
 ## Evidence paths
@@ -132,6 +137,7 @@ Implemented after that verification and still awaiting owner validation:
 - `apps/app/src/infrastructure/supabase/reflections.ts`
 - `apps/app/src/app/value-alignment.tsx`
 - `apps/app/src/app/invisible-wins.tsx`
+- `apps/app/src/app/what-if.tsx`
 - `apps/app/src/app/settings.tsx`
 - `packages/core/src/alignment.ts`
 - `packages/core/src/alignment.test.ts`
