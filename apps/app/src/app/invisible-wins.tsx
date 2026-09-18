@@ -35,6 +35,7 @@ const copy = {
     saved: 'تم حفظ التأمل.',
     queued: 'تم حفظ التأمل على هذا الجهاز وسيتم مزامنته عند عودة الاتصال.',
     saveError: 'تعذر حفظ التأمل الآن. سيبقى النص هنا حتى تعيد المحاولة.',
+    loading: 'جارٍ تحميل التأملات…',
     loadError: 'تعذر تحميل تأملاتك الآن.',
     recent: 'تأملات حديثة',
     empty: 'لا توجد تأملات بعد. لا يلزم تسجيل شيء إلا عندما يكون له معنى بالنسبة لك.',
@@ -61,6 +62,7 @@ const copy = {
     saved: 'Reflection saved.',
     queued: 'Reflection saved on this device. MIZAN will sync it when connection returns.',
     saveError: 'MIZAN could not preserve this reflection yet. Your text will stay here so you can retry.',
+    loading: 'Loading reflections…',
     loadError: 'MIZAN could not load your reflections right now.',
     recent: 'Recent reflections',
     empty: 'No reflections yet. You never need to log something unless it feels meaningful to you.',
@@ -157,12 +159,12 @@ export default function InvisibleWinsScreen() {
           onPress={() => void save()}
           disabled={saving || note.trim().length === 0 || !userId}
         />
-        {message ? <MizanText muted>{message}</MizanText> : null}
+        {message ? <MizanText accessibilityLiveRegion="polite" muted>{message}</MizanText> : null}
       </Card>
 
       <View style={styles.section}>
         <MizanText variant="title">{labels.recent}</MizanText>
-        {loading ? <MizanText muted>…</MizanText> : null}
+        {loading ? <MizanText accessibilityLiveRegion="polite" muted>{labels.loading}</MizanText> : null}
         {!loading && items.length === 0 ? <MizanText muted>{labels.empty}</MizanText> : null}
         {items.map((item) => (
           <Card key={item.id}>
