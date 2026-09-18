@@ -1,7 +1,7 @@
 import { router, Stack, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { useEffect } from 'react';
-import { useColorScheme } from 'react-native';
+import { useEffect, useState } from 'react';
+import { AccessibilityInfo, useColorScheme } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { flushPendingUserMutations } from '@/application/offline-sync';
@@ -14,6 +14,21 @@ function AppNavigator() {
   const palette = Palette[scheme === 'dark' ? 'dark' : 'light'];
   const segments = useSegments();
   const { onboardingCompleted, sessionStatus, userId } = useAppState();
+  const [reduceMotionEnabled, setReduceMotionEnabled] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+    void AccessibilityInfo.isReduceMotionEnabled()
+      .then((enabled) => {
+        if (active) setReduceMotionEnabled(enabled);
+      })
+      .catch(() => undefined);
+    const subscription = AccessibilityInfo.addEventListener('reduceMotionChanged', setReduceMotionEnabled);
+    return () => {
+      active = false;
+      subscription.remove();
+    };
+  }, []);
 
   useEffect(() => {
     if (!userId) return;
@@ -44,7 +59,7 @@ function AppNavigator() {
       <Stack
         screenOptions={{
           headerShown: false,
-          animation: 'fade',
+          animation: reduceMotionEnabled ? 'none' : 'fade',
           contentStyle: { backgroundColor: palette.background },
         }}>
         <Stack.Screen name="index" />
