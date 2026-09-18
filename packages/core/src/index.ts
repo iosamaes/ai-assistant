@@ -6,3 +6,4 @@ export * from './leverage';
 export * from './balance';
 export * from './capacity';
 export * from './learning';
+export * from './recommendation-context';
