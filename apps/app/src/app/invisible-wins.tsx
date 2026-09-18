@@ -2,15 +2,15 @@ import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { StyleSheet, TextInput, useColorScheme, View } from 'react-native';
 
+import {
+  loadInvisibleWins,
+  saveInvisibleWin,
+  type InvisibleWinCategory,
+  type StoredInvisibleWin,
+} from '@/application/reflections';
 import { Card, ChoiceChip, MizanText, PrimaryButton } from '@/components/mizan-ui';
 import { Screen } from '@/components/screen';
 import { Palette, Radius, Spacing } from '@/constants/theme';
-import {
-  insertInvisibleWin,
-  loadInvisibleWins,
-  type InvisibleWinCategory,
-  type StoredInvisibleWin,
-} from '@/infrastructure/supabase/reflections';
 import { useAppState } from '@/state/app-state';
 
 const categories: InvisibleWinCategory[] = ['rest', 'boundary', 'family', 'repair', 'disconnect', 'health', 'other'];
@@ -26,7 +26,8 @@ const copy = {
     save: 'حفظ التأمل',
     saving: 'جارٍ الحفظ…',
     saved: 'تم حفظ التأمل.',
-    saveError: 'تعذر حفظ التأمل الآن.',
+    queued: 'تم حفظ التأمل على هذا الجهاز وسيتم مزامنته عند عودة الاتصال.',
+    saveError: 'تعذر حفظ التأمل الآن. سيبقى النص هنا حتى تعيد المحاولة.',
     loadError: 'تعذر تحميل تأملاتك الآن.',
     recent: 'تأملات حديثة',
     empty: 'لا توجد تأملات بعد. لا يلزم تسجيل شيء إلا عندما يكون له معنى بالنسبة لك.',
@@ -51,7 +52,8 @@ const copy = {
     save: 'Save reflection',
     saving: 'Saving…',
     saved: 'Reflection saved.',
-    saveError: 'MIZAN could not save this reflection right now.',
+    queued: 'Reflection saved on this device. MIZAN will sync it when connection returns.',
+    saveError: 'MIZAN could not preserve this reflection yet. Your text will stay here so you can retry.',
     loadError: 'MIZAN could not load your reflections right now.',
     recent: 'Recent reflections',
     empty: 'No reflections yet. You never need to log something unless it feels meaningful to you.',
@@ -104,11 +106,11 @@ export default function InvisibleWinsScreen() {
     if (!userId || !trimmed || saving) return;
     setSaving(true);
     setMessage(null);
-    const result = await insertInvisibleWin(userId, { category, note: trimmed });
+    const result = await saveInvisibleWin(userId, { category, note: trimmed });
     if (result.ok) {
-      setItems((current) => [result.value, ...current]);
+      setItems((current) => [result.value.item, ...current]);
       setNote('');
-      setMessage(labels.saved);
+      setMessage(result.value.delivery === 'queued' ? labels.queued : labels.saved);
     } else {
       setMessage(labels.saveError);
     }
