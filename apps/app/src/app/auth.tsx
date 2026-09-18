@@ -85,7 +85,9 @@ export default function AuthScreen() {
         <MizanText variant="label" muted>{t('appName')}</MizanText>
         <MizanText variant="display">{t('authTitle')}</MizanText>
         <MizanText muted>{t('authBody')}</MizanText>
-        {sessionStatus === 'expired' ? <MizanText muted>{t('authSessionExpired')}</MizanText> : null}
+        {sessionStatus === 'expired' ? (
+          <MizanText accessibilityLiveRegion="polite" muted>{t('authSessionExpired')}</MizanText>
+        ) : null}
       </View>
 
       <View style={styles.section}>
@@ -130,7 +132,7 @@ export default function AuthScreen() {
           </>
         ) : null}
 
-        {message ? <MizanText muted>{message}</MizanText> : null}
+        {message ? <MizanText accessibilityLiveRegion="polite" muted>{message}</MizanText> : null}
       </View>
 
       <View style={styles.footer}>
