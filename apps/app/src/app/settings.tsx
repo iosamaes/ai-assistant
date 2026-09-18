@@ -67,6 +67,9 @@ const insightCopy = {
     lifeSeasonsTitle: 'مواسم الحياة',
     lifeSeasonsBody: 'غيّر الموسم وأهدافه المستدامة، وراجع سجل المواسم السابقة بحيث يُحسب التوازن مقابل ما اخترته لهذه المرحلة.',
     lifeSeasonsOpen: 'فتح مواسم الحياة',
+    capacityTitle: 'الهامش وديون الحياة',
+    capacityBody: 'راجع هامش السعة والهشاشة والاحتياج المتراكم واتجاه التعافي فقط عندما توجد أدلة كافية، بدون أي حكم على الأداء أو القيمة.',
+    capacityOpen: 'فتح قراءة السعة',
   },
   en: {
     lifeMapTitle: 'Life map',
@@ -108,6 +111,9 @@ const insightCopy = {
     lifeSeasonsTitle: 'Life Seasons',
     lifeSeasonsBody: 'Change a season and its sustainable targets, then review prior seasons so Balance is measured against what you chose for this phase.',
     lifeSeasonsOpen: 'Open Life Seasons',
+    capacityTitle: 'Life Buffer & Life Debt',
+    capacityBody: 'Review spare capacity, fragility, accumulated need, and recovery direction only when evidence supports them, without judging performance or worth.',
+    capacityOpen: 'Open capacity view',
   },
 } as const;
 
@@ -261,6 +267,12 @@ export default function SettingsScreen() {
         <MizanText variant="title">{insightLabels.lifeSeasonsTitle}</MizanText>
         <MizanText muted>{insightLabels.lifeSeasonsBody}</MizanText>
         <PrimaryButton label={insightLabels.lifeSeasonsOpen} onPress={() => router.push('/life-seasons')} />
+      </View>
+
+      <View style={styles.section}>
+        <MizanText variant="title">{insightLabels.capacityTitle}</MizanText>
+        <MizanText muted>{insightLabels.capacityBody}</MizanText>
+        <PrimaryButton label={insightLabels.capacityOpen} onPress={() => router.push('/capacity')} />
       </View>
 
       <View style={styles.section}>
