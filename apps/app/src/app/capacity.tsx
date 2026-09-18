@@ -143,15 +143,19 @@ export default function CapacityScreen() {
         <MizanText muted>{labels.body}</MizanText>
       </View>
 
-      {status === 'loading' ? <MizanText muted>{labels.loading}</MizanText> : null}
-      {status === 'error' ? <Card><MizanText muted>{labels.error}</MizanText></Card> : null}
+      {status === 'loading' ? (
+        <MizanText accessibilityLiveRegion="polite" muted>{labels.loading}</MizanText>
+      ) : null}
+      {status === 'error' ? (
+        <Card><MizanText accessibilityLiveRegion="polite" muted>{labels.error}</MizanText></Card>
+      ) : null}
 
       {status === 'ready' ? (
         <Card>
           <MizanText variant="title">{labels.bufferTitle}</MizanText>
           <MizanText muted>{labels.bufferBody}</MizanText>
           {snapshot?.buffer.score === null || snapshot?.buffer.score === undefined ? (
-            <MizanText muted>{labels.bufferUnknown}</MizanText>
+            <MizanText accessibilityLiveRegion="polite" muted>{labels.bufferUnknown}</MizanText>
           ) : (
             <View style={[styles.metrics, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
               <View style={styles.metric}>
