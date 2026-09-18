@@ -52,21 +52,22 @@ Check-in already used `PrimaryButton` and `ChoiceChip`; its duplicated secondary
 
 ### Today
 
-Today remains the largest presentation-consolidation target. It still contains several local action/control treatments for One Move decisions, alternative actions, ratings, and feedback input in addition to feature-specific state/recommendation composition. CP9 should migrate only repeated visual semantics that are proven across other screens; recommendation/feedback behavior and business logic must remain local/application-owned and must not be moved into generic UI abstractions.
+Today now uses the shared `PrimaryButton` for One Move acceptance and feedback submission, `SecondaryButton` for alternative/defer/decline controls, and `MizanTextInput` for the reflection note. The remaining Link-backed settings/check-in controls stay local because Expo Router `Link asChild` owns their navigation behavior, but their control heights, border width, pressed opacity, and accent foreground now consume semantic tokens instead of local magic values. The usefulness rating stays feature-local because it is a numbered outcome scale rather than a general navigation/action primitive, while its sizing/border/interaction treatment also uses semantic control tokens.
+
+Recommendation selection, decision persistence, feedback persistence, confidence/evidence display, and state composition remain in the Today/application layers. No recommendation/business behavior was moved into generic UI components.
 
 ## Current design-swap assessment
 
-The global visual levers for palette, typography, control sizing, spacing/radii, interaction opacity, and responsive screen layout are now more centralized. Life Map, WHY, and Check-in demonstrate that repeated navigation/action treatment can move behind primitives without moving feature behavior.
+The global visual levers for palette, typography, control sizing, spacing/radii, interaction opacity, and responsive screen layout are now centralized across the representative Today, Life Map, WHY, and Check-in surfaces. The representative screens demonstrate that repeated control/input treatment can move behind app-local primitives without changing `packages/core`, application intelligence/data contracts, Supabase/data-access, or provider adapters.
 
-This is **not yet the final CP9 design-swap proof**. The required proof still needs Today plus the representative screens to be reviewed against a substantially different visual direction and must be recorded without keeping duplicate production themes.
+This is **not yet the final CP9 design-swap proof**. A substantially different visual direction still needs owner-side visual/runtime review; workers must not claim that runtime proof from static implementation inspection alone.
 
 ## Remaining CP9 slices
 
-1. Audit Today and other primary screens for repeated control/surface/input treatments and migrate only proven global semantics.
-2. Audit every primary screen for screen-local hard-coded colors, typography sizes, standard radii/control heights, and repeated pressed/disabled values; leave feature geometry/visualization math local.
-3. Audit responsive behavior at narrow phone, common phone, tablet portrait/landscape, and wide web widths when owner runtime/visual validation is available.
-4. Audit Arabic RTL mirroring/alignment, semantic icon direction, truncation, dynamic type, keyboard/focus behavior, screen-reader labels, and light/dark treatment.
-5. Complete the TASK-required design-swap proof on Today, Life Map, WHY, and an interaction-heavy flow, documenting which files changed and proving no core/application-data/Supabase/provider changes were necessary.
+1. Audit remaining primary screens for screen-local hard-coded colors, typography sizes, standard radii/control heights, and repeated pressed/disabled values; leave feature geometry/visualization math local.
+2. Audit responsive behavior at narrow phone, common phone, tablet portrait/landscape, and wide web widths when owner runtime/visual validation is available.
+3. Audit Arabic RTL mirroring/alignment, semantic icon direction, truncation, dynamic type, keyboard/focus behavior, screen-reader labels, and light/dark treatment.
+4. Complete the TASK-required design-swap proof on Today, Life Map, WHY, and the interaction-heavy Check-in flow during owner visual/runtime validation, documenting the substantially different visual direction without keeping duplicate production themes.
 
 ## Verification policy
 
