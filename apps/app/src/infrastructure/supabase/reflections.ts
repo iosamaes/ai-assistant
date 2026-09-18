@@ -25,11 +25,16 @@ export type InvisibleWinInput = {
   category: InvisibleWinCategory;
   note: string;
   occurred_at?: string;
+  client_mutation_id?: string;
 };
 
 function classify(error: PostgrestError): DataFailureKind {
   const message = error.message.toLowerCase();
+  if (error.code === 'PGRST301' || error.code === 'PGRST302' || error.code === 'PGRST303') {
+    return 'session-expired';
+  }
   if (error.code === '42501') return 'unauthorized';
+  if (error.code === '23505') return 'conflict';
   if (error.code.startsWith('22') || error.code.startsWith('23')) return 'invalid';
   if (
     error.code.startsWith('08') ||
@@ -66,13 +71,17 @@ export async function insertInvisibleWin(userId: string, input: InvisibleWinInpu
   const note = input.note.trim();
   const { data, error } = await supabase
     .from('reflections')
-    .insert({
-      user_id: userId,
-      kind: 'invisible_win',
-      category: input.category,
-      note,
-      occurred_at: input.occurred_at ?? new Date().toISOString(),
-    })
+    .upsert(
+      {
+        user_id: userId,
+        kind: 'invisible_win',
+        category: input.category,
+        note,
+        occurred_at: input.occurred_at ?? new Date().toISOString(),
+        client_mutation_id: input.client_mutation_id,
+      },
+      { onConflict: 'user_id,client_mutation_id' },
+    )
     .select('id,user_id,category,note,occurred_at,created_at')
     .single();
   if (error) return failure(error);
