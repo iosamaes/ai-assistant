@@ -43,6 +43,9 @@ const insightCopy = {
     personalizationTitle: 'نضج التخصيص',
     personalizationBody: 'اعرف هل ميزان ما زال في بداية التعلّم، أم يتعلّم نمطك، أم يملك أدلة كافية لتخصيص أكثر نضجًا.',
     personalizationOpen: 'عرض حالة التخصيص',
+    alignmentTitle: 'القيم والهوية',
+    alignmentBody: 'راجع فقط الأدلة المرتبطة بالقيم التي اخترتها أنت، مع إبقاء القيم التي لا تملك إشارة مباشرة في حالة غير معروفة.',
+    alignmentOpen: 'عرض محاذاة القيم',
   },
   en: {
     lifeMapTitle: 'Life map',
@@ -60,6 +63,9 @@ const insightCopy = {
     personalizationTitle: 'Personalization maturity',
     personalizationBody: 'See whether MIZAN is just starting, learning your pattern, or has enough evidence for more mature personalization.',
     personalizationOpen: 'View personalization status',
+    alignmentTitle: 'Values & identity',
+    alignmentBody: 'Review only evidence linked to values you selected, while values without a direct signal remain explicitly unknown.',
+    alignmentOpen: 'View value alignment',
   },
 } as const;
 
@@ -165,6 +171,12 @@ export default function SettingsScreen() {
         <MizanText variant="title">{insightLabels.personalizationTitle}</MizanText>
         <MizanText muted>{insightLabels.personalizationBody}</MizanText>
         <PrimaryButton label={insightLabels.personalizationOpen} onPress={() => router.push('/personalization')} />
+      </View>
+
+      <View style={styles.section}>
+        <MizanText variant="title">{insightLabels.alignmentTitle}</MizanText>
+        <MizanText muted>{insightLabels.alignmentBody}</MizanText>
+        <PrimaryButton label={insightLabels.alignmentOpen} onPress={() => router.push('/value-alignment')} />
       </View>
 
       <View style={styles.section}>
