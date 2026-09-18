@@ -172,8 +172,8 @@ export default function RecoveryScreen() {
         <MizanText muted>{labels.body}</MizanText>
       </View>
 
-      {loading ? <MizanText muted>{labels.loading}</MizanText> : null}
-      {message ? <MizanText muted>{message}</MizanText> : null}
+      {loading ? <MizanText accessibilityLiveRegion="polite" muted>{labels.loading}</MizanText> : null}
+      {message ? <MizanText accessibilityLiveRegion="polite" muted>{message}</MizanText> : null}
 
       {plan ? (
         <>
