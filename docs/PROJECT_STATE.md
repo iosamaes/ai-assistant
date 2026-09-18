@@ -78,6 +78,17 @@ Commits from this slice:
 - `bd6e4c179a1847e64087b3ebd65fe5bbf7c5681d` — localized Human ROI confidence labels.
 - `9e9a044aafe4d5a2e3edd465488e4080b9fa89ac` — localized Cost of Yes confidence labels.
 
+Current `auto3` static CP9 slice:
+- **Capacity semantic RTL:** the Life Buffer and Life Debt metric grids now mirror their item order with `row-reverse` in Arabic instead of keeping a fixed left-to-right row. Text alignment was already handled by `MizanText`; this change fixes the semantic order of grouped metrics without changing capacity calculations.
+- **Cost of Yes semantic RTL:** the assessment metric grid now mirrors in Arabic so commitment, known margin, remaining margin, and displaced-time metrics follow the active reading direction.
+- **Human ROI semantic RTL:** the benefit/effort/time result grid now mirrors in Arabic, matching the already RTL-aware rating/choice controls on the same screen.
+- The fixes keep layout composition feature-local and introduce no new shared abstraction or domain/data changes.
+
+Commits from this slice:
+- `5c1b7125d5ef329ec00450a3dc26b2ddd233ec9d` — mirrored Capacity metric grids in RTL.
+- `80e1a7ca245d6addce9dfc8e576c835d3b9a0109` — mirrored Cost of Yes assessment metrics in RTL.
+- `9b17ea0edf695ed4b613a6e60fd560454b1e52a0` — mirrored Human ROI result metrics in RTL.
+
 The TASK-required final design-swap proof is **not claimed**; it still requires owner visual/runtime validation with a substantially different visual direction.
 
 ## Exact next executable action
@@ -98,7 +109,7 @@ Previously recorded owner-side baseline evidence:
 
 Current worker policy:
 - No app tests, builds, typechecks, database scripts, cloud CI, or GitHub Actions were executed for post-baseline CP2–CP9 work.
-- Current `auto4`, `auto1`, and `auto2` CP9 slices are static implementation evidence only; no runtime PASS is claimed for the changes above.
+- Current `auto4`, `auto1`, `auto2`, and `auto3` CP9 slices are static implementation evidence only; no runtime PASS is claimed for the changes above.
 
 ## Known blockers / risks
 - CP1: Windows session must be unlocked normally for true narrow-phone Arabic/English interaction evidence; see `automation/HUMAN_REQUIRED.md`.
@@ -127,6 +138,7 @@ Current worker policy:
 - `apps/app/src/app/recovery.tsx`
 - `apps/app/src/app/human-roi.tsx`
 - `apps/app/src/app/cost-of-yes.tsx`
+- `apps/app/src/app/capacity.tsx`
 - `apps/app/src/app/personal-learning.tsx`
 - `apps/app/src/app/personalization.tsx`
 - `apps/app/src/app/check-in.tsx`
