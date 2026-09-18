@@ -40,6 +40,7 @@ Presentation boundary already in place:
 - async accessibility live announcements cover loading/error/empty/status transitions across the reviewed product surfaces.
 
 Latest static CP9 work:
+- **Shared choice controls:** `ChoiceChip` now centers its scalable label text so long Arabic/English labels, including consent and experiment choices, remain visually centered when dynamic type causes wrapping instead of inheriting directional left/right text alignment inside pill controls.
 - **Experiments:** the asynchronous no-history result now uses a polite accessibility live region, so screen readers announce the transition from loading to an empty experiment history without changing experiment consent, persistence, completion, or evaluation behavior.
 - **Shared primary actions:** `PrimaryButton` now centers its scalable label text, so long Arabic/English labels that wrap under larger accessibility text sizes retain intentional button alignment instead of inheriting directional left/right alignment.
 - **Invisible Wins:** its asynchronous no-reflections result now uses a polite accessibility live region, so the transition from loading to an empty history is announced without changing reflection persistence, offline queue behavior, or category semantics.
@@ -49,6 +50,7 @@ Latest static CP9 work:
 - **Async-state coverage:** Today, Life Map, WHY, Insights, Capacity, Life Seasons, Entry, Personalization, Onboarding, Personal Learning, Experiments, Recovery, What If, Settings, Auth/recovery, Check-in, Value Alignment, Invisible Wins, and Integrations have received static accessibility-state review and targeted live-region fixes where concrete gaps were identified.
 
 Latest static product commits from this pass (not runtime-verified):
+- `eb6023f01a984b6954182518aff93036c10dfcaa` — center scalable/wrapped shared choice-chip labels.
 - `e19fbe5abd1d4169c11b8589c7199b5ac91f9202` — announce empty experiment history.
 - `e0c10da938445138afb543abf3e921edd411c8a3` — center scalable/wrapped shared primary-button labels.
 - `b9bbec5292980bbf693115e96a2e6b3c19b46041` — announce Invisible Wins empty history.
@@ -91,7 +93,7 @@ Previously recorded owner-side baseline evidence:
 Post-baseline status:
 - No worker-run app tests, builds, typechecks, database scripts, cloud CI, or GitHub Actions are claimed for CP2–CP9 changes.
 - Current CP9 evidence is static implementation/code-review evidence only until owner validation runs the validation matrix and representative device/browser/screen-reader checks.
-- No new automated test was added for the latest declarative `accessibilityLiveRegion` substitutions; meaningful verification depends on pending runtime/screen-reader validation rather than duplicating React Native prop assertions.
+- No new automated test was added for the latest declarative `accessibilityLiveRegion` substitutions or shared text-alignment adjustments; meaningful verification depends on pending runtime/dynamic-type/screen-reader validation rather than duplicating React Native prop/style assertions.
 
 ## Known blockers / risks
 - CP1: Windows session must be unlocked normally for true narrow-phone Arabic/English interaction evidence; see `automation/HUMAN_REQUIRED.md`.
