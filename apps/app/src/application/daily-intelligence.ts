@@ -248,7 +248,11 @@ export async function loadDailySnapshot(
     };
   }
 
-  const failure = !observationResult.ok ? observationResult.error : !targetResult.ok ? targetResult.error : { kind: 'unknown' as const };
+  const failure = !observationResult.ok
+    ? observationResult.error
+    : !targetResult.ok
+      ? targetResult.error
+      : { kind: 'unknown' as const };
   if (canUseCachedSnapshot(failure.kind)) {
     const cached = await readRecentDailySnapshot(userId, current);
     if (cached.ok && cached.value && isDailySnapshotCachePayload(cached.value.payload)) {
@@ -271,37 +275,14 @@ export async function loadCurrentHumanState(
   userId: string,
   generatedAt = new Date().toISOString(),
 ): Promise<DataResult<HumanStateVector>> {
-  const current = Date.parse(generatedAt);
-  if (!Number.isFinite(current)) return { ok: false, error: { kind: 'invalid' } };
-
-  const since = new Date(current - BASELINE_WINDOW_MS).toISOString();
-  const result = await loadRecentObservations(userId, since);
-  if (!result.ok) return result;
-
-  return {
-    ok: true,
-    value: deriveHumanStateVector(result.value.map(toCoreObservation), generatedAt),
-  };
+  const result = await loadDailySnapshot(userId, generatedAt);
+  return result.ok ? { ok: true, value: result.value.humanState } : result;
 }
 
 export async function loadDailyOverview(
   userId: string,
   generatedAt = new Date().toISOString(),
 ): Promise<DataResult<DailyOverview>> {
-  const current = Date.parse(generatedAt);
-  if (!Number.isFinite(current)) return { ok: false, error: { kind: 'invalid' } };
-
-  const since = new Date(current - BASELINE_WINDOW_MS).toISOString();
-  const [observationResult, targetResult] = await Promise.all([
-    loadRecentObservations(userId, since),
-    loadUserTargets(userId),
-  ]);
-  if (!observationResult.ok) return observationResult;
-  if (!targetResult.ok) return targetResult;
-
-  const observations = observationResult.value.map(toCoreObservation);
-  return {
-    ok: true,
-    value: deriveDailyOverview(observations, targetResult.value, generatedAt),
-  };
+  const result = await loadDailySnapshot(userId, generatedAt);
+  return result.ok ? { ok: true, value: result.value.overview } : result;
 }
