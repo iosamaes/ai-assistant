@@ -62,6 +62,12 @@ const copy = {
     baseline: 'وسيط ما قبل التجربة',
     followup: 'وسيط أثناء/بعد التجربة',
     confidence: 'الثقة',
+    confidenceLevels: {
+      known: 'معروفة',
+      likely: 'مرجحة',
+      possible: 'محتملة',
+      insufficient: 'غير كافية',
+    },
     limitations: 'هذه مقارنة شخصية فقط؛ قد تكون عوامل أخرى تغيرت في نفس الوقت، ولا تثبت السببية.',
     noScore: 'لا توجد نقاط أو سلاسل استمرار، ويمكنك الإيقاف في أي وقت.',
     back: 'العودة إلى الإعدادات',
@@ -117,6 +123,12 @@ const copy = {
     baseline: 'Pre-experiment median',
     followup: 'During/after median',
     confidence: 'Confidence',
+    confidenceLevels: {
+      known: 'Known',
+      likely: 'Likely',
+      possible: 'Possible',
+      insufficient: 'Insufficient',
+    },
     limitations: 'This is personal comparison evidence only. Other factors may have changed at the same time, so it does not prove causation.',
     noScore: 'There are no points or streaks, and you can stop at any time.',
     back: 'Back to settings',
@@ -293,7 +305,7 @@ export default function ExperimentsScreen() {
             <MizanText muted>{labels.baseline}: {formatValue(evaluation.baselineMedian)}</MizanText>
             <MizanText muted>{labels.followup}: {formatValue(evaluation.followupMedian)}</MizanText>
             <MizanText variant="caption" muted>
-              {labels.evidence}: {evaluation.baselineEvidenceCount + evaluation.followupEvidenceCount} · {labels.confidence}: {evaluation.confidence.level}
+              {labels.evidence}: {evaluation.baselineEvidenceCount + evaluation.followupEvidenceCount} · {labels.confidence}: {labels.confidenceLevels[evaluation.confidence.level]}
             </MizanText>
           </View>
         )}
