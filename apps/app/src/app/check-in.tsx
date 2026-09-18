@@ -111,9 +111,15 @@ export default function CheckInScreen() {
       ))}
 
       {answeredCount === 0 && submitState !== 'queued' ? <MizanText muted>{t('checkInNeedOne')}</MizanText> : null}
-      {submitState === 'queued' ? <MizanText muted>{deliveryCopy[locale].queued}</MizanText> : null}
-      {submitState === 'offline' ? <MizanText muted>{t('checkInOffline')}</MizanText> : null}
-      {submitState === 'error' ? <MizanText muted>{t('checkInError')}</MizanText> : null}
+      {submitState === 'queued' ? (
+        <MizanText accessibilityLiveRegion="polite" muted>{deliveryCopy[locale].queued}</MizanText>
+      ) : null}
+      {submitState === 'offline' ? (
+        <MizanText accessibilityLiveRegion="polite" muted>{t('checkInOffline')}</MizanText>
+      ) : null}
+      {submitState === 'error' ? (
+        <MizanText accessibilityLiveRegion="polite" muted>{t('checkInError')}</MizanText>
+      ) : null}
 
       <PrimaryButton
         label={submitState === 'saving' ? t('saving') : t('checkInSave')}
