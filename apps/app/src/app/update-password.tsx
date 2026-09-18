@@ -78,9 +78,13 @@ export default function UpdatePasswordScreen() {
           onChangeText={setConfirmPassword}
         />
 
-        {password.length > 0 && password.length < 8 ? <MizanText muted>{t('passwordMinimum')}</MizanText> : null}
-        {confirmPassword.length > 0 && password !== confirmPassword ? <MizanText muted>{t('passwordMismatch')}</MizanText> : null}
-        {message ? <MizanText muted>{message}</MizanText> : null}
+        {password.length > 0 && password.length < 8 ? (
+          <MizanText accessibilityLiveRegion="polite" muted>{t('passwordMinimum')}</MizanText>
+        ) : null}
+        {confirmPassword.length > 0 && password !== confirmPassword ? (
+          <MizanText accessibilityLiveRegion="polite" muted>{t('passwordMismatch')}</MizanText>
+        ) : null}
+        {message ? <MizanText accessibilityLiveRegion="polite" muted>{message}</MizanText> : null}
       </View>
 
       <View style={styles.footer}>
