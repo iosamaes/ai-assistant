@@ -10,7 +10,7 @@ export default function EntryScreen() {
   if (sessionStatus === 'loading') {
     return (
       <Screen>
-        <MizanText muted>{t('loading')}</MizanText>
+        <MizanText accessibilityLiveRegion="polite" muted>{t('loading')}</MizanText>
       </Screen>
     );
   }
