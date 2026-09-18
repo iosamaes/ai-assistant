@@ -6,7 +6,7 @@ import { StyleSheet, useColorScheme, View } from 'react-native';
 import { loadCurrentHumanState } from '@/application/daily-intelligence';
 import { Card, MizanText, SecondaryButton } from '@/components/mizan-ui';
 import { Screen } from '@/components/screen';
-import { Palette, Spacing } from '@/constants/theme';
+import { Controls, Palette, Radius, Spacing } from '@/constants/theme';
 import { useAppState } from '@/state/app-state';
 
 type LoadStatus = 'loading' | 'ready' | 'error';
@@ -160,8 +160,8 @@ const styles = StyleSheet.create({
   hero: { gap: Spacing.md },
   progression: { gap: Spacing.sm },
   stage: {
-    borderWidth: StyleSheet.hairlineWidth,
-    borderRadius: Spacing.sm,
+    borderWidth: Controls.borderWidth,
+    borderRadius: Radius.sm,
     gap: Spacing.xs,
     padding: Spacing.md,
   },
