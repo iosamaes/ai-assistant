@@ -100,8 +100,8 @@ export default function CheckInScreen() {
             ))}
           </View>
           <View style={[styles.scaleRow, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
-            <MizanText variant="caption" muted>{t('checkInLow')}</MizanText>
-            <MizanText variant="caption" muted>{t('checkInHigh')}</MizanText>
+            <MizanText variant="caption" muted style={styles.scaleLabel}>{t('checkInLow')}</MizanText>
+            <MizanText variant="caption" muted style={styles.scaleLabel}>{t('checkInHigh')}</MizanText>
           </View>
           <ChoiceChip
             label={t('checkInSkip')}
@@ -136,5 +136,6 @@ export default function CheckInScreen() {
 const styles = StyleSheet.create({
   heading: { gap: Spacing.sm },
   ratingRow: { flexWrap: 'wrap', gap: Spacing.sm },
-  scaleRow: { justifyContent: 'space-between', gap: Spacing.md },
+  scaleRow: { alignItems: 'flex-start', justifyContent: 'space-between', gap: Spacing.md, flexWrap: 'wrap' },
+  scaleLabel: { flexShrink: 1 },
 });
