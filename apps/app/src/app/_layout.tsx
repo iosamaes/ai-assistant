@@ -52,6 +52,7 @@ function AppNavigator() {
         <Stack.Screen name="personal-learning" />
         <Stack.Screen name="personalization" />
         <Stack.Screen name="value-alignment" />
+        <Stack.Screen name="invisible-wins" />
         <Stack.Screen name="settings" />
       </Stack>
     </>
