@@ -8,3 +8,4 @@ export * from './capacity';
 export * from './learning';
 export * from './recommendation-context';
 export * from './alignment';
+export * from './scenario';
