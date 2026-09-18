@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { loadCapacitySnapshot, type CapacitySnapshot } from '@/application/capacity';
-import { Card, MizanText } from '@/components/mizan-ui';
+import { Card, MizanText, SecondaryButton } from '@/components/mizan-ui';
 import { Screen } from '@/components/screen';
 import { Spacing } from '@/constants/theme';
 import type { DomainId } from '@/state/app-state';
@@ -228,9 +228,7 @@ export default function CapacityScreen() {
       ) : null}
 
       <MizanText variant="caption" muted>{labels.caveat}</MizanText>
-      <MizanText variant="label" style={styles.link} onPress={() => router.replace('/settings')}>
-        {labels.back}
-      </MizanText>
+      <SecondaryButton label={labels.back} onPress={() => router.replace('/settings')} />
     </Screen>
   );
 }
@@ -240,5 +238,4 @@ const styles = StyleSheet.create({
   section: { gap: Spacing.lg },
   metrics: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.md },
   metric: { flexGrow: 1, flexBasis: 140, minWidth: 120, gap: Spacing.xs },
-  link: { textAlign: 'center', paddingVertical: Spacing.md },
 });
