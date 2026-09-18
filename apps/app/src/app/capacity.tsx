@@ -92,7 +92,7 @@ function confidenceLabel(level: string, locale: 'ar' | 'en'): string {
 }
 
 export default function CapacityScreen() {
-  const { locale, refreshSession, t, userId } = useAppState();
+  const { isRtl, locale, refreshSession, t, userId } = useAppState();
   const labels = copy[locale];
   const [snapshot, setSnapshot] = useState<CapacitySnapshot | null>(null);
   const [status, setStatus] = useState<LoadStatus>('loading');
@@ -153,7 +153,7 @@ export default function CapacityScreen() {
           {snapshot?.buffer.score === null || snapshot?.buffer.score === undefined ? (
             <MizanText muted>{labels.bufferUnknown}</MizanText>
           ) : (
-            <View style={styles.metrics}>
+            <View style={[styles.metrics, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
               <View style={styles.metric}>
                 <MizanText variant="caption" muted>{labels.buffer}</MizanText>
                 <MizanText variant="title">{Math.round(snapshot.buffer.score)} / 100</MizanText>
@@ -201,7 +201,7 @@ export default function CapacityScreen() {
                 {debt.amount === null ? (
                   <MizanText muted>{labels.debtUnknown}</MizanText>
                 ) : (
-                  <View style={styles.metrics}>
+                  <View style={[styles.metrics, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
                     <View style={styles.metric}>
                       <MizanText variant="caption" muted>{labels.amount}</MizanText>
                       <MizanText variant="title">{Math.round(debt.amount)} / 100</MizanText>
@@ -237,6 +237,6 @@ export default function CapacityScreen() {
 const styles = StyleSheet.create({
   hero: { gap: Spacing.md, paddingTop: Spacing.xl },
   section: { gap: Spacing.lg },
-  metrics: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.md },
+  metrics: { flexWrap: 'wrap', gap: Spacing.md },
   metric: { flexGrow: 1, flexBasis: 140, minWidth: 120, gap: Spacing.xs },
 });
