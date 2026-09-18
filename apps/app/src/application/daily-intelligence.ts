@@ -218,7 +218,7 @@ function isDailySnapshotCachePayload(value: unknown): value is DailySnapshotCach
 }
 
 function canUseCachedSnapshot(kind: DataFailureKind) {
-  return kind === 'unavailable' || kind === 'not-configured' || kind === 'session-expired';
+  return kind === 'unavailable' || kind === 'not-configured';
 }
 
 export async function loadDailySnapshot(
