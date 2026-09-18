@@ -1,17 +1,15 @@
 import { router } from 'expo-router';
 import { useMemo, useState } from 'react';
-import { StyleSheet, TextInput, useColorScheme, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
-import { MizanText, PrimaryButton } from '@/components/mizan-ui';
+import { MizanText, MizanTextInput, PrimaryButton } from '@/components/mizan-ui';
 import { Screen } from '@/components/screen';
-import { Palette, Radius, Spacing } from '@/constants/theme';
+import { Spacing } from '@/constants/theme';
 import { updatePassword, type AuthFailureKind } from '@/infrastructure/supabase/auth';
 import { useAppState } from '@/state/app-state';
 
 export default function UpdatePasswordScreen() {
-  const scheme = useColorScheme();
-  const palette = Palette[scheme === 'dark' ? 'dark' : 'light'];
-  const { isRtl, onboardingCompleted, sessionStatus, t } = useAppState();
+  const { onboardingCompleted, sessionStatus, t } = useAppState();
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [busy, setBusy] = useState(false);
@@ -61,41 +59,23 @@ export default function UpdatePasswordScreen() {
 
       <View style={styles.form}>
         <MizanText variant="label">{t('newPassword')}</MizanText>
-        <TextInput
+        <MizanTextInput
           accessibilityLabel={t('newPassword')}
           autoCapitalize="none"
           autoCorrect={false}
           secureTextEntry
           value={password}
           onChangeText={setPassword}
-          style={[
-            styles.input,
-            {
-              borderColor: palette.border,
-              color: palette.text,
-              backgroundColor: palette.surface,
-              textAlign: isRtl ? 'right' : 'left',
-            },
-          ]}
         />
 
         <MizanText variant="label">{t('confirmPassword')}</MizanText>
-        <TextInput
+        <MizanTextInput
           accessibilityLabel={t('confirmPassword')}
           autoCapitalize="none"
           autoCorrect={false}
           secureTextEntry
           value={confirmPassword}
           onChangeText={setConfirmPassword}
-          style={[
-            styles.input,
-            {
-              borderColor: palette.border,
-              color: palette.text,
-              backgroundColor: palette.surface,
-              textAlign: isRtl ? 'right' : 'left',
-            },
-          ]}
         />
 
         {password.length > 0 && password.length < 8 ? <MizanText muted>{t('passwordMinimum')}</MizanText> : null}
@@ -113,12 +93,5 @@ export default function UpdatePasswordScreen() {
 const styles = StyleSheet.create({
   hero: { gap: Spacing.md, paddingTop: Spacing.xl },
   form: { gap: Spacing.sm },
-  input: {
-    minHeight: 52,
-    borderWidth: 1,
-    borderRadius: Radius.md,
-    paddingHorizontal: Spacing.lg,
-    fontSize: 16,
-  },
   footer: { marginTop: 'auto', paddingTop: Spacing.xl },
 });
