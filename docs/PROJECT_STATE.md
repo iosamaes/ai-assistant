@@ -48,6 +48,8 @@ Presentation boundary already in place:
 - async accessibility live announcements now cover the principal asynchronous status/error/empty-state transitions across the reviewed product surfaces.
 
 Latest static CP9 work:
+- **Entry routing accessibility:** the bootstrap/session loading message on the entry route now uses a polite accessibility live region so assistive technology is informed while authentication state resolves; routing behavior is unchanged.
+- **Personalization async accessibility:** loading, load-error, and no-state feedback now use polite accessibility live regions. Personalization maturity calculation, confidence/evidence semantics, and navigation are unchanged.
 - **Onboarding async accessibility:** baseline-target persistence errors, Spiritual Grounding preference errors, and sync/offline feedback now use polite accessibility live regions. Onboarding selection, persistence, and completion behavior are unchanged.
 - **Personal Learning async accessibility:** loading, load-error, and asynchronous empty-result feedback now use polite accessibility live regions. Personal-response estimates, confidence labels, outcome history, and learning logic are unchanged.
 - **Today:** sync/offline, cached snapshot, current-state, One Move, decision, and feedback outcomes are live-announced; key controls have explicit accessible naming; shared semantic border/control tokens replace remaining local foundational values found in the audit.
@@ -56,6 +58,8 @@ Latest static CP9 work:
 - **Auth/recovery, Check-in, Value Alignment, Invisible Wins, Integrations:** shared controls and asynchronous accessibility feedback are in place for the reviewed flows.
 
 Latest static product commits from this pass (not runtime-verified):
+- `05bc6c3fd1a742950f2ca675f88058111a48e63b` — announce entry-session loading state.
+- `5933a06f19aa9b55118463ae7c74c02d3becda36` — announce Personalization loading/error/empty states.
 - `60d8e6f6155e3b63a6251c56a712a7be53040f44` — announce Onboarding persistence/sync error states.
 - `4c85570f607947fe09b7d14fa2643f87185dd183` — announce Personal Learning loading/error/empty states.
 
@@ -76,7 +80,7 @@ The TASK-required final design-swap proof is **not claimed**. It still requires 
 
 ## Exact next executable action
 1. Continue the repository-wide CP9 static review for untranslated production literals, semantic RTL issues, missing accessibility labels/states/live announcements, truncation/dynamic-type risks, duplicated global visual values, and unjustified local control treatments outside already-reviewed surfaces.
-2. Revisit already-audited screens only when static inspection finds a concrete remaining defect; Onboarding and Personal Learning now have the currently identified asynchronous announcement gaps addressed.
+2. Revisit already-audited screens only when static inspection finds a concrete remaining defect; entry routing and Personalization now have the currently identified asynchronous announcement gaps addressed.
 3. Leave representative-width runtime checks, post-baseline tests/builds/typechecks, CP1–CP8 execution-dependent evidence, and the final design-swap proof to owner validation under the active policy.
 
 ## Verification record
