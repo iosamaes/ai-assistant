@@ -11,3 +11,4 @@ export * from './alignment';
 export * from './scenario';
 export * from './scenario-learning';
 export * from './experiment';
+export * from './recovery';
