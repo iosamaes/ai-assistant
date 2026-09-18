@@ -1,7 +1,7 @@
 import type { ConfidenceLevel, MomentumDirection } from '@mizan/core';
 import { Link } from 'expo-router';
 import { useEffect, useMemo, useState } from 'react';
-import { Pressable, StyleSheet, TextInput, useColorScheme, View } from 'react-native';
+import { Pressable, StyleSheet, useColorScheme, View } from 'react-native';
 
 import {
   recoverPendingActionFeedback,
@@ -18,9 +18,15 @@ import {
   type DailyRecommendationOption,
   type OneMoveDecision,
 } from '@/application/daily-recommendation';
-import { Card, MizanText } from '@/components/mizan-ui';
+import {
+  Card,
+  MizanText,
+  MizanTextInput,
+  PrimaryButton,
+  SecondaryButton,
+} from '@/components/mizan-ui';
 import { Screen } from '@/components/screen';
-import { Palette, Radius, Spacing } from '@/constants/theme';
+import { Controls, Interaction, Palette, Radius, Spacing } from '@/constants/theme';
 import type { TranslationKey } from '@/i18n';
 import { DomainId, useAppState } from '@/state/app-state';
 
@@ -327,7 +333,11 @@ export default function TodayScreen() {
             accessibilityRole="button"
             style={({ pressed }) => [
               styles.settingsButton,
-              { borderColor: palette.border, backgroundColor: palette.surface, opacity: pressed ? 0.72 : 1 },
+              {
+                borderColor: palette.border,
+                backgroundColor: palette.surface,
+                opacity: pressed ? Interaction.subtlePressed : 1,
+              },
             ]}>
             <MizanText variant="label">{t('settings')}</MizanText>
           </Pressable>
@@ -336,7 +346,7 @@ export default function TodayScreen() {
 
       {syncMessage ? <MizanText muted>{syncMessage}</MizanText> : null}
       {snapshotMessage ? (
-        <Card style={[styles.snapshotNotice, { borderColor: palette.border }]}>
+        <Card>
           <MizanText variant="caption" muted>{snapshotMessage}</MizanText>
         </Card>
       ) : null}
@@ -349,9 +359,11 @@ export default function TodayScreen() {
             accessibilityRole="button"
             style={({ pressed }) => [
               styles.primaryAction,
-              { backgroundColor: palette.accent, opacity: pressed ? 0.82 : 1 },
+              { backgroundColor: palette.accent, opacity: pressed ? Interaction.pressed : 1 },
             ]}>
-            <MizanText variant="label" style={styles.primaryActionText}>{t('checkInStart')}</MizanText>
+            <MizanText variant="label" style={[styles.primaryActionText, { color: palette.onAccent }]}>
+              {t('checkInStart')}
+            </MizanText>
           </Pressable>
         </Link>
       </Card>
@@ -445,70 +457,39 @@ export default function TodayScreen() {
             {alternative && alternativeLabel && !decisionFinished ? (
               <View style={styles.alternativeBlock}>
                 <MizanText variant="caption" muted>{t('oneMoveAlternative')}</MizanText>
-                <Pressable
-                  accessibilityRole="button"
+                <SecondaryButton
+                  label={t(alternativeLabel)}
                   disabled={decisionStatus === 'saving'}
                   onPress={() => {
                     setSelectedActionId(alternative.actionId);
                     setDecisionStatus('idle');
                   }}
-                  style={({ pressed }) => [
-                    styles.secondaryAction,
-                    {
-                      borderColor: palette.border,
-                      backgroundColor: palette.surface,
-                      opacity: decisionStatus === 'saving' ? 0.5 : pressed ? 0.72 : 1,
-                    },
-                  ]}>
-                  <MizanText variant="label">{t(alternativeLabel)}</MizanText>
-                </Pressable>
+                />
               </View>
             ) : null}
 
             <View style={[styles.decisionRow, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
-              <Pressable
-                accessibilityRole="button"
-                disabled={decisionStatus === 'saving' || decisionFinished}
-                onPress={() => void handleDecision('accepted')}
-                style={({ pressed }) => [
-                  styles.decisionButton,
-                  {
-                    backgroundColor: palette.accent,
-                    opacity: decisionStatus === 'saving' || decisionFinished ? 0.5 : pressed ? 0.82 : 1,
-                  },
-                ]}>
-                <MizanText variant="label" style={styles.primaryActionText}>{t('oneMoveAccept')}</MizanText>
-              </Pressable>
-              <Pressable
-                accessibilityRole="button"
-                disabled={decisionStatus === 'saving' || decisionFinished}
-                onPress={() => void handleDecision('deferred')}
-                style={({ pressed }) => [
-                  styles.decisionButton,
-                  styles.secondaryAction,
-                  {
-                    borderColor: palette.border,
-                    backgroundColor: palette.surface,
-                    opacity: decisionStatus === 'saving' || decisionFinished ? 0.5 : pressed ? 0.72 : 1,
-                  },
-                ]}>
-                <MizanText variant="label">{t('oneMoveDefer')}</MizanText>
-              </Pressable>
-              <Pressable
-                accessibilityRole="button"
-                disabled={decisionStatus === 'saving' || decisionFinished}
-                onPress={() => void handleDecision('declined')}
-                style={({ pressed }) => [
-                  styles.decisionButton,
-                  styles.secondaryAction,
-                  {
-                    borderColor: palette.border,
-                    backgroundColor: palette.surface,
-                    opacity: decisionStatus === 'saving' || decisionFinished ? 0.5 : pressed ? 0.72 : 1,
-                  },
-                ]}>
-                <MizanText variant="label">{t('oneMoveDecline')}</MizanText>
-              </Pressable>
+              <View style={styles.decisionButtonSlot}>
+                <PrimaryButton
+                  label={t('oneMoveAccept')}
+                  disabled={decisionStatus === 'saving' || decisionFinished}
+                  onPress={() => void handleDecision('accepted')}
+                />
+              </View>
+              <View style={styles.decisionButtonSlot}>
+                <SecondaryButton
+                  label={t('oneMoveDefer')}
+                  disabled={decisionStatus === 'saving' || decisionFinished}
+                  onPress={() => void handleDecision('deferred')}
+                />
+              </View>
+              <View style={styles.decisionButtonSlot}>
+                <SecondaryButton
+                  label={t('oneMoveDecline')}
+                  disabled={decisionStatus === 'saving' || decisionFinished}
+                  onPress={() => void handleDecision('declined')}
+                />
+              </View>
             </View>
 
             {decisionMessage ? <MizanText muted>{t(decisionMessage)}</MizanText> : null}
@@ -539,10 +520,12 @@ export default function TodayScreen() {
                       {
                         borderColor: selected ? palette.accent : palette.border,
                         backgroundColor: selected ? palette.accent : palette.surface,
-                        opacity: disabled ? 0.55 : pressed ? 0.76 : 1,
+                        opacity: disabled ? Interaction.disabled : pressed ? Interaction.chipPressed : 1,
                       },
                     ]}>
-                    <MizanText variant="label" style={selected ? styles.primaryActionText : undefined}>
+                    <MizanText
+                      variant="label"
+                      style={selected ? [styles.primaryActionText, { color: palette.onAccent }] : undefined}>
                       {value}
                     </MizanText>
                   </Pressable>
@@ -553,7 +536,7 @@ export default function TodayScreen() {
               <MizanText variant="caption" muted>{t('feedbackLow')}</MizanText>
               <MizanText variant="caption" muted>{t('feedbackHigh')}</MizanText>
             </View>
-            <TextInput
+            <MizanTextInput
               accessibilityLabel={t('feedbackNotePlaceholder')}
               editable={feedbackStatus !== 'saving' && feedbackStatus !== 'saved'}
               maxLength={280}
@@ -563,36 +546,14 @@ export default function TodayScreen() {
                 if (feedbackStatus === 'offline' || feedbackStatus === 'error') setFeedbackStatus('idle');
               }}
               placeholder={t('feedbackNotePlaceholder')}
-              placeholderTextColor={palette.textMuted}
-              style={[
-                styles.feedbackInput,
-                {
-                  borderColor: palette.border,
-                  backgroundColor: palette.surface,
-                  color: palette.text,
-                  textAlign: isRtl ? 'right' : 'left',
-                },
-              ]}
+              style={styles.feedbackInput}
               value={feedbackNote}
             />
-            <Pressable
-              accessibilityRole="button"
+            <PrimaryButton
+              label={t('feedbackSave')}
               disabled={feedbackUsefulness === null || feedbackStatus === 'saving' || feedbackStatus === 'saved'}
               onPress={() => void handleFeedback()}
-              style={({ pressed }) => [
-                styles.primaryAction,
-                {
-                  backgroundColor: palette.accent,
-                  opacity:
-                    feedbackUsefulness === null || feedbackStatus === 'saving' || feedbackStatus === 'saved'
-                      ? 0.5
-                      : pressed
-                        ? 0.82
-                        : 1,
-                },
-              ]}>
-              <MizanText variant="label" style={styles.primaryActionText}>{t('feedbackSave')}</MizanText>
-            </Pressable>
+            />
             {feedbackMessage ? <MizanText muted>{t(feedbackMessage)}</MizanText> : null}
           </View>
         ) : null}
@@ -625,22 +586,39 @@ export default function TodayScreen() {
 const styles = StyleSheet.create({
   topRow: { alignItems: 'center', justifyContent: 'space-between', gap: Spacing.lg },
   heading: { flex: 1, gap: Spacing.xs },
-  settingsButton: { minHeight: 44, justifyContent: 'center', paddingHorizontal: Spacing.lg, borderWidth: 1, borderRadius: Radius.pill },
-  snapshotNotice: { borderWidth: 1 },
-  primaryAction: { minHeight: 48, borderRadius: Radius.md, alignItems: 'center', justifyContent: 'center', paddingHorizontal: Spacing.xl },
-  primaryActionText: { color: '#FFFFFF', textAlign: 'center' },
+  settingsButton: {
+    minHeight: Controls.minimumTouchHeight,
+    justifyContent: 'center',
+    paddingHorizontal: Spacing.lg,
+    borderWidth: Controls.borderWidth,
+    borderRadius: Radius.pill,
+  },
+  primaryAction: {
+    minHeight: Controls.actionHeight,
+    borderRadius: Radius.md,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: Spacing.xl,
+  },
+  primaryActionText: { textAlign: 'center' },
   stateItem: { gap: Spacing.xs, borderTopWidth: StyleSheet.hairlineWidth, paddingTop: Spacing.md },
   stateRow: { alignItems: 'center', justifyContent: 'space-between', gap: Spacing.md },
   oneMoveContent: { gap: Spacing.md },
   alternativeBlock: { gap: Spacing.sm },
   decisionRow: { flexWrap: 'wrap', gap: Spacing.sm },
-  decisionButton: { minHeight: 44, flexGrow: 1, minWidth: 120, alignItems: 'center', justifyContent: 'center', borderRadius: Radius.md, paddingHorizontal: Spacing.md },
-  secondaryAction: { minHeight: 44, alignItems: 'center', justifyContent: 'center', borderRadius: Radius.md, borderWidth: 1, paddingHorizontal: Spacing.md },
+  decisionButtonSlot: { flexGrow: 1, minWidth: 120 },
   feedbackBlock: { gap: Spacing.md, borderTopWidth: StyleSheet.hairlineWidth, paddingTop: Spacing.lg },
   ratingRow: { flexWrap: 'wrap', gap: Spacing.sm },
-  ratingButton: { minWidth: 48, minHeight: 44, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderRadius: Radius.md },
+  ratingButton: {
+    minWidth: Controls.actionHeight,
+    minHeight: Controls.minimumTouchHeight,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: Controls.borderWidth,
+    borderRadius: Radius.md,
+  },
   feedbackScaleLabels: { justifyContent: 'space-between', gap: Spacing.md },
-  feedbackInput: { minHeight: 88, borderWidth: 1, borderRadius: Radius.md, paddingHorizontal: Spacing.md, paddingVertical: Spacing.md, textAlignVertical: 'top' },
+  feedbackInput: { minHeight: 88, textAlignVertical: 'top' },
   statusRow: { alignItems: 'center', gap: Spacing.sm },
   dot: { width: 8, height: 8, borderRadius: 4 },
   section: { gap: Spacing.lg },
