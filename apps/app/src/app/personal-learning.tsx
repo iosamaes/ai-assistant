@@ -1,13 +1,13 @@
 import type { ConfidenceLevel } from '@mizan/core';
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Pressable, StyleSheet, useColorScheme, View } from 'react-native';
+import { StyleSheet, useColorScheme, View } from 'react-native';
 
 import {
   loadPersonalLearning,
   type PersonalLearningAction,
 } from '@/application/personal-learning';
-import { Card, MizanText } from '@/components/mizan-ui';
+import { Card, MizanText, SecondaryButton } from '@/components/mizan-ui';
 import { Screen } from '@/components/screen';
 import { Palette, Spacing } from '@/constants/theme';
 import { useAppState } from '@/state/app-state';
@@ -215,9 +215,7 @@ export default function PersonalLearningScreen() {
         );
       })}
 
-      <Pressable accessibilityRole="button" onPress={() => router.replace('/settings')} style={styles.back}>
-        <MizanText variant="label">{labels.back}</MizanText>
-      </Pressable>
+      <SecondaryButton compact label={labels.back} onPress={() => router.replace('/settings')} />
     </Screen>
   );
 }
@@ -229,5 +227,4 @@ const styles = StyleSheet.create({
   learningBox: { borderTopWidth: StyleSheet.hairlineWidth, paddingTop: Spacing.md, gap: Spacing.xs },
   history: { gap: Spacing.sm },
   outcome: { borderTopWidth: StyleSheet.hairlineWidth, paddingTop: Spacing.sm, gap: Spacing.xs },
-  back: { alignSelf: 'center', paddingVertical: Spacing.lg, paddingHorizontal: Spacing.xl },
 });
