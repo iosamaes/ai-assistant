@@ -1,4 +1,5 @@
 import {
+  buildRecommendationContextId,
   chooseOneMove,
   ENGINE_CONFIG,
   type ActionDefinition,
@@ -115,17 +116,6 @@ function expectedImpactForNeed(
   return round(clamp01(coldStartPrior + adjustment));
 }
 
-function recommendationContextId(state: HumanStateVector): string {
-  const evidenceKeys = Array.from(
-    new Set(
-      state.components.flatMap((component) =>
-        component.evidence.map((evidence) => `${evidence.id}@${evidence.observedAt}`),
-      ),
-    ),
-  ).sort();
-  return `evidence-v1|${evidenceKeys.join('|')}`;
-}
-
 function candidateForAction(
   action: ActionDefinition,
   state: HumanStateVector,
@@ -196,7 +186,7 @@ export function prepareDailyRecommendation(
   const selected = prepared.find((item) => item.action.id === oneMove.actionId);
   if (!selected) return null;
 
-  const contextId = recommendationContextId(state);
+  const contextId = buildRecommendationContextId(state);
   const alternatives = oneMove.alternatives.flatMap((actionId) => {
     const item = prepared.find((candidate) => candidate.action.id === actionId);
     return item ? [toOption(item, contextId)] : [];
@@ -242,10 +232,8 @@ export async function recordOneMoveDecision(
   selectedAsAlternative: boolean,
 ): Promise<DataResult<string>> {
   const priorDecision = await loadOneMoveDecisionForContext(userId, option.contextId);
-  if (priorDecision.ok && priorDecision.value) {
-    return { ok: false, error: { kind: 'conflict' } };
-  }
-  if (!priorDecision.ok && priorDecision.error.kind === 'session-expired') return priorDecision;
+  if (!priorDecision.ok) return priorDecision;
+  if (priorDecision.value) return { ok: false, error: { kind: 'conflict' } };
 
   return insertActionEvent(userId, {
     action_key: option.actionId,
