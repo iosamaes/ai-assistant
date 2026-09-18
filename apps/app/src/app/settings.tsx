@@ -34,6 +34,9 @@ const insightCopy = {
     whyTitle: 'لماذا قد أشعر أنني لست على ما يرام؟',
     whyBody: 'راجع العوامل المحتملة المدعومة بأدلتك الحالية مع توضيح الثقة، من دون ادعاء السببية أو التشخيص.',
     whyOpen: 'فتح WHY',
+    insightsTitle: 'الرؤى والأنماط',
+    insightsBody: 'راجع الارتباطات الشخصية التي تكررت في ملاحظاتك المقترنة، مع عدد العينات والثقة ونافذة الأدلة.',
+    insightsOpen: 'فتح الرؤى',
   },
   en: {
     lifeMapTitle: 'Life map',
@@ -42,6 +45,9 @@ const insightCopy = {
     whyTitle: 'Why might I feel off?',
     whyBody: 'Review candidate factors supported by your current evidence with confidence, without causal or diagnostic claims.',
     whyOpen: 'Open WHY',
+    insightsTitle: 'Insights and patterns',
+    insightsBody: 'Review recurring personal associations from paired observations with sample count, confidence, and evidence window.',
+    insightsOpen: 'Open insights',
   },
 } as const;
 
@@ -129,6 +135,12 @@ export default function SettingsScreen() {
         <MizanText variant="title">{insightLabels.whyTitle}</MizanText>
         <MizanText muted>{insightLabels.whyBody}</MizanText>
         <PrimaryButton label={insightLabels.whyOpen} onPress={() => router.push('/why')} />
+      </View>
+
+      <View style={styles.section}>
+        <MizanText variant="title">{insightLabels.insightsTitle}</MizanText>
+        <MizanText muted>{insightLabels.insightsBody}</MizanText>
+        <PrimaryButton label={insightLabels.insightsOpen} onPress={() => router.push('/insights')} />
       </View>
 
       <View style={styles.section}>

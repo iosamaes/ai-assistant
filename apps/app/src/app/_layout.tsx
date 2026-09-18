@@ -48,6 +48,7 @@ function AppNavigator() {
         <Stack.Screen name="check-in" />
         <Stack.Screen name="life-map" />
         <Stack.Screen name="why" />
+        <Stack.Screen name="insights" />
         <Stack.Screen name="settings" />
       </Stack>
     </>
