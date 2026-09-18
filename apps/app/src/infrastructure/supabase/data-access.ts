@@ -38,6 +38,7 @@ export type ObservationInput = {
   value_text?: string;
   value_boolean?: boolean;
   unit?: string | null;
+  client_mutation_id?: string;
 };
 export type StoredObservation = {
   id: string;
@@ -175,7 +176,10 @@ export async function insertObservation(userId: string, input: ObservationInput)
   if (!supabase) return unavailable();
   const { data, error } = await supabase
     .from('observations')
-    .insert({ user_id: userId, ...input })
+    .upsert(
+      { user_id: userId, ...input },
+      { onConflict: 'user_id,client_mutation_id,metric' },
+    )
     .select('id')
     .single();
   if (error) return dataFailure(error);
@@ -189,7 +193,10 @@ export async function insertObservations(
   if (inputs.length === 0) return { ok: true, value: [] };
   if (!supabase) return unavailable();
   const rows = inputs.map((input) => ({ user_id: userId, ...input }));
-  const { data, error } = await supabase.from('observations').insert(rows).select('id');
+  const { data, error } = await supabase
+    .from('observations')
+    .upsert(rows, { onConflict: 'user_id,client_mutation_id,metric' })
+    .select('id');
   if (error) return dataFailure(error);
   return { ok: true, value: (data ?? []).map((row) => row.id as string) };
 }
