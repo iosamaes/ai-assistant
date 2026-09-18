@@ -11,7 +11,7 @@ import {
 } from '@/application/insights';
 import { Card, MizanText } from '@/components/mizan-ui';
 import { Screen } from '@/components/screen';
-import { Palette, Radius, Spacing } from '@/constants/theme';
+import { Controls, Interaction, Palette, Radius, Spacing } from '@/constants/theme';
 import { useAppState } from '@/state/app-state';
 
 type LoadStatus = 'loading' | 'ready' | 'error';
@@ -180,7 +180,14 @@ export default function InsightsScreen() {
         <Link href="/today" asChild>
           <Pressable
             accessibilityRole="button"
-            style={({ pressed }) => [styles.backButton, { borderColor: palette.border, backgroundColor: palette.surface, opacity: pressed ? 0.72 : 1 }]}>
+            style={({ pressed }) => [
+              styles.backButton,
+              {
+                borderColor: palette.border,
+                backgroundColor: palette.surface,
+                opacity: pressed ? Interaction.subtlePressed : 1,
+              },
+            ]}>
             <MizanText variant="label">{local.back}</MizanText>
           </Pressable>
         </Link>
@@ -190,8 +197,15 @@ export default function InsightsScreen() {
         <MizanText muted>{local.body}</MizanText>
         <MizanText variant="caption" muted>{local.caveat}</MizanText>
         <Link href="/check-in" asChild>
-          <Pressable accessibilityRole="button" style={({ pressed }) => [styles.primaryAction, { backgroundColor: palette.accent, opacity: pressed ? 0.82 : 1 }]}>
-            <MizanText variant="label" style={styles.primaryActionText}>{local.checkIn}</MizanText>
+          <Pressable
+            accessibilityRole="button"
+            style={({ pressed }) => [
+              styles.primaryAction,
+              { backgroundColor: palette.accent, opacity: pressed ? Interaction.pressed : 1 },
+            ]}>
+            <MizanText variant="label" style={[styles.primaryActionText, { color: palette.onAccent }]}>
+              {local.checkIn}
+            </MizanText>
           </Pressable>
         </Link>
       </Card>
@@ -209,8 +223,20 @@ export default function InsightsScreen() {
 const styles = StyleSheet.create({
   topRow: { alignItems: 'center', justifyContent: 'space-between', gap: Spacing.lg },
   heading: { flex: 1, gap: Spacing.xs },
-  backButton: { minHeight: 44, justifyContent: 'center', paddingHorizontal: Spacing.lg, borderWidth: 1, borderRadius: Radius.pill },
-  primaryAction: { minHeight: 48, borderRadius: Radius.md, alignItems: 'center', justifyContent: 'center', paddingHorizontal: Spacing.xl },
-  primaryActionText: { color: '#FFFFFF', textAlign: 'center' },
+  backButton: {
+    minHeight: Controls.minimumTouchHeight,
+    justifyContent: 'center',
+    paddingHorizontal: Spacing.lg,
+    borderWidth: Controls.borderWidth,
+    borderRadius: Radius.pill,
+  },
+  primaryAction: {
+    minHeight: Controls.actionHeight,
+    borderRadius: Radius.md,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: Spacing.xl,
+  },
+  primaryActionText: { textAlign: 'center' },
   detailRow: { alignItems: 'center', justifyContent: 'space-between', gap: Spacing.md, borderTopWidth: StyleSheet.hairlineWidth, paddingTop: Spacing.sm },
 });
