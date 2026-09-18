@@ -4,8 +4,17 @@ import { Platform } from 'react-native';
 import type { ObservationInput } from '@/infrastructure/supabase/data-access';
 import type { InvisibleWinCategory } from '@/infrastructure/supabase/reflections';
 
-const STORAGE_PREFIX = 'mizan.pending-user-mutations.v1.';
-const MAX_PENDING_MUTATIONS = 24;
+const STORAGE_PREFIX = 'mizan.pending-user-mutations.v2.';
+const MAX_PENDING_MUTATIONS = 16;
+const invisibleWinCategories: readonly InvisibleWinCategory[] = [
+  'rest',
+  'boundary',
+  'family',
+  'repair',
+  'disconnect',
+  'health',
+  'other',
+];
 
 export type PendingCheckInMutation = {
   id: string;
@@ -31,8 +40,13 @@ export type PendingMutationStorageResult<T> =
   | { ok: true; value: T }
   | { ok: false; error: 'storage-unavailable' | 'queue-full' };
 
-function storageKey(userId: string) {
-  return `${STORAGE_PREFIX}${userId}`;
+type PendingSlot = {
+  index: number;
+  mutation: PendingUserMutation | null;
+};
+
+function storageKey(userId: string, index: number) {
+  return `${STORAGE_PREFIX}${userId}.${index}`;
 }
 
 function webStorage() {
@@ -60,6 +74,7 @@ function isPendingMutation(value: unknown, userId: string): value is PendingUser
   return (
     value.kind === 'invisible-win' &&
     typeof value.category === 'string' &&
+    invisibleWinCategories.includes(value.category as InvisibleWinCategory) &&
     typeof value.note === 'string' &&
     typeof value.occurredAt === 'string'
   );
@@ -85,6 +100,29 @@ async function writeRaw(key: string, value: string | null): Promise<void> {
   else storage.setItem(key, value);
 }
 
+async function readSlots(userId: string): Promise<PendingMutationStorageResult<PendingSlot[]>> {
+  try {
+    const slots = await Promise.all(
+      Array.from({ length: MAX_PENDING_MUTATIONS }, async (_, index) => {
+        const raw = await readRaw(storageKey(userId, index));
+        if (!raw) return { index, mutation: null } satisfies PendingSlot;
+        try {
+          const parsed: unknown = JSON.parse(raw);
+          return {
+            index,
+            mutation: isPendingMutation(parsed, userId) ? parsed : null,
+          } satisfies PendingSlot;
+        } catch {
+          return { index, mutation: null } satisfies PendingSlot;
+        }
+      }),
+    );
+    return { ok: true, value: slots };
+  } catch {
+    return { ok: false, error: 'storage-unavailable' };
+  }
+}
+
 export function createClientMutationId() {
   const randomPart = () => Math.random().toString(36).slice(2, 12);
   return `${Date.now().toString(36)}-${randomPart()}-${randomPart()}`;
@@ -93,46 +131,49 @@ export function createClientMutationId() {
 export async function readPendingUserMutations(
   userId: string,
 ): Promise<PendingMutationStorageResult<PendingUserMutation[]>> {
-  try {
-    const raw = await readRaw(storageKey(userId));
-    if (!raw) return { ok: true, value: [] };
-    const parsed: unknown = JSON.parse(raw);
-    if (!Array.isArray(parsed)) return { ok: true, value: [] };
-    return {
-      ok: true,
-      value: parsed.filter((item) => isPendingMutation(item, userId)).slice(-MAX_PENDING_MUTATIONS),
-    };
-  } catch {
-    return { ok: false, error: 'storage-unavailable' };
-  }
-}
-
-export async function replacePendingUserMutations(
-  userId: string,
-  mutations: readonly PendingUserMutation[],
-): Promise<PendingMutationStorageResult<number>> {
-  if (mutations.length > MAX_PENDING_MUTATIONS) {
-    return { ok: false, error: 'queue-full' };
-  }
-
-  try {
-    await writeRaw(storageKey(userId), mutations.length > 0 ? JSON.stringify(mutations) : null);
-    return { ok: true, value: mutations.length };
-  } catch {
-    return { ok: false, error: 'storage-unavailable' };
-  }
+  const slots = await readSlots(userId);
+  if (!slots.ok) return slots;
+  return {
+    ok: true,
+    value: slots.value
+      .flatMap((slot) => (slot.mutation ? [slot.mutation] : []))
+      .sort((left, right) => left.createdAt.localeCompare(right.createdAt)),
+  };
 }
 
 export async function enqueuePendingUserMutation(
   mutation: PendingUserMutation,
 ): Promise<PendingMutationStorageResult<number>> {
-  const current = await readPendingUserMutations(mutation.userId);
-  if (!current.ok) return current;
+  const slots = await readSlots(mutation.userId);
+  if (!slots.ok) return slots;
 
-  const withoutDuplicate = current.value.filter((item) => item.id !== mutation.id);
-  if (withoutDuplicate.length >= MAX_PENDING_MUTATIONS) {
-    return { ok: false, error: 'queue-full' };
+  const target =
+    slots.value.find((slot) => slot.mutation?.id === mutation.id) ??
+    slots.value.find((slot) => slot.mutation === null);
+  if (!target) return { ok: false, error: 'queue-full' };
+
+  try {
+    await writeRaw(storageKey(mutation.userId, target.index), JSON.stringify(mutation));
+    const count = slots.value.filter((slot) => slot.mutation !== null && slot.index !== target.index).length + 1;
+    return { ok: true, value: count };
+  } catch {
+    return { ok: false, error: 'storage-unavailable' };
   }
+}
 
-  return replacePendingUserMutations(mutation.userId, [...withoutDuplicate, mutation]);
+export async function removePendingUserMutation(
+  userId: string,
+  mutationId: string,
+): Promise<PendingMutationStorageResult<boolean>> {
+  const slots = await readSlots(userId);
+  if (!slots.ok) return slots;
+  const target = slots.value.find((slot) => slot.mutation?.id === mutationId);
+  if (!target) return { ok: true, value: false };
+
+  try {
+    await writeRaw(storageKey(userId, target.index), null);
+    return { ok: true, value: true };
+  } catch {
+    return { ok: false, error: 'storage-unavailable' };
+  }
 }
