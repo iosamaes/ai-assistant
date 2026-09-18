@@ -55,6 +55,9 @@ const insightCopy = {
     experimentsTitle: 'التجارب الشخصية',
     experimentsBody: 'اختبر فرضية صغيرة طوعًا ولمدة محددة، ثم سجّل أثرها وراجع مقارنة شخصية تحفظ حدود الأدلة.',
     experimentsOpen: 'فتح التجارب',
+    recoveryTitle: 'أنقذ يومي',
+    recoveryBody: 'ادخل وضع استعادة منخفض الحمل يعتمد فقط على إشارات حالتك المدعومة بالأدلة، مع إمكانية التخطي أو التوقف بلا عقوبة.',
+    recoveryOpen: 'فتح وضع الاستعادة',
   },
   en: {
     lifeMapTitle: 'Life map',
@@ -84,6 +87,9 @@ const insightCopy = {
     experimentsTitle: 'Personal experiments',
     experimentsBody: 'Voluntarily test one small time-bounded hypothesis, record its impact, and review a personal comparison with explicit evidence limits.',
     experimentsOpen: 'Open experiments',
+    recoveryTitle: 'Save My Day',
+    recoveryBody: 'Enter a low-load recovery mode based only on supported current-state signals, with skipping and stopping carrying no penalty.',
+    recoveryOpen: 'Open recovery mode',
   },
 } as const;
 
@@ -213,6 +219,12 @@ export default function SettingsScreen() {
         <MizanText variant="title">{insightLabels.experimentsTitle}</MizanText>
         <MizanText muted>{insightLabels.experimentsBody}</MizanText>
         <PrimaryButton label={insightLabels.experimentsOpen} onPress={() => router.push('/experiments')} />
+      </View>
+
+      <View style={styles.section}>
+        <MizanText variant="title">{insightLabels.recoveryTitle}</MizanText>
+        <MizanText muted>{insightLabels.recoveryBody}</MizanText>
+        <PrimaryButton label={insightLabels.recoveryOpen} onPress={() => router.push('/recovery')} />
       </View>
 
       <View style={styles.section}>
