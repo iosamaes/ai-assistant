@@ -167,7 +167,7 @@ export function ChoiceChip({ label, accessibilityLabel, selected, onPress }: Cho
           opacity: pressed ? Interaction.chipPressed : 1,
         },
       ]}>
-      <MizanText variant="label">{label}</MizanText>
+      <MizanText variant="label" style={styles.centeredText}>{label}</MizanText>
     </Pressable>
   );
 }
