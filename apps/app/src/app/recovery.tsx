@@ -30,6 +30,12 @@ const copy = {
     skip: 'تخطي هذه الخطوة بدون عقوبة',
     back: 'العودة لليوم',
     caveat: 'هذا دعم يومي غير طبي، وليس تشخيصًا أو علاجًا. إذا كانت الأدلة ناقصة سيقول ميزان ذلك بوضوح.',
+    confidenceLevels: {
+      insufficient: 'دليل غير كافٍ',
+      possible: 'ممكن',
+      likely: 'مرجّح',
+      known: 'قوي',
+    },
     reason: {
       high_overload: 'احتمال حمل زائد مرتفع',
       high_mental_load: 'ضغط ذهني مرتفع',
@@ -71,6 +77,12 @@ const copy = {
     skip: 'Skip this step without penalty',
     back: 'Back to Today',
     caveat: 'This is non-medical daily support, not diagnosis or treatment. When evidence is limited, MIZAN says so explicitly.',
+    confidenceLevels: {
+      insufficient: 'Insufficient evidence',
+      possible: 'Possible',
+      likely: 'Likely',
+      known: 'Strong',
+    },
     reason: {
       high_overload: 'Higher overload risk',
       high_mental_load: 'Higher mental load',
@@ -168,7 +180,7 @@ export default function RecoveryScreen() {
           <Card>
             <MizanText variant="title">{needText}</MizanText>
             <MizanText variant="caption" muted>
-              {labels.confidence}: {plan.confidence.level} · {labels.evidence}: {plan.confidence.evidenceCount}
+              {labels.confidence}: {labels.confidenceLevels[plan.confidence.level]} · {labels.evidence}: {plan.confidence.evidenceCount}
             </MizanText>
             {reasonLabels.length > 0 ? (
               <View style={styles.reasonGroup}>
