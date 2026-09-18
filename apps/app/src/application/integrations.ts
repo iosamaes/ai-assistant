@@ -5,14 +5,15 @@ import type {
   IntegrationResult,
   ObservationWindow,
 } from '@/integrations/contracts';
+import type { DataResult } from '@/infrastructure/supabase/data-access';
 import {
   disconnectIntegration,
   loadIntegrationConnections,
+  markIntegrationSyncError,
   upsertIntegrationConnection,
   upsertNormalizedExternalObservations,
   type StoredIntegrationConnection,
 } from '@/infrastructure/supabase/integrations';
-import type { DataResult } from '@/infrastructure/supabase/data-access';
 
 function mapDataFailure(kind: string): IntegrationFailureKind {
   if (kind === 'not-configured') return 'not-configured';
@@ -20,6 +21,34 @@ function mapDataFailure(kind: string): IntegrationFailureKind {
   if (kind === 'invalid' || kind === 'conflict') return 'invalid';
   if (kind === 'unavailable') return 'unavailable';
   return 'unknown';
+}
+
+function safeSyncErrorCode(stage: 'scope' | 'provider' | 'persist' | 'state', kind: string) {
+  const normalizedKind = kind.replace(/[^a-z0-9-]/gi, '-').toLowerCase().slice(0, 60) || 'unknown';
+  return `${stage}-${normalizedKind}`;
+}
+
+async function recordHealthSyncFailure(
+  userId: string,
+  providerId: string,
+  stage: 'scope' | 'provider' | 'persist' | 'state',
+  kind: string,
+) {
+  await markIntegrationSyncError(
+    userId,
+    'health_data',
+    providerId,
+    safeSyncErrorCode(stage, kind),
+  );
+}
+
+async function readHealthObservationsWithRetry(
+  provider: HealthDataProvider,
+  window: ObservationWindow,
+) {
+  const first = await provider.readObservations(window);
+  if (first.ok || first.error.kind !== 'unavailable') return first;
+  return provider.readObservations(window);
 }
 
 export interface HealthSyncSummary {
@@ -43,21 +72,28 @@ export async function syncHealthData(
 ): Promise<IntegrationResult<HealthSyncSummary>> {
   const granted = new Set(grantedScopes);
   if (provider.requiredScopes.some((scope) => !granted.has(scope))) {
+    await recordHealthSyncFailure(userId, provider.providerId, 'scope', 'permission-denied');
     return { ok: false, error: { kind: 'permission-denied' } };
   }
 
-  const readResult = await provider.readObservations(window);
-  if (!readResult.ok) return readResult;
+  const readResult = await readHealthObservationsWithRetry(provider, window);
+  if (!readResult.ok) {
+    await recordHealthSyncFailure(userId, provider.providerId, 'provider', readResult.error.kind);
+    return readResult;
+  }
   if (readResult.value.some((observation) => observation.providerId !== provider.providerId)) {
+    await recordHealthSyncFailure(userId, provider.providerId, 'provider', 'provider-mismatch');
     return { ok: false, error: { kind: 'invalid', code: 'provider-mismatch' } };
   }
 
   const persistResult = await upsertNormalizedExternalObservations(userId, readResult.value);
   if (!persistResult.ok) {
+    const mappedKind = mapDataFailure(persistResult.error.kind);
+    await recordHealthSyncFailure(userId, provider.providerId, 'persist', mappedKind);
     return {
       ok: false,
       error: {
-        kind: mapDataFailure(persistResult.error.kind),
+        kind: mappedKind,
         code: persistResult.error.code,
       },
     };
@@ -76,10 +112,12 @@ export async function syncHealthData(
     metadata: {},
   });
   if (!stateResult.ok) {
+    const mappedKind = mapDataFailure(stateResult.error.kind);
+    await recordHealthSyncFailure(userId, provider.providerId, 'state', mappedKind);
     return {
       ok: false,
       error: {
-        kind: mapDataFailure(stateResult.error.kind),
+        kind: mappedKind,
         code: stateResult.error.code,
       },
     };
