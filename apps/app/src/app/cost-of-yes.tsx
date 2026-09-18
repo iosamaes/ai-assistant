@@ -97,7 +97,7 @@ function formatHours(minutes: number | null): string {
 }
 
 export default function CostOfYesScreen() {
-  const { locale } = useAppState();
+  const { isRtl, locale } = useAppState();
   const labels = copy[locale];
   const [commitmentText, setCommitmentText] = useState('');
   const [marginText, setMarginText] = useState('');
@@ -177,7 +177,7 @@ export default function CostOfYesScreen() {
         <MizanText>{statusBody}</MizanText>
 
         {assessment.status !== 'insufficient' ? (
-          <View style={styles.metrics}>
+          <View style={[styles.metrics, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
             <View style={styles.metric}>
               <MizanText variant="caption" muted>{labels.commitment}</MizanText>
               <MizanText variant="title">{formatHours(assessment.commitmentMinutesPerWeek)}</MizanText>
@@ -222,6 +222,6 @@ export default function CostOfYesScreen() {
 const styles = StyleSheet.create({
   hero: { gap: Spacing.md, paddingTop: Spacing.xl },
   field: { gap: Spacing.sm },
-  metrics: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.md },
+  metrics: { flexWrap: 'wrap', gap: Spacing.md },
   metric: { flexGrow: 1, flexBasis: 140, minWidth: 120, gap: Spacing.xs },
 });
