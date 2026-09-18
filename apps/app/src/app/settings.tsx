@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { useSpiritualGroundingPreference } from '@/application/spiritual-grounding';
-import { ChoiceChip, MizanText, PrimaryButton } from '@/components/mizan-ui';
+import { ChoiceChip, MizanText, PrimaryButton, SecondaryButton } from '@/components/mizan-ui';
 import { Screen } from '@/components/screen';
 import { Spacing } from '@/constants/theme';
 import { signOut } from '@/infrastructure/supabase/auth';
@@ -310,12 +310,7 @@ export default function SettingsScreen() {
       <View style={styles.actions}>
         <PrimaryButton label={busy ? t('saving') : t('resetOnboarding')} onPress={() => void editPriorities()} disabled={busy} />
         <PrimaryButton label={t('signOut')} onPress={() => void logout()} disabled={busy} />
-        <MizanText
-          variant="label"
-          style={styles.backLink}
-          onPress={() => router.replace('/today')}>
-          {t('backToday')}
-        </MizanText>
+        <SecondaryButton compact label={t('backToday')} onPress={() => router.replace('/today')} />
       </View>
     </Screen>
   );
@@ -326,5 +321,4 @@ const styles = StyleSheet.create({
   section: { gap: Spacing.lg },
   row: { flexWrap: 'wrap', gap: Spacing.sm },
   actions: { marginTop: 'auto', gap: Spacing.lg, paddingTop: Spacing.xl },
-  backLink: { textAlign: 'center', paddingVertical: Spacing.md },
 });
