@@ -48,6 +48,7 @@ Presentation boundary already in place:
 - async accessibility live announcements now cover the principal asynchronous status/error/empty-state transitions across the reviewed product surfaces.
 
 Latest static CP9 work:
+- **Numeric choice control accessibility:** `ChoiceChip` now supports a semantic accessibility label distinct from its visible label. Check-in and Human ROI rating chips now announce the metric plus rating instead of a bare number while preserving the existing visual UI and selected-state semantics.
 - **Insights async accessibility:** loading, load-error, and asynchronous no-supported-relationship feedback now use polite accessibility live regions, matching the already-reviewed WHY/Life Map pattern without changing relationship evidence, confidence, or causality semantics.
 - **Capacity async accessibility:** loading, load-error, and asynchronous insufficient-buffer feedback now use polite accessibility live regions so screen-reader users are informed when the capacity result changes; capacity math, confidence, and evidence handling are unchanged.
 - **Life Seasons async accessibility:** Arabic/English loading copy was added and loading plus asynchronous empty-history feedback now use polite accessibility live regions. Season selection, target persistence, history data, and Balance-related behavior are unchanged.
@@ -61,6 +62,9 @@ Latest static CP9 work:
 - **Auth/recovery, Check-in, Value Alignment, Invisible Wins, Integrations:** shared controls and asynchronous accessibility feedback are in place for the reviewed flows.
 
 Latest static product commits from this pass (not runtime-verified):
+- `c72917c172289583d73fd641d361d15401dcddb9` — allow semantic accessibility labels on shared `ChoiceChip` while preserving visible labels.
+- `c04dc3de9097a6b2c339e1d3774e24f4a594c995` — give Check-in numeric rating chips metric-aware screen-reader labels.
+- `8cfd836767586eed5e2b3fb8b4096b575dcdb38d` — give Human ROI benefit/effort rating chips metric-aware screen-reader labels.
 - `6af8b8b8047ff31a5b2d753695c826827a9e0629` — announce Insights loading/error/empty async states.
 - `bf6bbc579a67f992c39cc4ac618acb61e052b43a` — announce Capacity loading/error/insufficient-buffer async states.
 - `a319eed9a287c9d81840350d69ffe0524f674909` — announce Life Seasons loading/empty-history async states.
@@ -86,7 +90,7 @@ The TASK-required final design-swap proof is **not claimed**. It still requires 
 
 ## Exact next executable action
 1. Continue the repository-wide CP9 static review for untranslated production literals, semantic RTL issues, missing accessibility labels/states/live announcements, truncation/dynamic-type risks, duplicated global visual values, and unjustified local control treatments outside already-reviewed surfaces.
-2. Revisit already-audited screens only when static inspection finds a concrete remaining defect; Insights, Capacity, and Life Seasons now have the identified asynchronous loading/error/empty-state announcement gaps addressed.
+2. Revisit already-audited screens only when static inspection finds a concrete remaining defect; numeric choice controls in Check-in and Human ROI now expose metric-aware screen-reader labels through the shared chip primitive.
 3. Leave representative-width runtime checks, post-baseline tests/builds/typechecks, CP1–CP8 execution-dependent evidence, and the final design-swap proof to owner validation under the active policy.
 
 ## Verification record
