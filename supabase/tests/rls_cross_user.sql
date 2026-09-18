@@ -20,6 +20,11 @@ values
   ('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', '11111111-1111-4111-8111-111111111111', 'walk.ten_minutes', 'accepted'),
   ('bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb', '22222222-2222-4222-8222-222222222222', 'pause.notifications', 'accepted');
 
+insert into public.reflections (user_id, kind, category, note)
+values
+  ('11111111-1111-4111-8111-111111111111', 'invisible_win', 'rest', 'Paused without guilt.'),
+  ('22222222-2222-4222-8222-222222222222', 'invisible_win', 'family', 'Family time.');
+
 set local role authenticated;
 select set_config(
   'request.jwt.claims',
@@ -27,7 +32,7 @@ select set_config(
   true
 );
 
--- User A can see only their own profile and action event.
+-- User A can see only their own profile, action event, and reflection.
 do $$
 begin
   if (select count(*) from public.profiles) <> 1 then
@@ -43,6 +48,10 @@ begin
 
   if (select count(*) from public.action_events) <> 1 then
     raise exception 'RLS failure: user A action visibility is not isolated';
+  end if;
+
+  if (select count(*) from public.reflections) <> 1 then
+    raise exception 'RLS failure: user A reflection visibility is not isolated';
   end if;
 end;
 $$;
@@ -78,6 +87,14 @@ begin
   exception
     when insufficient_privilege or check_violation then null;
   end;
+
+  begin
+    insert into public.reflections (user_id, kind, category, note)
+    values ('22222222-2222-4222-8222-222222222222', 'invisible_win', 'rest', 'Cross-user write');
+    raise exception 'RLS failure: user A inserted user B reflection';
+  exception
+    when insufficient_privilege or check_violation then null;
+  end;
 end;
 $$;
 
@@ -91,5 +108,8 @@ values (
   'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
   4
 );
+
+insert into public.reflections (user_id, kind, category, note)
+values ('11111111-1111-4111-8111-111111111111', 'invisible_win', 'boundary', 'Said no to preserve margin.');
 
 rollback;
