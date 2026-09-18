@@ -304,8 +304,8 @@ export default function SettingsScreen() {
         </View>
       </View>
 
-      {syncMessage ? <MizanText muted>{syncMessage}</MizanText> : null}
-      {message ? <MizanText muted>{message}</MizanText> : null}
+      {syncMessage ? <MizanText accessibilityLiveRegion="polite" muted>{syncMessage}</MizanText> : null}
+      {message ? <MizanText accessibilityLiveRegion="polite" muted>{message}</MizanText> : null}
 
       <View style={styles.actions}>
         <PrimaryButton label={busy ? t('saving') : t('resetOnboarding')} onPress={() => void editPriorities()} disabled={busy} />
