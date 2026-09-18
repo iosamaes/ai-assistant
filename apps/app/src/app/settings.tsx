@@ -26,6 +26,19 @@ const spiritualCopy = {
   },
 } as const;
 
+const lifeMapCopy = {
+  ar: {
+    title: 'خريطة الحياة',
+    body: 'راجع تاريخ المجالات والأدلة المتاحة بدون تحويل البيانات الناقصة إلى درجات.',
+    open: 'فتح خريطة الحياة',
+  },
+  en: {
+    title: 'Life map',
+    body: 'Review domain history and available evidence without turning missing data into scores.',
+    open: 'Open Life map',
+  },
+} as const;
+
 export default function SettingsScreen() {
   const {
     enabledDomains,
@@ -47,6 +60,7 @@ export default function SettingsScreen() {
   const [message, setMessage] = useState<string | null>(null);
   const syncMessage = syncStatus === 'offline' ? t('syncOffline') : syncStatus === 'error' ? t('syncError') : null;
   const spiritualLabels = spiritualCopy[locale];
+  const lifeMapLabels = lifeMapCopy[locale];
 
   const editPriorities = async () => {
     if (busy) return;
@@ -97,6 +111,12 @@ export default function SettingsScreen() {
       <View style={styles.section}>
         <MizanText variant="title">{t('priorities')}</MizanText>
         <MizanText muted>{enabledDomains.map((domainId) => t(domainId)).join(' · ')}</MizanText>
+      </View>
+
+      <View style={styles.section}>
+        <MizanText variant="title">{lifeMapLabels.title}</MizanText>
+        <MizanText muted>{lifeMapLabels.body}</MizanText>
+        <PrimaryButton label={lifeMapLabels.open} onPress={() => router.push('/life-map')} />
       </View>
 
       <View style={styles.section}>
