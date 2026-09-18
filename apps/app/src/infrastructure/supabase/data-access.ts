@@ -65,6 +65,16 @@ export type FeedbackOutcomeInput = {
   observed_at?: string;
 };
 
+export type StoredActionFeedback = {
+  id: string;
+  action_event_id: string;
+  action_key: string;
+  event_type: ActionEventInput['event_type'];
+  usefulness: number | null;
+  outcome_note: string | null;
+  observed_at: string;
+};
+
 export type PluginSettingInput = {
   plugin_id: string;
   enabled: boolean;
@@ -207,6 +217,71 @@ export async function insertFeedbackOutcome(
     .single();
   if (error) return dataFailure(error);
   return { ok: true, value: data.id as string };
+}
+
+export async function loadActionOutcomeFeedback(
+  userId: string,
+  actionKey: string,
+  since: string,
+  limit = 100,
+): Promise<DataResult<StoredActionFeedback[]>> {
+  if (!supabase) return unavailable();
+  const boundedLimit = Math.max(1, Math.min(limit, 200));
+  const { data: events, error: eventError } = await supabase
+    .from('action_events')
+    .select('id,action_key,event_type,occurred_at')
+    .eq('user_id', userId)
+    .eq('action_key', actionKey)
+    .in('event_type', ['accepted', 'completed'])
+    .gte('occurred_at', since)
+    .order('occurred_at', { ascending: false })
+    .limit(boundedLimit);
+  if (eventError) return dataFailure(eventError);
+
+  const eventRows = (events ?? []) as Array<{
+    id: string;
+    action_key: string;
+    event_type: ActionEventInput['event_type'];
+    occurred_at: string;
+  }>;
+  if (eventRows.length === 0) return { ok: true, value: [] };
+
+  const eventById = new Map(eventRows.map((event) => [event.id, event]));
+  const { data: feedback, error: feedbackError } = await supabase
+    .from('feedback_outcomes')
+    .select('id,action_event_id,usefulness,outcome_note,observed_at')
+    .eq('user_id', userId)
+    .in('action_event_id', eventRows.map((event) => event.id))
+    .not('usefulness', 'is', null)
+    .order('observed_at', { ascending: false })
+    .limit(boundedLimit);
+  if (feedbackError) return dataFailure(feedbackError);
+
+  const rows = (feedback ?? []) as Array<{
+    id: string;
+    action_event_id: string;
+    usefulness: number | null;
+    outcome_note: string | null;
+    observed_at: string;
+  }>;
+
+  return {
+    ok: true,
+    value: rows.flatMap((row) => {
+      const event = eventById.get(row.action_event_id);
+      return event
+        ? [{
+            id: row.id,
+            action_event_id: row.action_event_id,
+            action_key: event.action_key,
+            event_type: event.event_type,
+            usefulness: row.usefulness,
+            outcome_note: row.outcome_note,
+            observed_at: row.observed_at,
+          }]
+        : [];
+    }),
+  };
 }
 
 export async function upsertPluginSetting(
