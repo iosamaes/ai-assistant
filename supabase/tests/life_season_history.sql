@@ -3,6 +3,8 @@
 -- The script runs inside a transaction and rolls back all fixture data.
 
 begin;
+create extension if not exists pgtap with schema extensions;
+select extensions.plan(1);
 
 insert into auth.users (id, instance_id, aud, role, email, encrypted_password, email_confirmed_at, created_at, updated_at)
 values
@@ -80,4 +82,7 @@ begin
 end;
 $$;
 
+reset role;
+select extensions.pass('Life-season history checks completed');
+select * from extensions.finish();
 rollback;

@@ -3,6 +3,8 @@
 -- The script runs inside a transaction and rolls back all fixture data.
 
 begin;
+create extension if not exists pgtap with schema extensions;
+select extensions.plan(1);
 
 -- Test identities are inserted only inside this rollback-only transaction.
 insert into auth.users (id, instance_id, aud, role, email, encrypted_password, email_confirmed_at, created_at, updated_at)
@@ -158,4 +160,7 @@ insert into public.experiments (
   now()
 );
 
+reset role;
+select extensions.pass('RLS cross-user isolation checks completed');
+select * from extensions.finish();
 rollback;

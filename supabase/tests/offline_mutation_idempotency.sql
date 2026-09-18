@@ -2,6 +2,8 @@
 -- Run only against a disposable/local database after migrations; all fixtures roll back.
 
 begin;
+create extension if not exists pgtap with schema extensions;
+select extensions.plan(1);
 
 insert into auth.users (id, instance_id, aud, role, email, encrypted_password, email_confirmed_at, created_at, updated_at)
 values (
@@ -97,4 +99,7 @@ begin
 end;
 $$;
 
+reset role;
+select extensions.pass('Offline mutation idempotency checks completed');
+select * from extensions.finish();
 rollback;
