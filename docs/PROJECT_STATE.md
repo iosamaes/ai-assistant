@@ -2,7 +2,7 @@
 
 ## Current checkpoint
 - CP1 — Universal application foundation
-- Status: BLOCKED_HUMAN for owner-side CP1/CP2 validation; CP3 and CP4 implementation continue independently on GitHub main.
+- Status: BLOCKED_HUMAN for owner-side CP1/CP2 validation; CP3, CP4, and CP5 implementation continue independently on GitHub main.
 - Product authority: GitHub `iosamaes/ai-assistant` on `main`.
 - Owner-only local mirror/testing copy: `C:\Users\bofo_\Documents\automation\ai assistant`.
 - Task digest: `c823e4d1031ac5f3f7230ed4e2de236b4446817a`.
@@ -55,7 +55,7 @@ Remaining gate:
 - Pending feedback recovers across restart/login; personalized usefulness affects future ranking only after the core confidence threshold and is bounded to a small impact nudge.
 - Restart-level duplicate One Move decisions are suppressed by a stable evidence-context identity while a genuinely new check-in creates a new recommendation cycle.
 - Onboarding requires explicit focus domain, life season, at least one self-declared value, and privacy mode; completed onboarding persists those choices and user-owned domain priority weights.
-- Onboarding now offers an optional 1–5 sustainable baseline target for every enabled domain. Leaving a domain unset persists `null`; MIZAN does not invent a target for untouched domains.
+- Onboarding offers an optional 1–5 sustainable baseline target for every enabled domain. Leaving a domain unset persists `null`; MIZAN does not invent a target for untouched domains.
 - Persisted baseline ratings are converted to the core 0–100 scale only when present and are exposed through `UserTargets.dimensionBaselines` and Balance per-domain baseline target/deviation metadata.
 - `apps/app/src/application/user-targets.ts` converts persisted season plus enabled-domain weights and any explicit baseline ratings into the core `UserTargets` contract.
 - Today derives a conservative 7-day season-relative Balance and evidence-backed Momentum; missing evidence remains unknown.
@@ -65,12 +65,21 @@ Remaining gate:
 - Implementation milestone: `bf0e656b1de10f1ac9fbbd68dbbad2b054474208` — optional per-domain baseline-target capture, persistence migration, UserTargets wiring, and unknown-preserving Balance metadata.
 - These CP4 additions remain owner-validation pending; workers did not run product tests/builds under the current execution policy.
 
+## CP5 independent progress
+- Added a first Life Map/domain-history application model backed only by stored observations from the existing Supabase data-access boundary.
+- Enabled domains remain visible even when they have no evidence; missing domains/metrics remain explicitly unknown instead of becoming zero scores.
+- Numeric histories use the existing deterministic temporal engine for 28-day medians, evidence-count/freshness confidence, and evidence-backed Momentum orientation (including lower-is-better mental load).
+- Added `/life-map` with Arabic/English copy, RTL-aware layout, loading/error/insufficient-data states, latest observation date/value, 28-day median/evidence/confidence, and trend language that never asserts causation.
+- Registered the route and exposed it from Settings so the surface is reachable without introducing a new navigation framework.
+- CP5 remains incomplete: the next worker-safe slice is the WHY explanation surface and then broader insight/pattern history.
+- No tests/builds were run by this worker; this slice remains owner-validation pending under the active execution policy.
+
 ## Exact next executable action
 1. Owner path: unlock Windows and complete CP1 true phone-width Arabic/English interaction verification.
 2. Owner path: configure the Supabase Auth redirect allow-list from `automation/HUMAN_REQUIRED.md`, then validate auth/recovery/session/persistence/offline paths and run `supabase/tests/rls_cross_user.sql` in the approved validation environment.
-3. Owner path: run current core/app/plugin typechecks and tests before granting CP3/CP4 checkpoint credit.
-4. Worker-safe CP5 path: implement the first Life Map/domain-history surface using existing observations and explicit evidence/confidence, with a useful insufficient-data state and no causal language.
-5. Then add the first WHY explanation surface that ranks candidate factors only from available evidence and clearly labels uncertainty/correlation.
+3. Owner path: run current core/app/plugin typechecks and tests before granting CP3/CP4/CP5 checkpoint credit.
+4. Worker-safe CP5 path: implement the first WHY explanation surface that ranks candidate factors only from available evidence, shows evidence windows/confidence, and clearly labels association/uncertainty without diagnostic or causal language.
+5. Then expand Insights/pattern history using the existing relationship-hypothesis contracts and evidence thresholds.
 
 ## Verification record
 Previously verified evidence:
@@ -81,6 +90,7 @@ Implemented after that verification and still awaiting owner validation:
 - CP2 auth/session/persistence/recovery/offline work and action-feedback history access.
 - CP3 Balance, Capacity/Interaction Risk, relationship/feedback learning, recommendation context, and optional baseline-target metadata.
 - CP4 check-in, current-state integration, One Move preparation/decision wiring, feedback learning UI, pending-feedback recovery, personalized ranking, restart-level decision suppression, explicit onboarding life context/user targets, optional baseline targets, Today Balance/Momentum, and optional Spiritual Grounding preference/plugin wiring.
+- CP5 Life Map application model and `/life-map` UI with explicit evidence/confidence and unknown-preserving domain history.
 - Supabase migration `onboarding_context` was applied successfully to project `olfhjnropdrnujgpidfi`; direct schema reads confirmed `life_season`, `self_values`, `privacy_mode`, and the related constraints.
 - Supabase migration `domain_baseline_targets` was applied successfully to project `olfhjnropdrnujgpidfi`; direct schema read confirmed `baseline_target_rating` is nullable `smallint`.
 - No product, database test script, cloud test, or build was run by this worker, per `automation/TASK.md`.
@@ -89,12 +99,13 @@ Implemented after that verification and still awaiting owner validation:
 - CP1 remains blocked on owner-side physical responsive/locale verification.
 - Hosted Supabase Auth must allow `mizan://**`, `http://localhost:8087/**`, and the eventual production Web URL before confirmation/recovery can be verified end-to-end.
 - Cross-user SQL verification and guarded fixture exist but lack current owner-side execution evidence.
-- CP3 models and new CP4 UI/application paths remain runtime/type validation pending.
+- CP3/CP4 models and new CP5 Life Map paths remain runtime/type validation pending.
 - Offline preference/check-in/action-event/feedback durability beyond the current screen/session remains CP8 work; no durable general sync queue is claimed.
 - Restart-level One Move suppression is client/query based rather than a database uniqueness constraint; concurrent-device double-submit prevention remains a later hardening concern.
 - Balance is a conservative evidence-backed state-distribution signal, not a claim about exact time allocation; any enabled target domain lacking current evidence remains unknown.
 - Explicit baseline targets currently appear as optional per-domain target/deviation metadata; the aggregate Balance score still uses season priority distribution rather than silently mixing two different target semantics.
 - Spiritual Grounding currently covers explicit module consent/enablement only; user-selected practices and grounding observations remain later module work and must stay non-judgmental and opt-in.
+- Life Map currently summarizes only supported numeric observation metrics already present in the observation stream; unsupported or absent domain signals remain visibly unknown rather than inferred.
 - Moderate npm advisories remain in the supported Expo dependency chain; no prior high/critical advisory was recorded.
 
 ## Evidence paths
@@ -110,6 +121,7 @@ Implemented after that verification and still awaiting owner validation:
 - `apps/app/src/application/action-feedback.ts`
 - `apps/app/src/application/user-targets.ts`
 - `apps/app/src/application/spiritual-grounding.ts`
+- `apps/app/src/application/life-map.ts`
 - `apps/app/src/infrastructure/supabase/baseline-targets.ts`
 - `apps/app/src/infrastructure/supabase/plugin-settings.ts`
 - `apps/app/src/infrastructure/supabase/onboarding-context.ts`
@@ -118,6 +130,7 @@ Implemented after that verification and still awaiting owner validation:
 - `apps/app/src/app/onboarding.tsx`
 - `apps/app/src/app/check-in.tsx`
 - `apps/app/src/app/today.tsx`
+- `apps/app/src/app/life-map.tsx`
 - `apps/app/src/app/settings.tsx`
 - `packages/core/src/engine.ts`
 - `packages/core/src/temporal.ts`
