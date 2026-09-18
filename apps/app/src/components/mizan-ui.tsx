@@ -13,7 +13,14 @@ import {
   ViewStyle,
 } from 'react-native';
 
-import { Palette, Radius, Spacing } from '@/constants/theme';
+import {
+  Controls,
+  Interaction,
+  Palette,
+  Radius,
+  Spacing,
+  Typography,
+} from '@/constants/theme';
 import { useAppState } from '@/state/app-state';
 
 interface MizanTextProps extends TextProps {
@@ -36,7 +43,6 @@ export function MizanText({ children, variant = 'body', muted = false, style, ..
       {...props}
       allowFontScaling
       style={[
-        styles.text,
         styles[variant],
         { color: muted ? palette.textMuted : palette.text, textAlign: isRtl ? 'right' : 'left' },
         style,
@@ -91,9 +97,12 @@ export function PrimaryButton({ label, onPress, disabled = false }: { label: str
       onPress={onPress}
       style={({ pressed }) => [
         styles.button,
-        { backgroundColor: palette.accent, opacity: disabled ? 0.45 : pressed ? 0.82 : 1 },
+        {
+          backgroundColor: palette.accent,
+          opacity: disabled ? Interaction.disabled : pressed ? Interaction.pressed : 1,
+        },
       ]}>
-      <Text style={[styles.buttonText, { color: scheme === 'dark' ? '#102018' : '#FFFFFF' }]}>{label}</Text>
+      <Text allowFontScaling style={[styles.buttonText, { color: palette.onAccent }]}>{label}</Text>
     </Pressable>
   );
 }
@@ -111,7 +120,7 @@ export function ChoiceChip({ label, selected, onPress }: { label: string; select
         {
           backgroundColor: selected ? palette.accentSoft : palette.surface,
           borderColor: selected ? palette.accent : palette.border,
-          opacity: pressed ? 0.75 : 1,
+          opacity: pressed ? Interaction.chipPressed : 1,
         },
       ]}>
       <MizanText variant="label">{label}</MizanText>
@@ -120,23 +129,34 @@ export function ChoiceChip({ label, selected, onPress }: { label: string; select
 }
 
 const styles = StyleSheet.create({
-  text: { fontSize: 16, lineHeight: 25 },
-  display: { fontSize: 36, lineHeight: 44, fontWeight: '700', letterSpacing: -0.7 },
-  title: { fontSize: 22, lineHeight: 30, fontWeight: '700' },
-  body: { fontSize: 16, lineHeight: 25, fontWeight: '400' },
-  label: { fontSize: 14, lineHeight: 20, fontWeight: '600' },
-  caption: { fontSize: 13, lineHeight: 19, fontWeight: '500' },
+  display: Typography.display,
+  title: Typography.title,
+  body: Typography.body,
+  label: Typography.label,
+  caption: Typography.caption,
   card: { borderWidth: StyleSheet.hairlineWidth, borderRadius: Radius.lg, padding: Spacing.xl, gap: Spacing.md },
   input: {
-    minHeight: 52,
-    borderWidth: 1,
+    minHeight: Controls.standardHeight,
+    borderWidth: Controls.borderWidth,
     borderRadius: Radius.md,
     paddingHorizontal: Spacing.lg,
     paddingVertical: Spacing.md,
-    fontSize: 16,
-    lineHeight: 22,
+    fontSize: Typography.body.fontSize,
+    lineHeight: Typography.control.lineHeight,
   },
-  button: { minHeight: 52, borderRadius: Radius.md, alignItems: 'center', justifyContent: 'center', paddingHorizontal: Spacing.xl },
-  buttonText: { fontSize: 16, lineHeight: 22, fontWeight: '700' },
-  chip: { minHeight: 44, borderWidth: 1, borderRadius: Radius.pill, paddingHorizontal: Spacing.lg, justifyContent: 'center' },
+  button: {
+    minHeight: Controls.standardHeight,
+    borderRadius: Radius.md,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: Spacing.xl,
+  },
+  buttonText: Typography.control,
+  chip: {
+    minHeight: Controls.minimumTouchHeight,
+    borderWidth: Controls.borderWidth,
+    borderRadius: Radius.pill,
+    paddingHorizontal: Spacing.lg,
+    justifyContent: 'center',
+  },
 });
