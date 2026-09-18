@@ -7,7 +7,7 @@ import {
   saveLifeSeason,
   type LifeSeasonsState,
 } from '@/application/life-seasons';
-import { Card, ChoiceChip, MizanText, PrimaryButton } from '@/components/mizan-ui';
+import { Card, ChoiceChip, MizanText, PrimaryButton, SecondaryButton } from '@/components/mizan-ui';
 import { Screen } from '@/components/screen';
 import { Spacing } from '@/constants/theme';
 import type { DomainId, LifeSeason } from '@/state/app-state';
@@ -263,9 +263,7 @@ export default function LifeSeasonsScreen() {
         })}
       </View>
 
-      <MizanText variant="label" style={styles.link} onPress={() => router.replace('/settings')}>
-        {labels.back}
-      </MizanText>
+      <SecondaryButton compact label={labels.back} onPress={() => router.replace('/settings')} />
     </Screen>
   );
 }
@@ -276,5 +274,4 @@ const styles = StyleSheet.create({
   wrap: { flexWrap: 'wrap', gap: Spacing.sm },
   targetRow: { gap: Spacing.sm },
   historyHeader: { alignItems: 'center', justifyContent: 'space-between', gap: Spacing.md },
-  link: { textAlign: 'center', paddingVertical: Spacing.md },
 });
