@@ -57,7 +57,11 @@ export function MizanText({ children, variant = 'body', muted = false, style, ..
       allowFontScaling
       style={[
         styles[variant],
-        { color: muted ? palette.textMuted : palette.text, textAlign: isRtl ? 'right' : 'left' },
+        {
+          color: muted ? palette.textMuted : palette.text,
+          textAlign: isRtl ? 'right' : 'left',
+          writingDirection: isRtl ? 'rtl' : 'ltr',
+        },
         style,
       ]}>
       {children}
@@ -92,6 +96,7 @@ export function MizanTextInput({ style, ...props }: MizanTextInputProps) {
           borderColor: palette.border,
           color: palette.text,
           textAlign: isRtl ? 'right' : 'left',
+          writingDirection: isRtl ? 'rtl' : 'ltr',
         },
         style,
       ]}
@@ -102,6 +107,7 @@ export function MizanTextInput({ style, ...props }: MizanTextInputProps) {
 export function PrimaryButton({ label, onPress, disabled = false }: ButtonProps) {
   const scheme = useColorScheme();
   const palette = Palette[scheme === 'dark' ? 'dark' : 'light'];
+  const { isRtl } = useAppState();
   return (
     <Pressable
       accessibilityLabel={label}
@@ -116,7 +122,14 @@ export function PrimaryButton({ label, onPress, disabled = false }: ButtonProps)
           opacity: disabled ? Interaction.disabled : pressed ? Interaction.pressed : 1,
         },
       ]}>
-      <Text allowFontScaling style={[styles.buttonText, { color: palette.onAccent }]}>{label}</Text>
+      <Text
+        allowFontScaling
+        style={[
+          styles.buttonText,
+          { color: palette.onAccent, writingDirection: isRtl ? 'rtl' : 'ltr' },
+        ]}>
+        {label}
+      </Text>
     </Pressable>
   );
 }
