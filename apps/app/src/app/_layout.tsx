@@ -53,6 +53,7 @@ function AppNavigator() {
         <Stack.Screen name="personalization" />
         <Stack.Screen name="value-alignment" />
         <Stack.Screen name="invisible-wins" />
+        <Stack.Screen name="what-if" />
         <Stack.Screen name="settings" />
       </Stack>
     </>
