@@ -3,7 +3,7 @@ import { useMemo, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { assessExplicitCostOfYes } from '@/application/cost-of-yes';
-import { Card, MizanText, MizanTextInput } from '@/components/mizan-ui';
+import { Card, MizanText, MizanTextInput, SecondaryButton } from '@/components/mizan-ui';
 import { Screen } from '@/components/screen';
 import { Spacing } from '@/constants/theme';
 import { useAppState } from '@/state/app-state';
@@ -202,9 +202,7 @@ export default function CostOfYesScreen() {
       </Card>
 
       <MizanText variant="caption" muted>{labels.caveat}</MizanText>
-      <MizanText variant="label" style={styles.link} onPress={() => router.replace('/settings')}>
-        {labels.back}
-      </MizanText>
+      <SecondaryButton label={labels.back} onPress={() => router.replace('/settings')} />
     </Screen>
   );
 }
@@ -214,5 +212,4 @@ const styles = StyleSheet.create({
   field: { gap: Spacing.sm },
   metrics: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.md },
   metric: { flexGrow: 1, flexBasis: 140, minWidth: 120, gap: Spacing.xs },
-  link: { textAlign: 'center', paddingVertical: Spacing.md },
 });
