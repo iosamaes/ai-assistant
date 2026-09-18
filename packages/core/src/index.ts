@@ -13,3 +13,4 @@ export * from './scenario-learning';
 export * from './experiment';
 export * from './recovery';
 export * from './cost-of-yes';
+export * from './human-roi';
