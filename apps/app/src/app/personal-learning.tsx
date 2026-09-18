@@ -156,11 +156,11 @@ export default function PersonalLearningScreen() {
         <MizanText muted>{labels.body}</MizanText>
       </View>
 
-      {status === 'loading' ? <MizanText muted>{labels.loading}</MizanText> : null}
-      {status === 'error' ? <MizanText muted>{labels.error}</MizanText> : null}
+      {status === 'loading' ? <MizanText accessibilityLiveRegion="polite" muted>{labels.loading}</MizanText> : null}
+      {status === 'error' ? <MizanText accessibilityLiveRegion="polite" muted>{labels.error}</MizanText> : null}
       {status === 'ready' && visible.length === 0 ? (
         <Card>
-          <MizanText muted>{labels.empty}</MizanText>
+          <MizanText accessibilityLiveRegion="polite" muted>{labels.empty}</MizanText>
           <MizanText variant="caption" muted>{labels.adherenceRule}</MizanText>
         </Card>
       ) : null}
