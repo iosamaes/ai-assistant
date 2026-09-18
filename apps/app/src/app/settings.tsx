@@ -52,6 +52,9 @@ const insightCopy = {
     whatIfTitle: 'ماذا لو؟',
     whatIfBody: 'استكشف قرارات صغيرة قابلة للعكس كنطاقات احتمالية واضحة الافتراضات، من دون تقديمها كتنبؤات مؤكدة.',
     whatIfOpen: 'فتح ماذا لو؟',
+    experimentsTitle: 'التجارب الشخصية',
+    experimentsBody: 'اختبر فرضية صغيرة طوعًا ولمدة محددة، ثم سجّل أثرها وراجع مقارنة شخصية تحفظ حدود الأدلة.',
+    experimentsOpen: 'فتح التجارب',
   },
   en: {
     lifeMapTitle: 'Life map',
@@ -78,6 +81,9 @@ const insightCopy = {
     whatIfTitle: 'What If',
     whatIfBody: 'Explore small reversible choices as explicit assumption-based ranges without presenting them as guaranteed forecasts.',
     whatIfOpen: 'Open What If',
+    experimentsTitle: 'Personal experiments',
+    experimentsBody: 'Voluntarily test one small time-bounded hypothesis, record its impact, and review a personal comparison with explicit evidence limits.',
+    experimentsOpen: 'Open experiments',
   },
 } as const;
 
@@ -201,6 +207,12 @@ export default function SettingsScreen() {
         <MizanText variant="title">{insightLabels.whatIfTitle}</MizanText>
         <MizanText muted>{insightLabels.whatIfBody}</MizanText>
         <PrimaryButton label={insightLabels.whatIfOpen} onPress={() => router.push('/what-if')} />
+      </View>
+
+      <View style={styles.section}>
+        <MizanText variant="title">{insightLabels.experimentsTitle}</MizanText>
+        <MizanText muted>{insightLabels.experimentsBody}</MizanText>
+        <PrimaryButton label={insightLabels.experimentsOpen} onPress={() => router.push('/experiments')} />
       </View>
 
       <View style={styles.section}>
