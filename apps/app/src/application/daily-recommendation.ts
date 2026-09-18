@@ -16,6 +16,7 @@ import {
   insertActionEvent,
   type DataResult,
 } from '@/infrastructure/supabase/data-access';
+import { loadOneMoveDecisionForContext } from '@/infrastructure/supabase/one-move-decision';
 
 type SignalKey = 'recovery' | 'energy' | 'connection' | 'overload_risk';
 type SignalDirection = 'low' | 'high';
@@ -37,6 +38,7 @@ export type DailyRecommendationOption = {
   confidence: Confidence;
   evidence: readonly EvidenceRef[];
   reasonSignal: SignalKey;
+  contextId: string;
 };
 
 export type DailyRecommendation = {
@@ -113,6 +115,17 @@ function expectedImpactForNeed(
   return round(clamp01(coldStartPrior + adjustment));
 }
 
+function recommendationContextId(state: HumanStateVector): string {
+  const evidenceKeys = Array.from(
+    new Set(
+      state.components.flatMap((component) =>
+        component.evidence.map((evidence) => `${evidence.id}@${evidence.observedAt}`),
+      ),
+    ),
+  ).sort();
+  return `evidence-v1|${evidenceKeys.join('|')}`;
+}
+
 function candidateForAction(
   action: ActionDefinition,
   state: HumanStateVector,
@@ -158,13 +171,14 @@ function candidateForAction(
   return { action, candidate, reasonSignal: strongest.rule.key };
 }
 
-function toOption(metadata: CandidateMetadata): DailyRecommendationOption {
+function toOption(metadata: CandidateMetadata, contextId: string): DailyRecommendationOption {
   return {
     actionId: metadata.action.id,
     labelKey: metadata.action.labelKey,
     confidence: metadata.candidate.confidence,
     evidence: metadata.candidate.evidence,
     reasonSignal: metadata.reasonSignal,
+    contextId,
   };
 }
 
@@ -182,14 +196,15 @@ export function prepareDailyRecommendation(
   const selected = prepared.find((item) => item.action.id === oneMove.actionId);
   if (!selected) return null;
 
+  const contextId = recommendationContextId(state);
   const alternatives = oneMove.alternatives.flatMap((actionId) => {
     const item = prepared.find((candidate) => candidate.action.id === actionId);
-    return item ? [toOption(item)] : [];
+    return item ? [toOption(item, contextId)] : [];
   });
 
   return {
     primary: {
-      ...toOption(selected),
+      ...toOption(selected, contextId),
       confidence: oneMove.confidence,
       evidence: oneMove.evidence,
     },
@@ -211,7 +226,13 @@ export async function loadPersonalizedDailyRecommendation(
   for (const [actionId, estimate] of estimates) {
     if (estimate) useful.set(actionId, estimate);
   }
-  return prepareDailyRecommendation(state, useful);
+
+  const recommendation = prepareDailyRecommendation(state, useful);
+  if (!recommendation) return null;
+
+  const priorDecision = await loadOneMoveDecisionForContext(userId, recommendation.primary.contextId);
+  if (priorDecision.ok && priorDecision.value) return null;
+  return recommendation;
 }
 
 export async function recordOneMoveDecision(
@@ -220,11 +241,18 @@ export async function recordOneMoveDecision(
   decision: OneMoveDecision,
   selectedAsAlternative: boolean,
 ): Promise<DataResult<string>> {
+  const priorDecision = await loadOneMoveDecisionForContext(userId, option.contextId);
+  if (priorDecision.ok && priorDecision.value) {
+    return { ok: false, error: { kind: 'conflict' } };
+  }
+  if (!priorDecision.ok && priorDecision.error.kind === 'session-expired') return priorDecision;
+
   return insertActionEvent(userId, {
     action_key: option.actionId,
     event_type: decision,
     context: {
       source: 'today_one_move',
+      recommendation_context_id: option.contextId,
       reason_signal: option.reasonSignal,
       confidence_level: option.confidence.level,
       confidence_score: option.confidence.score,
