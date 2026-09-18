@@ -43,6 +43,14 @@ export interface ActionDefinition {
   risk: number;
 }
 
+export interface PluginDataRequirement {
+  id: string;
+  capability: string;
+  metricIds: readonly string[];
+  permissionScopes: readonly string[];
+  optional: boolean;
+}
+
 export interface PluginManifest {
   id: string;
   version: string;
@@ -50,6 +58,7 @@ export interface PluginManifest {
   optional: boolean;
   dimensions: readonly DimensionDefinition[];
   actions: readonly ActionDefinition[];
+  dataRequirements?: readonly PluginDataRequirement[];
 }
 
 export interface HumanStateComponent {
