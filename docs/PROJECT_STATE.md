@@ -2,117 +2,76 @@
 
 ## Current checkpoint
 - Active engineering checkpoint: **CP9 — Responsive UX, accessibility, localization, polish, and design-swappability** (`IN_PROGRESS`).
-- CP1 remains `BLOCKED_HUMAN` only for owner-side responsive/locale evidence.
-- CP2–CP7 have implementation slices on `main` but remain execution/verification pending under the current worker policy.
-- CP8 implementation is code-reviewed complete for the current scope; owner/runtime validation remains pending before checkpoint credit.
 - Product authority: GitHub `iosamaes/ai-assistant@main`.
 - Task digest: `db05d2d78fc71edb1b71880d9e74535318fa6f4a`.
+- Current worker policy: GitHub source changes are allowed; workers must not run product tests, builds, typechecks, database scripts, GitHub Actions, or cloud CI. Execution-dependent gates remain owner validation.
 
 ## Checkpoints
 - [x] CP0 — Reconnaissance, product model, executable plan
-- [ ] CP1 — Universal application foundation — owner validation pending
-- [ ] CP2 — Supabase, auth, ownership, persistence — owner validation pending
-- [ ] CP3 — Deterministic intelligence core — implementation present, validation pending
-- [ ] CP4 — First complete daily loop — implementation present, validation pending
-- [ ] CP5 — Insight, explanation, personal learning — implementation present, validation pending
-- [ ] CP6 — Advanced decision tools — implementation present, validation pending
-- [ ] CP7 — Plugins, unified integrations, provider boundaries — implementation present, validation pending
-- [ ] CP8 — Reliability, offline tolerance, sync — implementation complete, owner validation pending
+- [ ] CP1 — Universal application foundation — `BLOCKED_HUMAN` only for owner-side responsive/locale evidence
+- [ ] CP2 — Supabase, auth, ownership, persistence — implementation present; owner/runtime validation pending
+- [ ] CP3 — Deterministic intelligence core — implementation present; validation pending
+- [ ] CP4 — First complete daily loop — implementation present; validation pending
+- [ ] CP5 — Insight, explanation, personal learning — implementation present; validation pending
+- [ ] CP6 — Advanced decision tools — implementation present; validation pending
+- [ ] CP7 — Plugins, unified integrations, provider boundaries — implementation present; validation pending
+- [ ] CP8 — Reliability, offline tolerance, sync — current implementation statically reviewed complete; owner/runtime validation pending
 - [ ] CP9 — Responsive UX, accessibility, localization, polish, design-swappability — **IN_PROGRESS**
 - [ ] CP10 — Security, privacy, owner-data control
 - [ ] CP11 — Test matrix, performance, release readiness
 - [ ] CP12 — Independent final review and handoff
 
-## CP8 status
-Implemented and statically reviewed for the current scope:
-- durable per-user write retry for check-ins and Invisible Wins;
-- stable client mutation IDs plus migration `0008_offline_mutation_idempotency.sql` for duplicate-safe replay;
-- serialized retry that removes only confirmed successful queue items;
-- idempotent integration observation ingestion with bounded transient retry and safe normalized error codes;
-- durable recent Today snapshot with user scoping, runtime validation, seven-day expiry, malformed/future-date rejection, and fallback only for `unavailable` / `not-configured`;
-- explicit cached-source/timestamp presentation in Today;
-- queued-check-in presentation distinct from confirmed server persistence;
-- experiment terminal-state conflict guard and atomic Life Season transitions;
-- non-executed reliability specifications covering cache, queue, reconnect, idempotency, partial integration state, and concurrent experiment lifecycle behavior.
-
+## CP8 current implementation
 Detailed ledger: `docs/CP8_RELIABILITY.md`.
 
-Owner/runtime validation is still required before CP8 can move to `DONE`.
+Implemented and statically reviewed for the current scope:
+- durable per-user retry for check-ins and Invisible Wins;
+- stable client mutation IDs plus migration `0008_offline_mutation_idempotency.sql` for duplicate-safe replay;
+- serialized retry that removes only confirmed successful queue items;
+- idempotent normalized integration ingestion with bounded transient retry;
+- durable recent Today snapshot with user scoping, runtime validation, seven-day expiry, malformed/future-date rejection, and fallback only for `unavailable` / `not-configured`;
+- explicit cached-source/timestamp presentation and queued-check-in presentation;
+- experiment terminal-state conflict guard and atomic Life Season transitions;
+- reliability specifications for cache, queue/reconnect, idempotency, partial integration state, and concurrent experiment lifecycle behavior.
 
-## CP9 presentation-architecture progress
-Implemented shared presentation boundary:
+CP8 is not credited `DONE` until owner/runtime evidence confirms restart/reload and offline/reconnect behavior.
+
+## CP9 current implementation
+Presentation boundary already in place:
 - semantic palette, typography, spacing, radii, controls/touch sizing, border, interaction, and responsive layout tokens in `apps/app/src/constants/theme.ts`;
 - shared `MizanText`, `Card`, `MizanTextInput`, `PrimaryButton`, `SecondaryButton`, and `ChoiceChip` primitives;
 - centralized responsive `Screen` behavior;
-- representative consolidation covers Today, Life Map, WHY, Check-in, authentication/recovery, Capacity, Cost of Yes, Insights, Human ROI, Life Seasons, Recovery, Invisible Wins, Value Alignment, Integrations, Experiments, What If, Settings, Personal Learning, Personalization, Onboarding, the entry route, and root render-failure fallback;
-- navigation shell honors the platform reduced-motion preference.
+- representative consolidation across Today, Life Map, WHY, Check-in, auth/recovery, Capacity, Cost of Yes, Insights, Human ROI, Life Seasons, Recovery, Invisible Wins, Value Alignment, Integrations, Experiments, What If, Settings, Personal Learning, Personalization, Onboarding, entry routing, and root render-failure fallback;
+- navigation shell honors reduced-motion preference;
+- confidence/status localization has been progressively removed from raw engine enums in shipped surfaces;
+- semantic RTL fixes exist for grouped metric layouts and date-direction presentation;
+- async accessibility live announcements exist across auth/recovery, Check-in, Value Alignment, Invisible Wins, Integrations, Life Seasons, and other reviewed surfaces.
 
-Current `auto4` static CP9 slice:
-- **Auth screen-reader status:** session-expired and post-submit auth feedback now use polite accessibility live regions so asynchronous state changes are announced without moving auth behavior into presentation primitives.
-- **Password-recovery validation announcements:** password-length, mismatch, and result feedback are now exposed as polite live-region updates for screen-reader users while preserving existing validation and routing behavior.
-- **Life Seasons semantic RTL:** the historical date-range arrow now mirrors by active reading direction (`←` in RTL, `→` in LTR), and save/load outcome messages now announce through polite live regions.
-- **Experiment localization:** experiment evaluation confidence no longer renders raw engine enum values. `known`, `likely`, `possible`, and `insufficient` now render through Arabic/English product copy, preventing untranslated English confidence labels inside Arabic experiment history.
-- **WHY semantic border:** the remaining WHY evidence-row separator width now consumes centralized `Controls.borderWidth` rather than `StyleSheet.hairlineWidth`, keeping the global border treatment swappable through the design foundation.
-- **Insights shared controls:** the screen-local back and quick-check-in `Pressable` controls were replaced with shared compact `SecondaryButton` and `PrimaryButton`; local duplicated radius, touch height, pressed opacity, and accent foreground treatment were removed while navigation and insight logic remain feature-owned.
-- No auth/session logic, password-update behavior, Life Season persistence, experiment evaluation logic, WHY evidence interpretation, insight confidence logic, provider, or domain behavior moved into presentation primitives.
+Latest `auto4` static CP9 work:
+- **What If async accessibility:** loading/recalculation and load-error changes now use polite accessibility live regions, so screen readers receive scenario-state changes without changing scenario simulation or personal-effect learning behavior.
+- **Settings async accessibility:** offline/sync status plus preference/sign-out error feedback now use polite accessibility live regions; settings persistence, auth, and navigation behavior remain unchanged.
 
-Commits from the latest `auto4` accessibility/RTL slice:
-- `156b4d0b842bd087e31f2f5baeadcbe61402619e` — announce auth status changes.
-- `f5cc8f9b744b92daddbc3a8b2cd94ca23467d6ad` — announce password validation/result changes.
-- `03e135d08958432ea29733eb385f31ed0d612b28` — Life Seasons semantic arrow and live status polish.
+Latest static product commits from this run (not runtime-verified):
+- `d3556859a71fd4cac0afde2a9ed8f024f4674357` — announce What If async state.
+- `df4b760e8ee1780a3ab6be952fe3431470afc76d` — announce Settings async state.
 
-Earlier `auto4` CP9 commits:
-- `d89d61560a88125599b29f0d3102e69b10932dcb` — localized experiment confidence labels.
-- `4096464bdd08525708d2cb2b3d7f36be53f25d8c` — centralized WHY separator width.
-- `2cebc3ace1dffe1a56702381b34793cec80169fd` — shared Insights navigation/action controls.
+Recent cross-worker CP9 evidence also includes:
+- semantic RTL mirroring for Capacity, Cost of Yes, and Human ROI metric groups;
+- localized confidence labels in Recovery, Experiments, Human ROI, and Cost of Yes;
+- centralized border/radius treatment in WHY, Personal Learning, and Personalization;
+- shared navigation/action controls in Insights;
+- screen-reader live announcements for queued/offline/error outcomes in Check-in and for loading/errors in Value Alignment, Invisible Wins, and Integrations.
 
-Current `auto1` static CP9 slice:
-- **Recovery localization:** Recovery no longer renders the raw deterministic confidence enum in Arabic/English. Confidence now uses localized product copy for `known`, `likely`, `possible`, and `insufficient` while preserving evidence counts and recovery logic unchanged.
-- **Personal Learning semantic borders:** both learning-history separators now use centralized `Controls.borderWidth` instead of `StyleSheet.hairlineWidth`, so the shared design foundation owns global border treatment.
-- **Personalization semantic surface tokens:** maturity-stage cards now use `Controls.borderWidth` and `Radius.sm` instead of a local hairline border and a spacing token misused as radius.
-- No recovery decision logic, personal-learning estimates, personalization maturity logic, persistence, or domain behavior moved into presentation code.
+The TASK-required final design-swap proof is **not claimed**. It still requires owner visual/runtime validation using a substantially different visual direction and representative device widths.
 
-Commits from this slice:
-- `6d3f389753ce3f20ec5d6143bd40bbe076f52b98` — localized Recovery confidence labels.
-- `cd5a6247b73c2d87ab309dc9fb16297445ef7414` — centralized Personal Learning separator widths.
-- `2cf970b2765785958d0569fd97da46cf934fa126` — centralized Personalization border/radius tokens.
-
-Current `auto2` static CP9 slice:
-- **Invisible Wins async accessibility/localization:** the reflection list no longer exposes a bare ellipsis while loading; it now has explicit Arabic/English loading copy, and load/save/queued/error outcome messages use polite accessibility live regions so state changes can be announced to screen-reader users.
-- **Integrations async accessibility:** loading, load failure, and disconnect failure feedback now use polite accessibility live regions without moving provider lifecycle or data logic into presentation primitives.
-- **Earlier Human ROI localization:** Human ROI no longer renders the raw deterministic confidence enum. `known`, `likely`, `possible`, and `insufficient` resolve through Arabic/English product copy while preserving the existing evidence count and assessment logic.
-- **Earlier Cost of Yes localization:** Cost of Yes localizes the same confidence levels instead of exposing raw engine enum values in Arabic UI.
-- No reflection persistence/offline queue behavior, integration lifecycle behavior, Human ROI or Cost of Yes decision math, evidence handling, protected-meaning behavior, or provider logic moved into presentation code.
-
-Commits from the latest `auto2` accessibility slice:
-- `f42b0ffceb7dfe52839f17cad8c132ef398d2ac8` — localized and announced Invisible Wins async status.
-- `a8b2bcfa1f76fe3b0ca6c73362c761c11ef6a412` — announced integration async status and errors.
-
-Earlier `auto2` CP9 commits:
-- `bd6e4c179a1847e64087b3ebd65fe5bbf7c5681d` — localized Human ROI confidence labels.
-- `9e9a044aafe4d5a2e3edd465488e4080b9fa89ac` — localized Cost of Yes confidence labels.
-
-Current `auto3` static CP9 slice:
-- **Capacity semantic RTL:** the Life Buffer and Life Debt metric grids now mirror their item order with `row-reverse` in Arabic instead of keeping a fixed left-to-right row. Text alignment was already handled by `MizanText`; this change fixes the semantic order of grouped metrics without changing capacity calculations.
-- **Cost of Yes semantic RTL:** the assessment metric grid now mirrors in Arabic so commitment, known margin, remaining margin, and displaced-time metrics follow the active reading direction.
-- **Human ROI semantic RTL:** the benefit/effort/time result grid now mirrors in Arabic, matching the already RTL-aware rating/choice controls on the same screen.
-- **Check-in async accessibility:** queued local-sync, offline, and error delivery outcomes now use polite accessibility live regions so screen-reader users are informed when persistence is deferred or fails, without changing offline queue or submission behavior.
-- **Value Alignment async accessibility:** loading and load-error status changes now use polite accessibility live regions while evidence interpretation, confidence, and identity-drift semantics remain unchanged.
-- The fixes keep layout composition feature-local and introduce no new shared abstraction or domain/data changes.
-
-Commits from this slice:
-- `5c1b7125d5ef329ec00450a3dc26b2ddd233ec9d` — mirrored Capacity metric grids in RTL.
-- `80e1a7ca245d6addce9dfc8e576c835d3b9a0109` — mirrored Cost of Yes assessment metrics in RTL.
-- `9b17ea0edf695ed4b613a6e60fd560454b1e52a0` — mirrored Human ROI result metrics in RTL.
-- `0cc7a9ce030781fb6e4a1cbe16fecf025d1f5396` — announced queued/offline/error Check-in delivery states.
-- `f034696adfcd99eea3f13b3a4c5cf0855d93c025` — announced Value Alignment loading/error states.
-
-The TASK-required final design-swap proof is **not claimed**; it still requires owner visual/runtime validation with a substantially different visual direction.
+## Test matrix progress
+- Commit `d32636ddd253e3ec688376a4a42596e2844704df` added a broad CP2–CP9 app/runtime validation matrix, including component/application specifications and critical-flow coverage scaffolding.
+- Those newly added suites have **not** been executed by workers under the current task policy; no PASS is claimed from their presence alone.
 
 ## Exact next executable action
-1. Continue the repository-wide cross-cutting static CP9 pass for untranslated production literals, semantic RTL issues, missing accessibility labels/states/live announcements, duplicated global visual values, or unjustified local control treatments outside the already-reviewed surfaces.
-2. Continue code-level review for truncation, dynamic type, keyboard/focus behavior, screen-reader semantics, light/dark treatment, and representative-width risks where static inspection can still add evidence.
-3. Leave runtime responsive/device checks, post-baseline tests/builds/typechecks, CP1–CP8 execution-dependent evidence, and the final design-swap proof to owner validation under the active task policy.
+1. Continue CP9 static review, prioritizing the remaining Today-screen presentation debt: local foundational control treatments, `StyleSheet.hairlineWidth` separators, async status announcements, and rating-control screen-reader naming, while keeping recommendation/data logic outside presentation primitives.
+2. Continue repository-wide static review for untranslated production literals, semantic RTL issues, missing accessibility labels/states/live announcements, truncation/dynamic-type risks, duplicated global visual values, and unjustified local control treatments.
+3. Leave representative-width runtime checks, post-baseline tests/builds/typechecks, CP1–CP8 execution-dependent evidence, and the final design-swap proof to owner validation under the active policy.
 
 ## Verification record
 Previously recorded owner-side baseline evidence:
@@ -125,16 +84,16 @@ Previously recorded owner-side baseline evidence:
 - iOS export PASS.
 - Earlier auth/data-access app typecheck and lint were recorded PASS.
 
-Current worker policy:
-- No app tests, builds, typechecks, database scripts, cloud CI, or GitHub Actions were executed for post-baseline CP2–CP9 work.
-- Current `auto4`, `auto1`, `auto2`, and `auto3` CP9 slices are static implementation evidence only; no runtime PASS is claimed for the changes above.
+Post-baseline status:
+- No worker-run app tests, builds, typechecks, database scripts, cloud CI, or GitHub Actions are claimed for CP2–CP9 changes.
+- Current CP9 evidence is static implementation/code-review evidence only until owner validation runs the new matrix and representative device/browser checks.
 
 ## Known blockers / risks
 - CP1: Windows session must be unlocked normally for true narrow-phone Arabic/English interaction evidence; see `automation/HUMAN_REQUIRED.md`.
 - CP2: hosted Supabase Auth redirect allow-list owner action remains open; see `automation/HUMAN_REQUIRED.md`.
 - Cross-user/database specifications and all post-baseline runtime/type/build gates still require owner execution evidence.
-- Recent Today snapshot remains a compact best-effort cache whose native SecureStore behavior/capacity still needs owner runtime validation.
-- CP9 static audit evidence is not a substitute for visual/device/accessibility validation.
+- Recent Today snapshot native SecureStore behavior/capacity still needs owner runtime validation.
+- Static CP9 review is not a substitute for visual/device/screen-reader validation.
 - No real AI, wearable, calendar, or location credentials are configured; deterministic/unavailable adapters remain the supported fallback path.
 
 ## Evidence paths
@@ -163,4 +122,5 @@ Current worker policy:
 - `apps/app/src/app/invisible-wins.tsx`
 - `apps/app/src/app/integrations.tsx`
 - `apps/app/src/app/settings.tsx`
+- `apps/app/src/app/what-if.tsx`
 - `automation/HUMAN_REQUIRED.md`
