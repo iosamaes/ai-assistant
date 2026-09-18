@@ -1,6 +1,6 @@
 import { router } from 'expo-router';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { StyleSheet, TextInput, useColorScheme, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
 import {
   cancelExperiment,
@@ -11,9 +11,16 @@ import {
   type ExperimentTemplateId,
   type ExperimentWithEvaluation,
 } from '@/application/experiments';
-import { Card, ChoiceChip, MizanText, PrimaryButton } from '@/components/mizan-ui';
+import {
+  Card,
+  ChoiceChip,
+  MizanText,
+  MizanTextInput,
+  PrimaryButton,
+  SecondaryButton,
+} from '@/components/mizan-ui';
 import { Screen } from '@/components/screen';
-import { Palette, Radius, Spacing } from '@/constants/theme';
+import { Spacing } from '@/constants/theme';
 import { useAppState } from '@/state/app-state';
 
 const templateIds = Object.keys(experimentTemplates) as ExperimentTemplateId[];
@@ -136,8 +143,6 @@ function formatValue(value: number | null): string {
 }
 
 export default function ExperimentsScreen() {
-  const scheme = useColorScheme();
-  const palette = Palette[scheme === 'dark' ? 'dark' : 'light'];
   const { isRtl, locale, refreshSession, userId } = useAppState();
   const labels = copy[locale];
   const [selected, setSelected] = useState<ExperimentTemplateId>('earlier-bedtime');
@@ -276,9 +281,11 @@ export default function ExperimentsScreen() {
               onPress={() => void finish(item)}
               disabled={busy || selectedRating === 0}
             />
-            <MizanText variant="label" style={styles.stopLink} onPress={() => void stop(experiment.id)}>
-              {labels.cancel}
-            </MizanText>
+            <SecondaryButton
+              label={labels.cancel}
+              onPress={() => void stop(experiment.id)}
+              disabled={busy}
+            />
           </View>
         ) : (
           <View style={styles.resultGroup}>
@@ -321,22 +328,13 @@ export default function ExperimentsScreen() {
             ))}
           </View>
           <MizanText variant="label">{labels.hypothesis}</MizanText>
-          <TextInput
+          <MizanTextInput
             accessibilityLabel={labels.hypothesis}
             multiline
             maxLength={500}
             value={hypothesis}
             onChangeText={setHypothesis}
-            style={[
-              styles.input,
-              {
-                borderColor: palette.border,
-                color: palette.text,
-                backgroundColor: palette.background,
-                textAlign: isRtl ? 'right' : 'left',
-                writingDirection: isRtl ? 'rtl' : 'ltr',
-              },
-            ]}
+            style={[styles.input, { writingDirection: isRtl ? 'rtl' : 'ltr' }]}
           />
           <MizanText muted>
             {labels.duration}: {experimentTemplates[selected].durationDays} {labels.days} · {labels.metric}: {labels.metrics[experimentTemplates[selected].metric]}
@@ -360,9 +358,7 @@ export default function ExperimentsScreen() {
       </View>
 
       <MizanText variant="caption" muted>{labels.limitations}</MizanText>
-      <MizanText variant="label" style={styles.backLink} onPress={() => router.replace('/settings')}>
-        {labels.back}
-      </MizanText>
+      <SecondaryButton compact label={labels.back} onPress={() => router.replace('/settings')} />
     </Screen>
   );
 }
@@ -375,14 +371,6 @@ const styles = StyleSheet.create({
   resultGroup: { gap: Spacing.sm, paddingTop: Spacing.sm },
   input: {
     minHeight: 96,
-    borderWidth: 1,
-    borderRadius: Radius.md,
-    paddingHorizontal: Spacing.lg,
-    paddingVertical: Spacing.md,
-    fontSize: 16,
-    lineHeight: 24,
     textAlignVertical: 'top',
   },
-  stopLink: { textAlign: 'center', paddingVertical: Spacing.sm },
-  backLink: { textAlign: 'center', paddingVertical: Spacing.md },
 });
