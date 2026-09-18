@@ -1,10 +1,10 @@
 import type { HumanStateVector, PersonalizationMaturity } from '@mizan/core';
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Pressable, StyleSheet, useColorScheme, View } from 'react-native';
+import { StyleSheet, useColorScheme, View } from 'react-native';
 
 import { loadCurrentHumanState } from '@/application/daily-intelligence';
-import { Card, MizanText } from '@/components/mizan-ui';
+import { Card, MizanText, SecondaryButton } from '@/components/mizan-ui';
 import { Screen } from '@/components/screen';
 import { Palette, Spacing } from '@/constants/theme';
 import { useAppState } from '@/state/app-state';
@@ -151,9 +151,7 @@ export default function PersonalizationScreen() {
         </>
       ) : null}
 
-      <Pressable accessibilityRole="button" onPress={() => router.replace('/settings')} style={styles.back}>
-        <MizanText variant="label">{labels.back}</MizanText>
-      </Pressable>
+      <SecondaryButton compact label={labels.back} onPress={() => router.replace('/settings')} />
     </Screen>
   );
 }
@@ -167,5 +165,4 @@ const styles = StyleSheet.create({
     gap: Spacing.xs,
     padding: Spacing.md,
   },
-  back: { alignSelf: 'center', paddingVertical: Spacing.lg, paddingHorizontal: Spacing.xl },
 });
