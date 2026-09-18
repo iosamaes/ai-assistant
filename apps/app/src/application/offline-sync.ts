@@ -1,6 +1,6 @@
 import {
   readPendingUserMutations,
-  replacePendingUserMutations,
+  removePendingUserMutation,
   type PendingUserMutation,
 } from '@/infrastructure/offline/pending-mutations';
 import {
@@ -50,46 +50,32 @@ async function runFlush(userId: string): Promise<PendingMutationFlushResult> {
     return { syncedCount: 0, pendingCount: 0, blockedBy: null };
   }
 
-  const retained: PendingUserMutation[] = [];
   let syncedCount = 0;
+  let pendingCount = queued.value.length;
   let blockedBy: PendingMutationFlushResult['blockedBy'] = null;
 
-  for (let index = 0; index < queued.value.length; index += 1) {
-    const mutation = queued.value[index];
+  for (const mutation of queued.value) {
     try {
       const result = await executePendingMutation(mutation);
       if (result.ok) {
+        const removed = await removePendingUserMutation(userId, mutation.id);
+        if (!removed.ok) {
+          return { syncedCount, pendingCount, blockedBy: 'storage-unavailable' };
+        }
         syncedCount += 1;
+        pendingCount = Math.max(0, pendingCount - 1);
         continue;
       }
 
-      retained.push(mutation);
       blockedBy ??= result.error.kind;
-      if (stopsRetryPass(result.error.kind)) {
-        retained.push(...queued.value.slice(index + 1));
-        break;
-      }
+      if (stopsRetryPass(result.error.kind)) break;
     } catch {
-      retained.push(mutation, ...queued.value.slice(index + 1));
       blockedBy = 'unavailable';
       break;
     }
   }
 
-  const stored = await replacePendingUserMutations(userId, retained);
-  if (!stored.ok) {
-    return {
-      syncedCount,
-      pendingCount: retained.length,
-      blockedBy: 'storage-unavailable',
-    };
-  }
-
-  return {
-    syncedCount,
-    pendingCount: stored.value,
-    blockedBy,
-  };
+  return { syncedCount, pendingCount, blockedBy };
 }
 
 export function flushPendingUserMutations(userId: string): Promise<PendingMutationFlushResult> {
