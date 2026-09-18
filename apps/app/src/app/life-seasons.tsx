@@ -1,5 +1,5 @@
 import { router } from 'expo-router';
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import {
@@ -20,6 +20,7 @@ type SaveStatus = 'idle' | 'saving' | 'saved' | 'error';
 
 const SEASONS: readonly LifeSeason[] = ['balanced', 'build', 'recovery', 'parenting', 'study', 'travel'];
 const RATINGS: readonly Rating[] = [1, 2, 3, 4, 5];
+const DOMAIN_IDS: readonly DomainId[] = ['recovery', 'connection', 'work', 'margin'];
 
 const copy = {
   ar: {
@@ -96,6 +97,10 @@ function formatDate(value: string, locale: 'ar' | 'en'): string {
   }
 }
 
+function isDomainId(value: string): value is DomainId {
+  return DOMAIN_IDS.includes(value as DomainId);
+}
+
 export default function LifeSeasonsScreen() {
   const {
     enabledDomains,
@@ -118,7 +123,7 @@ export default function LifeSeasonsScreen() {
     setSelectedSeason(lifeSeason ?? 'balanced');
   }, [lifeSeason]);
 
-  const reload = async () => {
+  const reload = useCallback(async () => {
     if (!userId) {
       setState(null);
       setTargets({});
@@ -135,13 +140,11 @@ export default function LifeSeasonsScreen() {
     setState(result.value);
     setTargets(result.value.targets as TargetDraft);
     setLoadStatus('ready');
-  };
+  }, [refreshSession, userId]);
 
   useEffect(() => {
     void reload();
-    // reload is intentionally scoped to the authenticated user for this screen lifecycle.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [userId]);
+  }, [reload]);
 
   const enabledSet = useMemo(() => new Set(enabledDomains), [enabledDomains]);
   const history = state?.history ?? [];
@@ -242,8 +245,7 @@ export default function LifeSeasonsScreen() {
         {loadStatus === 'ready' && history.length === 0 ? <MizanText muted>{labels.historyEmpty}</MizanText> : null}
         {history.map((entry) => {
           const recordedTargets = Object.entries(entry.target_snapshot)
-            .filter(([domainId]) => enabledSet.has(domainId as DomainId) || typeof entry.target_snapshot[domainId] === 'number')
-            .map(([domainId, rating]) => `${domainId}: ${rating}`)
+            .map(([domainId, rating]) => `${isDomainId(domainId) ? t(domainId) : domainId}: ${rating}`)
             .join(' · ');
           return (
             <Card key={entry.id}>
