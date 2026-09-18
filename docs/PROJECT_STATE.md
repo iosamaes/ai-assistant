@@ -2,7 +2,7 @@
 
 ## Current checkpoint
 - CP1 — Universal application foundation
-- Status: `BLOCKED_HUMAN` for owner-side CP1/CP2 validation; CP3, CP4, and CP5 implementation slices are in place pending owner validation, and CP6 can continue independently on GitHub `main`.
+- Status: `BLOCKED_HUMAN` for owner-side CP1/CP2 validation; CP3, CP4, and CP5 implementation slices are in place pending owner validation, while CP6 implementation has started independently on GitHub `main`.
 - Product authority: GitHub `iosamaes/ai-assistant` on `main`.
 - Owner-only local mirror/testing copy: `C:\Users\bofo_\Documents\automation\ai assistant`.
 - Task digest: `c823e4d1031ac5f3f7230ed4e2de236b4446817a`.
@@ -58,19 +58,28 @@ Completed implementation slices:
 - Insights with conservative paired-observation associations, evidence counts, windows, confidence, and suppression under sparse evidence.
 - Personal Learning from explicit outcome feedback only; bare completion remains adherence evidence, not benefit evidence.
 - Personalization Maturity surface driven by core `cold_start` / `learning` / `personalized` evidence stages without a user score.
-- Values & Identity alignment uses the user's persisted self-declared values and stored self-report observations. `stability` is supported only by recovery/mental-load evidence and `family` only by connection evidence; unsupported values remain explicitly insufficient.
+- Values & Identity alignment uses the user's persisted self-declared values and stored self-report observations; unsupported values remain explicitly insufficient rather than borrowing unrelated productivity data.
 - `/value-alignment` is Arabic/English, RTL-aware, exposes confidence/evidence counts, and labels only possible drift rather than judging identity.
-- Invisible Wins / reflection capture now persists only explicit user-authored entries in the separate `reflections` table. Categories include rest, healthy boundaries, family, relationship repair, disconnecting, health protection, and other; no points, streaks, or productivity score are produced.
+- Invisible Wins / reflection capture persists only explicit user-authored entries in the separate `reflections` table. Categories include rest, healthy boundaries, family, relationship repair, disconnecting, health protection, and other; no points, streaks, or productivity score are produced.
 - `/invisible-wins` is Arabic/English and RTL-aware, supports intentional save plus recent reflection history, and explains that entries stay outside productivity scoring. The route is registered and exposed from Settings.
 
 CP5 remaining gate:
 - Owner-side type/runtime/responsive validation for all CP5 surfaces. Workers have not run product tests/builds under the current execution policy.
 
+## CP6 independent progress
+- Added `packages/core/src/scenario.ts` as the first deterministic What If / Digital Twin primitive.
+- Scenario projections expose explicit assumptions, bounded delta ranges, current/projected ranges when current state is actually known, evidence source (`personal` or `conservative_prior`), evidence count, confidence, and an overall uncertainty level.
+- Unknown current state remains unknown; the simulator never invents a starting value just to render a projection.
+- Personal effect estimates override conservative priors only after a minimum evidence/confidence threshold; weak personal evidence falls back to the prior rather than pretending to be personalized.
+- Projected state ranges are clamped to the existing 0–100 state scale and are framed as scenario estimates, not guaranteed outcomes.
+- Added deterministic `scenario.test.ts` specifications for prior fallback, unknown-state preservation, personal-evidence preference, and clamping. Tests were authored but not run by workers.
+
 ## Exact next executable action
-1. Worker-safe CP6 path: begin the honest What If / Digital Twin scenario slice using explainable conservative direction/range estimates, explicit assumptions, personal evidence when available, and uncertainty; do not present scenarios as predictions or guarantees.
-2. Owner path: unlock Windows and complete CP1 narrow-phone Arabic/English interaction verification.
-3. Owner path: configure Supabase Auth redirect allow-list from `automation/HUMAN_REQUIRED.md`, then validate auth/recovery/session/persistence and execute RLS verification.
-4. Owner path: run current core/app/plugin typechecks and tests before granting CP3/CP4/CP5 checkpoint credit.
+1. Worker-safe CP6 path: wire the scenario engine into an Arabic/English What If surface with a small set of reversible behavior scenarios, explicit assumptions/uncertainty, and clear non-prediction language; use current Human State Vector when available and never fabricate missing current values.
+2. Then extend personal effect estimates from explicit outcome/experiment evidence without treating simple completion as benefit.
+3. Owner path: unlock Windows and complete CP1 narrow-phone Arabic/English interaction verification.
+4. Owner path: configure Supabase Auth redirect allow-list from `automation/HUMAN_REQUIRED.md`, then validate auth/recovery/session/persistence and execute RLS verification.
+5. Owner path: run current core/app/plugin typechecks and tests before granting CP3/CP4/CP5/CP6 checkpoint credit.
 
 ## Verification record
 Previously verified evidence:
@@ -82,6 +91,7 @@ Implemented after that verification and still awaiting owner validation:
 - CP3 Balance, Capacity/Interaction Risk, relationship/feedback learning, recommendation-context stability, optional baseline targets, and value-alignment core/specifications.
 - CP4 check-in, state integration, One Move decision/feedback loop, onboarding context/targets, Balance/Momentum, Spiritual Grounding preference.
 - CP5 Life Map, WHY, Insights, Personal Learning, Personalization Maturity, Values & Identity alignment, and Invisible Wins/reflection capture.
+- CP6 deterministic What If scenario engine and specifications.
 - Supabase migration `invisible_wins` was applied successfully to project `olfhjnropdrnujgpidfi`; direct policy inspection confirmed SELECT/INSERT/UPDATE/DELETE own-row policies on `public.reflections`.
 - Reflection RLS isolation checks were added to `supabase/tests/rls_cross_user.sql` but were not executed by the worker.
 - No product/database test script, cloud test, or build was run by auto3 in this run, per `automation/TASK.md`.
@@ -90,13 +100,14 @@ Implemented after that verification and still awaiting owner validation:
 - CP1 remains blocked on owner-side physical responsive/locale verification.
 - Hosted Supabase Auth must allow `mizan://**`, `http://localhost:8087/**`, and the eventual production Web URL before confirmation/recovery can be verified end-to-end.
 - Cross-user SQL verification exists but lacks current owner-side execution evidence.
-- CP3/CP4/CP5 additions after the earlier verification baseline remain runtime/type validation pending.
+- CP3/CP4/CP5/CP6 additions after the earlier verification baseline remain runtime/type validation pending.
 - Offline mutation durability beyond the current screen/session remains CP8 work; Invisible Wins currently requires live persistence to save.
 - Restart-level One Move suppression is query/context based rather than a DB uniqueness constraint; concurrent-device double-submit prevention remains later hardening.
 - Spiritual Grounding currently covers consent/enablement only; selected practices and grounding observations remain later module work.
 - Insights is intentionally a small association slice, not a general causal graph.
 - Value alignment intentionally leaves values without a direct observation signal unknown rather than borrowing unrelated productivity data.
 - Invisible Wins are intentionally stored outside `observations` and `action_events`; they are reflection history, not scoring evidence.
+- What If currently provides the pure deterministic projection contract only; application presets/UI and personal-effect extraction remain the next CP6 slice.
 - Moderate npm advisories remain in the supported Expo dependency chain; no prior high/critical advisory was recorded.
 
 ## Evidence paths
@@ -124,6 +135,8 @@ Implemented after that verification and still awaiting owner validation:
 - `apps/app/src/app/settings.tsx`
 - `packages/core/src/alignment.ts`
 - `packages/core/src/alignment.test.ts`
+- `packages/core/src/scenario.ts`
+- `packages/core/src/scenario.test.ts`
 - `packages/core/src/engine.ts`
 - `packages/core/src/temporal.ts`
 - `packages/core/src/leverage.ts`
