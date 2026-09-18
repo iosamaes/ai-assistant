@@ -80,15 +80,27 @@ Life Seasons already used shared chips for season/target selection and `PrimaryB
 
 Recovery previously used text-only pressable labels for both “skip this step” and bottom navigation. The skip action now uses standard `SecondaryButton`, while the bottom navigation uses its compact form. Step sequencing, voluntary skip semantics, recovery-plan evidence, and non-medical decision behavior remain feature-local. This standardizes accessibility role, touch sizing, border/radius, and interaction treatment without changing recovery logic.
 
+### Invisible Wins
+
+Invisible Wins previously duplicated the standard multiline input treatment locally: light/dark palette lookup, border color/width/radius, horizontal/vertical padding, typography size/line height, and placeholder color. The reflection field now uses `MizanTextInput`, keeping only its feature-specific multiline height and top alignment local. The bottom text-only Settings navigation now uses compact `SecondaryButton`. Reflection persistence, offline queue behavior, category semantics, and no-gamification rules remain outside the shared primitive.
+
+### Values & identity alignment
+
+Value Alignment previously used a custom `Pressable` back control with screen-local padding. It now uses compact `SecondaryButton`, centralizing touch target, border/radius, pressed state, dynamic text behavior, and accessibility role without moving evidence interpretation, confidence, or identity-drift semantics into presentation code.
+
+### External integrations
+
+Integrations keeps provider lifecycle, permissions, consent, sync status, and disconnect behavior in its application/infrastructure layers. Its remaining text-only Settings navigation now uses compact `SecondaryButton`, removing another screen-local navigation treatment while preserving provider-boundary separation and normalized integration state.
+
 ## Current design-swap assessment
 
-The global visual levers for palette, typography, control sizing, spacing/radii, interaction opacity, and responsive screen layout are now centralized across the representative Today, Life Map, WHY, Check-in, authentication/recovery, Capacity, Cost of Yes, Insights, Human ROI, Life Seasons, and Recovery surfaces. These screens demonstrate that repeated control/input treatment can move behind app-local primitives or semantic tokens without changing `packages/core`, application intelligence/data contracts, Supabase/data-access, or provider adapters.
+The global visual levers for palette, typography, control sizing, spacing/radii, interaction opacity, and responsive screen layout are now centralized across Today, Life Map, WHY, Check-in, authentication/recovery, Capacity, Cost of Yes, Insights, Human ROI, Life Seasons, Recovery, Invisible Wins, Value Alignment, and Integrations. These screens demonstrate that repeated control/input treatment can move behind app-local primitives or semantic tokens without changing `packages/core`, application intelligence/data contracts, Supabase/data-access, or provider adapters.
 
 This is **not yet the final CP9 design-swap proof**. A substantially different visual direction still needs owner-side visual/runtime review; workers must not claim that runtime proof from static implementation inspection alone.
 
 ## Remaining CP9 slices
 
-1. Continue auditing experiments, scenarios, integrations, Invisible Wins, value alignment, Settings, and remaining primary screens for screen-local hard-coded colors, typography sizes, standard radii/control heights, repeated pressed/disabled values, and text-only pressable navigation; leave feature geometry/visualization math local.
+1. Continue auditing experiments, scenarios/What If, Settings, and other remaining primary screens for screen-local hard-coded colors, typography sizes, standard radii/control heights, repeated pressed/disabled values, and text-only pressable navigation; leave feature geometry/visualization math local.
 2. Audit responsive behavior at narrow phone, common phone, tablet portrait/landscape, and wide web widths when owner runtime/visual validation is available.
 3. Audit Arabic RTL mirroring/alignment, semantic icon direction, truncation, dynamic type, keyboard/focus behavior, screen-reader labels, and light/dark treatment.
 4. Complete the TASK-required design-swap proof on Today, Life Map, WHY, and the interaction-heavy Check-in flow during owner visual/runtime validation, documenting the substantially different visual direction without keeping duplicate production themes.
