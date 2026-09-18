@@ -1,6 +1,6 @@
 # CP8 Reliability / Offline Sync Progress
 
-Status: implementation in progress; owner validation pending.
+Status: implementation review complete; owner validation pending.
 
 ## Durable user-write retry slice
 
@@ -12,7 +12,18 @@ Status: implementation in progress; owner validation pending.
 - Retry is serialized per user and runs when a usable authenticated session appears, before later check-in/reflection writes, and when the Invisible Wins view loads.
 - Retried check-ins use `(user_id, client_mutation_id, metric)` idempotency. Retried reflections use `(user_id, client_mutation_id)` idempotency.
 - Invisible Wins explicitly tells the user when a reflection is preserved locally for later sync and can render queued reflections even while the remote read is unavailable.
+- Queued check-ins now remain on the check-in screen with an explicit Arabic/English message that the entry is durably stored on this device for later sync; only a confirmed server save navigates directly to Today.
 - `supabase/tests/offline_mutation_idempotency.sql` specifies duplicate-safe replay for both multi-metric check-ins and reflections; it has not been executed by workers.
+
+## User-visible preservation wording audit
+
+The CP8 wording audit distinguishes three guarantees rather than using generic “saved” language:
+
+- **Durably queued on device:** queued check-ins and queued Invisible Wins explicitly say they are stored on this device and will be retried when connectivity returns.
+- **Screen/session only:** profile/onboarding preference sync messages explicitly say the latest unsaved change remains visible in the current session. Those preference writes do not claim a durable offline queue.
+- **Not preserved for later sync:** One Move decisions, explicit action feedback, experiment lifecycle changes, Life Season changes, and integration disconnects currently have no durable offline mutation queue. Their failure paths do not claim later synchronization; the interactive screen state/draft remains available for a manual retry where applicable.
+- **Cached read, not a saved write:** Today’s cache notice explicitly identifies a saved snapshot, includes its timestamp, and distinguishes transient live-data unavailability from an unconfigured live source.
+- Queue-storage failure remains a failure: when SecureStore/localStorage cannot preserve a check-in/reflection mutation, application code does not return a queued success and the user input remains available for retry instead of being described as durable.
 
 ## Integration retry / overlap posture
 
@@ -32,6 +43,17 @@ Status: implementation in progress; owner validation pending.
 - Cached payloads are runtime-validated before use. Authorization/validation/conflict/unknown failures do not fall back to cache.
 - Today now consumes a single `DailySnapshot` for current state plus Balance/Momentum, avoiding two independent reads that could disagree about source/freshness.
 - When `DailySnapshot.source === 'cache'`, Today displays an explicit saved-snapshot notice even if the global sync indicator still appears healthy. The notice includes the `cachedAt` timestamp and distinguishes `not-configured` from transient `unavailable` via `degradedBy`.
+
+## Concurrent-edit review
+
+CP8 intentionally does **not** introduce a generic conflict/version engine. The actual mutable entities were reviewed by invariant and user harm:
+
+- Check-ins and Invisible Wins are append-only user evidence with client mutation idempotency, so there is no same-record edit race to resolve.
+- Normalized integration observations are provider-keyed idempotent upserts; overlap/redelivery is handled by dedupe rather than optimistic record editing.
+- Experiment terminal lifecycle is a real concurrent-edit surface: two devices can try to cancel/complete the same active experiment. Lifecycle updates now include `status = 'active'` in the write predicate and use `maybeSingle`; a stale second terminal mutation returns `conflict` instead of overwriting the already-finished state.
+- Life Season transitions are executed by one database RPC transaction, and `life_season_history_one_active_per_user_idx` enforces at most one active season. A concurrent transition cannot silently produce two active seasons; adding a general version column would not improve the current invariant enough to justify the extra machinery.
+- Profile, locale, enabled-domain, and onboarding preference writes are serialized inside one running client. Cross-device last-write-wins remains acceptable for these low-risk preference snapshots because they do not carry irreversible financial/medical actions or append-only evidence; no generic conflict UI is added.
+- One Move choices and feedback are append-style events/outcomes, so duplicate prevention/ownership is the relevant reliability concern rather than mutable-row versioning.
 
 ## Non-executed reliability specifications
 
@@ -61,6 +83,7 @@ These scenarios are the required owner/test-harness assertions for the next veri
 7. SecureStore/localStorage read or write failure returns `storage-unavailable`; UI/application code must keep the user's unsaved input visible and must not claim durable preservation.
 8. After reconnect, serialized replay sends each mutation through the existing idempotent server path and removes only confirmed successes.
 9. An ambiguous retry must preserve the original client mutation ID so server uniqueness prevents duplication.
+10. A queued check-in must display the durable-on-device message and must not be presented as a confirmed live/server save.
 
 ### Integration retry / partial state
 
@@ -70,13 +93,17 @@ These scenarios are the required owner/test-harness assertions for the next veri
 4. If observations persist but the later connection-lifecycle update fails, the sync result reports failure rather than a false complete success.
 5. A later successful sync returns the connection to `connected`, clears the normalized error code, and advances `lastSyncedAt` without storing raw provider error payloads.
 
+### Concurrent experiment lifecycle
+
+1. Two clients loading the same active experiment may race to finish/cancel it; only the first terminal transition may update the row.
+2. A later stale terminal mutation must return `conflict` because the row no longer satisfies `status = 'active'`.
+3. A stale terminal request must not overwrite `completed` with `cancelled` or vice versa.
+
 ## Verification policy
 
 Workers have not executed app tests, builds, typechecks, database scripts, cloud CI, or GitHub Actions because the active task policy reserves execution-dependent gates for owner validation. The specifications above are recorded requirements, not claimed passing evidence.
 
 ## Next CP8 slices
 
-1. Review every user-visible preserved-vs-unsaved message so durable preservation, in-memory preservation, and failure to preserve are never conflated.
-2. Review realistic concurrent edits and add version/timestamp conflict handling only where an actual entity can be edited concurrently; do not add a generic sync engine.
-3. Owner validation: exercise snapshot expiry/corruption, queue restart/full-storage, reconnect replay, Today cached-source presentation, and integration partial-state behavior on Web plus at least one native development runtime.
-4. Re-review CP8 Definition of Done against that evidence before moving CP8 to `DONE`.
+1. Owner validation: exercise snapshot expiry/corruption, queue restart/full-storage, reconnect replay, queued check-in wording/presentation, Today cached-source presentation, integration partial-state behavior, and the concurrent experiment terminal-state guard on Web plus at least one native development runtime.
+2. Re-review the CP8 gate against that execution evidence before moving CP8 to `DONE`.
