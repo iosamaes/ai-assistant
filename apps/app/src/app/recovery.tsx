@@ -3,7 +3,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { loadRecoveryPlan } from '@/application/recovery';
-import { Card, MizanText, PrimaryButton } from '@/components/mizan-ui';
+import { Card, MizanText, PrimaryButton, SecondaryButton } from '@/components/mizan-ui';
 import { Screen } from '@/components/screen';
 import { Spacing } from '@/constants/theme';
 import { useAppState } from '@/state/app-state';
@@ -178,7 +178,7 @@ export default function RecoveryScreen() {
                 label={stepIndex >= plan.steps.length - 1 ? labels.done : labels.next}
                 onPress={advance}
               />
-              <MizanText variant="label" style={styles.link} onPress={advance}>{labels.skip}</MizanText>
+              <SecondaryButton label={labels.skip} onPress={advance} />
             </Card>
           ) : null}
 
@@ -186,9 +186,7 @@ export default function RecoveryScreen() {
         </>
       ) : null}
 
-      <MizanText variant="label" style={styles.link} onPress={() => router.replace('/today')}>
-        {labels.back}
-      </MizanText>
+      <SecondaryButton compact label={labels.back} onPress={() => router.replace('/today')} />
     </Screen>
   );
 }
@@ -196,5 +194,4 @@ export default function RecoveryScreen() {
 const styles = StyleSheet.create({
   hero: { gap: Spacing.md, paddingTop: Spacing.xl },
   reasonGroup: { gap: Spacing.sm, paddingTop: Spacing.sm },
-  link: { textAlign: 'center', paddingVertical: Spacing.md },
 });
