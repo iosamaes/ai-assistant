@@ -45,52 +45,38 @@ Presentation boundary already in place:
 - navigation shell honors reduced-motion preference;
 - confidence/status localization has been progressively removed from raw engine enums in shipped surfaces;
 - semantic RTL fixes exist for grouped metric layouts and date-direction presentation;
-- async accessibility live announcements exist across auth/recovery, Check-in, Value Alignment, Invisible Wins, Integrations, Life Seasons, Today, What If, Settings, Experiments, Recovery, Life Map, WHY, and other reviewed surfaces.
+- async accessibility live announcements now cover the principal asynchronous status/error/empty-state transitions across the reviewed product surfaces.
 
-Latest `auto3` static CP9 work:
-- **Life Map async accessibility:** history loading, load failure, and the asynchronous no-evidence result now use polite accessibility live regions so screen-reader users receive state changes after the history read completes.
-- **Life Map semantic visual treatment:** metric separators now consume the shared `Controls.borderWidth` token instead of `StyleSheet.hairlineWidth`, removing another screen-local global border decision while keeping domain/metric composition feature-local.
-- **WHY async accessibility:** evidence loading, load failure, and the asynchronous no-supported-factor result now use polite accessibility live regions. Factor ranking, confidence/evidence interpretation, causal caveats, routing, and application-layer behavior are unchanged.
+Latest static CP9 work:
+- **Onboarding async accessibility:** baseline-target persistence errors, Spiritual Grounding preference errors, and sync/offline feedback now use polite accessibility live regions. Onboarding selection, persistence, and completion behavior are unchanged.
+- **Personal Learning async accessibility:** loading, load-error, and asynchronous empty-result feedback now use polite accessibility live regions. Personal-response estimates, confidence labels, outcome history, and learning logic are unchanged.
+- **Today:** sync/offline, cached snapshot, current-state, One Move, decision, and feedback outcomes are live-announced; key controls have explicit accessible naming; shared semantic border/control tokens replace remaining local foundational values found in the audit.
+- **Life Map / WHY / Experiments / Recovery / What If / Settings:** identified asynchronous loading/error/empty-state gaps were converted to polite live announcements without moving domain behavior into presentation code.
+- **Capacity / Cost of Yes / Human ROI / Life Seasons:** semantic RTL direction and date/metric presentation were reviewed and corrected where concrete issues existed.
+- **Auth/recovery, Check-in, Value Alignment, Invisible Wins, Integrations:** shared controls and asynchronous accessibility feedback are in place for the reviewed flows.
 
-Latest `auto1` static CP9 work:
-- **Today async accessibility:** sync/offline state, cached-snapshot state, current-state loading/error, One Move loading/empty, decision outcomes, and feedback outcomes now use polite accessibility live regions so screen-reader users can receive asynchronous state changes.
-- **Today control naming:** the Settings and quick-check-in link controls now carry explicit localized accessibility labels; usefulness rating controls now announce the localized scale name plus the selected numeric position instead of exposing an isolated number only.
-- **Today semantic visual treatment:** state/feedback separators now consume `Controls.borderWidth` instead of `StyleSheet.hairlineWidth`, and the local check-in primary action uses the shared standard control height rather than a one-off action height.
-- Recommendation, feedback, persistence, Supabase, and deterministic intelligence behavior were not moved into presentation code or changed by this slice.
-
-Latest `auto4` static CP9 work:
-- **What If async accessibility:** loading/recalculation and load-error changes now use polite accessibility live regions, so screen readers receive scenario-state changes without changing scenario simulation or personal-effect learning behavior.
-- **Settings async accessibility:** offline/sync status plus preference/sign-out error feedback now use polite accessibility live regions; settings persistence, auth, and navigation behavior remain unchanged.
-
-Latest `auto2` static CP9 work:
-- **Experiments async accessibility:** the experiment-history loading state and asynchronous load/save error message now use polite accessibility live regions. Experiment lifecycle, consent, usefulness capture, persistence, and evaluation math are unchanged.
-- **Recovery async accessibility:** current-state loading and load-error feedback now use polite accessibility live regions so screen-reader users receive the result of the asynchronous recovery-plan read without changing recovery-plan logic or navigation.
-
-Latest static product commits (not runtime-verified):
-- `b0031ecd62c23c45b44fb930e1c826f504ed2848` — announce WHY async loading/error/empty states.
-- `98b0d3c3590fe9a6ef74aa93beea082b607f2a39` — improve Life Map async accessibility and semantic border treatment.
-- `c3c65bf647b5520012ea659e41399b078b47d4b5` — improve Today accessibility semantics and semantic control/border treatment.
-- `d3556859a71fd4cac0afde2a9ed8f024f4674357` — announce What If async state.
-- `df4b760e8ee1780a3ab6be952fe3431470afc76d` — announce Settings async state.
-- `92687f6edd8f1da4a780d7f6253fa8d845c4e6ba` — announce Experiments loading/error state.
-- `a431f06f2ad66ad99fa4e87b7ddfafd914f6ed6a` — announce Recovery loading/error state.
+Latest static product commits from this pass (not runtime-verified):
+- `60d8e6f6155e3b63a6251c56a712a7be53040f44` — announce Onboarding persistence/sync error states.
+- `4c85570f607947fe09b7d14fa2643f87185dd183` — announce Personal Learning loading/error/empty states.
 
 Recent cross-worker CP9 evidence also includes:
-- semantic RTL mirroring for Capacity, Cost of Yes, and Human ROI metric groups;
-- localized confidence labels in Recovery, Experiments, Human ROI, and Cost of Yes;
-- centralized border/radius treatment in WHY, Personal Learning, and Personalization;
-- shared navigation/action controls in Insights;
-- screen-reader live announcements for queued/offline/error outcomes in Check-in and for loading/errors in Value Alignment, Invisible Wins, and Integrations.
+- `b0031ecd62c23c45b44fb930e1c826f504ed2848` — WHY async loading/error/empty announcements;
+- `98b0d3c3590fe9a6ef74aa93beea082b607f2a39` — Life Map accessibility and semantic border treatment;
+- `c3c65bf647b5520012ea659e41399b078b47d4b5` — Today accessibility/control/border treatment;
+- `d3556859a71fd4cac0afde2a9ed8f024f4674357` — What If async state;
+- `df4b760e8ee1780a3ab6be952fe3431470afc76d` — Settings async state;
+- `92687f6edd8f1da4a780d7f6253fa8d845c4e6ba` — Experiments loading/error state;
+- `a431f06f2ad66ad99fa4e87b7ddfafd914f6ed6a` — Recovery loading/error state.
 
 The TASK-required final design-swap proof is **not claimed**. It still requires owner visual/runtime validation using a substantially different visual direction and representative device widths.
 
 ## Test matrix progress
 - Commit `d32636ddd253e3ec688376a4a42596e2844704df` added a broad CP2–CP9 app/runtime validation matrix, including component/application specifications and critical-flow coverage scaffolding.
-- Those newly added suites have **not** been executed by workers under the current task policy; no PASS is claimed from their presence alone.
+- Those suites have **not** been executed by workers under the current task policy; no PASS is claimed from their presence alone.
 
 ## Exact next executable action
-1. Continue the repository-wide CP9 static review for untranslated production literals, semantic RTL issues, missing accessibility labels/states/live announcements, truncation/dynamic-type risks, duplicated global visual values, and unjustified local control treatments outside the already-reviewed surfaces.
-2. Revisit already-audited screens only when static inspection finds a concrete remaining defect; Life Map, WHY, Today, Experiments, Recovery, What If, and Settings now have the currently identified async announcement gaps addressed.
+1. Continue the repository-wide CP9 static review for untranslated production literals, semantic RTL issues, missing accessibility labels/states/live announcements, truncation/dynamic-type risks, duplicated global visual values, and unjustified local control treatments outside already-reviewed surfaces.
+2. Revisit already-audited screens only when static inspection finds a concrete remaining defect; Onboarding and Personal Learning now have the currently identified asynchronous announcement gaps addressed.
 3. Leave representative-width runtime checks, post-baseline tests/builds/typechecks, CP1–CP8 execution-dependent evidence, and the final design-swap proof to owner validation under the active policy.
 
 ## Verification record
@@ -106,8 +92,8 @@ Previously recorded owner-side baseline evidence:
 
 Post-baseline status:
 - No worker-run app tests, builds, typechecks, database scripts, cloud CI, or GitHub Actions are claimed for CP2–CP9 changes.
-- Current CP9 evidence, including the latest Life Map/WHY/Today/Experiments/Recovery async-accessibility slices, is static implementation/code-review evidence only until owner validation runs the new matrix and representative device/browser/screen-reader checks.
-- No new automated test was added for these declarative accessibility-property substitutions; meaningful verification depends on the already-pending owner runtime/screen-reader validation rather than duplicating React Native prop assertions.
+- Current CP9 evidence is static implementation/code-review evidence only until owner validation runs the validation matrix and representative device/browser/screen-reader checks.
+- No new automated test was added for these declarative accessibility-property substitutions; meaningful verification depends on pending runtime/screen-reader validation rather than duplicating React Native prop assertions.
 
 ## Known blockers / risks
 - CP1: Windows session must be unlocked normally for true narrow-phone Arabic/English interaction evidence; see `automation/HUMAN_REQUIRED.md`.
