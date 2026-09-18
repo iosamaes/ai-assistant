@@ -195,7 +195,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingHorizontal: Spacing.xl,
   },
-  buttonText: Typography.control,
+  buttonText: { ...Typography.control, textAlign: 'center' },
   secondaryButton: {
     minHeight: Controls.standardHeight,
     borderWidth: Controls.borderWidth,
