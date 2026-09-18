@@ -126,20 +126,20 @@ function FactorCard({ factor, locale, isRtl }: { factor: WhyCandidateFactor; loc
       <MizanText variant="title">{local.factors[key]}</MizanText>
       <MizanText muted>{local.descriptions[key]}</MizanText>
       <View style={[styles.detailRow, { flexDirection: isRtl ? 'row-reverse' : 'row', borderTopColor: palette.border }]}>
-        <MizanText variant="caption" muted>{local.value}</MizanText>
-        <MizanText variant="label">{Math.round(factor.value)} / 100</MizanText>
+        <MizanText variant="caption" muted style={styles.detailText}>{local.value}</MizanText>
+        <MizanText variant="label" style={styles.detailText}>{Math.round(factor.value)} / 100</MizanText>
       </View>
       <View style={[styles.detailRow, { flexDirection: isRtl ? 'row-reverse' : 'row', borderTopColor: palette.border }]}>
-        <MizanText variant="caption" muted>{local.confidence}</MizanText>
-        <MizanText variant="label">{confidenceLabel(factor.confidence.level, locale)}</MizanText>
+        <MizanText variant="caption" muted style={styles.detailText}>{local.confidence}</MizanText>
+        <MizanText variant="label" style={styles.detailText}>{confidenceLabel(factor.confidence.level, locale)}</MizanText>
       </View>
       <View style={[styles.detailRow, { flexDirection: isRtl ? 'row-reverse' : 'row', borderTopColor: palette.border }]}>
-        <MizanText variant="caption" muted>{local.evidence}</MizanText>
-        <MizanText variant="label">{factor.evidence.length}</MizanText>
+        <MizanText variant="caption" muted style={styles.detailText}>{local.evidence}</MizanText>
+        <MizanText variant="label" style={styles.detailText}>{factor.evidence.length}</MizanText>
       </View>
       <View style={[styles.detailRow, { flexDirection: isRtl ? 'row-reverse' : 'row', borderTopColor: palette.border }]}>
-        <MizanText variant="caption" muted>{local.window}</MizanText>
-        <MizanText variant="label">{evidenceWindowLabel(factor, locale)}</MizanText>
+        <MizanText variant="caption" muted style={styles.detailText}>{local.window}</MizanText>
+        <MizanText variant="label" style={styles.detailText}>{evidenceWindowLabel(factor, locale)}</MizanText>
       </View>
     </Card>
   );
@@ -211,13 +211,15 @@ export default function WhyScreen() {
 }
 
 const styles = StyleSheet.create({
-  topRow: { alignItems: 'center', justifyContent: 'space-between', gap: Spacing.lg },
-  heading: { flex: 1, gap: Spacing.xs },
+  topRow: { alignItems: 'flex-start', justifyContent: 'space-between', gap: Spacing.lg, flexWrap: 'wrap' },
+  heading: { flex: 1, minWidth: 0, gap: Spacing.xs },
   detailRow: {
-    alignItems: 'center',
+    alignItems: 'flex-start',
     justifyContent: 'space-between',
     gap: Spacing.md,
+    flexWrap: 'wrap',
     borderTopWidth: Controls.borderWidth,
     paddingTop: Spacing.sm,
   },
+  detailText: { flexShrink: 1 },
 });
