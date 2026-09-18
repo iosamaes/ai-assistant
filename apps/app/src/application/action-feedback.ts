@@ -10,8 +10,13 @@ import {
   type DataResult,
   type StoredActionFeedback,
 } from '@/infrastructure/supabase/data-access';
+import {
+  loadLatestPendingAcceptedAction,
+  type PendingAcceptedAction,
+} from '@/infrastructure/supabase/pending-action-feedback';
 
 const FEEDBACK_WINDOW_DAYS = 90;
+const PENDING_FEEDBACK_WINDOW_DAYS = 7;
 const DAY_MS = 86_400_000;
 
 export type RecordedActionFeedback = {
@@ -51,6 +56,35 @@ function toOutcomeFeedback(row: StoredActionFeedback): ActionOutcomeFeedback | n
   };
 }
 
+function feedbackSince(now: Date): string {
+  return new Date(now.getTime() - FEEDBACK_WINDOW_DAYS * DAY_MS).toISOString();
+}
+
+export async function loadPersonalActionUsefulness(
+  userId: string,
+  actionId: string,
+  now = new Date(),
+): Promise<DataResult<ActionUsefulnessEstimate>> {
+  const history = await loadActionOutcomeFeedback(userId, actionId, feedbackSince(now));
+  if (!history.ok) return { ok: false, error: history.error };
+  const feedback = history.value.flatMap((row) => {
+    const mapped = toOutcomeFeedback(row);
+    return mapped ? [mapped] : [];
+  });
+  return {
+    ok: true,
+    value: estimateActionUsefulness(actionId, feedback, now.toISOString()),
+  };
+}
+
+export async function recoverPendingActionFeedback(
+  userId: string,
+  now = new Date(),
+): Promise<DataResult<PendingAcceptedAction | null>> {
+  const since = new Date(now.getTime() - PENDING_FEEDBACK_WINDOW_DAYS * DAY_MS).toISOString();
+  return loadLatestPendingAcceptedAction(userId, since);
+}
+
 export async function recordExplicitActionOutcome(
   userId: string,
   actionId: string,
@@ -73,22 +107,12 @@ export async function recordExplicitActionOutcome(
   });
   if (!saved.ok) return saved;
 
-  const since = new Date(now.getTime() - FEEDBACK_WINDOW_DAYS * DAY_MS).toISOString();
-  const history = await loadActionOutcomeFeedback(userId, actionId, since);
-  if (!history.ok) {
-    return { ok: true, value: { feedbackId: saved.value, estimate: null } };
-  }
-
-  const feedback = history.value.flatMap((row) => {
-    const mapped = toOutcomeFeedback(row);
-    return mapped ? [mapped] : [];
-  });
-
+  const estimate = await loadPersonalActionUsefulness(userId, actionId, now);
   return {
     ok: true,
     value: {
       feedbackId: saved.value,
-      estimate: estimateActionUsefulness(actionId, feedback, observedAt),
+      estimate: estimate.ok ? estimate.value : null,
     },
   };
 }

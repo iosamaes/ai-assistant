@@ -3,11 +3,15 @@ import { Link } from 'expo-router';
 import { useEffect, useMemo, useState } from 'react';
 import { Pressable, StyleSheet, TextInput, useColorScheme, View } from 'react-native';
 
-import { recordExplicitActionOutcome } from '@/application/action-feedback';
+import {
+  recoverPendingActionFeedback,
+  recordExplicitActionOutcome,
+} from '@/application/action-feedback';
 import { loadCurrentHumanState } from '@/application/daily-intelligence';
 import {
-  prepareDailyRecommendation,
+  loadPersonalizedDailyRecommendation,
   recordOneMoveDecision,
+  type DailyRecommendation,
   type DailyRecommendationOption,
   type OneMoveDecision,
 } from '@/application/daily-recommendation';
@@ -18,8 +22,10 @@ import type { TranslationKey } from '@/i18n';
 import { DomainId, useAppState } from '@/state/app-state';
 
 type StateLoadStatus = 'loading' | 'ready' | 'error';
+type RecommendationLoadStatus = 'loading' | 'ready';
 type DecisionStatus = 'idle' | 'saving' | OneMoveDecision | 'offline' | 'error';
 type FeedbackStatus = 'idle' | 'saving' | 'saved' | 'offline' | 'error';
+type FeedbackTarget = { actionEventId: string; actionId: string; acceptedAt: string };
 
 const OUTCOME_RATINGS = [1, 2, 3, 4, 5] as const;
 
@@ -74,10 +80,11 @@ export default function TodayScreen() {
   const { enabledDomains, isRtl, refreshSession, syncStatus, t, userId } = useAppState();
   const [humanState, setHumanState] = useState<HumanStateVector | null>(null);
   const [stateLoadStatus, setStateLoadStatus] = useState<StateLoadStatus>('loading');
+  const [recommendation, setRecommendation] = useState<DailyRecommendation | null>(null);
+  const [recommendationLoadStatus, setRecommendationLoadStatus] = useState<RecommendationLoadStatus>('loading');
   const [selectedActionId, setSelectedActionId] = useState<string | null>(null);
   const [decisionStatus, setDecisionStatus] = useState<DecisionStatus>('idle');
-  const [acceptedActionEventId, setAcceptedActionEventId] = useState<string | null>(null);
-  const [acceptedActionId, setAcceptedActionId] = useState<string | null>(null);
+  const [feedbackTarget, setFeedbackTarget] = useState<FeedbackTarget | null>(null);
   const [feedbackUsefulness, setFeedbackUsefulness] = useState<number | null>(null);
   const [feedbackNote, setFeedbackNote] = useState('');
   const [feedbackStatus, setFeedbackStatus] = useState<FeedbackStatus>('idle');
@@ -122,20 +129,61 @@ export default function TodayScreen() {
     [humanState],
   );
 
-  const recommendation = useMemo(
-    () => (humanState ? prepareDailyRecommendation(humanState) : null),
-    [humanState],
-  );
+  useEffect(() => {
+    let active = true;
+    if (!userId || !humanState) {
+      setRecommendation(null);
+      setRecommendationLoadStatus('ready');
+      return () => {
+        active = false;
+      };
+    }
+
+    setRecommendationLoadStatus('loading');
+    void loadPersonalizedDailyRecommendation(userId, humanState).then((nextRecommendation) => {
+      if (!active) return;
+      setRecommendation(nextRecommendation);
+      setRecommendationLoadStatus('ready');
+    });
+
+    return () => {
+      active = false;
+    };
+  }, [humanState, userId]);
+
+  useEffect(() => {
+    let active = true;
+    if (!userId) {
+      setFeedbackTarget(null);
+      return () => {
+        active = false;
+      };
+    }
+
+    void recoverPendingActionFeedback(userId).then(async (result) => {
+      if (!active) return;
+      if (!result.ok) {
+        if (result.error.kind === 'session-expired') await refreshSession();
+        return;
+      }
+      if (active) setFeedbackTarget(result.value);
+    });
+
+    return () => {
+      active = false;
+    };
+  }, [refreshSession, userId]);
 
   useEffect(() => {
     setSelectedActionId(recommendation?.primary.actionId ?? null);
     setDecisionStatus('idle');
-    setAcceptedActionEventId(null);
-    setAcceptedActionId(null);
+  }, [recommendation?.primary.actionId]);
+
+  useEffect(() => {
     setFeedbackUsefulness(null);
     setFeedbackNote('');
     setFeedbackStatus('idle');
-  }, [recommendation?.primary.actionId]);
+  }, [feedbackTarget?.actionEventId]);
 
   const recommendationOptions = recommendation
     ? [recommendation.primary, ...recommendation.alternatives]
@@ -170,22 +218,18 @@ export default function TodayScreen() {
 
     setDecisionStatus(decision);
     if (decision === 'accepted') {
-      setAcceptedActionEventId(result.value);
-      setAcceptedActionId(activeRecommendation.actionId);
-      setFeedbackUsefulness(null);
-      setFeedbackNote('');
-      setFeedbackStatus('idle');
-    } else {
-      setAcceptedActionEventId(null);
-      setAcceptedActionId(null);
+      setFeedbackTarget({
+        actionEventId: result.value,
+        actionId: activeRecommendation.actionId,
+        acceptedAt: new Date().toISOString(),
+      });
     }
   };
 
   const handleFeedback = async () => {
     if (
       !userId ||
-      !acceptedActionEventId ||
-      !acceptedActionId ||
+      !feedbackTarget ||
       feedbackUsefulness === null ||
       feedbackStatus === 'saving' ||
       feedbackStatus === 'saved'
@@ -196,8 +240,8 @@ export default function TodayScreen() {
     setFeedbackStatus('saving');
     const result = await recordExplicitActionOutcome(
       userId,
-      acceptedActionId,
-      acceptedActionEventId,
+      feedbackTarget.actionId,
+      feedbackTarget.actionEventId,
       feedbackUsefulness,
       feedbackNote,
     );
@@ -272,8 +316,10 @@ export default function TodayScreen() {
       <Card>
         <MizanText variant="title">{t('oneMoveTitle')}</MizanText>
         <MizanText muted>{t('oneMoveBody')}</MizanText>
-        {stateLoadStatus === 'loading' ? <MizanText muted>{t('loading')}</MizanText> : null}
-        {stateLoadStatus === 'ready' && (!activeRecommendation || !activeActionLabel) ? (
+        {stateLoadStatus === 'loading' || recommendationLoadStatus === 'loading' ? (
+          <MizanText muted>{t('loading')}</MizanText>
+        ) : null}
+        {stateLoadStatus === 'ready' && recommendationLoadStatus === 'ready' && (!activeRecommendation || !activeActionLabel) ? (
           <MizanText muted>{t('oneMoveEmpty')}</MizanText>
         ) : null}
         {activeRecommendation && activeActionLabel ? (
@@ -354,88 +400,88 @@ export default function TodayScreen() {
             </View>
 
             {decisionMessage ? <MizanText muted>{t(decisionMessage)}</MizanText> : null}
+          </View>
+        ) : null}
 
-            {decisionStatus === 'accepted' && acceptedActionEventId && acceptedActionId ? (
-              <View style={[styles.feedbackBlock, { borderTopColor: palette.border }]}>
-                <MizanText variant="title">{t('feedbackTitle')}</MizanText>
-                <MizanText muted>{t('feedbackBody')}</MizanText>
-                <MizanText variant="label">{t('feedbackUsefulness')}</MizanText>
-                <View style={[styles.ratingRow, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
-                  {OUTCOME_RATINGS.map((value) => {
-                    const selected = feedbackUsefulness === value;
-                    const disabled = feedbackStatus === 'saving' || feedbackStatus === 'saved';
-                    return (
-                      <Pressable
-                        key={value}
-                        accessibilityRole="button"
-                        accessibilityState={{ selected, disabled }}
-                        disabled={disabled}
-                        onPress={() => {
-                          setFeedbackUsefulness(value);
-                          if (feedbackStatus === 'offline' || feedbackStatus === 'error') setFeedbackStatus('idle');
-                        }}
-                        style={({ pressed }) => [
-                          styles.ratingButton,
-                          {
-                            borderColor: selected ? palette.accent : palette.border,
-                            backgroundColor: selected ? palette.accent : palette.surface,
-                            opacity: disabled ? 0.55 : pressed ? 0.76 : 1,
-                          },
-                        ]}>
-                        <MizanText variant="label" style={selected ? styles.primaryActionText : undefined}>
-                          {value}
-                        </MizanText>
-                      </Pressable>
-                    );
-                  })}
-                </View>
-                <View style={[styles.feedbackScaleLabels, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
-                  <MizanText variant="caption" muted>{t('feedbackLow')}</MizanText>
-                  <MizanText variant="caption" muted>{t('feedbackHigh')}</MizanText>
-                </View>
-                <TextInput
-                  accessibilityLabel={t('feedbackNotePlaceholder')}
-                  editable={feedbackStatus !== 'saving' && feedbackStatus !== 'saved'}
-                  maxLength={280}
-                  multiline
-                  onChangeText={(text) => {
-                    setFeedbackNote(text);
-                    if (feedbackStatus === 'offline' || feedbackStatus === 'error') setFeedbackStatus('idle');
-                  }}
-                  placeholder={t('feedbackNotePlaceholder')}
-                  placeholderTextColor={palette.textMuted}
-                  style={[
-                    styles.feedbackInput,
-                    {
-                      borderColor: palette.border,
-                      backgroundColor: palette.surface,
-                      color: palette.text,
-                      textAlign: isRtl ? 'right' : 'left',
-                    },
-                  ]}
-                  value={feedbackNote}
-                />
-                <Pressable
-                  accessibilityRole="button"
-                  disabled={feedbackUsefulness === null || feedbackStatus === 'saving' || feedbackStatus === 'saved'}
-                  onPress={() => void handleFeedback()}
-                  style={({ pressed }) => [
-                    styles.primaryAction,
-                    {
-                      backgroundColor: palette.accent,
-                      opacity:
-                        feedbackUsefulness === null || feedbackStatus === 'saving' || feedbackStatus === 'saved'
-                          ? 0.5
-                          : pressed
-                            ? 0.82
-                            : 1,
-                    },
-                  ]}>
-                  <MizanText variant="label" style={styles.primaryActionText}>{t('feedbackSave')}</MizanText>
-                </Pressable>
-                {feedbackMessage ? <MizanText muted>{t(feedbackMessage)}</MizanText> : null}
-              </View>
-            ) : null}
+        {feedbackTarget ? (
+          <View style={[styles.feedbackBlock, { borderTopColor: palette.border }]}>
+            <MizanText variant="title">{t('feedbackTitle')}</MizanText>
+            <MizanText muted>{t('feedbackBody')}</MizanText>
+            <MizanText variant="label">{t('feedbackUsefulness')}</MizanText>
+            <View style={[styles.ratingRow, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
+              {OUTCOME_RATINGS.map((value) => {
+                const selected = feedbackUsefulness === value;
+                const disabled = feedbackStatus === 'saving' || feedbackStatus === 'saved';
+                return (
+                  <Pressable
+                    key={value}
+                    accessibilityRole="button"
+                    accessibilityState={{ selected, disabled }}
+                    disabled={disabled}
+                    onPress={() => {
+                      setFeedbackUsefulness(value);
+                      if (feedbackStatus === 'offline' || feedbackStatus === 'error') setFeedbackStatus('idle');
+                    }}
+                    style={({ pressed }) => [
+                      styles.ratingButton,
+                      {
+                        borderColor: selected ? palette.accent : palette.border,
+                        backgroundColor: selected ? palette.accent : palette.surface,
+                        opacity: disabled ? 0.55 : pressed ? 0.76 : 1,
+                      },
+                    ]}>
+                    <MizanText variant="label" style={selected ? styles.primaryActionText : undefined}>
+                      {value}
+                    </MizanText>
+                  </Pressable>
+                );
+              })}
+            </View>
+            <View style={[styles.feedbackScaleLabels, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
+              <MizanText variant="caption" muted>{t('feedbackLow')}</MizanText>
+              <MizanText variant="caption" muted>{t('feedbackHigh')}</MizanText>
+            </View>
+            <TextInput
+              accessibilityLabel={t('feedbackNotePlaceholder')}
+              editable={feedbackStatus !== 'saving' && feedbackStatus !== 'saved'}
+              maxLength={280}
+              multiline
+              onChangeText={(text) => {
+                setFeedbackNote(text);
+                if (feedbackStatus === 'offline' || feedbackStatus === 'error') setFeedbackStatus('idle');
+              }}
+              placeholder={t('feedbackNotePlaceholder')}
+              placeholderTextColor={palette.textMuted}
+              style={[
+                styles.feedbackInput,
+                {
+                  borderColor: palette.border,
+                  backgroundColor: palette.surface,
+                  color: palette.text,
+                  textAlign: isRtl ? 'right' : 'left',
+                },
+              ]}
+              value={feedbackNote}
+            />
+            <Pressable
+              accessibilityRole="button"
+              disabled={feedbackUsefulness === null || feedbackStatus === 'saving' || feedbackStatus === 'saved'}
+              onPress={() => void handleFeedback()}
+              style={({ pressed }) => [
+                styles.primaryAction,
+                {
+                  backgroundColor: palette.accent,
+                  opacity:
+                    feedbackUsefulness === null || feedbackStatus === 'saving' || feedbackStatus === 'saved'
+                      ? 0.5
+                      : pressed
+                        ? 0.82
+                        : 1,
+                },
+              ]}>
+              <MizanText variant="label" style={styles.primaryActionText}>{t('feedbackSave')}</MizanText>
+            </Pressable>
+            {feedbackMessage ? <MizanText muted>{t(feedbackMessage)}</MizanText> : null}
           </View>
         ) : null}
       </Card>

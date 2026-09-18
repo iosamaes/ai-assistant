@@ -2,6 +2,7 @@ import {
   chooseOneMove,
   ENGINE_CONFIG,
   type ActionDefinition,
+  type ActionUsefulnessEstimate,
   type Confidence,
   type EvidenceRef,
   type HumanStateComponent,
@@ -10,6 +11,7 @@ import {
 } from '@mizan/core';
 import { foundationalPlugin } from '@mizan/plugins';
 
+import { loadPersonalActionUsefulness } from '@/application/action-feedback';
 import {
   insertActionEvent,
   type DataResult,
@@ -59,6 +61,8 @@ const MIN_NEED = 0.35;
 // that a particular action will help this person. Personal outcome learning can replace this prior later.
 const ACTION_IMPLICATION_CONFIDENCE_FACTOR = 0.6;
 const UNKNOWN_RESISTANCE_COST = 0.5;
+// Personal usefulness may nudge, never dominate, the cold-start expected-impact prior.
+const MAX_PERSONAL_IMPACT_DELTA = 0.15;
 
 function clamp01(value: number): number {
   return Math.max(0, Math.min(1, Number.isFinite(value) ? value : 0));
@@ -90,9 +94,29 @@ function signalNeed(value: number, direction: SignalDirection): number {
   return direction === 'low' ? clamp01((100 - value) / 100) : clamp01(value / 100);
 }
 
+function expectedImpactForNeed(
+  need: number,
+  personalUsefulness: ActionUsefulnessEstimate | null | undefined,
+): number {
+  const coldStartPrior = 0.18 + need * 0.17;
+  if (
+    !personalUsefulness ||
+    personalUsefulness.usefulness === null ||
+    personalUsefulness.confidence.level === 'insufficient'
+  ) {
+    return round(coldStartPrior);
+  }
+
+  const signedUsefulness = Math.max(-1, Math.min(1, personalUsefulness.usefulness / 100));
+  const adjustment =
+    signedUsefulness * MAX_PERSONAL_IMPACT_DELTA * clamp01(personalUsefulness.confidence.score);
+  return round(clamp01(coldStartPrior + adjustment));
+}
+
 function candidateForAction(
   action: ActionDefinition,
   state: HumanStateVector,
+  personalUsefulness?: ActionUsefulnessEstimate | null,
 ): CandidateMetadata | null {
   const rules = action.dimensionIds.flatMap((dimensionId) => dimensionSignalRules[dimensionId] ?? []);
   const uniqueRules = rules.filter(
@@ -112,12 +136,15 @@ function candidateForAction(
 
   if (!strongest) return null;
 
-  // Cold-start expected impact is intentionally a small generic prior, scaled only by current need.
-  // Unknown identity alignment receives zero positive credit; it is not interpreted as misalignment.
-  const expectedImpact = round(0.18 + strongest.need * 0.17);
+  const personalEvidence =
+    personalUsefulness &&
+    personalUsefulness.usefulness !== null &&
+    personalUsefulness.confidence.level !== 'insufficient'
+      ? personalUsefulness.evidence
+      : [];
   const candidate: RecommendationCandidate = {
     actionId: action.id,
-    expectedImpact,
+    expectedImpact: expectedImpactForNeed(strongest.need, personalUsefulness),
     confidence: strongest.confidence,
     leverageDimensions: action.dimensionIds,
     identityAlignment: 0,
@@ -125,7 +152,7 @@ function candidateForAction(
     timeCost: clamp01(action.timeMinutes / 60),
     resistanceCost: UNKNOWN_RESISTANCE_COST,
     riskCost: clamp01(action.risk),
-    evidence: strongest.component.evidence,
+    evidence: [...strongest.component.evidence, ...personalEvidence],
   };
 
   return { action, candidate, reasonSignal: strongest.rule.key };
@@ -141,9 +168,12 @@ function toOption(metadata: CandidateMetadata): DailyRecommendationOption {
   };
 }
 
-export function prepareDailyRecommendation(state: HumanStateVector): DailyRecommendation | null {
+export function prepareDailyRecommendation(
+  state: HumanStateVector,
+  usefulnessByAction: ReadonlyMap<string, ActionUsefulnessEstimate> = new Map(),
+): DailyRecommendation | null {
   const prepared = foundationalPlugin.actions
-    .map((action) => candidateForAction(action, state))
+    .map((action) => candidateForAction(action, state, usefulnessByAction.get(action.id)))
     .filter((item): item is CandidateMetadata => item !== null);
 
   const oneMove = chooseOneMove(prepared.map((item) => item.candidate));
@@ -165,6 +195,23 @@ export function prepareDailyRecommendation(state: HumanStateVector): DailyRecomm
     },
     alternatives,
   };
+}
+
+export async function loadPersonalizedDailyRecommendation(
+  userId: string,
+  state: HumanStateVector,
+): Promise<DailyRecommendation | null> {
+  const estimates = await Promise.all(
+    foundationalPlugin.actions.map(async (action) => {
+      const result = await loadPersonalActionUsefulness(userId, action.id);
+      return [action.id, result.ok ? result.value : null] as const;
+    }),
+  );
+  const useful = new Map<string, ActionUsefulnessEstimate>();
+  for (const [actionId, estimate] of estimates) {
+    if (estimate) useful.set(actionId, estimate);
+  }
+  return prepareDailyRecommendation(state, useful);
 }
 
 export async function recordOneMoveDecision(
