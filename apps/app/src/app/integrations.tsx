@@ -152,8 +152,8 @@ export default function IntegrationsScreen() {
         <MizanText muted>{labels.body}</MizanText>
       </View>
 
-      {status === 'loading' ? <MizanText muted>{labels.loading}</MizanText> : null}
-      {status === 'error' ? <Card><MizanText muted>{labels.loadError}</MizanText></Card> : null}
+      {status === 'loading' ? <MizanText accessibilityLiveRegion="polite" muted>{labels.loading}</MizanText> : null}
+      {status === 'error' ? <Card><MizanText accessibilityLiveRegion="polite" muted>{labels.loadError}</MizanText></Card> : null}
 
       {status === 'ready' && connections.length === 0 ? (
         <Card>
@@ -194,7 +194,7 @@ export default function IntegrationsScreen() {
         );
       })}
 
-      {message ? <MizanText muted>{message}</MizanText> : null}
+      {message ? <MizanText accessibilityLiveRegion="polite" muted>{message}</MizanText> : null}
       <MizanText variant="caption" muted>{labels.privacy}</MizanText>
       <SecondaryButton compact label={labels.back} onPress={() => router.replace('/settings')} />
     </Screen>
