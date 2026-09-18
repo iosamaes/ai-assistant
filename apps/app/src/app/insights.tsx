@@ -187,9 +187,11 @@ export default function InsightsScreen() {
         <PrimaryButton label={local.checkIn} onPress={() => router.push('/check-in')} />
       </Card>
 
-      {status === 'loading' ? <MizanText muted>{local.loading}</MizanText> : null}
-      {status === 'error' ? <Card><MizanText muted>{local.error}</MizanText></Card> : null}
-      {status === 'ready' && (snapshot?.insights.length ?? 0) === 0 ? <Card><MizanText muted>{local.empty}</MizanText></Card> : null}
+      {status === 'loading' ? <MizanText accessibilityLiveRegion="polite" muted>{local.loading}</MizanText> : null}
+      {status === 'error' ? <Card><MizanText accessibilityLiveRegion="polite" muted>{local.error}</MizanText></Card> : null}
+      {status === 'ready' && (snapshot?.insights.length ?? 0) === 0 ? (
+        <Card><MizanText accessibilityLiveRegion="polite" muted>{local.empty}</MizanText></Card>
+      ) : null}
       {status === 'ready' ? snapshot?.insights.map((insight) => (
         <InsightCard key={insight.key} insight={insight} locale={locale} isRtl={isRtl} />
       )) : null}
