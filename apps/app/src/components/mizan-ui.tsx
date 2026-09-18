@@ -97,6 +97,7 @@ export function PrimaryButton({ label, onPress, disabled = false }: ButtonProps)
   const palette = Palette[scheme === 'dark' ? 'dark' : 'light'];
   return (
     <Pressable
+      accessibilityLabel={label}
       accessibilityRole="button"
       accessibilityState={{ disabled }}
       disabled={disabled}
@@ -123,6 +124,7 @@ export function SecondaryButton({
   const palette = Palette[scheme === 'dark' ? 'dark' : 'light'];
   return (
     <Pressable
+      accessibilityLabel={label}
       accessibilityRole="button"
       accessibilityState={{ disabled }}
       disabled={disabled}
@@ -146,6 +148,7 @@ export function ChoiceChip({ label, selected, onPress }: { label: string; select
   const palette = Palette[scheme === 'dark' ? 'dark' : 'light'];
   return (
     <Pressable
+      accessibilityLabel={label}
       accessibilityRole="button"
       accessibilityState={{ selected }}
       onPress={onPress}
@@ -168,7 +171,7 @@ const styles = StyleSheet.create({
   body: Typography.body,
   label: Typography.label,
   caption: Typography.caption,
-  card: { borderWidth: StyleSheet.hairlineWidth, borderRadius: Radius.lg, padding: Spacing.xl, gap: Spacing.md },
+  card: { borderWidth: Controls.borderWidth, borderRadius: Radius.lg, padding: Spacing.xl, gap: Spacing.md },
   input: {
     minHeight: Controls.standardHeight,
     borderWidth: Controls.borderWidth,
