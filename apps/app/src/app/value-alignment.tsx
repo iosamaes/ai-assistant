@@ -1,12 +1,12 @@
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
 import {
   loadPersonalValueAlignments,
   type PersonalValueAlignment,
 } from '@/application/value-alignment';
-import { Card, MizanText } from '@/components/mizan-ui';
+import { Card, MizanText, SecondaryButton } from '@/components/mizan-ui';
 import { Screen } from '@/components/screen';
 import { Spacing } from '@/constants/theme';
 import { useAppState, type PersonalValue } from '@/state/app-state';
@@ -168,15 +168,11 @@ export default function ValueAlignmentScreen() {
       })}
 
       <MizanText variant="caption" muted>{labels.caveat}</MizanText>
-
-      <Pressable accessibilityRole="button" onPress={() => router.replace('/settings')} style={styles.back}>
-        <MizanText variant="label">{labels.back}</MizanText>
-      </Pressable>
+      <SecondaryButton compact label={labels.back} onPress={() => router.replace('/settings')} />
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
   hero: { gap: Spacing.md },
-  back: { alignSelf: 'center', paddingVertical: Spacing.lg, paddingHorizontal: Spacing.xl },
 });
