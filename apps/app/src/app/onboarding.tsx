@@ -327,9 +327,9 @@ export default function OnboardingScreen() {
       </View>
 
       {!canFinish ? <MizanText muted>{labels.requirement}</MizanText> : null}
-      {baselineStatus === 'error' ? <MizanText muted>{labels.baselineError}</MizanText> : null}
-      {spiritualStatus === 'error' ? <MizanText muted>{labels.spiritualError}</MizanText> : null}
-      {syncMessage ? <MizanText muted>{syncMessage}</MizanText> : null}
+      {baselineStatus === 'error' ? <MizanText accessibilityLiveRegion="polite" muted>{labels.baselineError}</MizanText> : null}
+      {spiritualStatus === 'error' ? <MizanText accessibilityLiveRegion="polite" muted>{labels.spiritualError}</MizanText> : null}
+      {syncMessage ? <MizanText accessibilityLiveRegion="polite" muted>{syncMessage}</MizanText> : null}
 
       <View style={styles.footer}>
         <PrimaryButton
