@@ -45,7 +45,7 @@ Presentation boundary already in place:
 - navigation shell honors reduced-motion preference;
 - confidence/status localization has been progressively removed from raw engine enums in shipped surfaces;
 - semantic RTL fixes exist for grouped metric layouts and date-direction presentation;
-- async accessibility live announcements exist across auth/recovery, Check-in, Value Alignment, Invisible Wins, Integrations, Life Seasons, Today, and other reviewed surfaces.
+- async accessibility live announcements exist across auth/recovery, Check-in, Value Alignment, Invisible Wins, Integrations, Life Seasons, Today, What If, Settings, Experiments, Recovery, and other reviewed surfaces.
 
 Latest `auto1` static CP9 work:
 - **Today async accessibility:** sync/offline state, cached-snapshot state, current-state loading/error, One Move loading/empty, decision outcomes, and feedback outcomes now use polite accessibility live regions so screen-reader users can receive asynchronous state changes.
@@ -57,10 +57,16 @@ Latest `auto4` static CP9 work:
 - **What If async accessibility:** loading/recalculation and load-error changes now use polite accessibility live regions, so screen readers receive scenario-state changes without changing scenario simulation or personal-effect learning behavior.
 - **Settings async accessibility:** offline/sync status plus preference/sign-out error feedback now use polite accessibility live regions; settings persistence, auth, and navigation behavior remain unchanged.
 
+Latest `auto2` static CP9 work:
+- **Experiments async accessibility:** the experiment-history loading state and asynchronous load/save error message now use polite accessibility live regions. Experiment lifecycle, consent, usefulness capture, persistence, and evaluation math are unchanged.
+- **Recovery async accessibility:** current-state loading and load-error feedback now use polite accessibility live regions so screen-reader users receive the result of the asynchronous recovery-plan read without changing recovery-plan logic or navigation.
+
 Latest static product commits (not runtime-verified):
 - `c3c65bf647b5520012ea659e41399b078b47d4b5` — improve Today accessibility semantics and semantic control/border treatment.
 - `d3556859a71fd4cac0afde2a9ed8f024f4674357` — announce What If async state.
 - `df4b760e8ee1780a3ab6be952fe3431470afc76d` — announce Settings async state.
+- `92687f6edd8f1da4a780d7f6253fa8d845c4e6ba` — announce Experiments loading/error state.
+- `a431f06f2ad66ad99fa4e87b7ddfafd914f6ed6a` — announce Recovery loading/error state.
 
 Recent cross-worker CP9 evidence also includes:
 - semantic RTL mirroring for Capacity, Cost of Yes, and Human ROI metric groups;
@@ -77,7 +83,7 @@ The TASK-required final design-swap proof is **not claimed**. It still requires 
 
 ## Exact next executable action
 1. Continue the repository-wide CP9 static review for untranslated production literals, semantic RTL issues, missing accessibility labels/states/live announcements, truncation/dynamic-type risks, duplicated global visual values, and unjustified local control treatments outside the already-reviewed surfaces.
-2. Revisit Today only if later static inspection finds additional real presentation debt; the previously listed Today hairline separators, async status announcements, rating-control naming, and local primary-control sizing are now addressed in code.
+2. Revisit already-audited screens only when static inspection finds a concrete remaining defect; Today, Experiments, Recovery, What If, and Settings now have the currently identified async announcement gaps addressed.
 3. Leave representative-width runtime checks, post-baseline tests/builds/typechecks, CP1–CP8 execution-dependent evidence, and the final design-swap proof to owner validation under the active policy.
 
 ## Verification record
@@ -93,8 +99,8 @@ Previously recorded owner-side baseline evidence:
 
 Post-baseline status:
 - No worker-run app tests, builds, typechecks, database scripts, cloud CI, or GitHub Actions are claimed for CP2–CP9 changes.
-- Current CP9 evidence, including the latest Today slice, is static implementation/code-review evidence only until owner validation runs the new matrix and representative device/browser/screen-reader checks.
-- No new automated test was added for the Today-only declarative accessibility-property and semantic-token substitutions in this slice; their meaningful verification depends on the already-pending owner runtime/screen-reader validation rather than duplicating React Native prop assertions.
+- Current CP9 evidence, including the latest Today/Experiments/Recovery async-accessibility slices, is static implementation/code-review evidence only until owner validation runs the new matrix and representative device/browser/screen-reader checks.
+- No new automated test was added for these declarative accessibility-property substitutions; meaningful verification depends on the already-pending owner runtime/screen-reader validation rather than duplicating React Native prop assertions.
 
 ## Known blockers / risks
 - CP1: Windows session must be unlocked normally for true narrow-phone Arabic/English interaction evidence; see `automation/HUMAN_REQUIRED.md`.
