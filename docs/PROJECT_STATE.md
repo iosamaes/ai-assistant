@@ -2,7 +2,7 @@
 
 ## Current checkpoint
 - CP1 — Universal application foundation
-- Status: `BLOCKED_HUMAN` for owner-side CP1/CP2 validation; CP3, CP4, and CP5 implementation continue independently on GitHub `main`.
+- Status: `BLOCKED_HUMAN` for owner-side CP1/CP2 validation; CP3, CP4, and CP5 implementation slices are in place pending owner validation, and CP6 can continue independently on GitHub `main`.
 - Product authority: GitHub `iosamaes/ai-assistant` on `main`.
 - Owner-only local mirror/testing copy: `C:\Users\bofo_\Documents\automation\ai assistant`.
 - Task digest: `c823e4d1031ac5f3f7230ed4e2de236b4446817a`.
@@ -33,9 +33,9 @@ Remaining gate:
 
 ## CP2 independent progress
 - Supabase public environment validation, SecureStore-backed universal session storage, typed data access, auth/session/recovery flows, route guarding, password update, and account-specific preference hydration/persistence are implemented.
-- `0001_vertical_slice.sql`, `0002_onboarding_context.sql`, and `0003_domain_baseline_targets.sql` define the current vertical-slice schema, RLS ownership model, onboarding context, and optional per-domain baseline targets.
-- `0002` and `0003` were applied to project `olfhjnropdrnujgpidfi` and directly inspected.
-- `supabase/tests/rls_cross_user.sql` covers own-row access and cross-user denial; execution remains owner-validation pending.
+- `0001_vertical_slice.sql`, `0002_onboarding_context.sql`, `0003_domain_baseline_targets.sql`, and `0004_invisible_wins.sql` define the current vertical-slice schema, RLS ownership model, onboarding context, optional per-domain baseline targets, and user-owned reflection persistence.
+- `0002`, `0003`, and `0004` were applied to project `olfhjnropdrnujgpidfi`; the `reflections` RLS policies were directly inspected after migration.
+- `supabase/tests/rls_cross_user.sql` covers own-row access and cross-user denial, including reflection isolation; execution remains owner-validation pending.
 - Supabase Auth redirect allow-list activation remains in `automation/HUMAN_REQUIRED.md`.
 
 ## CP3 independent progress
@@ -58,15 +58,16 @@ Completed implementation slices:
 - Insights with conservative paired-observation associations, evidence counts, windows, confidence, and suppression under sparse evidence.
 - Personal Learning from explicit outcome feedback only; bare completion remains adherence evidence, not benefit evidence.
 - Personalization Maturity surface driven by core `cold_start` / `learning` / `personalized` evidence stages without a user score.
-- Values & Identity alignment now uses the user's already-persisted self-declared values and stored self-report observations. `stability` is supported only by recovery/mental-load evidence and `family` only by connection evidence. `growth` and `meaning` remain explicitly `insufficient` until a direct signal exists rather than borrowing unrelated productivity data.
-- `/value-alignment` is Arabic/English, RTL-aware, shows confidence/evidence counts, labels only `possible drift` rather than judging identity, and is registered/exposed from Settings.
+- Values & Identity alignment uses the user's persisted self-declared values and stored self-report observations. `stability` is supported only by recovery/mental-load evidence and `family` only by connection evidence; unsupported values remain explicitly insufficient.
+- `/value-alignment` is Arabic/English, RTL-aware, exposes confidence/evidence counts, and labels only possible drift rather than judging identity.
+- Invisible Wins / reflection capture now persists only explicit user-authored entries in the separate `reflections` table. Categories include rest, healthy boundaries, family, relationship repair, disconnecting, health protection, and other; no points, streaks, or productivity score are produced.
+- `/invisible-wins` is Arabic/English and RTL-aware, supports intentional save plus recent reflection history, and explains that entries stay outside productivity scoring. The route is registered and exposed from Settings.
 
-CP5 remaining:
-- Invisible Wins / reflection capture without gamification or productivity scoring.
-- Owner-side type/runtime/responsive validation for all CP5 surfaces.
+CP5 remaining gate:
+- Owner-side type/runtime/responsive validation for all CP5 surfaces. Workers have not run product tests/builds under the current execution policy.
 
 ## Exact next executable action
-1. Worker-safe CP5 path: implement Invisible Wins / reflection capture as user-authored meaningful wins (resting, saying no, family time, apology, disconnection, protecting health) without points, streaks, or forced optimization; persist only intentional user entries and keep them separate from productivity scoring.
+1. Worker-safe CP6 path: begin the honest What If / Digital Twin scenario slice using explainable conservative direction/range estimates, explicit assumptions, personal evidence when available, and uncertainty; do not present scenarios as predictions or guarantees.
 2. Owner path: unlock Windows and complete CP1 narrow-phone Arabic/English interaction verification.
 3. Owner path: configure Supabase Auth redirect allow-list from `automation/HUMAN_REQUIRED.md`, then validate auth/recovery/session/persistence and execute RLS verification.
 4. Owner path: run current core/app/plugin typechecks and tests before granting CP3/CP4/CP5 checkpoint credit.
@@ -80,20 +81,22 @@ Implemented after that verification and still awaiting owner validation:
 - CP2 auth/session/persistence/recovery work and current migrations/policy tests.
 - CP3 Balance, Capacity/Interaction Risk, relationship/feedback learning, recommendation-context stability, optional baseline targets, and value-alignment core/specifications.
 - CP4 check-in, state integration, One Move decision/feedback loop, onboarding context/targets, Balance/Momentum, Spiritual Grounding preference.
-- CP5 Life Map, WHY, Insights, Personal Learning, Personalization Maturity, and Values & Identity alignment.
-- Latest value-alignment implementation commits: `67be0ea150f580dd3bfc57ef6cb68d00e2f628ce`, `0272097e9a94b62b85b190bdd843116dbc9401d1`, `46f7e5c926177b410b30d9f832e4725d23213831`, `f8eafca71c20cb9cb6004347ad6f8d386f4e595f`, `3fca6b73fbd7254ae8e53211bab5af475a6d6050`, `cecdd66a9f8b2f1f757324038d21477fe08c443d`, `0bb321495353dd10f88ea2c9896613711650dda8`.
-- No product/database tests, cloud tests, or builds were run by auto2 in this run, per `automation/TASK.md`.
+- CP5 Life Map, WHY, Insights, Personal Learning, Personalization Maturity, Values & Identity alignment, and Invisible Wins/reflection capture.
+- Supabase migration `invisible_wins` was applied successfully to project `olfhjnropdrnujgpidfi`; direct policy inspection confirmed SELECT/INSERT/UPDATE/DELETE own-row policies on `public.reflections`.
+- Reflection RLS isolation checks were added to `supabase/tests/rls_cross_user.sql` but were not executed by the worker.
+- No product/database test script, cloud test, or build was run by auto3 in this run, per `automation/TASK.md`.
 
 ## Known technical risks / temporary compromises
 - CP1 remains blocked on owner-side physical responsive/locale verification.
 - Hosted Supabase Auth must allow `mizan://**`, `http://localhost:8087/**`, and the eventual production Web URL before confirmation/recovery can be verified end-to-end.
 - Cross-user SQL verification exists but lacks current owner-side execution evidence.
 - CP3/CP4/CP5 additions after the earlier verification baseline remain runtime/type validation pending.
-- Offline mutation durability beyond the current screen/session remains CP8 work.
+- Offline mutation durability beyond the current screen/session remains CP8 work; Invisible Wins currently requires live persistence to save.
 - Restart-level One Move suppression is query/context based rather than a DB uniqueness constraint; concurrent-device double-submit prevention remains later hardening.
 - Spiritual Grounding currently covers consent/enablement only; selected practices and grounding observations remain later module work.
 - Insights is intentionally a small association slice, not a general causal graph.
-- Value alignment intentionally leaves `growth` and `meaning` unknown because the current observation model has no direct signal for them; future direct user-selected evidence can extend the mapping without changing the conservative core contract.
+- Value alignment intentionally leaves values without a direct observation signal unknown rather than borrowing unrelated productivity data.
+- Invisible Wins are intentionally stored outside `observations` and `action_events`; they are reflection history, not scoring evidence.
 - Moderate npm advisories remain in the supported Expo dependency chain; no prior high/critical advisory was recorded.
 
 ## Evidence paths
@@ -102,6 +105,7 @@ Implemented after that verification and still awaiting owner validation:
 - `supabase/migrations/0001_vertical_slice.sql`
 - `supabase/migrations/0002_onboarding_context.sql`
 - `supabase/migrations/0003_domain_baseline_targets.sql`
+- `supabase/migrations/0004_invisible_wins.sql`
 - `supabase/tests/rls_cross_user.sql`
 - `apps/app/src/application/check-in.ts`
 - `apps/app/src/application/daily-intelligence.ts`
@@ -114,7 +118,9 @@ Implemented after that verification and still awaiting owner validation:
 - `apps/app/src/application/why.ts`
 - `apps/app/src/application/insights.ts`
 - `apps/app/src/application/value-alignment.ts`
+- `apps/app/src/infrastructure/supabase/reflections.ts`
 - `apps/app/src/app/value-alignment.tsx`
+- `apps/app/src/app/invisible-wins.tsx`
 - `apps/app/src/app/settings.tsx`
 - `packages/core/src/alignment.ts`
 - `packages/core/src/alignment.test.ts`
