@@ -47,9 +47,12 @@ Latest static CP9 work:
 - **Integrations:** the asynchronous no-connections result now announces its empty-state title through a polite accessibility live region. Provider lifecycle, consent, sync, disconnect, and persistence behavior are unchanged.
 - **Value Alignment:** the asynchronous no-alignment/no-values result now uses a polite accessibility live region while preserving alignment evidence, confidence, and identity-drift interpretation unchanged.
 - **Numeric choice controls:** shared `ChoiceChip` supports a semantic accessibility label distinct from its visible label; Check-in and Human ROI rating chips announce metric plus rating instead of a bare number.
+- **Reactive decision assessments:** Cost of Yes and Human ROI now expose their computed assessment title/body through polite live regions, so screen-reader users can hear assessment changes after numeric or choice input without changing decision math, confidence, or persistence behavior.
 - **Async-state coverage:** Today, Life Map, WHY, Insights, Capacity, Life Seasons, Entry, Personalization, Onboarding, Personal Learning, Experiments, Recovery, What If, Settings, Auth/recovery, Check-in, Value Alignment, Invisible Wins, and Integrations have received static accessibility-state review and targeted live-region fixes where concrete gaps were identified.
 
 Latest static product commits from this pass (not runtime-verified):
+- `2e6039225b44c75365a0923ec1e2a275ccfc0974` — announce Human ROI reactive assessment changes.
+- `5086df6ee4c8dd7a7520713d155fd30baf52b073` — announce Cost of Yes reactive assessment changes.
 - `eb6023f01a984b6954182518aff93036c10dfcaa` — center scalable/wrapped shared choice-chip labels.
 - `e19fbe5abd1d4169c11b8589c7199b5ac91f9202` — announce empty experiment history.
 - `e0c10da938445138afb543abf3e921edd411c8a3` — center scalable/wrapped shared primary-button labels.
