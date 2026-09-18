@@ -224,7 +224,7 @@ export default function HumanROIScreen() {
         <MizanText>{statusBody}</MizanText>
 
         {assessment.status !== 'protected' && assessment.status !== 'insufficient' ? (
-          <View style={styles.metrics}>
+          <View style={[styles.metrics, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
             <View style={styles.metric}>
               <MizanText variant="caption" muted>{labels.benefitMetric}</MizanText>
               <MizanText variant="title">{assessment.benefitRating ?? '—'} / 5</MizanText>
@@ -256,6 +256,6 @@ const styles = StyleSheet.create({
   hero: { gap: Spacing.md, paddingTop: Spacing.xl },
   field: { gap: Spacing.sm },
   choiceRow: { flexWrap: 'wrap', gap: Spacing.sm },
-  metrics: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.md },
+  metrics: { flexWrap: 'wrap', gap: Spacing.md },
   metric: { flexGrow: 1, flexBasis: 140, minWidth: 120, gap: Spacing.xs },
 });
