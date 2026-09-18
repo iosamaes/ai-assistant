@@ -106,6 +106,24 @@ Keep Supabase access out of presentation components.
 Use one clear data-access/application boundary rather than repository/service/use-case layers that merely forward calls.
 Keep shared UI components local to the app until reuse genuinely warrants extraction.
 
+### 7.1 Design-swappable presentation architecture — non-negotiable owner requirement
+
+The owner requires **maximum practical design-swappability**: MIZAN's visual identity must be replaceable later without reworking product intelligence, persistence, or application behavior. This is a Definition-of-Done architecture requirement, not an optional CP9 cleanup.
+
+Required rules:
+- `packages/core`, application/domain models, Supabase/data-access code, and provider adapters must remain presentation-agnostic. A visual redesign must not require edits in those layers unless product behavior itself changes.
+- Keep one compact app-local design foundation for global visual decisions: semantic color roles, typography scale, spacing, radii, border/elevation treatment, motion values, responsive breakpoints/density, and semantic icon direction where needed.
+- Shared UI primitives must exist only for **proven repeated visual semantics or behavior**. Typical valid primitives include `Screen`, text, surface/card, button, chip, form field, metric/status row, section header, empty/loading/error state, and the navigation shell when repetition justifies them.
+- Do not create wrapper pyramids, prop-forwarding aliases, a styling DSL, a generic component factory, or nested `Base -> Smart -> Feature -> Responsive` component chains merely to claim flexibility.
+- Screens own feature composition and one-off visualizations, but they must consume shared semantic tokens/primitives for global design language. Repeated foundational visual decisions must not be copied across screens.
+- Avoid screen-local hard-coded colors, typography scales, radii, standard spacing, standard control heights, and global surface treatments when a semantic token or primitive already represents that decision. Feature-specific geometry and visualization math may remain local.
+- Presentation components may orchestrate local interaction state, but scoring rules, recommendation logic, persistence rules, data fetching policy, and domain interpretation belong outside the visual layer.
+- Responsive behavior should use a small set of intentional layout rules/breakpoints, not scattered device-specific magic numbers.
+- From **now through CP8**, every newly added or materially edited screen must follow these boundaries. Do not knowingly create new design debt and defer it to CP9.
+- CP9 must consolidate existing presentation code toward this target by removing demonstrated duplication/coupling only; it must not introduce speculative abstraction or rewrite working domain/application code for style.
+- A successful future full redesign must be achievable primarily through the app-local theme/tokens, shared visual primitives, navigation shell, and feature-level composition changes **without modifying** `packages/core`, Supabase schema/data-access, provider adapters, or application intelligence contracts.
+- Do not build runtime downloadable themes, a theme marketplace, or a general design-system framework. The requirement is easy replacement of the product's visual direction, not infrastructure for hypothetical theming products.
+
 ## 8. Plugin architecture — extensible, not over-engineered
 
 Implement a compile-time typed plugin registry, not downloadable executable plugins.
@@ -502,8 +520,8 @@ Required:
 - Verify restart/reload behavior across Web and native development runtime.
 **Gate:** critical daily loop does not lose user-entered data in tested offline/reconnect cases and external-provider failures do not disable the deterministic core.
 
-### CP9 — Responsive UX, accessibility, localization, and polish
-**Goal:** make the same product feel intentional across devices.
+### CP9 — Responsive UX, accessibility, localization, polish, and design-swappability
+**Goal:** make the same product feel intentional across devices while finishing a presentation architecture whose visual identity can be replaced later without touching product logic.
 Required:
 - Audit every primary screen at narrow phone, common phone, tablet portrait/landscape, and wide Web layouts.
 - Fix RTL mirroring, text alignment, icon direction where semantic, truncation, dynamic type, keyboard navigation, focus, and screen-reader labels.
@@ -511,7 +529,15 @@ Required:
 - Verify light/dark modes if shipped.
 - Reduce unnecessary motion and honor platform accessibility preferences where available.
 - Tune perceived performance: avoid large rerender storms, oversized lists, and blocking startup work.
-**Gate:** no primary flow has horizontal overflow, unusable tap targets, inaccessible unlabeled controls, broken RTL, or layout collapse at representative widths.
+- Audit every primary screen for repeated foundational visual decisions. Move only genuinely shared semantics into the compact theme/token layer or an existing/new justified primitive; leave one-off feature composition local.
+- Remove repeated hard-coded global colors, typography sizes, standard radii, standard spacing, standard control sizing, and standard surface treatments where semantic tokens/primitives should own them.
+- Refactor oversized presentation files when doing so creates clear feature-section boundaries or removes real duplication; do not split screens into wrapper-only files or forwarding layers.
+- Ensure responsive layout behavior is driven by a small shared set of semantic breakpoints/layout rules rather than scattered device-specific constants.
+- Confirm that no UI refactor pulls business rules, Supabase access, provider logic, or MIZAN scoring into presentation components.
+- Standardize reusable empty/loading/error/offline, control, surface, typography, and navigation treatments only where repetition is demonstrated.
+- Perform a **design-swap proof** on representative screens including Today, Life Map, WHY, and at least one interaction-heavy flow. Demonstrate that a substantially different visual direction can be achieved through theme/tokens, shared visual primitives/navigation, and feature composition only, with no edits required in `packages/core`, application intelligence/data contracts, Supabase/data-access, or provider adapters. Record the evidence in `docs/PROJECT_STATE.md`. Do not keep duplicate production themes solely for this proof.
+- Preserve the chosen production visual direction after the proof; design-swappability must not become runtime theme infrastructure or speculative over-engineering.
+**Gate:** no primary flow has horizontal overflow, unusable tap targets, inaccessible unlabeled controls, broken RTL, or layout collapse at representative widths; repeated global design decisions are not scattered across feature screens; and the representative design-swap proof demonstrates that a future full visual redesign does not require changes to core intelligence, application/data contracts, Supabase/data-access, or provider infrastructure.
 
 ### CP10 — Security, privacy, and owner-data control
 **Goal:** make the product safe enough to trust with personal life data.
@@ -577,6 +603,8 @@ The mission is code/product complete only when all of the following are true:
 - CP0 through CP12 requirements have been implemented and verified against the actual repository.
 - The universal app runs as one product on Web and resolves correctly for Android and iOS targets.
 - Arabic RTL and English experiences are functional across all primary flows and representative screen classes.
+- The presentation architecture is design-swappable: a future full visual identity change can be implemented through app-local semantic tokens/theme, justified shared visual primitives/navigation, and feature composition without modifying core intelligence, application/data contracts, Supabase/data-access, or provider adapters.
+- Global visual decisions are centralized without turning the UI into a wrapper hierarchy, styling DSL, generic component factory, or speculative theme framework.
 - Supabase migrations recreate the required backend schema; authentication, persistence, RLS, and user ownership are verified.
 - Core MIZAN intelligence is deterministic without AI, tested, explainable, uncertainty-aware, and handles sparse/missing data honestly.
 - The full daily learning loop works end-to-end: onboarding -> observation/check-in -> state -> One Move -> action/decline -> feedback -> updated personal model.
@@ -636,6 +664,9 @@ Do not:
 - Build only a desktop Web mock and call React Native complete.
 - Build separate divergent applications for Web and Native.
 - Mark screens complete while buttons are decorative.
+- Scatter repeated global design-system values across screens when a semantic token or justified shared primitive should own them.
+- Couple a visual redesign to core/domain algorithms, application intelligence contracts, Supabase/data-access, or provider adapters.
+- Build wrapper pyramids, generic styling/component factories, runtime theme infrastructure, or abstraction chains solely to make the UI appear flexible.
 - Silence failing tests, loosen TypeScript globally, or disable lint rules merely to achieve green output.
 - Delete or reset unexplained existing work.
 - Stop because an owner credential or approval is missing when independent useful work remains.
@@ -660,6 +691,7 @@ At completion the repository must contain, at minimum:
 The completed application should feel like a coherent premium product, not a generated feature catalogue.
 Its value must come from a strong daily loop, trustworthy personal intelligence, calm decision support, and progressively better personalization.
 The UI should make complex intelligence feel simple.
+The chosen visual identity may evolve; the presentation architecture must make a future redesign a controlled UI-layer change rather than a product rewrite.
 The code should make future additions straightforward without forcing today's application to pay the complexity cost of hypothetical scale.
 The guiding standard for every decision remains:
 
