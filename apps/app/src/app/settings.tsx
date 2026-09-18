@@ -26,16 +26,22 @@ const spiritualCopy = {
   },
 } as const;
 
-const lifeMapCopy = {
+const insightCopy = {
   ar: {
-    title: 'خريطة الحياة',
-    body: 'راجع تاريخ المجالات والأدلة المتاحة بدون تحويل البيانات الناقصة إلى درجات.',
-    open: 'فتح خريطة الحياة',
+    lifeMapTitle: 'خريطة الحياة',
+    lifeMapBody: 'راجع تاريخ المجالات والأدلة المتاحة بدون تحويل البيانات الناقصة إلى درجات.',
+    lifeMapOpen: 'فتح خريطة الحياة',
+    whyTitle: 'لماذا قد أشعر أنني لست على ما يرام؟',
+    whyBody: 'راجع العوامل المحتملة المدعومة بأدلتك الحالية مع توضيح الثقة، من دون ادعاء السببية أو التشخيص.',
+    whyOpen: 'فتح WHY',
   },
   en: {
-    title: 'Life map',
-    body: 'Review domain history and available evidence without turning missing data into scores.',
-    open: 'Open Life map',
+    lifeMapTitle: 'Life map',
+    lifeMapBody: 'Review domain history and available evidence without turning missing data into scores.',
+    lifeMapOpen: 'Open Life map',
+    whyTitle: 'Why might I feel off?',
+    whyBody: 'Review candidate factors supported by your current evidence with confidence, without causal or diagnostic claims.',
+    whyOpen: 'Open WHY',
   },
 } as const;
 
@@ -60,7 +66,7 @@ export default function SettingsScreen() {
   const [message, setMessage] = useState<string | null>(null);
   const syncMessage = syncStatus === 'offline' ? t('syncOffline') : syncStatus === 'error' ? t('syncError') : null;
   const spiritualLabels = spiritualCopy[locale];
-  const lifeMapLabels = lifeMapCopy[locale];
+  const insightLabels = insightCopy[locale];
 
   const editPriorities = async () => {
     if (busy) return;
@@ -114,9 +120,15 @@ export default function SettingsScreen() {
       </View>
 
       <View style={styles.section}>
-        <MizanText variant="title">{lifeMapLabels.title}</MizanText>
-        <MizanText muted>{lifeMapLabels.body}</MizanText>
-        <PrimaryButton label={lifeMapLabels.open} onPress={() => router.push('/life-map')} />
+        <MizanText variant="title">{insightLabels.lifeMapTitle}</MizanText>
+        <MizanText muted>{insightLabels.lifeMapBody}</MizanText>
+        <PrimaryButton label={insightLabels.lifeMapOpen} onPress={() => router.push('/life-map')} />
+      </View>
+
+      <View style={styles.section}>
+        <MizanText variant="title">{insightLabels.whyTitle}</MizanText>
+        <MizanText muted>{insightLabels.whyBody}</MizanText>
+        <PrimaryButton label={insightLabels.whyOpen} onPress={() => router.push('/why')} />
       </View>
 
       <View style={styles.section}>
