@@ -40,6 +40,9 @@ Presentation boundary already in place:
 - async accessibility live announcements cover loading/error/empty/status transitions across the reviewed product surfaces.
 
 Latest static CP9 work:
+- **Life Map responsive/dynamic type:** the top navigation row, domain headers, and metric title/value rows now wrap instead of assuming a single horizontal line; long Arabic/English labels can shrink/wrap while values and navigation remain usable at narrow widths and larger text settings.
+- **WHY responsive/dynamic type:** the top navigation row and factor evidence rows now permit wrapping, and both label/value text can shrink within the row, reducing horizontal-overflow risk for Arabic, long evidence-window text, and accessibility text sizes without changing evidence interpretation.
+- **Check-in interaction-heavy surface:** low/high scale labels now support wrapping and shrink within their mirrored row, removing a remaining narrow-width/dynamic-type collision risk while preserving the existing rating semantics and metric-aware accessibility labels.
 - **Bootstrap error fallback:** the retry action label now centers its scalable text explicitly, so larger dynamic-type settings that wrap the Arabic/English retry copy keep intentional button alignment instead of falling back to directional line alignment.
 - **Shared choice controls:** `ChoiceChip` now centers its scalable label text so long Arabic/English labels, including consent and experiment choices, remain visually centered when dynamic type causes wrapping instead of inheriting directional left/right text alignment inside pill controls.
 - **Experiments:** the asynchronous no-history result now uses a polite accessibility live region, so screen readers announce the transition from loading to an empty experiment history without changing experiment consent, persistence, completion, or evaluation behavior.
@@ -52,6 +55,9 @@ Latest static CP9 work:
 - **Async-state coverage:** Today, Life Map, WHY, Insights, Capacity, Life Seasons, Entry, Personalization, Onboarding, Personal Learning, Experiments, Recovery, What If, Settings, Auth/recovery, Check-in, Value Alignment, Invisible Wins, and Integrations have received static accessibility-state review and targeted live-region fixes where concrete gaps were identified.
 
 Latest static product commits from this pass (not runtime-verified):
+- `de80dac980b0715716ab0b926376f3d18abb40f3` — make Check-in low/high scale labels wrap safely under narrow width and dynamic type.
+- `becc73e8b3902a3027e055a4be606c84177d96af` — harden WHY top/evidence rows for narrow width and large dynamic type.
+- `541eda4c123022fb31fb215bbe13744bd1f9e156` — harden Life Map navigation/domain/metric rows for narrow width and large dynamic type.
 - `32ffc4c2340fd3871119a37574c7447ca3c13e07` — center wrapped bootstrap error-fallback retry label.
 - `2e6039225b44c75365a0923ec1e2a275ccfc0974` — announce Human ROI reactive assessment changes.
 - `5086df6ee4c8dd7a7520713d155fd30baf52b073` — announce Cost of Yes reactive assessment changes.
@@ -98,7 +104,7 @@ Previously recorded owner-side baseline evidence:
 Post-baseline status:
 - No worker-run app tests, builds, typechecks, database scripts, cloud CI, or GitHub Actions are claimed for CP2–CP9 changes.
 - Current CP9 evidence is static implementation/code-review evidence only until owner validation runs the validation matrix and representative device/browser/screen-reader checks.
-- No new automated test was added for the latest declarative `accessibilityLiveRegion` substitutions or shared text-alignment adjustments; meaningful verification depends on pending runtime/dynamic-type/screen-reader validation rather than duplicating React Native prop/style assertions.
+- No new automated test was added for the latest declarative `accessibilityLiveRegion` substitutions or shared text-alignment/responsive wrapping adjustments; meaningful verification depends on pending runtime/dynamic-type/screen-reader validation rather than duplicating React Native prop/style assertions.
 
 ## Known blockers / risks
 - CP1: Windows session must be unlocked normally for true narrow-phone Arabic/English interaction evidence; see `automation/HUMAN_REQUIRED.md`.
