@@ -40,6 +40,7 @@ Presentation boundary already in place:
 - async accessibility live announcements cover loading/error/empty/status transitions across the reviewed product surfaces.
 
 Latest static CP9 work:
+- **Shared primary actions:** `PrimaryButton` now centers its scalable label text, so long Arabic/English labels that wrap under larger accessibility text sizes retain intentional button alignment instead of inheriting directional left/right alignment.
 - **Invisible Wins:** its asynchronous no-reflections result now uses a polite accessibility live region, so the transition from loading to an empty history is announced without changing reflection persistence, offline queue behavior, or category semantics.
 - **Integrations:** the asynchronous no-connections result now announces its empty-state title through a polite accessibility live region. Provider lifecycle, consent, sync, disconnect, and persistence behavior are unchanged.
 - **Value Alignment:** the asynchronous no-alignment/no-values result now uses a polite accessibility live region while preserving alignment evidence, confidence, and identity-drift interpretation unchanged.
@@ -47,6 +48,7 @@ Latest static CP9 work:
 - **Async-state coverage:** Today, Life Map, WHY, Insights, Capacity, Life Seasons, Entry, Personalization, Onboarding, Personal Learning, Experiments, Recovery, What If, Settings, Auth/recovery, Check-in, Value Alignment, Invisible Wins, and Integrations have received static accessibility-state review and targeted live-region fixes where concrete gaps were identified.
 
 Latest static product commits from this pass (not runtime-verified):
+- `e0c10da938445138afb543abf3e921edd411c8a3` — center scalable/wrapped shared primary-button labels.
 - `b9bbec5292980bbf693115e96a2e6b3c19b46041` — announce Invisible Wins empty history.
 - `5b1e3169b344eb593e4375534764fe3328915bec` — announce Integrations empty state.
 - `c9723f5cfd115f43a17722acfafd798bb9568800` — announce Value Alignment empty state.
