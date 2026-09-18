@@ -4,6 +4,8 @@ import {
   StyleProp,
   StyleSheet,
   Text,
+  TextInput,
+  TextInputProps,
   TextProps,
   TextStyle,
   useColorScheme,
@@ -17,6 +19,10 @@ import { useAppState } from '@/state/app-state';
 interface MizanTextProps extends TextProps {
   variant?: 'display' | 'title' | 'body' | 'label' | 'caption';
   muted?: boolean;
+  style?: StyleProp<TextStyle>;
+}
+
+interface MizanTextInputProps extends TextInputProps {
   style?: StyleProp<TextStyle>;
 }
 
@@ -47,6 +53,30 @@ export function Card({ children, style }: PropsWithChildren<{ style?: StyleProp<
     <View style={[styles.card, { backgroundColor: palette.surface, borderColor: palette.border }, style]}>
       {children}
     </View>
+  );
+}
+
+export function MizanTextInput({ style, ...props }: MizanTextInputProps) {
+  const scheme = useColorScheme();
+  const palette = Palette[scheme === 'dark' ? 'dark' : 'light'];
+  const { isRtl } = useAppState();
+
+  return (
+    <TextInput
+      {...props}
+      allowFontScaling
+      placeholderTextColor={props.placeholderTextColor ?? palette.textMuted}
+      style={[
+        styles.input,
+        {
+          backgroundColor: palette.surface,
+          borderColor: palette.border,
+          color: palette.text,
+          textAlign: isRtl ? 'right' : 'left',
+        },
+        style,
+      ]}
+    />
   );
 }
 
@@ -97,6 +127,15 @@ const styles = StyleSheet.create({
   label: { fontSize: 14, lineHeight: 20, fontWeight: '600' },
   caption: { fontSize: 13, lineHeight: 19, fontWeight: '500' },
   card: { borderWidth: StyleSheet.hairlineWidth, borderRadius: Radius.lg, padding: Spacing.xl, gap: Spacing.md },
+  input: {
+    minHeight: 52,
+    borderWidth: 1,
+    borderRadius: Radius.md,
+    paddingHorizontal: Spacing.lg,
+    paddingVertical: Spacing.md,
+    fontSize: 16,
+    lineHeight: 22,
+  },
   button: { minHeight: 52, borderRadius: Radius.md, alignItems: 'center', justifyContent: 'center', paddingHorizontal: Spacing.xl },
   buttonText: { fontSize: 16, lineHeight: 22, fontWeight: '700' },
   chip: { minHeight: 44, borderWidth: 1, borderRadius: Radius.pill, paddingHorizontal: Spacing.lg, justifyContent: 'center' },
