@@ -96,12 +96,16 @@ Current `auto3` static CP9 slice:
 - **Capacity semantic RTL:** the Life Buffer and Life Debt metric grids now mirror their item order with `row-reverse` in Arabic instead of keeping a fixed left-to-right row. Text alignment was already handled by `MizanText`; this change fixes the semantic order of grouped metrics without changing capacity calculations.
 - **Cost of Yes semantic RTL:** the assessment metric grid now mirrors in Arabic so commitment, known margin, remaining margin, and displaced-time metrics follow the active reading direction.
 - **Human ROI semantic RTL:** the benefit/effort/time result grid now mirrors in Arabic, matching the already RTL-aware rating/choice controls on the same screen.
+- **Check-in async accessibility:** queued local-sync, offline, and error delivery outcomes now use polite accessibility live regions so screen-reader users are informed when persistence is deferred or fails, without changing offline queue or submission behavior.
+- **Value Alignment async accessibility:** loading and load-error status changes now use polite accessibility live regions while evidence interpretation, confidence, and identity-drift semantics remain unchanged.
 - The fixes keep layout composition feature-local and introduce no new shared abstraction or domain/data changes.
 
 Commits from this slice:
 - `5c1b7125d5ef329ec00450a3dc26b2ddd233ec9d` — mirrored Capacity metric grids in RTL.
 - `80e1a7ca245d6addce9dfc8e576c835d3b9a0109` — mirrored Cost of Yes assessment metrics in RTL.
 - `9b17ea0edf695ed4b613a6e60fd560454b1e52a0` — mirrored Human ROI result metrics in RTL.
+- `0cc7a9ce030781fb6e4a1cbe16fecf025d1f5396` — announced queued/offline/error Check-in delivery states.
+- `f034696adfcd99eea3f13b3a4c5cf0855d93c025` — announced Value Alignment loading/error states.
 
 The TASK-required final design-swap proof is **not claimed**; it still requires owner visual/runtime validation with a substantially different visual direction.
 
