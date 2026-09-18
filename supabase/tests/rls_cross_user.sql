@@ -25,6 +25,11 @@ values
   ('11111111-1111-4111-8111-111111111111', 'invisible_win', 'rest', 'Paused without guilt.'),
   ('22222222-2222-4222-8222-222222222222', 'invisible_win', 'family', 'Family time.');
 
+insert into public.experiments (user_id, template_id, hypothesis, metric, expected_direction, duration_days, status, consented_at)
+values
+  ('11111111-1111-4111-8111-111111111111', 'earlier-bedtime', 'Earlier bedtime may improve my recovery.', 'recovery', 'higher', 5, 'planned', now()),
+  ('22222222-2222-4222-8222-222222222222', 'quiet-focus', 'Quiet focus may reduce my mental load.', 'mental_load', 'lower', 3, 'planned', now());
+
 set local role authenticated;
 select set_config(
   'request.jwt.claims',
@@ -32,7 +37,7 @@ select set_config(
   true
 );
 
--- User A can see only their own profile, action event, and reflection.
+-- User A can see only their own profile, action event, reflection, and experiment.
 do $$
 begin
   if (select count(*) from public.profiles) <> 1 then
@@ -52,6 +57,10 @@ begin
 
   if (select count(*) from public.reflections) <> 1 then
     raise exception 'RLS failure: user A reflection visibility is not isolated';
+  end if;
+
+  if (select count(*) from public.experiments) <> 1 then
+    raise exception 'RLS failure: user A experiment visibility is not isolated';
   end if;
 end;
 $$;
@@ -95,6 +104,27 @@ begin
   exception
     when insufficient_privilege or check_violation then null;
   end;
+
+  begin
+    insert into public.experiments (
+      user_id,
+      hypothesis,
+      metric,
+      expected_direction,
+      duration_days,
+      consented_at
+    ) values (
+      '22222222-2222-4222-8222-222222222222',
+      'Cross-user experiment should be rejected.',
+      'energy',
+      'higher',
+      3,
+      now()
+    );
+    raise exception 'RLS failure: user A inserted user B experiment';
+  exception
+    when insufficient_privilege or check_violation then null;
+  end;
 end;
 $$;
 
@@ -111,5 +141,21 @@ values (
 
 insert into public.reflections (user_id, kind, category, note)
 values ('11111111-1111-4111-8111-111111111111', 'invisible_win', 'boundary', 'Said no to preserve margin.');
+
+insert into public.experiments (
+  user_id,
+  hypothesis,
+  metric,
+  expected_direction,
+  duration_days,
+  consented_at
+) values (
+  '11111111-1111-4111-8111-111111111111',
+  'A second recovery experiment belongs to user A.',
+  'recovery',
+  'higher',
+  4,
+  now()
+);
 
 rollback;
