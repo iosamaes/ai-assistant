@@ -58,6 +58,17 @@ Commits from this slice:
 - `4096464bdd08525708d2cb2b3d7f36be53f25d8c` — centralized WHY separator width.
 - `2cebc3ace1dffe1a56702381b34793cec80169fd` — shared Insights navigation/action controls.
 
+Current `auto1` static CP9 slice:
+- **Recovery localization:** Recovery no longer renders the raw deterministic confidence enum in Arabic/English. Confidence now uses localized product copy for `known`, `likely`, `possible`, and `insufficient` while preserving evidence counts and recovery logic unchanged.
+- **Personal Learning semantic borders:** both learning-history separators now use centralized `Controls.borderWidth` instead of `StyleSheet.hairlineWidth`, so the shared design foundation owns global border treatment.
+- **Personalization semantic surface tokens:** maturity-stage cards now use `Controls.borderWidth` and `Radius.sm` instead of a local hairline border and a spacing token misused as radius.
+- No recovery decision logic, personal-learning estimates, personalization maturity logic, persistence, or domain behavior moved into presentation code.
+
+Commits from this slice:
+- `6d3f389753ce3f20ec5d6143bd40bbe076f52b98` — localized Recovery confidence labels.
+- `cd5a6247b73c2d87ab309dc9fb16297445ef7414` — centralized Personal Learning separator widths.
+- `2cf970b2765785958d0569fd97da46cf934fa126` — centralized Personalization border/radius tokens.
+
 The TASK-required final design-swap proof is **not claimed**; it still requires owner visual/runtime validation with a substantially different visual direction.
 
 ## Exact next executable action
@@ -78,7 +89,7 @@ Previously recorded owner-side baseline evidence:
 
 Current worker policy:
 - No app tests, builds, typechecks, database scripts, cloud CI, or GitHub Actions were executed for post-baseline CP2–CP9 work.
-- Current `auto4` slice is static implementation evidence only; no runtime PASS is claimed for the changes above.
+- Current `auto4` and `auto1` CP9 slices are static implementation evidence only; no runtime PASS is claimed for the changes above.
 
 ## Known blockers / risks
 - CP1: Windows session must be unlocked normally for true narrow-phone Arabic/English interaction evidence; see `automation/HUMAN_REQUIRED.md`.
@@ -104,6 +115,9 @@ Current worker policy:
 - `apps/app/src/app/why.tsx`
 - `apps/app/src/app/insights.tsx`
 - `apps/app/src/app/experiments.tsx`
+- `apps/app/src/app/recovery.tsx`
+- `apps/app/src/app/personal-learning.tsx`
+- `apps/app/src/app/personalization.tsx`
 - `apps/app/src/app/check-in.tsx`
 - `apps/app/src/app/settings.tsx`
 - `automation/HUMAN_REQUIRED.md`
