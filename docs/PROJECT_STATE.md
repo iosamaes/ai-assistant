@@ -43,7 +43,7 @@ Remaining gate:
 
 ## CP3 independent progress
 - Pure deterministic TypeScript core under `packages/core` implements unknown-preserving Human State Vector, evidence/freshness confidence, robust personal baseline maturity, temporal windows/Momentum, Life Leverage/One Move ranking, season-relative Balance, Life Debt, Buffer/Fragility, interaction-risk hypotheses, relationship evidence, N-of-1 confidence strengthening, and explicit-outcome feedback learning.
-- `UserTargets` now accepts optional per-domain baseline targets; Balance exposes a baseline target/deviation only when the user supplied one, while untouched domains remain explicitly without a baseline target.
+- `UserTargets` accepts optional per-domain baseline targets; Balance exposes a baseline target/deviation only when the user supplied one, while untouched domains remain explicitly without a baseline target.
 - Deterministic specifications cover sparse/missing/contradictory evidence, outliers, freshness, leverage, balance, capacity, interaction risk, relationship evidence, feedback learning, recommendation-context stability, and optional baseline-target preservation.
 - Current CP3 tests/type checks remain intentionally unexecuted by workers; no PASS claim is made until owner validation.
 
@@ -68,18 +68,20 @@ Remaining gate:
 ## CP5 independent progress
 - Added a first Life Map/domain-history application model backed only by stored observations from the existing Supabase data-access boundary.
 - Enabled domains remain visible even when they have no evidence; missing domains/metrics remain explicitly unknown instead of becoming zero scores.
-- Numeric histories use the existing deterministic temporal engine for 28-day medians, evidence-count/freshness confidence, and evidence-backed Momentum orientation (including lower-is-better mental load).
+- Numeric histories use the existing deterministic temporal engine for 28-day medians, evidence-count/freshness confidence, and evidence-backed Momentum orientation, including lower-is-better mental load.
 - Added `/life-map` with Arabic/English copy, RTL-aware layout, loading/error/insufficient-data states, latest observation date/value, 28-day median/evidence/confidence, and trend language that never asserts causation.
-- Registered the route and exposed it from Settings so the surface is reachable without introducing a new navigation framework.
-- CP5 remains incomplete: the next worker-safe slice is the WHY explanation surface and then broader insight/pattern history.
-- No tests/builds were run by this worker; this slice remains owner-validation pending under the active execution policy.
+- Added a deterministic first WHY application model from the existing Human State Vector. It ranks only supported current candidate signals with usable confidence, excludes insufficient/unknown signals, and derives evidence windows from the actual evidence refs.
+- Added `/why` with Arabic/English copy, RTL-aware layout, loading/error/insufficient-evidence states, current signal, confidence, evidence count/window, and explicit association/uncertainty caveats. It states that surfaced factors are not diagnoses and do not prove causation.
+- Registered both routes and exposed Life Map and WHY from Settings without adding a new navigation framework.
+- CP5 remains incomplete: broader Insights/pattern history should next use the existing relationship-hypothesis contracts and evidence thresholds; personal-learning surfaces then need to connect those hypotheses to outcome feedback without causal overclaim.
+- No tests/builds were run by this worker; these CP5 slices remain owner-validation pending under the active execution policy.
 
 ## Exact next executable action
 1. Owner path: unlock Windows and complete CP1 true phone-width Arabic/English interaction verification.
 2. Owner path: configure the Supabase Auth redirect allow-list from `automation/HUMAN_REQUIRED.md`, then validate auth/recovery/session/persistence/offline paths and run `supabase/tests/rls_cross_user.sql` in the approved validation environment.
 3. Owner path: run current core/app/plugin typechecks and tests before granting CP3/CP4/CP5 checkpoint credit.
-4. Worker-safe CP5 path: implement the first WHY explanation surface that ranks candidate factors only from available evidence, shows evidence windows/confidence, and clearly labels association/uncertainty without diagnostic or causal language.
-5. Then expand Insights/pattern history using the existing relationship-hypothesis contracts and evidence thresholds.
+4. Worker-safe CP5 path: expand Insights/pattern history using the existing relationship-hypothesis contracts, explicit sample counts/windows/confidence, and association-only language until evidence is strong enough for a labeled personal hypothesis.
+5. Then connect personal outcome feedback/history into an inspectable learning view while preserving the rule that completion alone is adherence evidence, not benefit.
 
 ## Verification record
 Previously verified evidence:
@@ -91,6 +93,7 @@ Implemented after that verification and still awaiting owner validation:
 - CP3 Balance, Capacity/Interaction Risk, relationship/feedback learning, recommendation context, and optional baseline-target metadata.
 - CP4 check-in, current-state integration, One Move preparation/decision wiring, feedback learning UI, pending-feedback recovery, personalized ranking, restart-level decision suppression, explicit onboarding life context/user targets, optional baseline targets, Today Balance/Momentum, and optional Spiritual Grounding preference/plugin wiring.
 - CP5 Life Map application model and `/life-map` UI with explicit evidence/confidence and unknown-preserving domain history.
+- CP5 WHY explanation model and `/why` UI with evidence-ranked candidate factors, evidence windows/confidence, and non-causal/non-diagnostic language.
 - Supabase migration `onboarding_context` was applied successfully to project `olfhjnropdrnujgpidfi`; direct schema reads confirmed `life_season`, `self_values`, `privacy_mode`, and the related constraints.
 - Supabase migration `domain_baseline_targets` was applied successfully to project `olfhjnropdrnujgpidfi`; direct schema read confirmed `baseline_target_rating` is nullable `smallint`.
 - No product, database test script, cloud test, or build was run by this worker, per `automation/TASK.md`.
@@ -99,13 +102,14 @@ Implemented after that verification and still awaiting owner validation:
 - CP1 remains blocked on owner-side physical responsive/locale verification.
 - Hosted Supabase Auth must allow `mizan://**`, `http://localhost:8087/**`, and the eventual production Web URL before confirmation/recovery can be verified end-to-end.
 - Cross-user SQL verification and guarded fixture exist but lack current owner-side execution evidence.
-- CP3/CP4 models and new CP5 Life Map paths remain runtime/type validation pending.
+- CP3/CP4 models and new CP5 Life Map/WHY paths remain runtime/type validation pending.
 - Offline preference/check-in/action-event/feedback durability beyond the current screen/session remains CP8 work; no durable general sync queue is claimed.
 - Restart-level One Move suppression is client/query based rather than a database uniqueness constraint; concurrent-device double-submit prevention remains a later hardening concern.
 - Balance is a conservative evidence-backed state-distribution signal, not a claim about exact time allocation; any enabled target domain lacking current evidence remains unknown.
 - Explicit baseline targets currently appear as optional per-domain target/deviation metadata; the aggregate Balance score still uses season priority distribution rather than silently mixing two different target semantics.
 - Spiritual Grounding currently covers explicit module consent/enablement only; user-selected practices and grounding observations remain later module work and must stay non-judgmental and opt-in.
 - Life Map currently summarizes only supported numeric observation metrics already present in the observation stream; unsupported or absent domain signals remain visibly unknown rather than inferred.
+- WHY currently ranks evidence-backed current-state concern signals; it is intentionally not yet a longitudinal association graph and does not claim to identify causes.
 - Moderate npm advisories remain in the supported Expo dependency chain; no prior high/critical advisory was recorded.
 
 ## Evidence paths
@@ -122,6 +126,7 @@ Implemented after that verification and still awaiting owner validation:
 - `apps/app/src/application/user-targets.ts`
 - `apps/app/src/application/spiritual-grounding.ts`
 - `apps/app/src/application/life-map.ts`
+- `apps/app/src/application/why.ts`
 - `apps/app/src/infrastructure/supabase/baseline-targets.ts`
 - `apps/app/src/infrastructure/supabase/plugin-settings.ts`
 - `apps/app/src/infrastructure/supabase/onboarding-context.ts`
@@ -131,6 +136,7 @@ Implemented after that verification and still awaiting owner validation:
 - `apps/app/src/app/check-in.tsx`
 - `apps/app/src/app/today.tsx`
 - `apps/app/src/app/life-map.tsx`
+- `apps/app/src/app/why.tsx`
 - `apps/app/src/app/settings.tsx`
 - `packages/core/src/engine.ts`
 - `packages/core/src/temporal.ts`
