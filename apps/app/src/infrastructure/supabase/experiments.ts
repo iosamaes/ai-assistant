@@ -30,6 +30,9 @@ export type CreateExperimentInput = {
   expected_direction: ExperimentDirection;
   duration_days: number;
   consented_at: string;
+  status?: ExperimentStatus;
+  started_at?: string | null;
+  ended_at?: string | null;
   baseline_snapshot?: Record<string, number>;
 };
 
@@ -92,7 +95,7 @@ export async function loadRecentExperiments(
 export async function updateExperimentLifecycle(
   userId: string,
   experimentId: string,
-  patch: Pick<StoredExperiment, 'status' | 'started_at' | 'ended_at'>,
+  patch: Partial<Pick<StoredExperiment, 'status' | 'started_at' | 'ended_at'>>,
 ): Promise<DataResult<StoredExperiment>> {
   if (!supabase) return unavailable();
   const { data, error } = await supabase
