@@ -137,8 +137,12 @@ export default function ValueAlignmentScreen() {
         <MizanText muted>{labels.body}</MizanText>
       </View>
 
-      {status === 'loading' ? <MizanText muted>{labels.loading}</MizanText> : null}
-      {status === 'error' ? <MizanText muted>{labels.error}</MizanText> : null}
+      {status === 'loading' ? (
+        <MizanText accessibilityLiveRegion="polite" muted>{labels.loading}</MizanText>
+      ) : null}
+      {status === 'error' ? (
+        <MizanText accessibilityLiveRegion="polite" muted>{labels.error}</MizanText>
+      ) : null}
       {status === 'ready' && summaries.length === 0 ? (
         <Card>
           <MizanText muted>{labels.empty}</MizanText>
