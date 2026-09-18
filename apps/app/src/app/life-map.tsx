@@ -1,7 +1,7 @@
 import type { ConfidenceLevel, MomentumDirection } from '@mizan/core';
-import { Link } from 'expo-router';
+import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Pressable, StyleSheet, useColorScheme, View } from 'react-native';
+import { StyleSheet, useColorScheme, View } from 'react-native';
 
 import {
   loadLifeMapSnapshot,
@@ -9,9 +9,9 @@ import {
   type LifeMapMetricId,
   type LifeMapSnapshot,
 } from '@/application/life-map';
-import { Card, MizanText } from '@/components/mizan-ui';
+import { Card, MizanText, PrimaryButton, SecondaryButton } from '@/components/mizan-ui';
 import { Screen } from '@/components/screen';
-import { Palette, Radius, Spacing } from '@/constants/theme';
+import { Palette, Spacing } from '@/constants/theme';
 import { useAppState } from '@/state/app-state';
 
 type LoadStatus = 'loading' | 'ready' | 'error';
@@ -178,8 +178,6 @@ export default function LifeMapScreen() {
   const { enabledDomains, isRtl, locale, refreshSession, userId } = useAppState();
   const [snapshot, setSnapshot] = useState<LifeMapSnapshot | null>(null);
   const [status, setStatus] = useState<LoadStatus>('loading');
-  const scheme = useColorScheme();
-  const palette = Palette[scheme === 'dark' ? 'dark' : 'light'];
   const local = copy[locale];
 
   useEffect(() => {
@@ -218,30 +216,12 @@ export default function LifeMapScreen() {
           <MizanText variant="label" muted>{local.eyebrow}</MizanText>
           <MizanText variant="display">{local.title}</MizanText>
         </View>
-        <Link href="/today" asChild>
-          <Pressable
-            accessibilityRole="button"
-            style={({ pressed }) => [
-              styles.backButton,
-              { borderColor: palette.border, backgroundColor: palette.surface, opacity: pressed ? 0.72 : 1 },
-            ]}>
-            <MizanText variant="label">{local.back}</MizanText>
-          </Pressable>
-        </Link>
+        <SecondaryButton compact label={local.back} onPress={() => router.replace('/today')} />
       </View>
 
       <Card>
         <MizanText muted>{local.body}</MizanText>
-        <Link href="/check-in" asChild>
-          <Pressable
-            accessibilityRole="button"
-            style={({ pressed }) => [
-              styles.primaryAction,
-              { backgroundColor: palette.accent, opacity: pressed ? 0.82 : 1 },
-            ]}>
-            <MizanText variant="label" style={styles.primaryActionText}>{local.startCheckIn}</MizanText>
-          </Pressable>
-        </Link>
+        <PrimaryButton label={local.startCheckIn} onPress={() => router.push('/check-in')} />
       </Card>
 
       {status === 'loading' ? <MizanText muted>{local.loading}</MizanText> : null}
@@ -260,21 +240,6 @@ export default function LifeMapScreen() {
 const styles = StyleSheet.create({
   topRow: { alignItems: 'center', justifyContent: 'space-between', gap: Spacing.lg },
   heading: { flex: 1, gap: Spacing.xs },
-  backButton: {
-    minHeight: 44,
-    justifyContent: 'center',
-    paddingHorizontal: Spacing.lg,
-    borderWidth: 1,
-    borderRadius: Radius.pill,
-  },
-  primaryAction: {
-    minHeight: 48,
-    borderRadius: Radius.md,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: Spacing.xl,
-  },
-  primaryActionText: { color: '#FFFFFF', textAlign: 'center' },
   domainHeader: { alignItems: 'center', justifyContent: 'space-between', gap: Spacing.md },
   metric: { gap: Spacing.sm, borderTopWidth: StyleSheet.hairlineWidth, paddingTop: Spacing.md },
   metricTitleRow: { alignItems: 'center', justifyContent: 'space-between', gap: Spacing.md },
