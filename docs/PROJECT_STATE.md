@@ -4,7 +4,7 @@
 - CP1 — Universal application foundation
 - Status: `BLOCKED_HUMAN` for owner-side CP1/CP2 validation; CP3, CP4, CP5 implementation slices are in place pending owner validation, while CP6 implementation is progressing independently on GitHub `main`.
 - Product authority: GitHub `iosamaes/ai-assistant` on `main`.
-- Task digest: `c823e4d1031ac5f3f7230ed4e2de236b4446817a`.
+- Task digest: `db05d2d78fc71edb1b71880d9e74535318fa6f4a`.
 
 ## Checkpoints
 - [x] CP0 — Reconnaissance, product model, executable plan
@@ -14,9 +14,9 @@
 - [ ] CP4 — First complete daily life loop
 - [ ] CP5 — Insight, explanation, personal learning
 - [ ] CP6 — Advanced decision tools
-- [ ] CP7 — Plugins and provider boundaries
+- [ ] CP7 — Plugins, unified integrations, and provider boundaries
 - [ ] CP8 — Reliability, offline tolerance, sync
-- [ ] CP9 — Responsive UX, accessibility, localization, polish
+- [ ] CP9 — Responsive UX, accessibility, localization, polish, and design-swappability
 - [ ] CP10 — Security, privacy, owner-data control
 - [ ] CP11 — Test matrix, performance, release readiness
 - [ ] CP12 — Independent final review and handoff
@@ -49,10 +49,23 @@
 - Recovery is registered in Expo Router and exposed from Settings.
 - `packages/core/src/recovery.test.ts` specifies insufficient-evidence behavior, likely overload triggering, weak-confidence suppression, and combined moderate signals. Per worker policy these specifications were authored but not executed.
 
+### Cost of Yes
+- `packages/core/src/cost-of-yes.ts` implements a deterministic comparison between a proposed weekly commitment and known weekly time margin.
+- Missing commitment or margin remains explicitly `insufficient`; the model does not invent a schedule, displaced activity, or hidden free time.
+- When both values are known, the result distinguishes manageable margin, tight margin, and minimum unavoidable displacement while preserving evidence/confidence.
+- `apps/app/src/application/cost-of-yes.ts` converts explicit self-reported hours into canonical evidence before calling the pure core assessment; future calendar/provider context can replace or supplement that application boundary without changing the core algorithm or screen business logic.
+- `/cost-of-yes` is Arabic/English, responsive through the shared `Screen`/`Card` primitives, uses the new shared token-driven `MizanTextInput`, and states that relationships, worship, and rest are not compulsory optimization resources.
+- Cost of Yes is registered in Expo Router and exposed from Settings.
+- `packages/core/src/cost-of-yes.test.ts` specifies missing-context, manageable, tight, displacement, and zero-margin cases. Per worker policy these specifications were authored but not executed.
+
+## Architecture amendments now in force
+- Newly added/materially edited UI from CP6 onward must obey the design-swappable presentation boundaries in TASK section 7.1; the Cost of Yes surface uses shared semantic primitives instead of introducing screen-specific foundational input styling.
+- Any external-service work introduced before CP7 must obey the unified integration architecture in TASK section 6.1; provider-specific shortcuts must not leak into feature screens, plugins, or `packages/core`.
+
 ## Exact next executable action
-1. Continue CP6 with Cost of Yes using only real time/margin context; when schedule/context evidence is absent, show explicit insufficiency rather than inventing displaced time.
-2. Add Human ROI only where explicit user-reported benefit and effort/time evidence exist; never reduce relationships, worship, or sacred moments to compulsory optimization metrics.
-3. Then finish Life Seasons editing/history and recalculation of target balance if remaining gaps exist.
+1. Continue CP6 with Human ROI only where explicit user-reported benefit and effort/time evidence exist; never reduce relationships, worship, or sacred moments to compulsory optimization metrics.
+2. Finish Life Seasons editing/history and recalculation of target balance if remaining gaps exist.
+3. Then proceed to CP7 using the new unified integration/provider-swap requirements once CP6 implementation gaps are closed.
 4. Owner path: unlock Windows and complete CP1 narrow-phone Arabic/English interaction verification.
 5. Owner path: configure Supabase Auth redirect allow-list, then validate auth/recovery/session/persistence and execute RLS verification.
 6. Owner path: run current core/app/plugin typechecks and tests before granting CP3/CP4/CP5/CP6 checkpoint credit.
@@ -65,19 +78,25 @@ Previously verified baseline evidence:
 Implemented after that baseline and still awaiting owner validation:
 - CP2 auth/session/persistence/recovery additions and current migrations/policy tests.
 - CP3/CP4/CP5 implementation slices listed above.
-- CP6 What If, scenario learning, experiment engine/persistence/surface, and Recovery / Save My Day core/specifications/surface.
+- CP6 What If, scenario learning, experiment engine/persistence/surface, Recovery / Save My Day, and Cost of Yes core/specifications/application/UI surface.
 - No product/database test script, cloud test, or build was run by workers for these post-baseline additions, per `automation/TASK.md`.
 
 ## Known technical risks / temporary compromises
 - CP1 remains blocked on owner-side physical responsive/locale verification.
 - Hosted Supabase Auth must allow `mizan://**`, `http://localhost:8087/**`, and the eventual production Web URL before confirmation/recovery can be verified end-to-end.
 - Cross-user SQL verification exists but lacks current owner-side execution evidence.
-- Post-baseline CP3/CP4/CP5/CP6 additions remain runtime/type validation pending.
+- Post-baseline CP3/CP4/CP5/CP6 additions, including Cost of Yes, remain runtime/type validation pending.
 - Offline mutation durability beyond the current screen/session remains CP8 work.
 - Recovery mode is deliberately stateless in this slice: skipping/stopping is never converted into a negative event, score, or adherence penalty.
+- Cost of Yes currently uses explicit user-entered weekly time/margin context because calendar/provider integrations are intentionally deferred to the CP7 capability-contract layer; unknown context remains unknown.
 - Moderate npm advisories remain in the supported Expo dependency chain; no prior high/critical advisory was recorded.
 
 ## Evidence paths
+- `packages/core/src/cost-of-yes.ts`
+- `packages/core/src/cost-of-yes.test.ts`
+- `apps/app/src/application/cost-of-yes.ts`
+- `apps/app/src/app/cost-of-yes.tsx`
+- `apps/app/src/components/mizan-ui.tsx`
 - `packages/core/src/recovery.ts`
 - `packages/core/src/recovery.test.ts`
 - `apps/app/src/application/recovery.ts`
