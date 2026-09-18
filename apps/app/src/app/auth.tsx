@@ -1,10 +1,10 @@
 import { router } from 'expo-router';
 import { useMemo, useState } from 'react';
-import { StyleSheet, TextInput, useColorScheme, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
-import { ChoiceChip, MizanText, PrimaryButton } from '@/components/mizan-ui';
+import { ChoiceChip, MizanText, MizanTextInput, PrimaryButton } from '@/components/mizan-ui';
 import { Screen } from '@/components/screen';
-import { Palette, Radius, Spacing } from '@/constants/theme';
+import { Spacing } from '@/constants/theme';
 import {
   requestPasswordReset,
   signInWithPassword,
@@ -16,8 +16,6 @@ import { useAppState } from '@/state/app-state';
 type AuthMode = 'sign-in' | 'sign-up' | 'reset';
 
 export default function AuthScreen() {
-  const scheme = useColorScheme();
-  const palette = Palette[scheme === 'dark' ? 'dark' : 'light'];
   const { isRtl, locale, refreshSession, sessionStatus, setLocale, t } = useAppState();
   const [mode, setMode] = useState<AuthMode>('sign-in');
   const [email, setEmail] = useState('');
@@ -107,45 +105,26 @@ export default function AuthScreen() {
 
       <View style={styles.form}>
         <MizanText variant="label">{t('email')}</MizanText>
-        <TextInput
+        <MizanTextInput
           accessibilityLabel={t('email')}
           autoCapitalize="none"
           autoCorrect={false}
           keyboardType="email-address"
           placeholder="name@example.com"
-          placeholderTextColor={palette.textMuted}
           value={email}
           onChangeText={setEmail}
-          style={[
-            styles.input,
-            {
-              borderColor: palette.border,
-              color: palette.text,
-              backgroundColor: palette.surface,
-              textAlign: isRtl ? 'right' : 'left',
-            },
-          ]}
         />
 
         {mode !== 'reset' ? (
           <>
             <MizanText variant="label">{t('password')}</MizanText>
-            <TextInput
+            <MizanTextInput
               accessibilityLabel={t('password')}
               autoCapitalize="none"
               autoCorrect={false}
               secureTextEntry
               value={password}
               onChangeText={setPassword}
-              style={[
-                styles.input,
-                {
-                  borderColor: palette.border,
-                  color: palette.text,
-                  backgroundColor: palette.surface,
-                  textAlign: isRtl ? 'right' : 'left',
-                },
-              ]}
             />
           </>
         ) : null}
@@ -169,12 +148,5 @@ const styles = StyleSheet.create({
   section: { gap: Spacing.md },
   row: { flexWrap: 'wrap', gap: Spacing.sm },
   form: { gap: Spacing.sm },
-  input: {
-    minHeight: 52,
-    borderWidth: 1,
-    borderRadius: Radius.md,
-    paddingHorizontal: Spacing.lg,
-    fontSize: 16,
-  },
   footer: { marginTop: 'auto', paddingTop: Spacing.xl },
 });
