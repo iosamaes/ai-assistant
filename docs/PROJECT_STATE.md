@@ -71,16 +71,19 @@ Remaining gate:
 - Added `/personal-learning`: Arabic/English RTL-aware loading/error/empty states plus per-action explicit outcome count, confidence, freshest evidence, a conservative helpful/neutral/not-helpful personal-response description, and the latest explicit 1–5 outcome reports/notes.
 - The Personal Learning surface explicitly states that completing an action or tapping Done is adherence evidence only and never raises the benefit estimate; the core `learning.test.ts` already contains a deterministic specification for this rule.
 - Registered `/personal-learning` and exposed it from Settings without a new navigation abstraction.
-- Implementation milestone: `701ef8a9d3ca747ba3c44f9fd19e6fb88815f07e` — inspectable personal action-learning history wired into the application.
-- CP5 remains incomplete: next worker-safe work is cold-start maturity progression, then identity/value alignment and Invisible Wins without causal or moral overclaim.
+- Added `/personalization`: Arabic/English maturity surface driven directly by the existing core `HumanStateVector.maturity` states (`cold_start`, `learning`, `personalized`). It explicitly says maturity is not a score, can regress as evidence ages, and never converts missing evidence into certainty.
+- Exposed Personalization Maturity from Settings. No new scoring or duplicated thresholds were introduced; the UI renders the existing core maturity contract.
+- No separate unit test was added for this display-only mapping because it introduces no new algorithm; the core maturity thresholds/behavior remain the relevant deterministic specification. Runtime/type validation is still owner-side under the active execution policy.
+- Implementation milestones: `701ef8a9d3ca747ba3c44f9fd19e6fb88815f07e` — inspectable personal action-learning history; `b8a0e4acb9b4415e8e8dd8500c925127aad1f275` + `d14bacf5018d9f918dd72d38e9011bd40ab54576` — visible personalization maturity progression and Settings entry.
+- CP5 remains incomplete: next worker-safe work is identity/value alignment, then Invisible Wins without causal, moral, or productivity overclaim.
 - No tests/builds were run by this worker; CP5 additions remain owner-validation pending under the active execution policy.
 
 ## Exact next executable action
 1. Owner path: unlock Windows and complete CP1 true phone-width Arabic/English interaction verification.
 2. Owner path: configure the Supabase Auth redirect allow-list from `automation/HUMAN_REQUIRED.md`, then validate auth/recovery/session/persistence/offline paths and run `supabase/tests/rls_cross_user.sql` in the approved validation environment.
 3. Owner path: run current core/app/plugin typechecks and tests before granting CP3/CP4/CP5 checkpoint credit.
-4. Worker-safe CP5 path: expose cold-start maturity progression from the existing evidence/baseline state so the UI clearly distinguishes immature personalization from a personalized estimate.
-5. Then continue CP5 identity/value alignment and Invisible Wins without causal, moral, or productivity overclaim.
+4. Worker-safe CP5 path: implement identity/value alignment against the user's already-persisted self-declared values and observed/self-reported evidence, phrased neutrally with explicit confidence/unknown handling.
+5. Then implement Invisible Wins/reflection capture without gamification or productivity scoring.
 
 ## Verification record
 Previously verified evidence:
@@ -91,7 +94,7 @@ Implemented after that verification and still awaiting owner validation:
 - CP2 auth/session/persistence/recovery/offline work and action-feedback history access.
 - CP3 Balance, Capacity/Interaction Risk, relationship/feedback learning, recommendation context, and optional baseline-target metadata.
 - CP4 check-in, current-state integration, One Move decision/feedback learning, onboarding life context/user targets, baseline targets, Balance/Momentum, and optional Spiritual Grounding preference/plugin wiring.
-- CP5 Life Map, WHY, evidence-backed Insights/pattern history, and inspectable personal action-learning history.
+- CP5 Life Map, WHY, evidence-backed Insights/pattern history, inspectable personal action-learning history, and Personalization Maturity surface.
 - Supabase migrations `onboarding_context` and `domain_baseline_targets` were applied successfully and directly inspected.
 - No product, database test script, cloud test, or build was run by this worker, per `automation/TASK.md`.
 
@@ -99,7 +102,7 @@ Implemented after that verification and still awaiting owner validation:
 - CP1 remains blocked on owner-side physical responsive/locale verification.
 - Hosted Supabase Auth must allow `mizan://**`, `http://localhost:8087/**`, and the eventual production Web URL before confirmation/recovery can be verified end-to-end.
 - Cross-user SQL verification and guarded fixture exist but lack current owner-side execution evidence.
-- CP3/CP4 models and CP5 Life Map/WHY/Insights/Personal Learning paths remain runtime/type validation pending.
+- CP3/CP4 models and CP5 Life Map/WHY/Insights/Personal Learning/Personalization paths remain runtime/type validation pending.
 - Offline preference/check-in/action-event/feedback durability beyond the current screen/session remains CP8 work; no durable general sync queue is claimed.
 - Restart-level One Move suppression is client/query based rather than a database uniqueness constraint; concurrent-device double-submit prevention remains a later hardening concern.
 - Balance is a conservative evidence-backed state-distribution signal, not a claim about exact time allocation; any enabled target domain lacking current evidence remains unknown.
@@ -108,6 +111,7 @@ Implemented after that verification and still awaiting owner validation:
 - WHY ranks current evidence-backed concern signals; it does not claim to identify causes.
 - Insights currently pairs selected numeric observations within a six-hour window and relies on the core evidence threshold; it is an intentionally small first graph slice, not a general causal model.
 - Personal Learning currently covers the foundational first-party actions and explicit usefulness feedback only; bare action completions are intentionally excluded from benefit history/estimates.
+- Personalization Maturity currently exposes the core evidence stage at product level; it does not claim that every metric is individually personalized and still needs owner-side responsive/runtime verification.
 - Moderate npm advisories remain in the supported Expo dependency chain; no prior high/critical advisory was recorded.
 
 ## Evidence paths
@@ -140,6 +144,7 @@ Implemented after that verification and still awaiting owner validation:
 - `apps/app/src/app/why.tsx`
 - `apps/app/src/app/insights.tsx`
 - `apps/app/src/app/personal-learning.tsx`
+- `apps/app/src/app/personalization.tsx`
 - `apps/app/src/app/settings.tsx`
 - `packages/core/src/engine.ts`
 - `packages/core/src/temporal.ts`
