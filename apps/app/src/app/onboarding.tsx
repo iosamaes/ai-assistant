@@ -5,17 +5,99 @@ import { StyleSheet, View } from 'react-native';
 import { ChoiceChip, MizanText, PrimaryButton } from '@/components/mizan-ui';
 import { Screen } from '@/components/screen';
 import { Spacing } from '@/constants/theme';
-import { DomainId, useAppState } from '@/state/app-state';
+import {
+  DomainId,
+  LifeSeason,
+  PersonalValue,
+  PrivacyMode,
+  useAppState,
+} from '@/state/app-state';
 
 const domainOrder: readonly DomainId[] = ['recovery', 'connection', 'work', 'margin'];
+const seasonOrder: readonly LifeSeason[] = ['balanced', 'build', 'recovery', 'parenting', 'study', 'travel'];
+const valueOrder: readonly PersonalValue[] = ['stability', 'family', 'growth', 'meaning'];
+const privacyOrder: readonly PrivacyMode[] = ['minimal', 'balanced'];
+
+const copy = {
+  ar: {
+    focusTitle: 'ما المجال الذي يحتاج مساحة أكبر الآن؟',
+    seasonTitle: 'ما الموسم الذي تعيشه الآن؟',
+    valuesTitle: 'ما القيم التي تريد أن يحميها ميزان؟',
+    privacyTitle: 'كيف تريد أن يبدأ التتبع؟',
+    requirement: 'اختر مجال تركيز، وموسمًا، وقيمة واحدة على الأقل، وطريقة الخصوصية للمتابعة.',
+    seasons: {
+      balanced: 'مرحلة متوازنة',
+      build: 'بناء أو مشروع مكثف',
+      recovery: 'تعافٍ واستعادة',
+      parenting: 'تربية وأسرة',
+      study: 'دراسة أو اختبارات',
+      travel: 'سفر أو انتقال',
+    },
+    values: {
+      stability: 'الاستقرار',
+      family: 'الأسرة',
+      growth: 'النمو',
+      meaning: 'المعنى',
+    },
+    privacy: {
+      minimal: 'الحد الأدنى — أسجل فقط ما أختاره صراحةً',
+      balanced: 'متوازن — اسمح بالمزايا التي أفعّلها لاحقًا',
+    },
+  },
+  en: {
+    focusTitle: 'Which area deserves more space right now?',
+    seasonTitle: 'What season are you in right now?',
+    valuesTitle: 'Which values should MIZAN help protect?',
+    privacyTitle: 'How should tracking begin?',
+    requirement: 'Choose a focus area, a season, at least one value, and a privacy mode to continue.',
+    seasons: {
+      balanced: 'Balanced season',
+      build: 'Building or intense work',
+      recovery: 'Recovery',
+      parenting: 'Parenting & family',
+      study: 'Study or exams',
+      travel: 'Travel or transition',
+    },
+    values: {
+      stability: 'Stability',
+      family: 'Family',
+      growth: 'Growth',
+      meaning: 'Meaning',
+    },
+    privacy: {
+      minimal: 'Minimal — only what I explicitly choose',
+      balanced: 'Balanced — allow features I enable later',
+    },
+  },
+} as const;
 
 export default function OnboardingScreen() {
-  const { completeOnboarding, enabledDomains, isRtl, locale, setLocale, syncStatus, t, toggleDomain } = useAppState();
+  const {
+    completeOnboarding,
+    enabledDomains,
+    focusDomain,
+    isRtl,
+    lifeSeason,
+    locale,
+    personalValues,
+    privacyMode,
+    setFocusDomain,
+    setLifeSeason,
+    setLocale,
+    setPrivacyMode,
+    syncStatus,
+    t,
+    toggleDomain,
+    togglePersonalValue,
+  } = useAppState();
   const [saving, setSaving] = useState(false);
   const syncMessage = syncStatus === 'offline' ? t('syncOffline') : syncStatus === 'error' ? t('syncError') : null;
+  const labels = copy[locale];
+  const canFinish =
+    focusDomain !== null && lifeSeason !== null && personalValues.length > 0 && privacyMode !== null;
 
   const finish = async () => {
-    if (saving) return;
+    if (saving || !canFinish) return;
     setSaving(true);
     await completeOnboarding();
     setSaving(false);
@@ -52,10 +134,71 @@ export default function OnboardingScreen() {
         </View>
       </View>
 
+      <View style={styles.section}>
+        <MizanText variant="title">{labels.focusTitle}</MizanText>
+        <View style={styles.domainList}>
+          {domainOrder.filter((domainId) => enabledDomains.includes(domainId)).map((domainId) => (
+            <ChoiceChip
+              key={domainId}
+              label={t(domainId)}
+              selected={focusDomain === domainId}
+              onPress={() => setFocusDomain(domainId)}
+            />
+          ))}
+        </View>
+      </View>
+
+      <View style={styles.section}>
+        <MizanText variant="title">{labels.seasonTitle}</MizanText>
+        <View style={styles.domainList}>
+          {seasonOrder.map((season) => (
+            <ChoiceChip
+              key={season}
+              label={labels.seasons[season]}
+              selected={lifeSeason === season}
+              onPress={() => setLifeSeason(season)}
+            />
+          ))}
+        </View>
+      </View>
+
+      <View style={styles.section}>
+        <MizanText variant="title">{labels.valuesTitle}</MizanText>
+        <View style={[styles.wrap, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
+          {valueOrder.map((value) => (
+            <ChoiceChip
+              key={value}
+              label={labels.values[value]}
+              selected={personalValues.includes(value)}
+              onPress={() => togglePersonalValue(value)}
+            />
+          ))}
+        </View>
+      </View>
+
+      <View style={styles.section}>
+        <MizanText variant="title">{labels.privacyTitle}</MizanText>
+        <View style={styles.domainList}>
+          {privacyOrder.map((mode) => (
+            <ChoiceChip
+              key={mode}
+              label={labels.privacy[mode]}
+              selected={privacyMode === mode}
+              onPress={() => setPrivacyMode(mode)}
+            />
+          ))}
+        </View>
+      </View>
+
+      {!canFinish ? <MizanText muted>{labels.requirement}</MizanText> : null}
       {syncMessage ? <MizanText muted>{syncMessage}</MizanText> : null}
 
       <View style={styles.footer}>
-        <PrimaryButton label={saving ? t('saving') : t('continue')} onPress={() => void finish()} disabled={saving} />
+        <PrimaryButton
+          label={saving ? t('saving') : t('continue')}
+          onPress={() => void finish()}
+          disabled={saving || !canFinish}
+        />
       </View>
     </Screen>
   );

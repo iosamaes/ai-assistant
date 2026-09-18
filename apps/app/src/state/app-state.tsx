@@ -24,8 +24,15 @@ import {
   upsertProfile,
   type DataFailureKind,
 } from '@/infrastructure/supabase/data-access';
+import {
+  loadOnboardingContext,
+  upsertOnboardingContext,
+} from '@/infrastructure/supabase/onboarding-context';
 
 export type DomainId = 'recovery' | 'connection' | 'work' | 'margin';
+export type LifeSeason = 'balanced' | 'build' | 'recovery' | 'parenting' | 'study' | 'travel';
+export type PersonalValue = 'stability' | 'family' | 'growth' | 'meaning';
+export type PrivacyMode = 'minimal' | 'balanced';
 export type SessionStatus =
   | 'loading'
   | 'signed-in'
@@ -38,6 +45,7 @@ export type SyncStatus = 'idle' | 'saving' | 'saved' | 'offline' | 'expired' | '
 
 const domainOrder: readonly DomainId[] = ['recovery', 'connection', 'work', 'margin'];
 const defaultDomains: readonly DomainId[] = ['recovery', 'connection', 'work'];
+const personalValueOrder: readonly PersonalValue[] = ['stability', 'family', 'growth', 'meaning'];
 
 function currentTimezone() {
   try {
@@ -51,16 +59,28 @@ function collectFailures(...failures: Array<DataFailureKind | null>) {
   return failures.filter((failure): failure is DataFailureKind => failure !== null);
 }
 
+function isPersonalValue(value: string): value is PersonalValue {
+  return personalValueOrder.includes(value as PersonalValue);
+}
+
 interface AppStateValue {
   locale: Locale;
   isRtl: boolean;
   onboardingCompleted: boolean;
   enabledDomains: readonly DomainId[];
+  lifeSeason: LifeSeason | null;
+  focusDomain: DomainId | null;
+  personalValues: readonly PersonalValue[];
+  privacyMode: PrivacyMode | null;
   sessionStatus: SessionStatus;
   syncStatus: SyncStatus;
   userId: string | null;
   setLocale: (locale: Locale) => void;
   toggleDomain: (domainId: DomainId) => void;
+  setLifeSeason: (season: LifeSeason) => void;
+  setFocusDomain: (domainId: DomainId) => void;
+  togglePersonalValue: (value: PersonalValue) => void;
+  setPrivacyMode: (mode: PrivacyMode) => void;
   completeOnboarding: () => Promise<void>;
   resetOnboarding: () => Promise<void>;
   refreshSession: () => Promise<void>;
@@ -73,6 +93,10 @@ export function AppStateProvider({ children }: PropsWithChildren) {
   const [locale, setLocaleState] = useState<Locale>('ar');
   const [onboardingCompleted, setOnboardingCompleted] = useState(false);
   const [enabledDomains, setEnabledDomains] = useState<readonly DomainId[]>(defaultDomains);
+  const [lifeSeason, setLifeSeasonState] = useState<LifeSeason | null>(null);
+  const [focusDomain, setFocusDomainState] = useState<DomainId | null>(null);
+  const [personalValues, setPersonalValues] = useState<readonly PersonalValue[]>([]);
+  const [privacyMode, setPrivacyModeState] = useState<PrivacyMode | null>(null);
   const [sessionStatus, setSessionStatus] = useState<SessionStatus>('loading');
   const [syncStatus, setSyncStatus] = useState<SyncStatus>('idle');
   const [userId, setUserId] = useState<string | null>(null);
@@ -83,6 +107,10 @@ export function AppStateProvider({ children }: PropsWithChildren) {
     setLocaleState('ar');
     setOnboardingCompleted(false);
     setEnabledDomains(defaultDomains);
+    setLifeSeasonState(null);
+    setFocusDomainState(null);
+    setPersonalValues([]);
+    setPrivacyModeState(null);
   }, []);
 
   const hydrateSession = useCallback(
@@ -107,13 +135,15 @@ export function AppStateProvider({ children }: PropsWithChildren) {
         setSyncStatus('idle');
       }
 
-      const [profileResult, preferenceResult] = await Promise.all([
+      const [profileResult, preferenceResult, contextResult] = await Promise.all([
         loadProfile(nextUserId),
         loadDomainPreferences(nextUserId),
+        loadOnboardingContext(nextUserId),
       ]);
       const failures = collectFailures(
         profileResult.ok ? null : profileResult.error.kind,
         preferenceResult.ok ? null : preferenceResult.error.kind,
+        contextResult.ok ? null : contextResult.error.kind,
       );
 
       if (failures.includes('session-expired')) {
@@ -124,21 +154,38 @@ export function AppStateProvider({ children }: PropsWithChildren) {
         return;
       }
 
+      const profile = profileResult.ok ? profileResult.value : null;
+      const onboardingContext = contextResult.ok ? contextResult.value : null;
       if (profileResult.ok) {
-        if (profileResult.value) {
-          setLocaleState(profileResult.value.locale);
-          setOnboardingCompleted(profileResult.value.onboarding_completed);
+        if (profile) {
+          setLocaleState(profile.locale);
+          setOnboardingCompleted(profile.onboarding_completed);
         } else {
-          setLocaleState('ar');
-          setOnboardingCompleted(false);
+          resetUserState();
         }
+      }
+
+      if (contextResult.ok) {
+        setLifeSeasonState(onboardingContext?.life_season ?? null);
+        setPersonalValues((onboardingContext?.self_values ?? []).filter(isPersonalValue));
+        setPrivacyModeState(onboardingContext?.privacy_mode ?? null);
       }
 
       if (preferenceResult.ok) {
         const enabled = domainOrder.filter((domainId) =>
           preferenceResult.value.some((preference) => preference.domain_id === domainId && preference.enabled),
         );
-        setEnabledDomains(enabled.length > 0 ? enabled : defaultDomains);
+        const nextEnabled = enabled.length > 0 ? enabled : defaultDomains;
+        setEnabledDomains(nextEnabled);
+
+        if (onboardingContext?.life_season) {
+          const focus = preferenceResult.value
+            .filter((preference) => preference.enabled && domainOrder.includes(preference.domain_id as DomainId))
+            .sort((left, right) => right.priority_weight - left.priority_weight)[0];
+          setFocusDomainState((focus?.domain_id as DomainId | undefined) ?? null);
+        } else {
+          setFocusDomainState(null);
+        }
       }
 
       if (failures.includes('unavailable')) {
@@ -201,7 +248,15 @@ export function AppStateProvider({ children }: PropsWithChildren) {
   }, [hydrateSession, refreshSession]);
 
   const persistSnapshot = useCallback(
-    (nextLocale: Locale, nextOnboardingCompleted: boolean, nextDomains: readonly DomainId[]) => {
+    (
+      nextLocale: Locale,
+      nextOnboardingCompleted: boolean,
+      nextDomains: readonly DomainId[],
+      nextLifeSeason: LifeSeason | null,
+      nextFocusDomain: DomainId | null,
+      nextValues: readonly PersonalValue[],
+      nextPrivacyMode: PrivacyMode | null,
+    ) => {
       if (!userId) return Promise.resolve();
       const targetUserId = userId;
 
@@ -215,20 +270,35 @@ export function AppStateProvider({ children }: PropsWithChildren) {
           }),
           upsertDomainPreferences(
             targetUserId,
-            domainOrder.map((domainId, index) => ({
+            domainOrder.map((domainId) => ({
               domain_id: domainId,
               enabled: nextDomains.includes(domainId),
-              priority_weight: Math.max(0.25, 1 - index * 0.15),
+              priority_weight:
+                nextOnboardingCompleted && domainId === nextFocusDomain
+                  ? 1
+                  : nextDomains.includes(domainId)
+                    ? nextOnboardingCompleted
+                      ? 0.6
+                      : 0.5
+                    : 0.25,
               custom_label: null,
             })),
           ),
         ]);
+        const contextResult = nextOnboardingCompleted
+          ? await upsertOnboardingContext(targetUserId, {
+              life_season: nextLifeSeason,
+              self_values: [...nextValues],
+              privacy_mode: nextPrivacyMode,
+            })
+          : { ok: true as const, value: null };
 
         if (activeUserRef.current !== targetUserId) return;
 
         const failures = collectFailures(
           profileResult.ok ? null : profileResult.error.kind,
           preferenceResult.ok ? null : preferenceResult.error.kind,
+          contextResult.ok ? null : contextResult.error.kind,
         );
 
         if (failures.includes('session-expired')) {
@@ -260,12 +330,45 @@ export function AppStateProvider({ children }: PropsWithChildren) {
     [userId],
   );
 
+  const persistCurrent = useCallback(
+    (
+      next: Partial<{
+        locale: Locale;
+        onboardingCompleted: boolean;
+        enabledDomains: readonly DomainId[];
+        lifeSeason: LifeSeason | null;
+        focusDomain: DomainId | null;
+        personalValues: readonly PersonalValue[];
+        privacyMode: PrivacyMode | null;
+      }>,
+    ) =>
+      persistSnapshot(
+        next.locale ?? locale,
+        next.onboardingCompleted ?? onboardingCompleted,
+        next.enabledDomains ?? enabledDomains,
+        next.lifeSeason !== undefined ? next.lifeSeason : lifeSeason,
+        next.focusDomain !== undefined ? next.focusDomain : focusDomain,
+        next.personalValues ?? personalValues,
+        next.privacyMode !== undefined ? next.privacyMode : privacyMode,
+      ),
+    [
+      enabledDomains,
+      focusDomain,
+      lifeSeason,
+      locale,
+      onboardingCompleted,
+      persistSnapshot,
+      personalValues,
+      privacyMode,
+    ],
+  );
+
   const setLocale = useCallback(
     (nextLocale: Locale) => {
       setLocaleState(nextLocale);
-      void persistSnapshot(nextLocale, onboardingCompleted, enabledDomains);
+      void persistCurrent({ locale: nextLocale });
     },
-    [enabledDomains, onboardingCompleted, persistSnapshot],
+    [persistCurrent],
   );
 
   const toggleDomain = useCallback(
@@ -275,22 +378,46 @@ export function AppStateProvider({ children }: PropsWithChildren) {
           ? current.filter((id) => id !== domainId)
           : [...current, domainId];
         if (next.length === 0) return current;
-        void persistSnapshot(locale, onboardingCompleted, next);
+        const nextFocus = focusDomain === domainId && !next.includes(domainId) ? null : focusDomain;
+        if (nextFocus !== focusDomain) setFocusDomainState(nextFocus);
+        void persistCurrent({ enabledDomains: next, focusDomain: nextFocus });
         return next;
       });
     },
-    [locale, onboardingCompleted, persistSnapshot],
+    [focusDomain, persistCurrent],
   );
+
+  const setLifeSeason = useCallback((season: LifeSeason) => {
+    setLifeSeasonState(season);
+  }, []);
+
+  const setFocusDomain = useCallback(
+    (domainId: DomainId) => {
+      if (!enabledDomains.includes(domainId)) return;
+      setFocusDomainState(domainId);
+    },
+    [enabledDomains],
+  );
+
+  const togglePersonalValue = useCallback((value: PersonalValue) => {
+    setPersonalValues((current) =>
+      current.includes(value) ? current.filter((item) => item !== value) : [...current, value],
+    );
+  }, []);
+
+  const setPrivacyMode = useCallback((mode: PrivacyMode) => {
+    setPrivacyModeState(mode);
+  }, []);
 
   const completeOnboarding = useCallback(async () => {
     setOnboardingCompleted(true);
-    await persistSnapshot(locale, true, enabledDomains);
-  }, [enabledDomains, locale, persistSnapshot]);
+    await persistCurrent({ onboardingCompleted: true });
+  }, [persistCurrent]);
 
   const resetOnboarding = useCallback(async () => {
     setOnboardingCompleted(false);
-    await persistSnapshot(locale, false, enabledDomains);
-  }, [enabledDomains, locale, persistSnapshot]);
+    await persistCurrent({ onboardingCompleted: false });
+  }, [persistCurrent]);
 
   const value = useMemo<AppStateValue>(
     () => ({
@@ -298,11 +425,19 @@ export function AppStateProvider({ children }: PropsWithChildren) {
       isRtl: locale === 'ar',
       onboardingCompleted,
       enabledDomains,
+      lifeSeason,
+      focusDomain,
+      personalValues,
+      privacyMode,
       sessionStatus,
       syncStatus,
       userId,
       setLocale,
       toggleDomain,
+      setLifeSeason,
+      setFocusDomain,
+      togglePersonalValue,
+      setPrivacyMode,
       completeOnboarding,
       resetOnboarding,
       refreshSession,
@@ -311,14 +446,22 @@ export function AppStateProvider({ children }: PropsWithChildren) {
     [
       completeOnboarding,
       enabledDomains,
+      focusDomain,
+      lifeSeason,
       locale,
       onboardingCompleted,
+      personalValues,
+      privacyMode,
       refreshSession,
       resetOnboarding,
       sessionStatus,
+      setFocusDomain,
+      setLifeSeason,
       setLocale,
+      setPrivacyMode,
       syncStatus,
       toggleDomain,
+      togglePersonalValue,
       userId,
     ],
   );
