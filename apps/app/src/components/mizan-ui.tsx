@@ -33,6 +33,12 @@ interface MizanTextInputProps extends TextInputProps {
   style?: StyleProp<TextStyle>;
 }
 
+interface ButtonProps {
+  label: string;
+  onPress: () => void;
+  disabled?: boolean;
+}
+
 export function MizanText({ children, variant = 'body', muted = false, style, ...props }: MizanTextProps) {
   const scheme = useColorScheme();
   const palette = Palette[scheme === 'dark' ? 'dark' : 'light'];
@@ -86,7 +92,7 @@ export function MizanTextInput({ style, ...props }: MizanTextInputProps) {
   );
 }
 
-export function PrimaryButton({ label, onPress, disabled = false }: { label: string; onPress: () => void; disabled?: boolean }) {
+export function PrimaryButton({ label, onPress, disabled = false }: ButtonProps) {
   const scheme = useColorScheme();
   const palette = Palette[scheme === 'dark' ? 'dark' : 'light'];
   return (
@@ -103,6 +109,34 @@ export function PrimaryButton({ label, onPress, disabled = false }: { label: str
         },
       ]}>
       <Text allowFontScaling style={[styles.buttonText, { color: palette.onAccent }]}>{label}</Text>
+    </Pressable>
+  );
+}
+
+export function SecondaryButton({
+  label,
+  onPress,
+  disabled = false,
+  compact = false,
+}: ButtonProps & { compact?: boolean }) {
+  const scheme = useColorScheme();
+  const palette = Palette[scheme === 'dark' ? 'dark' : 'light'];
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityState={{ disabled }}
+      disabled={disabled}
+      onPress={onPress}
+      style={({ pressed }) => [
+        styles.secondaryButton,
+        compact ? styles.secondaryButtonCompact : null,
+        {
+          backgroundColor: palette.surface,
+          borderColor: palette.border,
+          opacity: disabled ? Interaction.disabled : pressed ? Interaction.subtlePressed : 1,
+        },
+      ]}>
+      <MizanText variant="label" style={styles.centeredText}>{label}</MizanText>
     </Pressable>
   );
 }
@@ -152,6 +186,20 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.xl,
   },
   buttonText: Typography.control,
+  secondaryButton: {
+    minHeight: Controls.standardHeight,
+    borderWidth: Controls.borderWidth,
+    borderRadius: Radius.md,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: Spacing.xl,
+  },
+  secondaryButtonCompact: {
+    minHeight: Controls.minimumTouchHeight,
+    borderRadius: Radius.pill,
+    paddingHorizontal: Spacing.lg,
+  },
+  centeredText: { textAlign: 'center' },
   chip: {
     minHeight: Controls.minimumTouchHeight,
     borderWidth: Controls.borderWidth,
