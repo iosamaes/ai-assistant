@@ -45,13 +45,20 @@ Presentation boundary already in place:
 - navigation shell honors reduced-motion preference;
 - confidence/status localization has been progressively removed from raw engine enums in shipped surfaces;
 - semantic RTL fixes exist for grouped metric layouts and date-direction presentation;
-- async accessibility live announcements exist across auth/recovery, Check-in, Value Alignment, Invisible Wins, Integrations, Life Seasons, and other reviewed surfaces.
+- async accessibility live announcements exist across auth/recovery, Check-in, Value Alignment, Invisible Wins, Integrations, Life Seasons, Today, and other reviewed surfaces.
+
+Latest `auto1` static CP9 work:
+- **Today async accessibility:** sync/offline state, cached-snapshot state, current-state loading/error, One Move loading/empty, decision outcomes, and feedback outcomes now use polite accessibility live regions so screen-reader users can receive asynchronous state changes.
+- **Today control naming:** the Settings and quick-check-in link controls now carry explicit localized accessibility labels; usefulness rating controls now announce the localized scale name plus the selected numeric position instead of exposing an isolated number only.
+- **Today semantic visual treatment:** state/feedback separators now consume `Controls.borderWidth` instead of `StyleSheet.hairlineWidth`, and the local check-in primary action uses the shared standard control height rather than a one-off action height.
+- Recommendation, feedback, persistence, Supabase, and deterministic intelligence behavior were not moved into presentation code or changed by this slice.
 
 Latest `auto4` static CP9 work:
 - **What If async accessibility:** loading/recalculation and load-error changes now use polite accessibility live regions, so screen readers receive scenario-state changes without changing scenario simulation or personal-effect learning behavior.
 - **Settings async accessibility:** offline/sync status plus preference/sign-out error feedback now use polite accessibility live regions; settings persistence, auth, and navigation behavior remain unchanged.
 
-Latest static product commits from this run (not runtime-verified):
+Latest static product commits (not runtime-verified):
+- `c3c65bf647b5520012ea659e41399b078b47d4b5` — improve Today accessibility semantics and semantic control/border treatment.
 - `d3556859a71fd4cac0afde2a9ed8f024f4674357` — announce What If async state.
 - `df4b760e8ee1780a3ab6be952fe3431470afc76d` — announce Settings async state.
 
@@ -69,8 +76,8 @@ The TASK-required final design-swap proof is **not claimed**. It still requires 
 - Those newly added suites have **not** been executed by workers under the current task policy; no PASS is claimed from their presence alone.
 
 ## Exact next executable action
-1. Continue CP9 static review, prioritizing the remaining Today-screen presentation debt: local foundational control treatments, `StyleSheet.hairlineWidth` separators, async status announcements, and rating-control screen-reader naming, while keeping recommendation/data logic outside presentation primitives.
-2. Continue repository-wide static review for untranslated production literals, semantic RTL issues, missing accessibility labels/states/live announcements, truncation/dynamic-type risks, duplicated global visual values, and unjustified local control treatments.
+1. Continue the repository-wide CP9 static review for untranslated production literals, semantic RTL issues, missing accessibility labels/states/live announcements, truncation/dynamic-type risks, duplicated global visual values, and unjustified local control treatments outside the already-reviewed surfaces.
+2. Revisit Today only if later static inspection finds additional real presentation debt; the previously listed Today hairline separators, async status announcements, rating-control naming, and local primary-control sizing are now addressed in code.
 3. Leave representative-width runtime checks, post-baseline tests/builds/typechecks, CP1–CP8 execution-dependent evidence, and the final design-swap proof to owner validation under the active policy.
 
 ## Verification record
@@ -86,7 +93,8 @@ Previously recorded owner-side baseline evidence:
 
 Post-baseline status:
 - No worker-run app tests, builds, typechecks, database scripts, cloud CI, or GitHub Actions are claimed for CP2–CP9 changes.
-- Current CP9 evidence is static implementation/code-review evidence only until owner validation runs the new matrix and representative device/browser checks.
+- Current CP9 evidence, including the latest Today slice, is static implementation/code-review evidence only until owner validation runs the new matrix and representative device/browser/screen-reader checks.
+- No new automated test was added for the Today-only declarative accessibility-property and semantic-token substitutions in this slice; their meaningful verification depends on the already-pending owner runtime/screen-reader validation rather than duplicating React Native prop assertions.
 
 ## Known blockers / risks
 - CP1: Windows session must be unlocked normally for true narrow-phone Arabic/English interaction evidence; see `automation/HUMAN_REQUIRED.md`.
