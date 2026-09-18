@@ -157,7 +157,7 @@ export default function IntegrationsScreen() {
 
       {status === 'ready' && connections.length === 0 ? (
         <Card>
-          <MizanText variant="title">{labels.emptyTitle}</MizanText>
+          <MizanText accessibilityLiveRegion="polite" variant="title">{labels.emptyTitle}</MizanText>
           <MizanText muted>{labels.emptyBody}</MizanText>
         </Card>
       ) : null}
