@@ -48,12 +48,20 @@ Implemented shared presentation boundary:
 - navigation shell honors the platform reduced-motion preference.
 
 Current `auto4` static CP9 slice:
+- **Auth screen-reader status:** session-expired and post-submit auth feedback now use polite accessibility live regions so asynchronous state changes are announced without moving auth behavior into presentation primitives.
+- **Password-recovery validation announcements:** password-length, mismatch, and result feedback are now exposed as polite live-region updates for screen-reader users while preserving existing validation and routing behavior.
+- **Life Seasons semantic RTL:** the historical date-range arrow now mirrors by active reading direction (`←` in RTL, `→` in LTR), and save/load outcome messages now announce through polite live regions.
 - **Experiment localization:** experiment evaluation confidence no longer renders raw engine enum values. `known`, `likely`, `possible`, and `insufficient` now render through Arabic/English product copy, preventing untranslated English confidence labels inside Arabic experiment history.
 - **WHY semantic border:** the remaining WHY evidence-row separator width now consumes centralized `Controls.borderWidth` rather than `StyleSheet.hairlineWidth`, keeping the global border treatment swappable through the design foundation.
 - **Insights shared controls:** the screen-local back and quick-check-in `Pressable` controls were replaced with shared compact `SecondaryButton` and `PrimaryButton`; local duplicated radius, touch height, pressed opacity, and accent foreground treatment were removed while navigation and insight logic remain feature-owned.
-- No experiment evaluation logic, WHY evidence interpretation, insight confidence logic, persistence, provider, or domain behavior moved into presentation primitives.
+- No auth/session logic, password-update behavior, Life Season persistence, experiment evaluation logic, WHY evidence interpretation, insight confidence logic, provider, or domain behavior moved into presentation primitives.
 
-Commits from this slice:
+Commits from the latest `auto4` accessibility/RTL slice:
+- `156b4d0b842bd087e31f2f5baeadcbe61402619e` — announce auth status changes.
+- `f5cc8f9b744b92daddbc3a8b2cd94ca23467d6ad` — announce password validation/result changes.
+- `03e135d08958432ea29733eb385f31ed0d612b28` — Life Seasons semantic arrow and live status polish.
+
+Earlier `auto4` CP9 commits:
 - `d89d61560a88125599b29f0d3102e69b10932dcb` — localized experiment confidence labels.
 - `4096464bdd08525708d2cb2b3d7f36be53f25d8c` — centralized WHY separator width.
 - `2cebc3ace1dffe1a56702381b34793cec80169fd` — shared Insights navigation/action controls.
@@ -92,7 +100,7 @@ Commits from this slice:
 The TASK-required final design-swap proof is **not claimed**; it still requires owner visual/runtime validation with a substantially different visual direction.
 
 ## Exact next executable action
-1. Continue the repository-wide cross-cutting static CP9 pass for untranslated production literals, semantic RTL issues, missing accessibility labels/states, duplicated global visual values, or unjustified local control treatments outside the already-reviewed surfaces.
+1. Continue the repository-wide cross-cutting static CP9 pass for untranslated production literals, semantic RTL issues, missing accessibility labels/states/live announcements, duplicated global visual values, or unjustified local control treatments outside the already-reviewed surfaces.
 2. Continue code-level review for truncation, dynamic type, keyboard/focus behavior, screen-reader semantics, light/dark treatment, and representative-width risks where static inspection can still add evidence.
 3. Leave runtime responsive/device checks, post-baseline tests/builds/typechecks, CP1–CP8 execution-dependent evidence, and the final design-swap proof to owner validation under the active task policy.
 
