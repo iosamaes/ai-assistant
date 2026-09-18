@@ -39,6 +39,7 @@ Remaining gate:
 - `supabase/tests/rls_cross_user.sql` covers own-row access, cross-user denial, and feedback/action ownership; `supabase/dev/vertical_slice_fixture.sql` is guarded dev-only fixture data.
 - Failure handling separates expired authorization from temporary unavailability and avoids raw backend messages.
 - Observation data access now supports bounded recent-history reads and atomic batch inserts.
+- Action feedback data access can load bounded explicit usefulness history for a concrete action by joining owned accepted/completed action events to owned feedback rows without treating event completion as benefit.
 - Auth redirect allow-list activation remains in `automation/HUMAN_REQUIRED.md`; current CP2 runtime/database verification remains owner-side under the active execution policy.
 
 ## CP3 independent progress
@@ -54,19 +55,21 @@ Remaining gate:
 - Added recent-observation loading and `apps/app/src/application/daily-intelligence.ts`, which maps persisted rows into canonical `@mizan/core` observations and derives the Human State Vector without putting Supabase in UI components.
 - Today now renders only state components that have actual values, including confidence language and evidence count; missing state remains absent instead of displaying fabricated zeroes. Conservative inferred overload risk appears only when the core has the required evidence.
 - Added conservative One Move preparation in `apps/app/src/application/daily-recommendation.ts` using only registered first-party actions and current evidence-backed state signals.
-- Candidate action confidence is deliberately discounted versus state confidence because evidence of current need is not evidence that a specific action will help. Insufficient-confidence candidates are suppressed completely.
+- Candidate action confidence is deliberately discounted versus state confidence because evidence about current need is not evidence that a specific action will help. Insufficient-confidence candidates are suppressed completely.
 - Cold-start action impact uses a small bounded generic prior; unknown identity alignment receives no positive scoring credit and is not represented to the user as known alignment.
 - Today now shows the selected One Move only when eligible, explains the supporting signal in Arabic/English, exposes confidence/evidence count, allows choosing the available alternative, and records `accepted`, `deferred`, or `declined` action events.
-- Acceptance/completion is explicitly not treated as evidence of benefit; usefulness learning still requires later outcome feedback.
+- Acceptance/completion is explicitly not treated as evidence of benefit; usefulness learning requires explicit outcome feedback.
+- Added a lightweight bilingual post-action feedback block after an accepted One Move. The user must choose explicit usefulness from 1–5 and may add an optional note; saving persists to `feedback_outcomes` against the exact accepted action-event ID with session-expired/offline/error handling.
+- Added `apps/app/src/application/action-feedback.ts`: explicit 1–5 usefulness maps conservatively to signed personal benefit (-100..100), recent explicit feedback is loaded from Supabase, and `@mizan/core` `estimateActionUsefulness` receives only self-reported outcome evidence. Accept/completed action events alone never create benefit evidence.
 - Added the check-in route explicitly to the root Stack.
-- Implementation commits: `6e5f83928a1bb89d2d24bcd76d93f4398c2557ab` (persisted quick check-in), `40f1eab35e55a1f6f9aa0e783e93ccbef9d5db96` (evidence-backed current state), `39f6ac67cda7c20dbcbd9432a50468ad49d1285e` (One Move preparation), `da5a3f06c5a0375d579d827cbe3121b134e0c662` (bilingual One Move copy), and `213bed52e49d96a451b9a4a55d5b74955c6be696` (Today decision wiring).
+- Implementation commits: `6e5f83928a1bb89d2d24bcd76d93f4398c2557ab` (persisted quick check-in), `40f1eab35e55a1f6f9aa0e783e93ccbef9d5db96` (evidence-backed current state), `39f6ac67cda7c20dbcbd9432a50468ad49d1285e` (One Move preparation), `da5a3f06c5a0375d579d827cbe3121b134e0c662` (bilingual One Move copy), `213bed52e49d96a451b9a4a55d5b74955c6be696` (Today decision wiring), `400f54e3b8f97f40f779745a7fcddda2d51756d4` (action feedback history access), `25167d853f8ad6c65e5f152bfde34b931b400ea4` (explicit outcome learning boundary), `29ca8e784d6e96820e0a975a08ca1cefbf34e975` (bilingual feedback copy), and `cff0775f2b9638b1e922808024fbc60c23969462` (Today feedback UI wiring).
 - These CP4 additions remain owner-validation pending; workers did not run product tests/builds under the current execution policy.
 
 ## Exact next executable action
 1. Owner path: unlock Windows and complete CP1 true phone-width Arabic/English interaction verification.
 2. Owner path: configure the Supabase Auth redirect allow-list from `automation/HUMAN_REQUIRED.md`, then validate auth/recovery/session/persistence/offline paths and run `supabase/tests/rls_cross_user.sql` in the approved validation environment.
 3. Owner path: run current core/app typechecks and tests before granting CP3/CP4 checkpoint credit.
-4. Worker-safe CP4 path: add a lightweight post-action outcome-feedback flow tied to the accepted action event, persist usefulness/optional note to `feedback_outcomes`, and feed only explicit outcome evidence into personal action learning; do not infer benefit from accept/completed events alone.
+4. Worker-safe CP4 path: recover the latest accepted action that still lacks feedback across reload/restart, then use explicit personal usefulness estimates only as a bounded, confidence-aware input to future One Move ranking; retain the conservative cold-start prior whenever personal outcome evidence is insufficient.
 
 ## Verification record
 Previously verified evidence:
@@ -75,18 +78,19 @@ Previously verified evidence:
 - `0fc4fa3b319300403a241d5f31c39e0895962822` — prior verified CP2 RLS verification-script milestone.
 
 Implemented after that verification and still awaiting owner validation:
-- CP2 auth/session/persistence/recovery/offline work.
+- CP2 auth/session/persistence/recovery/offline work and action-feedback history access `400f54e3b8f97f40f779745a7fcddda2d51756d4`.
 - CP3 Balance `c384e886a22aa888ab29de599eee9202d12c06e2`, Capacity/Interaction Risk `04d5868f92161ad7d4de2537696417474b6fd890`, Learning `28dc70d3e95a0409d253c02ddc2633e5138b9cb5`.
-- CP4 check-in `6e5f83928a1bb89d2d24bcd76d93f4398c2557ab`, current-state integration `40f1eab35e55a1f6f9aa0e783e93ccbef9d5db96`, One Move preparation `39f6ac67cda7c20dbcbd9432a50468ad49d1285e`, bilingual copy `da5a3f06c5a0375d579d827cbe3121b134e0c662`, and decision wiring `213bed52e49d96a451b9a4a55d5b74955c6be696`.
+- CP4 check-in `6e5f83928a1bb89d2d24bcd76d93f4398c2557ab`, current-state integration `40f1eab35e55a1f6f9aa0e783e93ccbef9d5db96`, One Move preparation `39f6ac67cda7c20dbcbd9432a50468ad49d1285e`, bilingual copy `da5a3f06c5a0375d579d827cbe3121b134e0c662`, decision wiring `213bed52e49d96a451b9a4a55d5b74955c6be696`, explicit feedback learning boundary `25167d853f8ad6c65e5f152bfde34b931b400ea4`, feedback localization `29ca8e784d6e96820e0a975a08ca1cefbf34e975`, and feedback UI `cff0775f2b9638b1e922808024fbc60c23969462`.
 - This worker did not run product, database, cloud tests, or builds, per `automation/TASK.md`.
 
 ## Known technical risks / temporary compromises
 - CP1 remains blocked on owner-side physical responsive/locale verification.
 - Hosted Supabase Auth must allow `mizan://**`, `http://localhost:8087/**`, and the eventual production Web URL before confirmation/recovery can be verified end-to-end.
-- Offline preference/check-in/action-event durability beyond the current screen/session remains CP8 work; no durable general sync queue is claimed.
+- Offline preference/check-in/action-event/feedback durability beyond the current screen/session remains CP8 work; no durable general sync queue is claimed.
 - Cross-user SQL verification and guarded fixture exist but lack current owner-side execution evidence.
 - CP3 models and new CP4 UI/application paths remain runtime/type validation pending.
 - One Move cold start intentionally uses a small generic prior and discounted confidence until explicit personal outcome evidence exists; it does not claim causal or personalized action efficacy yet.
+- Explicit feedback is currently offered for an acceptance created in the active Today session. If the user reloads/leaves before giving feedback, the accepted event is persisted but the pending feedback prompt is not yet recovered automatically.
 - Today prevents duplicate decision taps in the active session, but restart-level suppression/history presentation for already-decided offers is not implemented yet.
 - Moderate npm advisories remain in the supported Expo dependency chain; no prior high/critical advisory was recorded.
 
@@ -99,6 +103,7 @@ Implemented after that verification and still awaiting owner validation:
 - `apps/app/src/application/check-in.ts`
 - `apps/app/src/application/daily-intelligence.ts`
 - `apps/app/src/application/daily-recommendation.ts`
+- `apps/app/src/application/action-feedback.ts`
 - `apps/app/src/app/check-in.tsx`
 - `apps/app/src/app/today.tsx`
 - `apps/app/src/infrastructure/supabase/data-access.ts`
