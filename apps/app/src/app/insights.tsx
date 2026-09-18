@@ -182,6 +182,7 @@ export default function InsightsScreen() {
         </View>
         <Link href="/today" asChild>
           <Pressable
+            accessibilityLabel={local.back}
             accessibilityRole="button"
             style={({ pressed }) => [
               styles.backButton,
@@ -201,6 +202,7 @@ export default function InsightsScreen() {
         <MizanText variant="caption" muted>{local.caveat}</MizanText>
         <Link href="/check-in" asChild>
           <Pressable
+            accessibilityLabel={local.checkIn}
             accessibilityRole="button"
             style={({ pressed }) => [
               styles.primaryAction,
@@ -241,5 +243,5 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.xl,
   },
   primaryActionText: { textAlign: 'center' },
-  detailRow: { alignItems: 'center', justifyContent: 'space-between', gap: Spacing.md, borderTopWidth: StyleSheet.hairlineWidth, paddingTop: Spacing.sm },
+  detailRow: { alignItems: 'center', justifyContent: 'space-between', gap: Spacing.md, borderTopWidth: Controls.borderWidth, paddingTop: Spacing.sm },
 });
