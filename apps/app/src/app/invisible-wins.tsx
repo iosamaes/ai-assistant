@@ -165,7 +165,9 @@ export default function InvisibleWinsScreen() {
       <View style={styles.section}>
         <MizanText variant="title">{labels.recent}</MizanText>
         {loading ? <MizanText accessibilityLiveRegion="polite" muted>{labels.loading}</MizanText> : null}
-        {!loading && items.length === 0 ? <MizanText muted>{labels.empty}</MizanText> : null}
+        {!loading && items.length === 0 ? (
+          <MizanText accessibilityLiveRegion="polite" muted>{labels.empty}</MizanText>
+        ) : null}
         {items.map((item) => (
           <Card key={item.id}>
             <MizanText variant="label">{labels.categories[item.category]}</MizanText>
