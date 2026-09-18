@@ -43,6 +43,12 @@ const copy = {
     timeMetric: 'الوقت',
     evidence: 'أدلة مباشرة',
     confidence: 'الثقة',
+    confidenceLevels: {
+      insufficient: 'غير كافية',
+      possible: 'ممكنة',
+      likely: 'مرجحة',
+      known: 'قوية',
+    },
     caveat: 'لا ينتج ميزان رقم ROI موحدًا هنا؛ ذلك سيخلق دقة زائفة بين مقاييس مختلفة. النتيجة تحافظ على التقييمات الأصلية والوقت كسياق قابل للفحص.',
     back: 'العودة للإعدادات',
   },
@@ -78,6 +84,12 @@ const copy = {
     timeMetric: 'Time',
     evidence: 'Direct evidence',
     confidence: 'Confidence',
+    confidenceLevels: {
+      insufficient: 'Insufficient',
+      possible: 'Possible',
+      likely: 'Likely',
+      known: 'Strong',
+    },
     caveat: 'MIZAN does not create one scalar ROI number here because combining unlike scales would imply false precision. The result preserves your original ratings and time as inspectable context.',
     back: 'Back to settings',
   },
@@ -230,7 +242,7 @@ export default function HumanROIScreen() {
         ) : null}
 
         <MizanText variant="caption" muted>
-          {labels.confidence}: {assessment.confidence.level} · {labels.evidence}: {assessment.confidence.evidenceCount}
+          {labels.confidence}: {labels.confidenceLevels[assessment.confidence.level]} · {labels.evidence}: {assessment.confidence.evidenceCount}
         </MizanText>
       </Card>
 
