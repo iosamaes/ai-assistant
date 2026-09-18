@@ -85,6 +85,28 @@ Never commit secrets. Maintain `.env.example` with documented variable names and
 AI calls requiring secrets must execute through a server-side boundary such as a Supabase Edge Function; never ship private provider keys in the app bundle.
 Core MIZAN scoring/recommendation must have a deterministic non-AI path so the application still functions when AI is unavailable.
 
+### 6.1 Unified integration architecture — non-negotiable owner requirement
+
+MIZAN must support future AI providers, wearables, health platforms, location/maps, calendars, notifications, email, analytics, payments, and other external APIs without coupling product logic to any vendor. The architecture must be unified in lifecycle and governance, but **not** collapsed into one generic God API.
+
+Required rules:
+- Model each external capability behind a **small typed application-owned contract** such as `AIProvider`, `HealthDataProvider`, `LocationProvider`, `CalendarProvider`, `NotificationProvider`, or another capability-specific interface only when that capability is actually needed.
+- Implement vendor/platform specifics as adapters at infrastructure/server boundaries, for example OpenAI/Gemini/Anthropic, Apple Health/Health Connect/Garmin/Oura/Fitbit, Expo/native location, or calendar providers. Provider SDK imports must not leak into feature screens, plugins, or `packages/core`.
+- Adding another provider for an **existing capability** must normally require only an adapter plus registration/configuration, not edits to MIZAN core algorithms or feature screens.
+- Adding a **new capability** must create one small focused contract and adapter boundary; do not grow a universal `doAnything(provider,type,payload)` interface, giant switch statement, or catch-all integration service.
+- Use a shared lightweight integration lifecycle model for concerns that truly repeat across providers: provider/capability identity, configured/connected/disabled/error state, consent, permissions/scopes, last successful sync, sync error, disconnect/revoke, and provider metadata.
+- Plugins describe product behavior, domains, observations/actions, permissions/data requirements, and optional UI contributions. Plugins may depend on capability contracts, but must not import vendor SDKs or know vendor-specific payload shapes.
+- Normalize external data before it reaches the core. Wearable/health/context integrations should map provider payloads into canonical MIZAN observations/context with clear units, timestamps, source/provenance, and evidence quality rather than teaching the engine Garmin/Apple/Fitbit-specific schemas.
+- Preserve provenance needed for trust and deduplication. Where externally sourced records are persisted, support the minimum useful metadata such as provider id, external source/item id when available, imported/synced time, observed time, normalized unit/value, optional quality/confidence, and an idempotency/deduplication key. Do not store raw provider payloads by default.
+- Minimize sensitive data. Request only permissions and fields required for the enabled feature. Location must use the least precise context that satisfies the product need and must not become continuous precise tracking unless a future explicit product requirement, consent flow, privacy review, and battery justification demand it.
+- Connection and consent revocation must stop future collection/sync for that integration and support deletion/disconnection behavior required by CP10.
+- Client-safe/native integrations may use platform adapters on-device; integrations requiring private credentials, privileged OAuth exchange, provider webhooks, or secret API keys must execute through a server-side boundary such as Supabase Edge Functions. Never ship private provider secrets in the app bundle.
+- AI provider outputs that influence product behavior must use validated structured schemas at the application boundary. Free-form AI text may assist explanation/narration, but deterministic MIZAN state/scoring/recommendation must not depend on unvalidated provider prose.
+- AI personality or behavioral analysis must be framed as evidence-limited hypotheses/interpretations, not objective measurement of worth, diagnosis, intelligence, faith, or immutable personality truth.
+- Every provider-backed capability must have an unavailable/not-configured path and, when product meaning allows, a deterministic/local/mock/fallback implementation so provider outage or missing credentials does not break the core product.
+- Provider selection and registration must be centralized enough to swap implementations without scattered vendor conditionals, but do not build a runtime plugin marketplace, service locator framework, dependency-injection container, broker, or generic integration platform beyond demonstrated needs.
+- From now until CP7, newly introduced external-service work must follow these boundaries rather than accumulating provider-specific shortcuts for later cleanup.
+
 ## 7. Repository architecture target
 
 Start from the actual repository state. If empty, create a compact workspace similar to:
@@ -497,17 +519,23 @@ Required:
 - Implement Life Seasons editing/history and recalculation of target balance.
 **Gate:** each tool works end-to-end with both meaningful-data and insufficient-data paths, and scenario/experiment outputs cannot be mistaken for guaranteed predictions.
 
-### CP7 — Plugins and provider boundaries
-**Goal:** prove extensibility with real first-party modules, without speculative framework work.
+### CP7 — Plugins, unified integrations, and provider boundaries
+**Goal:** prove extensibility with real first-party modules and replaceable external capabilities, without speculative framework work.
 Required:
 - Finalize the compile-time plugin contract and registry from actual usage.
 - Implement first-party domain plugins/modules for the initial domain set, including opt-in Spiritual Grounding.
 - Demonstrate that a small new sample plugin can be added without changing core engine logic.
 - Add plugin enable/disable behavior and permission/data-availability states.
-- Implement application-owned interfaces for any external capabilities actually used.
-- Implement deterministic/mock/fallback adapters where credentials are absent.
-- If an AI provider is configured, route it through a server-side provider adapter with validated structured output and deterministic fallback.
-**Gate:** disabling a plugin does not crash or corrupt engine state; sample plugin integration does not require core scoring edits; provider selection is centralized and no UI/domain code imports a provider SDK directly.
+- Finalize the capability-specific application-owned provider contracts actually justified by shipped features, following section 6.1 rather than introducing a generic God API.
+- Implement the shared lightweight integration lifecycle/state model for configured/connected/disabled/error, consent/permissions, last sync, disconnect/revoke, and provider identity where applicable.
+- Keep provider registration/configuration centralized and vendor SDKs confined to adapter/infrastructure/server boundaries.
+- Normalize provider data into canonical MIZAN observations/context before core consumption, with source provenance, units/timestamps, evidence quality where meaningful, and idempotent/deduplicated ingestion.
+- Implement deterministic/mock/fallback adapters where credentials or hardware are absent and explicit unavailable/not-configured behavior everywhere else.
+- If an AI provider is configured, route secret-bearing calls through a server-side provider adapter, validate structured output, preserve deterministic fallback, and prevent free-form model text from becoming unvalidated core state.
+- Add a **provider-swap proof** for at least one representative capability using the production adapter if available plus a deterministic/mock/alternate adapter: switching implementations must not require edits to `packages/core` or feature-screen business logic.
+- Add a **new-capability proof** showing that one small capability can be introduced through a focused typed contract and adapter boundary without expanding a catch-all integration interface or adding vendor conditionals throughout the app.
+- Record the integration boundary, proof, and remaining owner-only provider activation steps in `docs/PROJECT_STATE.md`.
+**Gate:** disabling a plugin or integration does not crash or corrupt engine state; sample plugin integration does not require core scoring edits; a same-capability provider can be swapped by adapter/registration/configuration without core or feature-business-logic changes; a new capability uses a small focused contract rather than a God API; normalized external data carries sufficient provenance/deduplication metadata; provider selection is centralized; and no UI/domain/core code imports a vendor SDK directly.
 
 ### CP8 — Reliability, offline tolerance, and sync behavior
 **Goal:** preserve user trust under bad networks and interrupted sessions.
@@ -515,6 +543,7 @@ Required:
 - Add appropriate query caching/persistence for recent useful state.
 - Preserve new check-ins/reflections during temporary network failure using the simplest safe retry strategy.
 - Make write retries idempotent where duplicate creation would harm data.
+- Make external integration sync/import idempotent where provider retries, overlapping windows, webhook re-delivery, or reconnects could duplicate normalized observations.
 - Handle expired sessions, provider outages, failed sync, and partial data explicitly.
 - Add version/timestamp conflict handling only where concurrent edits realistically occur.
 - Verify restart/reload behavior across Web and native development runtime.
@@ -610,7 +639,9 @@ The mission is code/product complete only when all of the following are true:
 - The full daily learning loop works end-to-end: onboarding -> observation/check-in -> state -> One Move -> action/decline -> feedback -> updated personal model.
 - Advanced tools required by CP5/CP6 are usable and clearly distinguish evidence, hypotheses, and simulations from facts.
 - Plugin architecture is proven by the shipped first-party modules and a sample addition without core-engine edits.
-- External providers are replaceable behind application-owned adapters; no provider key or SDK leaks into domain logic.
+- External providers are replaceable behind application-owned capability contracts and adapters; no provider key or SDK leaks into domain logic.
+- The integration architecture is unified for lifecycle/consent/permissions/sync/provenance but does not use a generic God API: same-capability provider swaps are adapter/registration/configuration changes, while new capabilities add small focused contracts.
+- External wearable/health/location/calendar/AI data is normalized before core consumption, retains sufficient provenance for trust/deduplication, and does not force vendor-specific schemas into `packages/core` or feature business logic.
 - Critical offline/reconnect and provider-failure cases preserve user trust and data.
 - Privacy controls, export, deletion, optional module consent, and security/RLS checks function as implemented.
 - Full automated quality suite is green and no known critical/high-severity defect remains.
@@ -657,6 +688,9 @@ Do not:
 - Replace Supabase integration with local-only storage and call it complete.
 - Fake AI/provider success in production paths.
 - Hard-code a specific LLM/provider into UI/domain behavior.
+- Build a universal `doAnything(provider,type,payload)` integration API, giant provider switch, catch-all integration service, or service-locator/DI framework that hides capability boundaries.
+- Let plugins, feature screens, or `packages/core` import vendor SDKs or depend directly on vendor payload schemas.
+- Persist complete raw wearable/location/AI/provider payloads by default when normalized minimal data and provenance are sufficient.
 - Put service-role credentials in client code.
 - Disable RLS to make development easier.
 - Return invented scores when evidence is missing.
