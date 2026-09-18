@@ -37,6 +37,9 @@ const insightCopy = {
     insightsTitle: 'الرؤى والأنماط',
     insightsBody: 'راجع الارتباطات الشخصية التي تكررت في ملاحظاتك المقترنة، مع عدد العينات والثقة ونافذة الأدلة.',
     insightsOpen: 'فتح الرؤى',
+    learningTitle: 'التعلّم الشخصي',
+    learningBody: 'راجع كيف تتغير تقديرات فائدة الخطوات من تقييمات الأثر التي سجلتها أنت، مع عدد العينات وحداثتها والثقة.',
+    learningOpen: 'فتح سجل التعلّم',
   },
   en: {
     lifeMapTitle: 'Life map',
@@ -48,6 +51,9 @@ const insightCopy = {
     insightsTitle: 'Insights and patterns',
     insightsBody: 'Review recurring personal associations from paired observations with sample count, confidence, and evidence window.',
     insightsOpen: 'Open insights',
+    learningTitle: 'Personal learning',
+    learningBody: 'Inspect how action-usefulness estimates change from outcome ratings you explicitly recorded, with sample count, recency, and confidence.',
+    learningOpen: 'Open learning history',
   },
 } as const;
 
@@ -141,6 +147,12 @@ export default function SettingsScreen() {
         <MizanText variant="title">{insightLabels.insightsTitle}</MizanText>
         <MizanText muted>{insightLabels.insightsBody}</MizanText>
         <PrimaryButton label={insightLabels.insightsOpen} onPress={() => router.push('/insights')} />
+      </View>
+
+      <View style={styles.section}>
+        <MizanText variant="title">{insightLabels.learningTitle}</MizanText>
+        <MizanText muted>{insightLabels.learningBody}</MizanText>
+        <PrimaryButton label={insightLabels.learningOpen} onPress={() => router.push('/personal-learning')} />
       </View>
 
       <View style={styles.section}>
