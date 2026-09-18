@@ -64,6 +64,9 @@ const insightCopy = {
     humanROITitle: 'العائد الإنساني',
     humanROIBody: 'راجع الفائدة والجهد والوقت الذين تصفهم أنت، أو اترك ما تعتبره مقدسًا أو غير قابل للتحسين خارج المقارنة تمامًا.',
     humanROIOpen: 'فتح العائد الإنساني',
+    lifeSeasonsTitle: 'مواسم الحياة',
+    lifeSeasonsBody: 'غيّر الموسم وأهدافه المستدامة، وراجع سجل المواسم السابقة بحيث يُحسب التوازن مقابل ما اخترته لهذه المرحلة.',
+    lifeSeasonsOpen: 'فتح مواسم الحياة',
   },
   en: {
     lifeMapTitle: 'Life map',
@@ -102,6 +105,9 @@ const insightCopy = {
     humanROITitle: 'Human ROI',
     humanROIBody: 'Review benefit, effort, and time you explicitly describe, or keep anything you consider sacred or unsuitable for optimization completely outside comparison.',
     humanROIOpen: 'Open Human ROI',
+    lifeSeasonsTitle: 'Life Seasons',
+    lifeSeasonsBody: 'Change a season and its sustainable targets, then review prior seasons so Balance is measured against what you chose for this phase.',
+    lifeSeasonsOpen: 'Open Life Seasons',
   },
 } as const;
 
@@ -249,6 +255,12 @@ export default function SettingsScreen() {
         <MizanText variant="title">{insightLabels.humanROITitle}</MizanText>
         <MizanText muted>{insightLabels.humanROIBody}</MizanText>
         <PrimaryButton label={insightLabels.humanROIOpen} onPress={() => router.push('/human-roi')} />
+      </View>
+
+      <View style={styles.section}>
+        <MizanText variant="title">{insightLabels.lifeSeasonsTitle}</MizanText>
+        <MizanText muted>{insightLabels.lifeSeasonsBody}</MizanText>
+        <PrimaryButton label={insightLabels.lifeSeasonsOpen} onPress={() => router.push('/life-seasons')} />
       </View>
 
       <View style={styles.section}>
