@@ -65,14 +65,17 @@ Remaining gate:
 - Onboarding now requires explicit user choices for a focus domain, life season, at least one self-declared value, and a privacy mode before completion; no season/priority default is fabricated.
 - Completed onboarding persists life season, self-declared values, privacy choice, and user-owned domain priority weights. Pre-completion domain edits use neutral weights so the old fixed domain order is not silently interpreted as a personal priority.
 - `apps/app/src/application/user-targets.ts` converts persisted season plus enabled domain weights into the core `UserTargets` contract, establishing the application boundary needed for season-relative Balance.
-- Implementation milestones: `0df635891787d63f4157612fd546a6996bd43f29` — pending feedback recovery/personalized ranking/decision suppression; `5632c6f2e501f76ad881ea0e1ba5a1461935121b` — explicit onboarding life context and user-target persistence.
+- `apps/app/src/application/daily-intelligence.ts` now consumes those user targets with the recent observation history to derive a 7-day evidence-backed Balance input. A target dimension with no current numeric evidence remains `null`, so `calculateBalance` withholds the score rather than substituting zero.
+- The same Today intelligence boundary derives energy, recovery, mental-load, and connection Momentum from the existing 7-day-vs-prior-7-day temporal model. Unknown or `insufficient` trends are suppressed instead of being presented as direction claims.
+- Today now exposes a bilingual Balance & Momentum card with confidence and evidence counts. The Balance copy explicitly states that missing domains remain unknown; Momentum appears only for evidence-backed trends.
+- Implementation milestones: `0df635891787d63f4157612fd546a6996bd43f29` — pending feedback recovery/personalized ranking/decision suppression; `5632c6f2e501f76ad881ea0e1ba5a1461935121b` — explicit onboarding life context and user targets; `843b7e3bf4c1425e63076b78e143ea5e7a201afe` — Today season-relative Balance and evidence-backed Momentum wiring.
 - These CP4 additions remain owner-validation pending; workers did not run product tests/builds under the current execution policy.
 
 ## Exact next executable action
 1. Owner path: unlock Windows and complete CP1 true phone-width Arabic/English interaction verification.
 2. Owner path: configure the Supabase Auth redirect allow-list from `automation/HUMAN_REQUIRED.md`, then validate auth/recovery/session/persistence/offline paths and run `supabase/tests/rls_cross_user.sql` in the approved validation environment.
 3. Owner path: run current core/app typechecks and tests before granting CP3/CP4 checkpoint credit.
-4. Worker-safe CP4 path: consume `loadUserTargets` in the Today intelligence boundary and expose season-relative Balance plus evidence-backed Momentum without converting missing domain evidence to zero; then complete the remaining optional spiritual-module onboarding choice.
+4. Worker-safe CP4 path: complete the remaining optional Spiritual Grounding onboarding choice so participation is explicit, removable, and never inferred from missing data; persist that choice through the existing plugin-settings boundary without introducing a faith score or compulsory tracking.
 
 ## Verification record
 Previously verified evidence:
@@ -83,7 +86,7 @@ Previously verified evidence:
 Implemented after that verification and still awaiting owner validation:
 - CP2 auth/session/persistence/recovery/offline work and action-feedback history access `400f54e3b8f97f40f779745a7fcddda2d51756d4`.
 - CP3 Balance `c384e886a22aa888ab29de599eee9202d12c06e2`, Capacity/Interaction Risk `04d5868f92161ad7d4de2537696417474b6fd890`, Learning `28dc70d3e95a0409d253c02ddc2633e5138b9cb5`.
-- CP4 check-in `6e5f83928a1bb89d2d24bcd76d93f4398c2557ab`, current-state integration `40f1eab35e55a1f6f9aa0e783e93ccbef9d5db96`, One Move preparation `39f6ac67cda7c20dbcbd9432a50468ad49d1285e`, decision wiring `213bed52e49d96a451b9a4a55d5b74955c6be696`, explicit feedback learning boundary `25167d853f8ad6c65e5f152bfde34b931b400ea4`, feedback UI `cff0775f2b9638b1e922808024fbc60c23969462`, pending-feedback/personalized-ranking `c7f6350fc0de75d912b82851e18db505ecf0be68`, restart-level decision suppression `0df635891787d63f4157612fd546a6996bd43f29`, and onboarding life context/user targets `5632c6f2e501f76ad881ea0e1ba5a1461935121b`.
+- CP4 check-in `6e5f83928a1bb89d2d24bcd76d93f4398c2557ab`, current-state integration `40f1eab35e55a1f6f9aa0e783e93ccbef9d5db96`, One Move preparation `39f6ac67cda7c20dbcbd9432a50468ad49d1285e`, decision wiring `213bed52e49d96a451b9a4a55d5b74955c6be696`, explicit feedback learning boundary `25167d853f8ad6c65e5f152bfde34b931b400ea4`, feedback UI `cff0775f2b9638b1e922808024fbc60c23969462`, pending-feedback/personalized-ranking `c7f6350fc0de75d912b82851e18db505ecf0be68`, restart-level decision suppression `0df635891787d63f4157612fd546a6996bd43f29`, onboarding life context/user targets `5632c6f2e501f76ad881ea0e1ba5a1461935121b`, and Today Balance/Momentum `843b7e3bf4c1425e63076b78e143ea5e7a201afe`.
 - Supabase migration `onboarding_context` was applied successfully to project `olfhjnropdrnujgpidfi`; direct schema reads confirmed `life_season`, `self_values`, `privacy_mode`, and both new check constraints.
 - This worker did not run product, database test scripts, cloud tests, or builds, per `automation/TASK.md`.
 
@@ -96,7 +99,8 @@ Implemented after that verification and still awaiting owner validation:
 - One Move personalization deliberately remains conservative: fewer than the core's confidence threshold of explicit outcome samples leaves the generic prior unchanged.
 - Pending feedback recovery intentionally looks back only 7 days and returns the latest unanswered accepted action; older unanswered acceptances are not surfaced indefinitely.
 - Restart-level One Move suppression relies on the existing client-side check/query plus persisted context and is not a database-level uniqueness constraint; concurrent-device double-submit prevention remains a later hardening concern.
-- Onboarding's new life-season/value/privacy controls are implemented but remain unexecuted by workers under the current validation policy; optional spiritual-module choice is still pending.
+- Balance currently compares normalized recent domain-mapped evidence against the user's season priority distribution; it is a conservative state-distribution signal, not a claim about exact time allocation. Any enabled target domain lacking current evidence makes the Balance score unknown.
+- Onboarding's life-season/value/privacy controls and the new Balance/Momentum Today surface are implemented but remain unexecuted by workers under the current validation policy; optional spiritual-module choice is still pending.
 - Moderate npm advisories remain in the supported Expo dependency chain; no prior high/critical advisory was recorded.
 
 ## Evidence paths
@@ -119,6 +123,7 @@ Implemented after that verification and still awaiting owner validation:
 - `apps/app/src/app/today.tsx`
 - `apps/app/src/infrastructure/supabase/data-access.ts`
 - `packages/core/src/engine.ts`
+- `packages/core/src/temporal.ts`
 - `packages/core/src/leverage.ts`
 - `packages/core/src/balance.ts`
 - `packages/core/src/capacity.ts`
