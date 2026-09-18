@@ -36,6 +36,7 @@ Remaining gate:
 ## CP2 independent progress
 - Supabase public environment validation, SecureStore-backed universal session storage, typed data-access boundary, auth/session/recovery flows, route guarding, password update, and account-specific preference hydration/persistence are implemented.
 - `supabase/migrations/0001_vertical_slice.sql` defines profiles, domain preferences, observations, action events, feedback outcomes, and plugin settings with RLS/ownership policies; prior live inspection confirmed the six tables and policies on project `olfhjnropdrnujgpidfi`.
+- `supabase/migrations/0002_onboarding_context.sql` extends the user-owned profile with nullable `life_season`, explicit `self_values`, and nullable `privacy_mode`; the migration was applied to the named Supabase project and schema inspection confirmed the three columns plus the season/privacy constraints.
 - `supabase/tests/rls_cross_user.sql` covers own-row access, cross-user denial, and feedback/action ownership; `supabase/dev/vertical_slice_fixture.sql` is guarded dev-only fixture data.
 - Failure handling separates expired authorization from temporary unavailability and avoids raw backend messages.
 - Observation data access supports bounded recent-history reads and atomic batch inserts.
@@ -61,14 +62,17 @@ Remaining gate:
 - When personal usefulness is applied, its explicit outcome evidence is included in the recommendation evidence set; action-specific usefulness does not inflate state-derived recommendation confidence.
 - Restart-level duplicate One Move decisions are now suppressed by a stable evidence-context identity. The decision context is stored in `action_events.context`; recommendation loading suppresses an already-decided context after reload/restart, and the write path rechecks the context before inserting to prevent duplicate acceptance/defer/decline writes.
 - A genuinely new persisted check-in changes the evidence-context identity, so the same action can be considered again in a new recommendation cycle instead of being suppressed forever.
-- Implementation milestone: `0df635891787d63f4157612fd546a6996bd43f29` — pending feedback recovery, confidence-bounded personal usefulness, and restart-level One Move decision suppression.
+- Onboarding now requires explicit user choices for a focus domain, life season, at least one self-declared value, and a privacy mode before completion; no season/priority default is fabricated.
+- Completed onboarding persists life season, self-declared values, privacy choice, and user-owned domain priority weights. Pre-completion domain edits use neutral weights so the old fixed domain order is not silently interpreted as a personal priority.
+- `apps/app/src/application/user-targets.ts` converts persisted season plus enabled domain weights into the core `UserTargets` contract, establishing the application boundary needed for season-relative Balance.
+- Implementation milestones: `0df635891787d63f4157612fd546a6996bd43f29` — pending feedback recovery/personalized ranking/decision suppression; `5632c6f2e501f76ad881ea0e1ba5a1461935121b` — explicit onboarding life context and user-target persistence.
 - These CP4 additions remain owner-validation pending; workers did not run product tests/builds under the current execution policy.
 
 ## Exact next executable action
 1. Owner path: unlock Windows and complete CP1 true phone-width Arabic/English interaction verification.
 2. Owner path: configure the Supabase Auth redirect allow-list from `automation/HUMAN_REQUIRED.md`, then validate auth/recovery/session/persistence/offline paths and run `supabase/tests/rls_cross_user.sql` in the approved validation environment.
 3. Owner path: run current core/app typechecks and tests before granting CP3/CP4 checkpoint credit.
-4. Worker-safe CP4 path: extend onboarding persistence beyond language/domain toggles to the minimum self-declared priorities, baseline targets, and life-season context needed for season-relative Balance on Today, without inventing unsupported defaults.
+4. Worker-safe CP4 path: consume `loadUserTargets` in the Today intelligence boundary and expose season-relative Balance plus evidence-backed Momentum without converting missing domain evidence to zero; then complete the remaining optional spiritual-module onboarding choice.
 
 ## Verification record
 Previously verified evidence:
@@ -79,8 +83,9 @@ Previously verified evidence:
 Implemented after that verification and still awaiting owner validation:
 - CP2 auth/session/persistence/recovery/offline work and action-feedback history access `400f54e3b8f97f40f779745a7fcddda2d51756d4`.
 - CP3 Balance `c384e886a22aa888ab29de599eee9202d12c06e2`, Capacity/Interaction Risk `04d5868f92161ad7d4de2537696417474b6fd890`, Learning `28dc70d3e95a0409d253c02ddc2633e5138b9cb5`.
-- CP4 check-in `6e5f83928a1bb89d2d24bcd76d93f4398c2557ab`, current-state integration `40f1eab35e55a1f6f9aa0e783e93ccbef9d5db96`, One Move preparation `39f6ac67cda7c20dbcbd9432a50468ad49d1285e`, decision wiring `213bed52e49d96a451b9a4a55d5b74955c6be696`, explicit feedback learning boundary `25167d853f8ad6c65e5f152bfde34b931b400ea4`, feedback UI `cff0775f2b9638b1e922808024fbc60c23969462`, pending-feedback/personalized-ranking `c7f6350fc0de75d912b82851e18db505ecf0be68`, and restart-level decision suppression `0df635891787d63f4157612fd546a6996bd43f29`.
-- This worker did not run product, database, cloud tests, or builds, per `automation/TASK.md`.
+- CP4 check-in `6e5f83928a1bb89d2d24bcd76d93f4398c2557ab`, current-state integration `40f1eab35e55a1f6f9aa0e783e93ccbef9d5db96`, One Move preparation `39f6ac67cda7c20dbcbd9432a50468ad49d1285e`, decision wiring `213bed52e49d96a451b9a4a55d5b74955c6be696`, explicit feedback learning boundary `25167d853f8ad6c65e5f152bfde34b931b400ea4`, feedback UI `cff0775f2b9638b1e922808024fbc60c23969462`, pending-feedback/personalized-ranking `c7f6350fc0de75d912b82851e18db505ecf0be68`, restart-level decision suppression `0df635891787d63f4157612fd546a6996bd43f29`, and onboarding life context/user targets `5632c6f2e501f76ad881ea0e1ba5a1461935121b`.
+- Supabase migration `onboarding_context` was applied successfully to project `olfhjnropdrnujgpidfi`; direct schema reads confirmed `life_season`, `self_values`, `privacy_mode`, and both new check constraints.
+- This worker did not run product, database test scripts, cloud tests, or builds, per `automation/TASK.md`.
 
 ## Known technical risks / temporary compromises
 - CP1 remains blocked on owner-side physical responsive/locale verification.
@@ -91,20 +96,25 @@ Implemented after that verification and still awaiting owner validation:
 - One Move personalization deliberately remains conservative: fewer than the core's confidence threshold of explicit outcome samples leaves the generic prior unchanged.
 - Pending feedback recovery intentionally looks back only 7 days and returns the latest unanswered accepted action; older unanswered acceptances are not surfaced indefinitely.
 - Restart-level One Move suppression relies on the existing client-side check/query plus persisted context and is not a database-level uniqueness constraint; concurrent-device double-submit prevention remains a later hardening concern.
+- Onboarding's new life-season/value/privacy controls are implemented but remain unexecuted by workers under the current validation policy; optional spiritual-module choice is still pending.
 - Moderate npm advisories remain in the supported Expo dependency chain; no prior high/critical advisory was recorded.
 
 ## Evidence paths
 - `docs/cp1-wide.png`
 - `docs/cp1-narrow.png` (compact Web evidence only; not accepted as true phone-width proof)
 - `supabase/migrations/0001_vertical_slice.sql`
+- `supabase/migrations/0002_onboarding_context.sql`
 - `supabase/tests/rls_cross_user.sql`
 - `supabase/dev/vertical_slice_fixture.sql`
 - `apps/app/src/application/check-in.ts`
 - `apps/app/src/application/daily-intelligence.ts`
 - `apps/app/src/application/daily-recommendation.ts`
 - `apps/app/src/application/action-feedback.ts`
+- `apps/app/src/application/user-targets.ts`
+- `apps/app/src/infrastructure/supabase/onboarding-context.ts`
 - `apps/app/src/infrastructure/supabase/pending-action-feedback.ts`
 - `apps/app/src/infrastructure/supabase/one-move-decision.ts`
+- `apps/app/src/app/onboarding.tsx`
 - `apps/app/src/app/check-in.tsx`
 - `apps/app/src/app/today.tsx`
 - `apps/app/src/infrastructure/supabase/data-access.ts`
