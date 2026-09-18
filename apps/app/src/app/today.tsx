@@ -1,4 +1,4 @@
-import type { ConfidenceLevel, HumanStateVector, MomentumDirection } from '@mizan/core';
+import type { ConfidenceLevel, MomentumDirection } from '@mizan/core';
 import { Link } from 'expo-router';
 import { useEffect, useMemo, useState } from 'react';
 import { Pressable, StyleSheet, TextInput, useColorScheme, View } from 'react-native';
@@ -8,9 +8,8 @@ import {
   recordExplicitActionOutcome,
 } from '@/application/action-feedback';
 import {
-  loadCurrentHumanState,
-  loadDailyOverview,
-  type DailyOverview,
+  loadDailySnapshot,
+  type DailySnapshot,
 } from '@/application/daily-intelligence';
 import {
   loadPersonalizedDailyRecommendation,
@@ -25,8 +24,7 @@ import { Palette, Radius, Spacing } from '@/constants/theme';
 import type { TranslationKey } from '@/i18n';
 import { DomainId, useAppState } from '@/state/app-state';
 
-type StateLoadStatus = 'loading' | 'ready' | 'error';
-type OverviewLoadStatus = 'loading' | 'ready' | 'error';
+type DailyLoadStatus = 'loading' | 'ready' | 'error';
 type RecommendationLoadStatus = 'loading' | 'ready';
 type DecisionStatus = 'idle' | 'saving' | OneMoveDecision | 'offline' | 'error';
 type FeedbackStatus = 'idle' | 'saving' | 'saved' | 'offline' | 'error';
@@ -46,6 +44,9 @@ const overviewCopy = {
     stable: 'مستقر تقريبًا',
     declining: 'يتراجع',
     error: 'تعذر تحميل التوازن والزخم الآن.',
+    cacheUnavailable: 'تعذر الوصول إلى البيانات المباشرة، لذلك يعرض ميزان آخر لقطة محفوظة.',
+    cacheNotConfigured: 'الاتصال المباشر غير مهيأ في هذا الإصدار، لذلك يعرض ميزان آخر لقطة محفوظة.',
+    cacheSavedAt: 'وقت اللقطة المحفوظة',
   },
   en: {
     title: 'Balance & momentum',
@@ -58,6 +59,9 @@ const overviewCopy = {
     stable: 'Roughly stable',
     declining: 'Declining',
     error: 'Balance and momentum could not be loaded right now.',
+    cacheUnavailable: 'Live data is unavailable, so MIZAN is showing the most recent saved snapshot.',
+    cacheNotConfigured: 'Live data is not configured in this build, so MIZAN is showing the most recent saved snapshot.',
+    cacheSavedAt: 'Saved snapshot time',
   },
 } as const;
 
@@ -82,6 +86,15 @@ function momentumLabel(direction: MomentumDirection, locale: 'ar' | 'en'): strin
   if (direction === 'improving') return copy.improving;
   if (direction === 'declining') return copy.declining;
   return copy.stable;
+}
+
+function cachedSnapshotMessage(snapshot: DailySnapshot | null, locale: 'ar' | 'en'): string | null {
+  if (!snapshot || snapshot.source !== 'cache' || !snapshot.cachedAt) return null;
+  const savedAt = new Date(snapshot.cachedAt);
+  if (!Number.isFinite(savedAt.getTime())) return null;
+  const copy = overviewCopy[locale];
+  const reason = snapshot.degradedBy === 'not-configured' ? copy.cacheNotConfigured : copy.cacheUnavailable;
+  return `${reason} ${copy.cacheSavedAt}: ${savedAt.toLocaleString(locale === 'ar' ? 'ar-QA' : 'en-QA')}`;
 }
 
 function actionLabelKey(actionId: string): TranslationKey | null {
@@ -117,10 +130,8 @@ function feedbackMessageKey(status: FeedbackStatus): TranslationKey | null {
 
 export default function TodayScreen() {
   const { enabledDomains, isRtl, locale, refreshSession, syncStatus, t, userId } = useAppState();
-  const [humanState, setHumanState] = useState<HumanStateVector | null>(null);
-  const [stateLoadStatus, setStateLoadStatus] = useState<StateLoadStatus>('loading');
-  const [dailyOverview, setDailyOverview] = useState<DailyOverview | null>(null);
-  const [overviewLoadStatus, setOverviewLoadStatus] = useState<OverviewLoadStatus>('loading');
+  const [dailySnapshot, setDailySnapshot] = useState<DailySnapshot | null>(null);
+  const [dailyLoadStatus, setDailyLoadStatus] = useState<DailyLoadStatus>('loading');
   const [recommendation, setRecommendation] = useState<DailyRecommendation | null>(null);
   const [recommendationLoadStatus, setRecommendationLoadStatus] = useState<RecommendationLoadStatus>('loading');
   const [selectedActionId, setSelectedActionId] = useState<string | null>(null);
@@ -133,54 +144,33 @@ export default function TodayScreen() {
   const palette = Palette[scheme === 'dark' ? 'dark' : 'light'];
   const syncMessage = syncStatus === 'offline' ? t('syncOffline') : syncStatus === 'error' ? t('syncError') : null;
   const dailyCopy = overviewCopy[locale];
+  const humanState = dailySnapshot?.humanState ?? null;
+  const dailyOverview = dailySnapshot?.overview ?? null;
+  const snapshotMessage = cachedSnapshotMessage(dailySnapshot, locale);
 
   useEffect(() => {
     let active = true;
     if (!userId) {
-      setHumanState(null);
-      setStateLoadStatus('ready');
+      setDailySnapshot(null);
+      setDailyLoadStatus('ready');
       return () => {
         active = false;
       };
     }
 
-    setStateLoadStatus('loading');
-    void loadCurrentHumanState(userId).then(async (result) => {
+    setDailyLoadStatus('loading');
+    void loadDailySnapshot(userId).then(async (result) => {
       if (!active) return;
       if (result.ok) {
-        setHumanState(result.value);
-        setStateLoadStatus('ready');
+        setDailySnapshot(result.value);
+        setDailyLoadStatus('ready');
         return;
       }
       if (result.error.kind === 'session-expired') await refreshSession();
-      if (active) setStateLoadStatus('error');
-    });
-
-    return () => {
-      active = false;
-    };
-  }, [refreshSession, userId]);
-
-  useEffect(() => {
-    let active = true;
-    if (!userId) {
-      setDailyOverview(null);
-      setOverviewLoadStatus('ready');
-      return () => {
-        active = false;
-      };
-    }
-
-    setOverviewLoadStatus('loading');
-    void loadDailyOverview(userId).then(async (result) => {
-      if (!active) return;
-      if (result.ok) {
-        setDailyOverview(result.value);
-        setOverviewLoadStatus('ready');
-        return;
+      if (active) {
+        setDailySnapshot(null);
+        setDailyLoadStatus('error');
       }
-      if (result.error.kind === 'session-expired') await refreshSession();
-      if (active) setOverviewLoadStatus('error');
     });
 
     return () => {
@@ -345,6 +335,11 @@ export default function TodayScreen() {
       </View>
 
       {syncMessage ? <MizanText muted>{syncMessage}</MizanText> : null}
+      {snapshotMessage ? (
+        <Card style={[styles.snapshotNotice, { borderColor: palette.border }]}>
+          <MizanText variant="caption" muted>{snapshotMessage}</MizanText>
+        </Card>
+      ) : null}
 
       <Card>
         <MizanText variant="title">{t('checkInPromptTitle')}</MizanText>
@@ -364,9 +359,9 @@ export default function TodayScreen() {
       <Card>
         <MizanText variant="title">{t('currentStateTitle')}</MizanText>
         <MizanText muted>{t('currentStateBody')}</MizanText>
-        {stateLoadStatus === 'loading' ? <MizanText muted>{t('loading')}</MizanText> : null}
-        {stateLoadStatus === 'error' ? <MizanText muted>{t('currentStateError')}</MizanText> : null}
-        {stateLoadStatus === 'ready' && visibleState.length === 0 ? (
+        {dailyLoadStatus === 'loading' ? <MizanText muted>{t('loading')}</MizanText> : null}
+        {dailyLoadStatus === 'error' ? <MizanText muted>{t('currentStateError')}</MizanText> : null}
+        {dailyLoadStatus === 'ready' && visibleState.length === 0 ? (
           <MizanText muted>{t('currentStateEmpty')}</MizanText>
         ) : null}
         {visibleState.map(({ component, labelKey }) => (
@@ -385,9 +380,9 @@ export default function TodayScreen() {
       <Card>
         <MizanText variant="title">{dailyCopy.title}</MizanText>
         <MizanText muted>{dailyCopy.body}</MizanText>
-        {overviewLoadStatus === 'loading' ? <MizanText muted>{t('loading')}</MizanText> : null}
-        {overviewLoadStatus === 'error' ? <MizanText muted>{dailyCopy.error}</MizanText> : null}
-        {overviewLoadStatus === 'ready' ? (
+        {dailyLoadStatus === 'loading' ? <MizanText muted>{t('loading')}</MizanText> : null}
+        {dailyLoadStatus === 'error' ? <MizanText muted>{dailyCopy.error}</MizanText> : null}
+        {dailyLoadStatus === 'ready' ? (
           <View style={styles.oneMoveContent}>
             <View style={[styles.stateItem, { borderTopColor: palette.border }]}>
               <View style={[styles.stateRow, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
@@ -433,10 +428,10 @@ export default function TodayScreen() {
       <Card>
         <MizanText variant="title">{t('oneMoveTitle')}</MizanText>
         <MizanText muted>{t('oneMoveBody')}</MizanText>
-        {stateLoadStatus === 'loading' || recommendationLoadStatus === 'loading' ? (
+        {dailyLoadStatus === 'loading' || recommendationLoadStatus === 'loading' ? (
           <MizanText muted>{t('loading')}</MizanText>
         ) : null}
-        {stateLoadStatus === 'ready' && recommendationLoadStatus === 'ready' && (!activeRecommendation || !activeActionLabel) ? (
+        {dailyLoadStatus === 'ready' && recommendationLoadStatus === 'ready' && (!activeRecommendation || !activeActionLabel) ? (
           <MizanText muted>{t('oneMoveEmpty')}</MizanText>
         ) : null}
         {activeRecommendation && activeActionLabel ? (
@@ -631,6 +626,7 @@ const styles = StyleSheet.create({
   topRow: { alignItems: 'center', justifyContent: 'space-between', gap: Spacing.lg },
   heading: { flex: 1, gap: Spacing.xs },
   settingsButton: { minHeight: 44, justifyContent: 'center', paddingHorizontal: Spacing.lg, borderWidth: 1, borderRadius: Radius.pill },
+  snapshotNotice: { borderWidth: 1 },
   primaryAction: { minHeight: 48, borderRadius: Radius.md, alignItems: 'center', justifyContent: 'center', paddingHorizontal: Spacing.xl },
   primaryActionText: { color: '#FFFFFF', textAlign: 'center' },
   stateItem: { gap: Spacing.xs, borderTopWidth: StyleSheet.hairlineWidth, paddingTop: Spacing.md },
