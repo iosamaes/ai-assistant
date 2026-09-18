@@ -4,13 +4,17 @@ import { useEffect, useMemo, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { loadCurrentHumanState } from '@/application/daily-intelligence';
+import {
+  loadPersonalScenarioEffects,
+  type LearnableScenarioId,
+} from '@/application/scenario-learning';
 import { Card, ChoiceChip, MizanText, PrimaryButton } from '@/components/mizan-ui';
 import { Screen } from '@/components/screen';
 import { Spacing } from '@/constants/theme';
 import { useAppState } from '@/state/app-state';
 
 type LoadStatus = 'loading' | 'ready' | 'error';
-type ScenarioId = 'earlier-bedtime' | 'quiet-focus' | 'short-walk';
+type ScenarioId = LearnableScenarioId;
 
 const priorConfidence: Confidence = {
   level: 'possible',
@@ -41,7 +45,7 @@ const copy = {
     sourcePrior: 'تقدير محافظ عام',
     sourcePersonal: 'تقدير شخصي من أدلتك',
     evidence: 'عدد الأدلة',
-    caveat: 'النطاقات لا تثبت أن التغيير سيسبب النتيجة. إذا اخترت تنفيذ تغيير لاحقًا، يتعلم ميزان فقط من تقييمات الأثر الصريحة والأدلة اللاحقة، وليس من مجرد إكمال الخطوة.',
+    caveat: 'النطاقات لا تثبت أن التغيير سيسبب النتيجة. يتعلم ميزان تقديرًا شخصيًا فقط عند وجود تقييم أثر صريح ثم ملاحظة لاحقة متوافقة؛ مجرد إكمال الخطوة لا يُعد فائدة.',
     back: 'العودة للإعدادات',
     scenarios: {
       'earlier-bedtime': {
@@ -85,7 +89,7 @@ const copy = {
     sourcePrior: 'Conservative general estimate',
     sourcePersonal: 'Personal estimate from your evidence',
     evidence: 'Evidence count',
-    caveat: 'These ranges do not prove that a change will cause the outcome. If you later try a change, MIZAN learns only from explicit outcome feedback and subsequent evidence, not from completion alone.',
+    caveat: 'These ranges do not prove causation. MIZAN only learns a personal estimate when explicit outcome feedback is followed by a compatible later observation; completion alone is not benefit evidence.',
     back: 'Back to settings',
     scenarios: {
       'earlier-bedtime': {
@@ -166,10 +170,13 @@ export default function WhatIfScreen() {
     }
 
     setStatus('loading');
-    void loadCurrentHumanState(userId).then(async (result) => {
+    void Promise.all([
+      loadCurrentHumanState(userId),
+      loadPersonalScenarioEffects(userId, selected),
+    ]).then(async ([stateResult, personalResult]) => {
       if (!active) return;
-      if (!result.ok) {
-        if (result.error.kind === 'session-expired') await refreshSession();
+      if (!stateResult.ok) {
+        if (stateResult.error.kind === 'session-expired') await refreshSession();
         if (active) {
           setStatus('error');
           setProjection(null);
@@ -177,7 +184,15 @@ export default function WhatIfScreen() {
         return;
       }
 
-      setProjection(simulateScenario({ definition: definitions[selected], currentState: result.value }));
+      if (!personalResult.ok && personalResult.error.kind === 'session-expired') {
+        await refreshSession();
+      }
+      if (!active) return;
+      setProjection(simulateScenario({
+        definition: definitions[selected],
+        currentState: stateResult.value,
+        personalEffects: personalResult.ok ? personalResult.value : [],
+      }));
       setStatus('ready');
     });
 
