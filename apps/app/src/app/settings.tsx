@@ -61,6 +61,9 @@ const insightCopy = {
     costOfYesTitle: 'تكلفة قول نعم',
     costOfYesBody: 'قارن وقت التزام جديد بهامش الوقت الذي تعرف أنك تملكه، من دون اختراع جدول أو ادعاء معرفة ما الذي سيتزاحم.',
     costOfYesOpen: 'فتح تكلفة قول نعم',
+    humanROITitle: 'العائد الإنساني',
+    humanROIBody: 'راجع الفائدة والجهد والوقت الذين تصفهم أنت، أو اترك ما تعتبره مقدسًا أو غير قابل للتحسين خارج المقارنة تمامًا.',
+    humanROIOpen: 'فتح العائد الإنساني',
   },
   en: {
     lifeMapTitle: 'Life map',
@@ -96,6 +99,9 @@ const insightCopy = {
     costOfYesTitle: 'Cost of Yes',
     costOfYesBody: 'Compare a new commitment with time margin you actually know you have, without inventing a schedule or claiming what gets displaced.',
     costOfYesOpen: 'Open Cost of Yes',
+    humanROITitle: 'Human ROI',
+    humanROIBody: 'Review benefit, effort, and time you explicitly describe, or keep anything you consider sacred or unsuitable for optimization completely outside comparison.',
+    humanROIOpen: 'Open Human ROI',
   },
 } as const;
 
@@ -237,6 +243,12 @@ export default function SettingsScreen() {
         <MizanText variant="title">{insightLabels.costOfYesTitle}</MizanText>
         <MizanText muted>{insightLabels.costOfYesBody}</MizanText>
         <PrimaryButton label={insightLabels.costOfYesOpen} onPress={() => router.push('/cost-of-yes')} />
+      </View>
+
+      <View style={styles.section}>
+        <MizanText variant="title">{insightLabels.humanROITitle}</MizanText>
+        <MizanText muted>{insightLabels.humanROIBody}</MizanText>
+        <PrimaryButton label={insightLabels.humanROIOpen} onPress={() => router.push('/human-roi')} />
       </View>
 
       <View style={styles.section}>
