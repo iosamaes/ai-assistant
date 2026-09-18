@@ -73,7 +73,7 @@ function isUsableTrial(
   const feedbackAt = parseTime(trial.feedbackObservedAt);
   const followupAt = parseTime(trial.followupObservedAt);
   if (actionAt === null || feedbackAt === null || followupAt === null) return false;
-  if (feedbackAt < actionAt || followupAt <= actionAt) return false;
+  if (feedbackAt < actionAt || followupAt <= feedbackAt) return false;
   if (followupAt - actionAt > MAX_FOLLOWUP_DAYS * DAY_MS) return false;
   return true;
 }
