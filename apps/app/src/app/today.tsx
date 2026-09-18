@@ -4,6 +4,12 @@ import { useEffect, useMemo, useState } from 'react';
 import { Pressable, StyleSheet, useColorScheme, View } from 'react-native';
 
 import { loadCurrentHumanState } from '@/application/daily-intelligence';
+import {
+  prepareDailyRecommendation,
+  recordOneMoveDecision,
+  type DailyRecommendationOption,
+  type OneMoveDecision,
+} from '@/application/daily-recommendation';
 import { Card, MizanText } from '@/components/mizan-ui';
 import { Screen } from '@/components/screen';
 import { Palette, Radius, Spacing } from '@/constants/theme';
@@ -11,6 +17,7 @@ import type { TranslationKey } from '@/i18n';
 import { DomainId, useAppState } from '@/state/app-state';
 
 type StateLoadStatus = 'loading' | 'ready' | 'error';
+type DecisionStatus = 'idle' | 'saving' | OneMoveDecision | 'offline' | 'error';
 
 function stateLabelKey(key: string): TranslationKey | null {
   if (key === 'energy') return 'checkInEnergy';
@@ -28,10 +35,35 @@ function confidenceLabelKey(level: ConfidenceLevel): TranslationKey {
   return 'confidenceInsufficient';
 }
 
+function actionLabelKey(actionId: string): TranslationKey | null {
+  if (actionId === 'protect-recovery-window') return 'actionProtectRecoveryWindow';
+  if (actionId === 'meaningful-connection') return 'actionMeaningfulConnection';
+  return null;
+}
+
+function reasonLabelKey(signal: DailyRecommendationOption['reasonSignal']): TranslationKey {
+  if (signal === 'recovery') return 'oneMoveWhyRecovery';
+  if (signal === 'energy') return 'oneMoveWhyEnergy';
+  if (signal === 'connection') return 'oneMoveWhyConnection';
+  return 'oneMoveWhyOverload';
+}
+
+function decisionMessageKey(status: DecisionStatus): TranslationKey | null {
+  if (status === 'saving') return 'oneMoveSaving';
+  if (status === 'accepted') return 'oneMoveAccepted';
+  if (status === 'deferred') return 'oneMoveDeferred';
+  if (status === 'declined') return 'oneMoveDeclined';
+  if (status === 'offline') return 'oneMoveSaveOffline';
+  if (status === 'error') return 'oneMoveSaveError';
+  return null;
+}
+
 export default function TodayScreen() {
   const { enabledDomains, isRtl, refreshSession, syncStatus, t, userId } = useAppState();
   const [humanState, setHumanState] = useState<HumanStateVector | null>(null);
   const [stateLoadStatus, setStateLoadStatus] = useState<StateLoadStatus>('loading');
+  const [selectedActionId, setSelectedActionId] = useState<string | null>(null);
+  const [decisionStatus, setDecisionStatus] = useState<DecisionStatus>('idle');
   const scheme = useColorScheme();
   const palette = Palette[scheme === 'dark' ? 'dark' : 'light'];
   const syncMessage = syncStatus === 'offline' ? t('syncOffline') : syncStatus === 'error' ? t('syncError') : null;
@@ -72,6 +104,48 @@ export default function TodayScreen() {
       }),
     [humanState],
   );
+
+  const recommendation = useMemo(
+    () => (humanState ? prepareDailyRecommendation(humanState) : null),
+    [humanState],
+  );
+
+  useEffect(() => {
+    setSelectedActionId(recommendation?.primary.actionId ?? null);
+    setDecisionStatus('idle');
+  }, [recommendation?.primary.actionId]);
+
+  const recommendationOptions = recommendation
+    ? [recommendation.primary, ...recommendation.alternatives]
+    : [];
+  const activeRecommendation =
+    recommendationOptions.find((option) => option.actionId === selectedActionId) ?? recommendation?.primary ?? null;
+  const activeActionLabel = activeRecommendation ? actionLabelKey(activeRecommendation.actionId) : null;
+  const alternative = recommendation?.alternatives.find((option) => option.actionId !== activeRecommendation?.actionId) ??
+    (activeRecommendation?.actionId !== recommendation?.primary.actionId ? recommendation?.primary : null);
+  const alternativeLabel = alternative ? actionLabelKey(alternative.actionId) : null;
+  const decisionFinished =
+    decisionStatus === 'accepted' || decisionStatus === 'deferred' || decisionStatus === 'declined';
+  const decisionMessage = decisionMessageKey(decisionStatus);
+
+  const handleDecision = async (decision: OneMoveDecision) => {
+    if (!userId || !recommendation || !activeRecommendation || decisionStatus === 'saving' || decisionFinished) return;
+    setDecisionStatus('saving');
+    const result = await recordOneMoveDecision(
+      userId,
+      activeRecommendation,
+      decision,
+      activeRecommendation.actionId !== recommendation.primary.actionId,
+    );
+    if (!result.ok) {
+      if (result.error.kind === 'session-expired') await refreshSession();
+      setDecisionStatus(
+        result.error.kind === 'unavailable' || result.error.kind === 'not-configured' ? 'offline' : 'error',
+      );
+      return;
+    }
+    setDecisionStatus(decision);
+  };
 
   return (
     <Screen>
@@ -131,6 +205,95 @@ export default function TodayScreen() {
       </Card>
 
       <Card>
+        <MizanText variant="title">{t('oneMoveTitle')}</MizanText>
+        <MizanText muted>{t('oneMoveBody')}</MizanText>
+        {stateLoadStatus === 'loading' ? <MizanText muted>{t('loading')}</MizanText> : null}
+        {stateLoadStatus === 'ready' && (!activeRecommendation || !activeActionLabel) ? (
+          <MizanText muted>{t('oneMoveEmpty')}</MizanText>
+        ) : null}
+        {activeRecommendation && activeActionLabel ? (
+          <View style={styles.oneMoveContent}>
+            <MizanText variant="title">{t(activeActionLabel)}</MizanText>
+            <MizanText muted>{t(reasonLabelKey(activeRecommendation.reasonSignal))}</MizanText>
+            <MizanText variant="caption" muted>
+              {t(confidenceLabelKey(activeRecommendation.confidence.level))} · {t('evidenceLabel')}: {activeRecommendation.evidence.length}
+            </MizanText>
+
+            {alternative && alternativeLabel && !decisionFinished ? (
+              <View style={styles.alternativeBlock}>
+                <MizanText variant="caption" muted>{t('oneMoveAlternative')}</MizanText>
+                <Pressable
+                  accessibilityRole="button"
+                  disabled={decisionStatus === 'saving'}
+                  onPress={() => {
+                    setSelectedActionId(alternative.actionId);
+                    setDecisionStatus('idle');
+                  }}
+                  style={({ pressed }) => [
+                    styles.secondaryAction,
+                    {
+                      borderColor: palette.border,
+                      backgroundColor: palette.surface,
+                      opacity: decisionStatus === 'saving' ? 0.5 : pressed ? 0.72 : 1,
+                    },
+                  ]}>
+                  <MizanText variant="label">{t(alternativeLabel)}</MizanText>
+                </Pressable>
+              </View>
+            ) : null}
+
+            <View style={[styles.decisionRow, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
+              <Pressable
+                accessibilityRole="button"
+                disabled={decisionStatus === 'saving' || decisionFinished}
+                onPress={() => void handleDecision('accepted')}
+                style={({ pressed }) => [
+                  styles.decisionButton,
+                  {
+                    backgroundColor: palette.accent,
+                    opacity: decisionStatus === 'saving' || decisionFinished ? 0.5 : pressed ? 0.82 : 1,
+                  },
+                ]}>
+                <MizanText variant="label" style={styles.primaryActionText}>{t('oneMoveAccept')}</MizanText>
+              </Pressable>
+              <Pressable
+                accessibilityRole="button"
+                disabled={decisionStatus === 'saving' || decisionFinished}
+                onPress={() => void handleDecision('deferred')}
+                style={({ pressed }) => [
+                  styles.decisionButton,
+                  styles.secondaryAction,
+                  {
+                    borderColor: palette.border,
+                    backgroundColor: palette.surface,
+                    opacity: decisionStatus === 'saving' || decisionFinished ? 0.5 : pressed ? 0.72 : 1,
+                  },
+                ]}>
+                <MizanText variant="label">{t('oneMoveDefer')}</MizanText>
+              </Pressable>
+              <Pressable
+                accessibilityRole="button"
+                disabled={decisionStatus === 'saving' || decisionFinished}
+                onPress={() => void handleDecision('declined')}
+                style={({ pressed }) => [
+                  styles.decisionButton,
+                  styles.secondaryAction,
+                  {
+                    borderColor: palette.border,
+                    backgroundColor: palette.surface,
+                    opacity: decisionStatus === 'saving' || decisionFinished ? 0.5 : pressed ? 0.72 : 1,
+                  },
+                ]}>
+                <MizanText variant="label">{t('oneMoveDecline')}</MizanText>
+              </Pressable>
+            </View>
+
+            {decisionMessage ? <MizanText muted>{t(decisionMessage)}</MizanText> : null}
+          </View>
+        ) : null}
+      </Card>
+
+      <Card>
         <View style={[styles.statusRow, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
           <View style={[styles.dot, { backgroundColor: palette.accent }]} />
           <MizanText variant="label" muted>{t('learningState')}</MizanText>
@@ -162,6 +325,11 @@ const styles = StyleSheet.create({
   primaryActionText: { color: '#FFFFFF', textAlign: 'center' },
   stateItem: { gap: Spacing.xs, borderTopWidth: StyleSheet.hairlineWidth, paddingTop: Spacing.md },
   stateRow: { alignItems: 'center', justifyContent: 'space-between', gap: Spacing.md },
+  oneMoveContent: { gap: Spacing.md },
+  alternativeBlock: { gap: Spacing.sm },
+  decisionRow: { flexWrap: 'wrap', gap: Spacing.sm },
+  decisionButton: { minHeight: 44, flexGrow: 1, minWidth: 120, alignItems: 'center', justifyContent: 'center', borderRadius: Radius.md, paddingHorizontal: Spacing.md },
+  secondaryAction: { minHeight: 44, alignItems: 'center', justifyContent: 'center', borderRadius: Radius.md, borderWidth: 1, paddingHorizontal: Spacing.md },
   statusRow: { alignItems: 'center', gap: Spacing.sm },
   dot: { width: 8, height: 8, borderRadius: 4 },
   section: { gap: Spacing.lg },
