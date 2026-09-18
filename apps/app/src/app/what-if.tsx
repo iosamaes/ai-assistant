@@ -224,10 +224,12 @@ export default function WhatIfScreen() {
         </View>
       </View>
 
-      {status === 'loading' ? <MizanText muted>{labels.loading}</MizanText> : null}
+      {status === 'loading' ? (
+        <MizanText accessibilityLiveRegion="polite" muted>{labels.loading}</MizanText>
+      ) : null}
       {status === 'error' ? (
         <Card>
-          <MizanText muted>{labels.error}</MizanText>
+          <MizanText accessibilityLiveRegion="polite" muted>{labels.error}</MizanText>
         </Card>
       ) : null}
 
