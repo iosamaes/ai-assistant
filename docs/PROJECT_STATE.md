@@ -69,6 +69,15 @@ Commits from this slice:
 - `cd5a6247b73c2d87ab309dc9fb16297445ef7414` — centralized Personal Learning separator widths.
 - `2cf970b2765785958d0569fd97da46cf934fa126` — centralized Personalization border/radius tokens.
 
+Current `auto2` static CP9 slice:
+- **Human ROI localization:** Human ROI no longer renders the raw deterministic confidence enum. `known`, `likely`, `possible`, and `insufficient` now resolve through Arabic/English product copy while preserving the existing evidence count and assessment logic.
+- **Cost of Yes localization:** Cost of Yes now localizes the same confidence levels instead of exposing raw engine enum values in Arabic UI.
+- No Human ROI or Cost of Yes decision math, evidence handling, protected-meaning behavior, or persistence moved into presentation code.
+
+Commits from this slice:
+- `bd6e4c179a1847e64087b3ebd65fe5bbf7c5681d` — localized Human ROI confidence labels.
+- `9e9a044aafe4d5a2e3edd465488e4080b9fa89ac` — localized Cost of Yes confidence labels.
+
 The TASK-required final design-swap proof is **not claimed**; it still requires owner visual/runtime validation with a substantially different visual direction.
 
 ## Exact next executable action
@@ -89,7 +98,7 @@ Previously recorded owner-side baseline evidence:
 
 Current worker policy:
 - No app tests, builds, typechecks, database scripts, cloud CI, or GitHub Actions were executed for post-baseline CP2–CP9 work.
-- Current `auto4` and `auto1` CP9 slices are static implementation evidence only; no runtime PASS is claimed for the changes above.
+- Current `auto4`, `auto1`, and `auto2` CP9 slices are static implementation evidence only; no runtime PASS is claimed for the changes above.
 
 ## Known blockers / risks
 - CP1: Windows session must be unlocked normally for true narrow-phone Arabic/English interaction evidence; see `automation/HUMAN_REQUIRED.md`.
@@ -116,6 +125,8 @@ Current worker policy:
 - `apps/app/src/app/insights.tsx`
 - `apps/app/src/app/experiments.tsx`
 - `apps/app/src/app/recovery.tsx`
+- `apps/app/src/app/human-roi.tsx`
+- `apps/app/src/app/cost-of-yes.tsx`
 - `apps/app/src/app/personal-learning.tsx`
 - `apps/app/src/app/personalization.tsx`
 - `apps/app/src/app/check-in.tsx`
