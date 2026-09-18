@@ -12,3 +12,4 @@ export * from './scenario';
 export * from './scenario-learning';
 export * from './experiment';
 export * from './recovery';
+export * from './cost-of-yes';
