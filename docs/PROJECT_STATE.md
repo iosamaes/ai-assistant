@@ -40,6 +40,7 @@ Presentation boundary already in place:
 - async accessibility live announcements cover loading/error/empty/status transitions across the reviewed product surfaces.
 
 Latest static CP9 work:
+- **Bootstrap error fallback:** the retry action label now centers its scalable text explicitly, so larger dynamic-type settings that wrap the Arabic/English retry copy keep intentional button alignment instead of falling back to directional line alignment.
 - **Shared choice controls:** `ChoiceChip` now centers its scalable label text so long Arabic/English labels, including consent and experiment choices, remain visually centered when dynamic type causes wrapping instead of inheriting directional left/right text alignment inside pill controls.
 - **Experiments:** the asynchronous no-history result now uses a polite accessibility live region, so screen readers announce the transition from loading to an empty experiment history without changing experiment consent, persistence, completion, or evaluation behavior.
 - **Shared primary actions:** `PrimaryButton` now centers its scalable label text, so long Arabic/English labels that wrap under larger accessibility text sizes retain intentional button alignment instead of inheriting directional left/right alignment.
@@ -51,6 +52,7 @@ Latest static CP9 work:
 - **Async-state coverage:** Today, Life Map, WHY, Insights, Capacity, Life Seasons, Entry, Personalization, Onboarding, Personal Learning, Experiments, Recovery, What If, Settings, Auth/recovery, Check-in, Value Alignment, Invisible Wins, and Integrations have received static accessibility-state review and targeted live-region fixes where concrete gaps were identified.
 
 Latest static product commits from this pass (not runtime-verified):
+- `32ffc4c2340fd3871119a37574c7447ca3c13e07` — center wrapped bootstrap error-fallback retry label.
 - `2e6039225b44c75365a0923ec1e2a275ccfc0974` — announce Human ROI reactive assessment changes.
 - `5086df6ee4c8dd7a7520713d155fd30baf52b073` — announce Cost of Yes reactive assessment changes.
 - `eb6023f01a984b6954182518aff93036c10dfcaa` — center scalable/wrapped shared choice-chip labels.
