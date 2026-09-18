@@ -44,34 +44,24 @@ Implemented shared presentation boundary:
 - semantic palette, typography, spacing, radii, controls/touch sizing, border, interaction, and responsive layout tokens in `apps/app/src/constants/theme.ts`;
 - shared `MizanText`, `Card`, `MizanTextInput`, `PrimaryButton`, `SecondaryButton`, and `ChoiceChip` primitives;
 - centralized responsive `Screen` behavior;
-- representative consolidation covers Today, Life Map, WHY, Check-in, authentication/recovery, Capacity, Cost of Yes, Insights, Human ROI, Life Seasons, Recovery, Invisible Wins, Value Alignment, Integrations, Experiments, What If, Settings, Personal Learning, Personalization, and Onboarding.
+- representative consolidation covers Today, Life Map, WHY, Check-in, authentication/recovery, Capacity, Cost of Yes, Insights, Human ROI, Life Seasons, Recovery, Invisible Wins, Value Alignment, Integrations, Experiments, What If, Settings, Personal Learning, Personalization, Onboarding, the entry route, and root render-failure fallback;
+- navigation shell honors the platform reduced-motion preference.
 
-Previous `auto4` slice extended the audit to:
-- **Invisible Wins:** replaced duplicated multiline input surface treatment with `MizanTextInput`, keeping only feature-specific multiline geometry local; replaced text-only Settings navigation with compact `SecondaryButton`.
-- **Values & identity alignment:** replaced custom `Pressable` back navigation with compact `SecondaryButton` while leaving evidence/confidence/domain interpretation untouched.
-- **External integrations:** replaced text-only Settings navigation with compact `SecondaryButton`; provider lifecycle, permissions, consent, sync, and disconnect behavior remain outside presentation primitives.
+Current `auto4` static CP9 slice:
+- **Shared controls:** added explicit accessibility labels to `PrimaryButton`, `SecondaryButton`, and `ChoiceChip`, so screen-reader naming no longer relies only on descendant text inference. Their existing disabled/selected accessibility states remain intact.
+- **Shared card treatment:** replaced the remaining `StyleSheet.hairlineWidth` visual exception with the centralized semantic `Controls.borderWidth`, keeping global border treatment swappable from the app-local design foundation.
+- **Authentication RTL semantics:** the email-address field now remains explicitly left-to-right and left-aligned even when the surrounding locale is Arabic, while labels and the rest of the auth composition continue to mirror with the locale.
+- No authentication, persistence, recommendation, provider, or domain behavior moved into presentation primitives.
 
-Previous `auto2` slice extended the audit to:
-- **Personal experiments:** replaced duplicated multiline hypothesis input styling with `MizanTextInput`, retaining only feature-specific multiline geometry/writing direction; moved stop and Settings navigation to `SecondaryButton` without changing lifecycle, consent, or experiment evaluation logic.
-- **What If / scenarios:** mirrored the scenario-choice row explicitly in RTL and changed Settings navigation to compact `SecondaryButton`; simulation, uncertainty, and evidence logic remain unchanged.
-- **Settings:** replaced the final text-only return-to-Today control with compact `SecondaryButton`; existing shared feature-entry and preference controls remain unchanged.
-- **Personal learning:** replaced the custom return `Pressable` with compact `SecondaryButton`; evidence/history separator composition and learning logic remain feature-local.
-- **Personalization maturity:** replaced the custom return `Pressable` with compact `SecondaryButton`; maturity calculation and stage presentation semantics remain untouched.
-- **Onboarding:** static audit found the flow already consumes the shared `ChoiceChip`, `MizanText`, `PrimaryButton`, and `Screen` boundary; horizontal chip groups already mirror in RTL, so no speculative rewrite was made.
-- **Navigation shell / reduced motion:** the Expo Router stack now reads and listens to the platform reduced-motion preference and disables fade transitions when reduced motion is enabled; routing/session/offline behavior remains unchanged.
-- Updated `docs/CP9_PRESENTATION_ARCHITECTURE.md` to record these boundaries and narrow the remaining audit scope.
+Commits from this slice:
+- `0fcc89ea04dd18e92308cdb1121683b91d7cb655` — shared control accessibility semantics and card border token use.
+- `83a1d8904144984b4716493b12c2523fe2ccd573` — semantic LTR email entry in Arabic locale.
 
-Current `auto3` slice extended the audit to:
-- **Entry redirect:** static review confirmed the bootstrap loading route already uses shared `Screen`/`MizanText` presentation and translated loading copy before redirecting to Auth, Onboarding, or Today; no rewrite was justified.
-- **Root render-failure fallback:** removed the remaining Arabic-only/light-only hard-coded visual island from `AppErrorBoundary`. The fallback now consumes semantic palette/typography/spacing/radius/control/interaction tokens, adapts to light/dark appearance, permits font scaling, provides explicit retry-button accessibility, and supplies Arabic/English fallback copy without depending on `AppStateProvider`, which it intentionally wraps so provider/bootstrap errors remain catchable.
-- No domain, persistence, routing, or recovery behavior moved into presentation infrastructure. Commit: `53834800196658de0987cc9bf8a1c1c98d78a5f9`.
-- Updated `docs/CP9_PRESENTATION_ARCHITECTURE.md` with the entry/root-fallback audit and narrowed the remaining static scope. Commit: `6b55a1c1d9fa9b0b9c7e1e75f8507a2ddc780f6e`.
-
-No application/business logic moved into generic UI primitives. The TASK-required final design-swap proof is **not claimed**; it still requires owner visual/runtime validation with a substantially different visual direction.
+The TASK-required final design-swap proof is **not claimed**; it still requires owner visual/runtime validation with a substantially different visual direction.
 
 ## Exact next executable action
-1. Continue a repository-wide cross-cutting static CP9 pass outside the already-audited route/component surfaces for untranslated production literals, semantic RTL issues, missing accessibility labels, duplicated global visual values, or unjustified local control treatments.
-2. Continue Arabic/English RTL, semantic icon direction, truncation, dynamic type, keyboard/focus, screen-reader label, light/dark, and representative-width audit from code where useful.
+1. Continue the repository-wide cross-cutting static CP9 pass for untranslated production literals, semantic RTL issues, missing accessibility labels/states, duplicated global visual values, or unjustified local control treatments outside the already-reviewed surfaces.
+2. Continue code-level review for truncation, dynamic type, keyboard/focus behavior, screen-reader semantics, light/dark treatment, and representative-width risks where static inspection can still add evidence.
 3. Leave runtime responsive/device checks, post-baseline tests/builds/typechecks, CP1–CP8 execution-dependent evidence, and the final design-swap proof to owner validation under the active task policy.
 
 ## Verification record
@@ -87,9 +77,7 @@ Previously recorded owner-side baseline evidence:
 
 Current worker policy:
 - No app tests, builds, typechecks, database scripts, cloud CI, or GitHub Actions were executed for post-baseline CP2–CP9 work.
-- Previous auto4 CP9 commits: `304761a4644bcffe307ecba186bb0161b5f8260b` (Invisible Wins shared input/navigation), `733da8a403d0fbc69cd6bee10051440f46757117` (Value Alignment shared navigation), `fe155b9e98c798885b5d4f3dd45649b6dea85c86` (Integrations shared navigation), and `b7cd5ea9521f13493f600bcfd91535ffc366e828` (expanded CP9 audit documentation).
-- Previous auto2 CP9 commits: `ff077b23c5427d26a787f80f90a8a44df5e9342d` (Experiments shared input/actions/navigation), `f484cb5797f2384624e1dc7d85caa86e5ecef7aa` (What If RTL/navigation), `83c3886237d482b7ed4b47fcdb623495ad1b0760` (Settings navigation), `033bd0de336fc42dbb477eaaaa2fe3580ff7444a` (Personal Learning navigation), `d3b665e4496f5a45dbe8b70c328ff825f4ed7bda` (Personalization navigation), `f9b027b3c1a9def5a0ee0e6c3484300e9cb8c517` (reduced-motion-aware navigation shell), `ed77f77382a415db64eb6ee8979fefafe37f2383` and `a9e314852df4d57627ce499f71a2189064e50267` (expanded CP9 audit documentation).
-- Current auto3 CP9 commits: `53834800196658de0987cc9bf8a1c1c98d78a5f9` (semantic bilingual root error fallback) and `6b55a1c1d9fa9b0b9c7e1e75f8507a2ddc780f6e` (CP9 audit documentation).
+- Current `auto4` slice is static implementation evidence only; no runtime PASS is claimed for the changes above.
 
 ## Known blockers / risks
 - CP1: Windows session must be unlocked normally for true narrow-phone Arabic/English interaction evidence; see `automation/HUMAN_REQUIRED.md`.
@@ -107,35 +95,12 @@ Current worker policy:
 - `apps/app/src/components/screen.tsx`
 - `apps/app/src/components/app-error-boundary.tsx`
 - `apps/app/src/app/_layout.tsx`
-- `apps/app/src/app/index.tsx`
+- `apps/app/src/app/auth.tsx`
+- `apps/app/src/app/update-password.tsx`
 - `apps/app/src/app/onboarding.tsx`
 - `apps/app/src/app/today.tsx`
 - `apps/app/src/app/life-map.tsx`
 - `apps/app/src/app/why.tsx`
 - `apps/app/src/app/check-in.tsx`
-- `apps/app/src/app/auth.tsx`
-- `apps/app/src/app/update-password.tsx`
-- `apps/app/src/app/capacity.tsx`
-- `apps/app/src/app/cost-of-yes.tsx`
-- `apps/app/src/app/insights.tsx`
-- `apps/app/src/app/human-roi.tsx`
-- `apps/app/src/app/life-seasons.tsx`
-- `apps/app/src/app/recovery.tsx`
-- `apps/app/src/app/invisible-wins.tsx`
-- `apps/app/src/app/value-alignment.tsx`
-- `apps/app/src/app/integrations.tsx`
-- `apps/app/src/app/experiments.tsx`
-- `apps/app/src/app/what-if.tsx`
 - `apps/app/src/app/settings.tsx`
-- `apps/app/src/app/personal-learning.tsx`
-- `apps/app/src/app/personalization.tsx`
-- `apps/app/src/infrastructure/offline/pending-mutations.ts`
-- `apps/app/src/infrastructure/offline/recent-daily-snapshot.ts`
-- `apps/app/src/application/offline-sync.ts`
-- `apps/app/src/application/daily-intelligence.ts`
-- `apps/app/src/infrastructure/supabase/experiments.ts`
-- `apps/app/src/application/integrations.ts`
-- `apps/app/src/infrastructure/supabase/integrations.ts`
-- `supabase/migrations/0008_offline_mutation_idempotency.sql`
-- `supabase/tests/offline_mutation_idempotency.sql`
 - `automation/HUMAN_REQUIRED.md`
