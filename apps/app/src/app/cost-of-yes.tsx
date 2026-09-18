@@ -36,6 +36,12 @@ const copy = {
     marginUsed: 'من الهامش المستخدم',
     evidence: 'أدلة مباشرة',
     confidence: 'الثقة',
+    confidenceLevels: {
+      insufficient: 'غير كافية',
+      possible: 'ممكنة',
+      likely: 'مرجحة',
+      known: 'قوية',
+    },
     caveat: 'هذه مقارنة تخطيطية وليست تنبؤًا. لا تحدد تلقائيًا ما الذي يجب التضحية به، ولا تحول العلاقات أو العبادة أو الراحة إلى موارد يجب تحسينها قسرًا.',
     back: 'العودة للإعدادات',
   },
@@ -66,6 +72,12 @@ const copy = {
     marginUsed: 'of margin used',
     evidence: 'Direct evidence',
     confidence: 'Confidence',
+    confidenceLevels: {
+      insufficient: 'Insufficient',
+      possible: 'Possible',
+      likely: 'Likely',
+      known: 'Strong',
+    },
     caveat: 'This is a planning comparison, not a forecast. It does not decide what you should sacrifice and never treats relationships, worship, or rest as resources that must be optimized.',
     back: 'Back to settings',
   },
@@ -197,7 +209,7 @@ export default function CostOfYesScreen() {
           </MizanText>
         ) : null}
         <MizanText variant="caption" muted>
-          {labels.confidence}: {assessment.confidence.level} · {labels.evidence}: {assessment.confidence.evidenceCount}
+          {labels.confidence}: {labels.confidenceLevels[assessment.confidence.level]} · {labels.evidence}: {assessment.confidence.evidenceCount}
         </MizanText>
       </Card>
 
