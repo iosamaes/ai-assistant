@@ -56,9 +56,13 @@ Today now uses the shared `PrimaryButton` for One Move acceptance and feedback s
 
 Recommendation selection, decision persistence, feedback persistence, confidence/evidence display, and state composition remain in the Today/application layers. No recommendation/business behavior was moved into generic UI components.
 
+### Authentication and password recovery
+
+The sign-in/sign-up/reset-password entry screen and the password-update recovery screen previously duplicated the same input surface treatment locally: standard height, border width/radius, horizontal padding, typography size, light/dark palette colors, and RTL text alignment. Both now use the shared `MizanTextInput` primitive while preserving their auth/session behavior, labels, keyboard configuration, secure-entry behavior, and validation logic. This removes another repeated global visual decision from feature screens without moving authentication behavior into the presentation primitive.
+
 ## Current design-swap assessment
 
-The global visual levers for palette, typography, control sizing, spacing/radii, interaction opacity, and responsive screen layout are now centralized across the representative Today, Life Map, WHY, and Check-in surfaces. The representative screens demonstrate that repeated control/input treatment can move behind app-local primitives without changing `packages/core`, application intelligence/data contracts, Supabase/data-access, or provider adapters.
+The global visual levers for palette, typography, control sizing, spacing/radii, interaction opacity, and responsive screen layout are now centralized across the representative Today, Life Map, WHY, Check-in, and authentication/recovery surfaces. These screens demonstrate that repeated control/input treatment can move behind app-local primitives without changing `packages/core`, application intelligence/data contracts, Supabase/data-access, or provider adapters.
 
 This is **not yet the final CP9 design-swap proof**. A substantially different visual direction still needs owner-side visual/runtime review; workers must not claim that runtime proof from static implementation inspection alone.
 
