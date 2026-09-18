@@ -11,7 +11,7 @@ import {
 } from '@/application/life-map';
 import { Card, MizanText, PrimaryButton, SecondaryButton } from '@/components/mizan-ui';
 import { Screen } from '@/components/screen';
-import { Palette, Spacing } from '@/constants/theme';
+import { Controls, Palette, Spacing } from '@/constants/theme';
 import { useAppState } from '@/state/app-state';
 
 type LoadStatus = 'loading' | 'ready' | 'error';
@@ -225,9 +225,9 @@ export default function LifeMapScreen() {
         <PrimaryButton label={local.startCheckIn} onPress={() => router.push('/check-in')} />
       </Card>
 
-      {status === 'loading' ? <MizanText muted>{local.loading}</MizanText> : null}
-      {status === 'error' ? <Card><MizanText muted>{local.error}</MizanText></Card> : null}
-      {status === 'ready' && evidenceCount === 0 ? <Card><MizanText muted>{local.allEmpty}</MizanText></Card> : null}
+      {status === 'loading' ? <MizanText accessibilityLiveRegion="polite" muted>{local.loading}</MizanText> : null}
+      {status === 'error' ? <Card><MizanText accessibilityLiveRegion="polite" muted>{local.error}</MizanText></Card> : null}
+      {status === 'ready' && evidenceCount === 0 ? <Card><MizanText accessibilityLiveRegion="polite" muted>{local.allEmpty}</MizanText></Card> : null}
 
       {status === 'ready'
         ? snapshot?.domains.map((domain) => (
@@ -242,7 +242,7 @@ const styles = StyleSheet.create({
   topRow: { alignItems: 'center', justifyContent: 'space-between', gap: Spacing.lg },
   heading: { flex: 1, gap: Spacing.xs },
   domainHeader: { alignItems: 'center', justifyContent: 'space-between', gap: Spacing.md },
-  metric: { gap: Spacing.sm, borderTopWidth: StyleSheet.hairlineWidth, paddingTop: Spacing.md },
+  metric: { gap: Spacing.sm, borderTopWidth: Controls.borderWidth, paddingTop: Spacing.md },
   metricTitleRow: { alignItems: 'center', justifyContent: 'space-between', gap: Spacing.md },
   detailGroup: { gap: Spacing.xs },
 });
