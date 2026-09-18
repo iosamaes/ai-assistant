@@ -145,7 +145,7 @@ export default function ValueAlignmentScreen() {
       ) : null}
       {status === 'ready' && summaries.length === 0 ? (
         <Card>
-          <MizanText muted>{labels.empty}</MizanText>
+          <MizanText accessibilityLiveRegion="polite" muted>{labels.empty}</MizanText>
         </Card>
       ) : null}
 
