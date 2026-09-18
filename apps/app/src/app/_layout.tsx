@@ -57,6 +57,7 @@ function AppNavigator() {
         <Stack.Screen name="experiments" />
         <Stack.Screen name="recovery" />
         <Stack.Screen name="cost-of-yes" />
+        <Stack.Screen name="human-roi" />
         <Stack.Screen name="settings" />
       </Stack>
     </>
