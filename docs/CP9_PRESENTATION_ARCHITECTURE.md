@@ -112,15 +112,23 @@ Personal Learning retains feature-local evidence/history separators that consume
 
 Personalization keeps its feature-specific stage cards and semantic palette usage for active/inactive evidence stages. Its custom back `Pressable` has moved to compact `SecondaryButton`, removing one more screen-local navigation treatment without changing maturity calculation or evidence semantics.
 
+### Onboarding
+
+A static audit found the onboarding flow already uses the shared `ChoiceChip`, `MizanText`, `PrimaryButton`, and `Screen` boundary. Horizontal language/value/baseline chip groups explicitly mirror with `row-reverse` in RTL, while vertically stacked domain/season/privacy/spiritual groups are intentionally direction-neutral. Arabic and English copy for the onboarding-specific controls is present. No presentation rewrite was justified in this slice, so the existing onboarding composition was left intact.
+
+### Navigation shell / reduced motion
+
+The root Expo Router stack previously always used a fade transition. The navigation shell now reads the platform reduced-motion accessibility preference through `AccessibilityInfo`, listens for preference changes during the session, and disables stack animation when reduced motion is enabled. Session routing, offline mutation flushing, status-bar contrast, and semantic background colors remain unchanged.
+
 ## Current design-swap assessment
 
-The global visual levers for palette, typography, control sizing, spacing/radii, interaction opacity, and responsive screen layout are now centralized across Today, Life Map, WHY, Check-in, authentication/recovery, Capacity, Cost of Yes, Insights, Human ROI, Life Seasons, Recovery, Invisible Wins, Value Alignment, Integrations, Experiments, What If, Settings, Personal Learning, and Personalization. These screens demonstrate that repeated control/input treatment can move behind app-local primitives or semantic tokens without changing `packages/core`, application intelligence/data contracts, Supabase/data-access, or provider adapters.
+The global visual levers for palette, typography, control sizing, spacing/radii, interaction opacity, and responsive screen layout are now centralized across Today, Life Map, WHY, Check-in, authentication/recovery, Capacity, Cost of Yes, Insights, Human ROI, Life Seasons, Recovery, Invisible Wins, Value Alignment, Integrations, Experiments, What If, Settings, Personal Learning, Personalization, and Onboarding. The navigation shell also consumes semantic background color and now honors the platform reduced-motion preference. These surfaces demonstrate that repeated control/input treatment can move behind app-local primitives or semantic tokens without changing `packages/core`, application intelligence/data contracts, Supabase/data-access, or provider adapters.
 
 This is **not yet the final CP9 design-swap proof**. A substantially different visual direction still needs owner-side visual/runtime review; workers must not claim that runtime proof from static implementation inspection alone.
 
 ## Remaining CP9 slices
 
-1. Continue the static audit on Onboarding and any remaining primary screens for screen-local hard-coded colors, typography sizes, standard radii/control heights, repeated pressed/disabled values, and duplicated navigation/input treatment; leave feature geometry/visualization math local.
+1. Continue a repository-wide static pass over any remaining primary/entry surfaces for screen-local hard-coded global visual values, untranslated production literals, semantic RTL issues, duplicated control treatments, and missing accessibility labels; avoid speculative abstraction when no demonstrated repetition exists.
 2. Continue code-level review for Arabic/English RTL mirroring/alignment, semantic icon direction, truncation, dynamic type, keyboard/focus behavior, screen-reader labels, and light/dark treatment.
 3. Audit responsive behavior at narrow phone, common phone, tablet portrait/landscape, and wide web widths when owner runtime/visual validation is available.
 4. Complete the TASK-required design-swap proof on Today, Life Map, WHY, and the interaction-heavy Check-in flow during owner visual/runtime validation, documenting the substantially different visual direction without keeping duplicate production themes.
