@@ -161,6 +161,7 @@ export default function LifeSeasonsScreen() {
 
   const enabledSet = useMemo(() => new Set(enabledDomains), [enabledDomains]);
   const history = state?.history ?? [];
+  const rangeArrow = isRtl ? '←' : '→';
 
   const setTarget = (domainId: DomainId, rating: Rating | null) => {
     setTargets((current) => {
@@ -248,9 +249,15 @@ export default function LifeSeasonsScreen() {
           disabled={saveStatus === 'saving' || loadStatus === 'loading'}
           onPress={() => void handleSave()}
         />
-        {saveStatus === 'saved' ? <MizanText muted>{labels.saved}</MizanText> : null}
-        {saveStatus === 'error' ? <MizanText muted>{labels.saveError}</MizanText> : null}
-        {loadStatus === 'error' ? <MizanText muted>{labels.loadError}</MizanText> : null}
+        {saveStatus === 'saved' ? (
+          <MizanText accessibilityLiveRegion="polite" muted>{labels.saved}</MizanText>
+        ) : null}
+        {saveStatus === 'error' ? (
+          <MizanText accessibilityLiveRegion="polite" muted>{labels.saveError}</MizanText>
+        ) : null}
+        {loadStatus === 'error' ? (
+          <MizanText accessibilityLiveRegion="polite" muted>{labels.loadError}</MizanText>
+        ) : null}
       </Card>
 
       <View style={styles.section}>
@@ -267,7 +274,7 @@ export default function LifeSeasonsScreen() {
                 <MizanText variant="label" muted>{entry.ended_at ? labels.ended : labels.current}</MizanText>
               </View>
               <MizanText muted>
-                {formatDate(entry.started_at, locale)}{entry.ended_at ? ` → ${formatDate(entry.ended_at, locale)}` : ''}
+                {formatDate(entry.started_at, locale)}{entry.ended_at ? ` ${rangeArrow} ${formatDate(entry.ended_at, locale)}` : ''}
               </MizanText>
               <MizanText variant="caption" muted>{labels.targets}</MizanText>
               <MizanText>{recordedTargets || labels.none}</MizanText>
