@@ -70,6 +70,9 @@ const insightCopy = {
     capacityTitle: 'الهامش وديون الحياة',
     capacityBody: 'راجع هامش السعة والهشاشة والاحتياج المتراكم واتجاه التعافي فقط عندما توجد أدلة كافية، بدون أي حكم على الأداء أو القيمة.',
     capacityOpen: 'فتح قراءة السعة',
+    integrationsTitle: 'التكاملات الخارجية',
+    integrationsBody: 'راجع حالة أي مزود متصل وصلاحياته وآخر مزامنة، وأوقف الاتصال من مكان واحد بدون ربط الواجهة بمزود بعينه.',
+    integrationsOpen: 'فتح التكاملات',
   },
   en: {
     lifeMapTitle: 'Life map',
@@ -114,6 +117,9 @@ const insightCopy = {
     capacityTitle: 'Life Buffer & Life Debt',
     capacityBody: 'Review spare capacity, fragility, accumulated need, and recovery direction only when evidence supports them, without judging performance or worth.',
     capacityOpen: 'Open capacity view',
+    integrationsTitle: 'External integrations',
+    integrationsBody: 'Review connected-provider lifecycle, permissions, and last sync in one place, and disable a connection without coupling the UI to a vendor.',
+    integrationsOpen: 'Open integrations',
   },
 } as const;
 
@@ -273,6 +279,12 @@ export default function SettingsScreen() {
         <MizanText variant="title">{insightLabels.capacityTitle}</MizanText>
         <MizanText muted>{insightLabels.capacityBody}</MizanText>
         <PrimaryButton label={insightLabels.capacityOpen} onPress={() => router.push('/capacity')} />
+      </View>
+
+      <View style={styles.section}>
+        <MizanText variant="title">{insightLabels.integrationsTitle}</MizanText>
+        <MizanText muted>{insightLabels.integrationsBody}</MizanText>
+        <PrimaryButton label={insightLabels.integrationsOpen} onPress={() => router.push('/integrations')} />
       </View>
 
       <View style={styles.section}>
