@@ -27,7 +27,8 @@ Status: implementation in progress; owner validation pending.
 - Today now has a user-scoped durable snapshot cache containing only derived Human State and Balance/Momentum output, not raw reflection notes, provider payloads, or credentials.
 - Native storage uses SecureStore; Web uses localStorage. Storage failure never turns a successful live read into a false application failure.
 - Snapshots expire after seven days and are rejected when malformed or implausibly future-dated.
-- A live Today read refreshes the snapshot. When Supabase reads fail as `unavailable`, `not-configured`, or `session-expired`, the existing `loadCurrentHumanState` and `loadDailyOverview` paths can fall back to the most recent valid snapshot after restart instead of collapsing to an empty screen.
+- A live Today read refreshes the snapshot. When Supabase reads fail as `unavailable` or `not-configured`, the existing `loadCurrentHumanState` and `loadDailyOverview` paths can fall back to the most recent valid snapshot after restart instead of collapsing to an empty screen.
+- `session-expired` deliberately does not fall back through those existing paths, so Today can continue its explicit session-refresh/error handling instead of hiding an expired credential behind cached data.
 - Cached payloads are runtime-validated before use. Authorization/validation/conflict/unknown failures do not fall back to cache.
 - The current global sync state already distinguishes ordinary offline application state. A later CP8 slice still needs a Today-specific visible stale-cache timestamp/source so a mid-session remote failure cannot be mistaken for freshly loaded data.
 
