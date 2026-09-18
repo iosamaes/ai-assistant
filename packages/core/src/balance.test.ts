@@ -34,10 +34,16 @@ function signal(
   };
 }
 
-function targets(seasonId: string, work: number, recovery: number): UserTargets {
+function targets(
+  seasonId: string,
+  work: number,
+  recovery: number,
+  dimensionBaselines?: Readonly<Record<string, number>>,
+): UserTargets {
   return {
     seasonId,
     dimensionWeights: { work, recovery },
+    ...(dimensionBaselines ? { dimensionBaselines } : {}),
   };
 }
 
@@ -86,5 +92,20 @@ describe('season-relative balance', () => {
     expect(summary.score).not.toBeNull();
     expect(summary.confidence.score).toBe(0.34);
     expect(summary.confidence.level).toBe('possible');
+  });
+
+  it('exposes explicit baseline targets without inventing them for untouched domains', () => {
+    const summary = calculateBalance(
+      [signal('work', 75), signal('recovery', 50)],
+      targets('building', 60, 40, { work: 75 }),
+    );
+
+    const work = summary.dimensions.find((item) => item.dimensionId === 'work');
+    const recovery = summary.dimensions.find((item) => item.dimensionId === 'recovery');
+
+    expect(work?.baselineTarget).toBe(75);
+    expect(work?.baselineDeviation).toBe(0);
+    expect(recovery?.baselineTarget).toBeNull();
+    expect(recovery?.baselineDeviation).toBeNull();
   });
 });

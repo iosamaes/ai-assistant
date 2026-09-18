@@ -13,6 +13,8 @@ export interface DimensionBalanceDetail {
   currentShare: number | null;
   targetShare: number;
   deviation: number | null;
+  baselineTarget: number | null;
+  baselineDeviation: number | null;
   confidence: Confidence;
   evidence: readonly EvidenceRef[];
 }
@@ -47,6 +49,10 @@ function confidenceLevel(score: number): Confidence['level'] {
 
 function validWeight(value: number | null | undefined): value is number {
   return typeof value === 'number' && Number.isFinite(value) && value >= 0;
+}
+
+function validBaseline(value: number | null | undefined): value is number {
+  return typeof value === 'number' && Number.isFinite(value) && value >= 0 && value <= 100;
 }
 
 function activeTargetEntries(targets: UserTargets): Array<[string, number]> {
@@ -94,8 +100,7 @@ function combineConfidence(
   }
 
   const coverage = coveredTargetWeight / totalTargetWeight;
-  const averageCoveredConfidence =
-    coveredTargetWeight > 0 ? weightedScore / coveredTargetWeight : 0;
+  const averageCoveredConfidence = coveredTargetWeight > 0 ? weightedScore / coveredTargetWeight : 0;
   const score = round(clamp01(averageCoveredConfidence * coverage));
 
   return {
@@ -139,12 +144,20 @@ export function calculateBalance(
       canCompare && signal && validWeight(signal.currentWeight)
         ? signal.currentWeight / currentTotal
         : null;
+    const configuredBaseline = targets.dimensionBaselines?.[dimensionId];
+    const baselineTarget = validBaseline(configuredBaseline) ? configuredBaseline : null;
+    const baselineDeviation =
+      baselineTarget !== null && signal && validBaseline(signal.currentWeight)
+        ? round(signal.currentWeight - baselineTarget, 1)
+        : null;
 
     return {
       dimensionId,
       currentShare: currentShare === null ? null : round(currentShare),
       targetShare: round(targetShare),
       deviation: currentShare === null ? null : round(currentShare - targetShare),
+      baselineTarget,
+      baselineDeviation,
       confidence:
         signal?.confidence ?? {
           level: 'insufficient',

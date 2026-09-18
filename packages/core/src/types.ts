@@ -90,4 +90,5 @@ export interface OneMove {
 export interface UserTargets {
   seasonId: string | null;
   dimensionWeights: Readonly<Record<string, number>>;
+  dimensionBaselines?: Readonly<Record<string, number>>;
 }
