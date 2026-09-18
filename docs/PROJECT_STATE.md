@@ -53,15 +53,20 @@ Remaining gate:
 - Check-in UI has Arabic/English copy, RTL-aware layout, safe disabled/save states, temporary-unavailable copy, and an expired-session refresh path.
 - Added recent-observation loading and `apps/app/src/application/daily-intelligence.ts`, which maps persisted rows into canonical `@mizan/core` observations and derives the Human State Vector without putting Supabase in UI components.
 - Today now renders only state components that have actual values, including confidence language and evidence count; missing state remains absent instead of displaying fabricated zeroes. Conservative inferred overload risk appears only when the core has the required evidence.
+- Added conservative One Move preparation in `apps/app/src/application/daily-recommendation.ts` using only registered first-party actions and current evidence-backed state signals.
+- Candidate action confidence is deliberately discounted versus state confidence because evidence of current need is not evidence that a specific action will help. Insufficient-confidence candidates are suppressed completely.
+- Cold-start action impact uses a small bounded generic prior; unknown identity alignment receives no positive scoring credit and is not represented to the user as known alignment.
+- Today now shows the selected One Move only when eligible, explains the supporting signal in Arabic/English, exposes confidence/evidence count, allows choosing the available alternative, and records `accepted`, `deferred`, or `declined` action events.
+- Acceptance/completion is explicitly not treated as evidence of benefit; usefulness learning still requires later outcome feedback.
 - Added the check-in route explicitly to the root Stack.
-- Implementation commits: `6e5f83928a1bb89d2d24bcd76d93f4398c2557ab` (persisted quick check-in) and `40f1eab35e55a1f6f9aa0e783e93ccbef9d5db96` (evidence-backed current state on Today).
+- Implementation commits: `6e5f83928a1bb89d2d24bcd76d93f4398c2557ab` (persisted quick check-in), `40f1eab35e55a1f6f9aa0e783e93ccbef9d5db96` (evidence-backed current state), `39f6ac67cda7c20dbcbd9432a50468ad49d1285e` (One Move preparation), `da5a3f06c5a0375d579d827cbe3121b134e0c662` (bilingual One Move copy), and `213bed52e49d96a451b9a4a55d5b74955c6be696` (Today decision wiring).
 - These CP4 additions remain owner-validation pending; workers did not run product tests/builds under the current execution policy.
 
 ## Exact next executable action
 1. Owner path: unlock Windows and complete CP1 true phone-width Arabic/English interaction verification.
 2. Owner path: configure the Supabase Auth redirect allow-list from `automation/HUMAN_REQUIRED.md`, then validate auth/recovery/session/persistence/offline paths and run `supabase/tests/rls_cross_user.sql` in the approved validation environment.
 3. Owner path: run current core/app typechecks and tests before granting CP3/CP4 checkpoint credit.
-4. Worker-safe CP4 path: build conservative One Move candidate preparation from the already-derived state and registered first-party actions, but emit no recommendation when evidence/confidence is insufficient; then wire accept/defer/decline action events without claiming completion benefit.
+4. Worker-safe CP4 path: add a lightweight post-action outcome-feedback flow tied to the accepted action event, persist usefulness/optional note to `feedback_outcomes`, and feed only explicit outcome evidence into personal action learning; do not infer benefit from accept/completed events alone.
 
 ## Verification record
 Previously verified evidence:
@@ -72,16 +77,17 @@ Previously verified evidence:
 Implemented after that verification and still awaiting owner validation:
 - CP2 auth/session/persistence/recovery/offline work.
 - CP3 Balance `c384e886a22aa888ab29de599eee9202d12c06e2`, Capacity/Interaction Risk `04d5868f92161ad7d4de2537696417474b6fd890`, Learning `28dc70d3e95a0409d253c02ddc2633e5138b9cb5`.
-- CP4 check-in `6e5f83928a1bb89d2d24bcd76d93f4398c2557ab` and current-state integration `40f1eab35e55a1f6f9aa0e783e93ccbef9d5db96`.
+- CP4 check-in `6e5f83928a1bb89d2d24bcd76d93f4398c2557ab`, current-state integration `40f1eab35e55a1f6f9aa0e783e93ccbef9d5db96`, One Move preparation `39f6ac67cda7c20dbcbd9432a50468ad49d1285e`, bilingual copy `da5a3f06c5a0375d579d827cbe3121b134e0c662`, and decision wiring `213bed52e49d96a451b9a4a55d5b74955c6be696`.
 - This worker did not run product, database, cloud tests, or builds, per `automation/TASK.md`.
 
 ## Known technical risks / temporary compromises
 - CP1 remains blocked on owner-side physical responsive/locale verification.
 - Hosted Supabase Auth must allow `mizan://**`, `http://localhost:8087/**`, and the eventual production Web URL before confirmation/recovery can be verified end-to-end.
-- Offline preference/check-in durability beyond the current screen/session remains CP8 work; no durable general sync queue is claimed.
+- Offline preference/check-in/action-event durability beyond the current screen/session remains CP8 work; no durable general sync queue is claimed.
 - Cross-user SQL verification and guarded fixture exist but lack current owner-side execution evidence.
 - CP3 models and new CP4 UI/application paths remain runtime/type validation pending.
-- One Move is deliberately not shown yet from check-in data alone; the next implementation must require explicit evidence/confidence and must not fabricate identity alignment or causal benefit.
+- One Move cold start intentionally uses a small generic prior and discounted confidence until explicit personal outcome evidence exists; it does not claim causal or personalized action efficacy yet.
+- Today prevents duplicate decision taps in the active session, but restart-level suppression/history presentation for already-decided offers is not implemented yet.
 - Moderate npm advisories remain in the supported Expo dependency chain; no prior high/critical advisory was recorded.
 
 ## Evidence paths
@@ -92,6 +98,7 @@ Implemented after that verification and still awaiting owner validation:
 - `supabase/dev/vertical_slice_fixture.sql`
 - `apps/app/src/application/check-in.ts`
 - `apps/app/src/application/daily-intelligence.ts`
+- `apps/app/src/application/daily-recommendation.ts`
 - `apps/app/src/app/check-in.tsx`
 - `apps/app/src/app/today.tsx`
 - `apps/app/src/infrastructure/supabase/data-access.ts`
