@@ -360,11 +360,11 @@ export default function ExperimentsScreen() {
         </Card>
       ) : null}
 
-      {message ? <MizanText muted>{message}</MizanText> : null}
+      {message ? <MizanText accessibilityLiveRegion="polite" muted>{message}</MizanText> : null}
 
       <View style={styles.section}>
         <MizanText variant="title">{activeExperiment ? labels.active : labels.history}</MizanText>
-        {loading ? <MizanText muted>{labels.loading}</MizanText> : null}
+        {loading ? <MizanText accessibilityLiveRegion="polite" muted>{labels.loading}</MizanText> : null}
         {!loading && history.length === 0 ? <MizanText muted>{labels.empty}</MizanText> : null}
         {history.map(renderExperiment)}
       </View>
