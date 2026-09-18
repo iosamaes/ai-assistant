@@ -92,6 +92,7 @@ export default function CheckInScreen() {
             {ratingOptions.map((rating) => (
               <ChoiceChip
                 key={rating}
+                accessibilityLabel={`${t(label)}: ${rating}`}
                 label={String(rating)}
                 selected={ratings[metric] === rating}
                 onPress={() => setRating(metric, rating)}
