@@ -49,6 +49,9 @@ const insightCopy = {
     invisibleWinsTitle: 'المكاسب غير المرئية',
     invisibleWinsBody: 'سجّل لحظات مهمة مثل الراحة أو قول لا أو وقت العائلة بدون تحويلها إلى نقاط أو درجات إنتاجية.',
     invisibleWinsOpen: 'فتح التأملات',
+    whatIfTitle: 'ماذا لو؟',
+    whatIfBody: 'استكشف قرارات صغيرة قابلة للعكس كنطاقات احتمالية واضحة الافتراضات، من دون تقديمها كتنبؤات مؤكدة.',
+    whatIfOpen: 'فتح ماذا لو؟',
   },
   en: {
     lifeMapTitle: 'Life map',
@@ -72,6 +75,9 @@ const insightCopy = {
     invisibleWinsTitle: 'Invisible Wins',
     invisibleWinsBody: 'Record meaningful moments such as rest, saying no, or family time without turning them into points or productivity scores.',
     invisibleWinsOpen: 'Open reflections',
+    whatIfTitle: 'What If',
+    whatIfBody: 'Explore small reversible choices as explicit assumption-based ranges without presenting them as guaranteed forecasts.',
+    whatIfOpen: 'Open What If',
   },
 } as const;
 
@@ -189,6 +195,12 @@ export default function SettingsScreen() {
         <MizanText variant="title">{insightLabels.invisibleWinsTitle}</MizanText>
         <MizanText muted>{insightLabels.invisibleWinsBody}</MizanText>
         <PrimaryButton label={insightLabels.invisibleWinsOpen} onPress={() => router.push('/invisible-wins')} />
+      </View>
+
+      <View style={styles.section}>
+        <MizanText variant="title">{insightLabels.whatIfTitle}</MizanText>
+        <MizanText muted>{insightLabels.whatIfBody}</MizanText>
+        <PrimaryButton label={insightLabels.whatIfOpen} onPress={() => router.push('/what-if')} />
       </View>
 
       <View style={styles.section}>
