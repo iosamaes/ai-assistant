@@ -39,6 +39,13 @@ interface ButtonProps {
   disabled?: boolean;
 }
 
+interface ChoiceChipProps {
+  label: string;
+  accessibilityLabel?: string;
+  selected: boolean;
+  onPress: () => void;
+}
+
 export function MizanText({ children, variant = 'body', muted = false, style, ...props }: MizanTextProps) {
   const scheme = useColorScheme();
   const palette = Palette[scheme === 'dark' ? 'dark' : 'light'];
@@ -143,12 +150,12 @@ export function SecondaryButton({
   );
 }
 
-export function ChoiceChip({ label, selected, onPress }: { label: string; selected: boolean; onPress: () => void }) {
+export function ChoiceChip({ label, accessibilityLabel, selected, onPress }: ChoiceChipProps) {
   const scheme = useColorScheme();
   const palette = Palette[scheme === 'dark' ? 'dark' : 'light'];
   return (
     <Pressable
-      accessibilityLabel={label}
+      accessibilityLabel={accessibilityLabel ?? label}
       accessibilityRole="button"
       accessibilityState={{ selected }}
       onPress={onPress}
