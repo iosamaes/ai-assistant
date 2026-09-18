@@ -45,10 +45,11 @@ function evidenceWindow(evidence: readonly EvidenceRef[]) {
     .map((item) => ({ item, timestamp: Date.parse(item.observedAt) }))
     .filter((entry) => Number.isFinite(entry.timestamp))
     .sort((left, right) => left.timestamp - right.timestamp);
+  const last = valid.length > 0 ? valid[valid.length - 1] : undefined;
 
   return {
     start: valid[0]?.item.observedAt ?? null,
-    end: valid.at(-1)?.item.observedAt ?? null,
+    end: last?.item.observedAt ?? null,
   };
 }
 
