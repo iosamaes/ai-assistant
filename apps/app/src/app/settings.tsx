@@ -58,6 +58,9 @@ const insightCopy = {
     recoveryTitle: 'أنقذ يومي',
     recoveryBody: 'ادخل وضع استعادة منخفض الحمل يعتمد فقط على إشارات حالتك المدعومة بالأدلة، مع إمكانية التخطي أو التوقف بلا عقوبة.',
     recoveryOpen: 'فتح وضع الاستعادة',
+    costOfYesTitle: 'تكلفة قول نعم',
+    costOfYesBody: 'قارن وقت التزام جديد بهامش الوقت الذي تعرف أنك تملكه، من دون اختراع جدول أو ادعاء معرفة ما الذي سيتزاحم.',
+    costOfYesOpen: 'فتح تكلفة قول نعم',
   },
   en: {
     lifeMapTitle: 'Life map',
@@ -90,6 +93,9 @@ const insightCopy = {
     recoveryTitle: 'Save My Day',
     recoveryBody: 'Enter a low-load recovery mode based only on supported current-state signals, with skipping and stopping carrying no penalty.',
     recoveryOpen: 'Open recovery mode',
+    costOfYesTitle: 'Cost of Yes',
+    costOfYesBody: 'Compare a new commitment with time margin you actually know you have, without inventing a schedule or claiming what gets displaced.',
+    costOfYesOpen: 'Open Cost of Yes',
   },
 } as const;
 
@@ -225,6 +231,12 @@ export default function SettingsScreen() {
         <MizanText variant="title">{insightLabels.recoveryTitle}</MizanText>
         <MizanText muted>{insightLabels.recoveryBody}</MizanText>
         <PrimaryButton label={insightLabels.recoveryOpen} onPress={() => router.push('/recovery')} />
+      </View>
+
+      <View style={styles.section}>
+        <MizanText variant="title">{insightLabels.costOfYesTitle}</MizanText>
+        <MizanText muted>{insightLabels.costOfYesBody}</MizanText>
+        <PrimaryButton label={insightLabels.costOfYesOpen} onPress={() => router.push('/cost-of-yes')} />
       </View>
 
       <View style={styles.section}>
