@@ -1,4 +1,4 @@
-import type { ConfidenceLevel, HumanStateVector } from '@mizan/core';
+import type { ConfidenceLevel, HumanStateVector, MomentumDirection } from '@mizan/core';
 import { Link } from 'expo-router';
 import { useEffect, useMemo, useState } from 'react';
 import { Pressable, StyleSheet, TextInput, useColorScheme, View } from 'react-native';
@@ -7,7 +7,11 @@ import {
   recoverPendingActionFeedback,
   recordExplicitActionOutcome,
 } from '@/application/action-feedback';
-import { loadCurrentHumanState } from '@/application/daily-intelligence';
+import {
+  loadCurrentHumanState,
+  loadDailyOverview,
+  type DailyOverview,
+} from '@/application/daily-intelligence';
 import {
   loadPersonalizedDailyRecommendation,
   recordOneMoveDecision,
@@ -22,12 +26,40 @@ import type { TranslationKey } from '@/i18n';
 import { DomainId, useAppState } from '@/state/app-state';
 
 type StateLoadStatus = 'loading' | 'ready' | 'error';
+type OverviewLoadStatus = 'loading' | 'ready' | 'error';
 type RecommendationLoadStatus = 'loading' | 'ready';
 type DecisionStatus = 'idle' | 'saving' | OneMoveDecision | 'offline' | 'error';
 type FeedbackStatus = 'idle' | 'saving' | 'saved' | 'offline' | 'error';
 type FeedbackTarget = { actionEventId: string; actionId: string; acceptedAt: string };
 
 const OUTCOME_RATINGS = [1, 2, 3, 4, 5] as const;
+
+const overviewCopy = {
+  ar: {
+    title: 'التوازن والزخم',
+    body: 'يعتمد ميزان على أولويات موسمك والأدلة الفعلية فقط؛ أي مجال بلا دليل يبقى مجهولًا.',
+    balance: 'التوازن مع موسمك',
+    balanceEmpty: 'لا توجد أدلة كافية عبر كل المجالات ذات الأولوية لحساب التوازن الآن.',
+    momentum: 'الزخم',
+    momentumEmpty: 'نحتاج تاريخًا أوسع قبل وصف اتجاه التغيّر بثقة.',
+    improving: 'يتحسن',
+    stable: 'مستقر تقريبًا',
+    declining: 'يتراجع',
+    error: 'تعذر تحميل التوازن والزخم الآن.',
+  },
+  en: {
+    title: 'Balance & momentum',
+    body: 'MIZAN uses your season priorities and actual evidence only; any area without evidence stays unknown.',
+    balance: 'Balance for your season',
+    balanceEmpty: 'There is not enough evidence across every priority area to calculate balance yet.',
+    momentum: 'Momentum',
+    momentumEmpty: 'A broader history is needed before MIZAN can describe a change direction with confidence.',
+    improving: 'Improving',
+    stable: 'Roughly stable',
+    declining: 'Declining',
+    error: 'Balance and momentum could not be loaded right now.',
+  },
+} as const;
 
 function stateLabelKey(key: string): TranslationKey | null {
   if (key === 'energy') return 'checkInEnergy';
@@ -43,6 +75,13 @@ function confidenceLabelKey(level: ConfidenceLevel): TranslationKey {
   if (level === 'likely') return 'confidenceLikely';
   if (level === 'possible') return 'confidencePossible';
   return 'confidenceInsufficient';
+}
+
+function momentumLabel(direction: MomentumDirection, locale: 'ar' | 'en'): string {
+  const copy = overviewCopy[locale];
+  if (direction === 'improving') return copy.improving;
+  if (direction === 'declining') return copy.declining;
+  return copy.stable;
 }
 
 function actionLabelKey(actionId: string): TranslationKey | null {
@@ -77,9 +116,11 @@ function feedbackMessageKey(status: FeedbackStatus): TranslationKey | null {
 }
 
 export default function TodayScreen() {
-  const { enabledDomains, isRtl, refreshSession, syncStatus, t, userId } = useAppState();
+  const { enabledDomains, isRtl, locale, refreshSession, syncStatus, t, userId } = useAppState();
   const [humanState, setHumanState] = useState<HumanStateVector | null>(null);
   const [stateLoadStatus, setStateLoadStatus] = useState<StateLoadStatus>('loading');
+  const [dailyOverview, setDailyOverview] = useState<DailyOverview | null>(null);
+  const [overviewLoadStatus, setOverviewLoadStatus] = useState<OverviewLoadStatus>('loading');
   const [recommendation, setRecommendation] = useState<DailyRecommendation | null>(null);
   const [recommendationLoadStatus, setRecommendationLoadStatus] = useState<RecommendationLoadStatus>('loading');
   const [selectedActionId, setSelectedActionId] = useState<string | null>(null);
@@ -91,6 +132,7 @@ export default function TodayScreen() {
   const scheme = useColorScheme();
   const palette = Palette[scheme === 'dark' ? 'dark' : 'light'];
   const syncMessage = syncStatus === 'offline' ? t('syncOffline') : syncStatus === 'error' ? t('syncError') : null;
+  const dailyCopy = overviewCopy[locale];
 
   useEffect(() => {
     let active = true;
@@ -112,6 +154,33 @@ export default function TodayScreen() {
       }
       if (result.error.kind === 'session-expired') await refreshSession();
       if (active) setStateLoadStatus('error');
+    });
+
+    return () => {
+      active = false;
+    };
+  }, [refreshSession, userId]);
+
+  useEffect(() => {
+    let active = true;
+    if (!userId) {
+      setDailyOverview(null);
+      setOverviewLoadStatus('ready');
+      return () => {
+        active = false;
+      };
+    }
+
+    setOverviewLoadStatus('loading');
+    void loadDailyOverview(userId).then(async (result) => {
+      if (!active) return;
+      if (result.ok) {
+        setDailyOverview(result.value);
+        setOverviewLoadStatus('ready');
+        return;
+      }
+      if (result.error.kind === 'session-expired') await refreshSession();
+      if (active) setOverviewLoadStatus('error');
     });
 
     return () => {
@@ -311,6 +380,54 @@ export default function TodayScreen() {
             </MizanText>
           </View>
         ))}
+      </Card>
+
+      <Card>
+        <MizanText variant="title">{dailyCopy.title}</MizanText>
+        <MizanText muted>{dailyCopy.body}</MizanText>
+        {overviewLoadStatus === 'loading' ? <MizanText muted>{t('loading')}</MizanText> : null}
+        {overviewLoadStatus === 'error' ? <MizanText muted>{dailyCopy.error}</MizanText> : null}
+        {overviewLoadStatus === 'ready' ? (
+          <View style={styles.oneMoveContent}>
+            <View style={[styles.stateItem, { borderTopColor: palette.border }]}>
+              <View style={[styles.stateRow, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
+                <MizanText variant="label">{dailyCopy.balance}</MizanText>
+                {dailyOverview?.balance?.score !== null && dailyOverview?.balance?.score !== undefined ? (
+                  <MizanText variant="title">{Math.round(dailyOverview.balance.score)} / 100</MizanText>
+                ) : null}
+              </View>
+              {dailyOverview?.balance?.score !== null && dailyOverview?.balance?.score !== undefined ? (
+                <MizanText variant="caption" muted>
+                  {t(confidenceLabelKey(dailyOverview.balance.confidence.level))} · {t('evidenceLabel')}: {dailyOverview.balance.evidence.length}
+                </MizanText>
+              ) : (
+                <MizanText muted>{dailyCopy.balanceEmpty}</MizanText>
+              )}
+            </View>
+
+            <View style={[styles.stateItem, { borderTopColor: palette.border }]}>
+              <MizanText variant="label">{dailyCopy.momentum}</MizanText>
+              {(dailyOverview?.momentum.length ?? 0) === 0 ? (
+                <MizanText muted>{dailyCopy.momentumEmpty}</MizanText>
+              ) : null}
+              {dailyOverview?.momentum.map(({ metric, momentum }) => {
+                const labelKey = stateLabelKey(metric);
+                if (!labelKey) return null;
+                return (
+                  <View key={metric} style={styles.oneMoveContent}>
+                    <View style={[styles.stateRow, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
+                      <MizanText>{t(labelKey)}</MizanText>
+                      <MizanText variant="label">{momentumLabel(momentum.direction, locale)}</MizanText>
+                    </View>
+                    <MizanText variant="caption" muted>
+                      {t(confidenceLabelKey(momentum.confidence.level))} · {t('evidenceLabel')}: {momentum.evidence.length}
+                    </MizanText>
+                  </View>
+                );
+              })}
+            </View>
+          </View>
+        ) : null}
       </Card>
 
       <Card>
