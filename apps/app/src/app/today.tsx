@@ -1,8 +1,9 @@
 import type { ConfidenceLevel, HumanStateVector } from '@mizan/core';
 import { Link } from 'expo-router';
 import { useEffect, useMemo, useState } from 'react';
-import { Pressable, StyleSheet, useColorScheme, View } from 'react-native';
+import { Pressable, StyleSheet, TextInput, useColorScheme, View } from 'react-native';
 
+import { recordExplicitActionOutcome } from '@/application/action-feedback';
 import { loadCurrentHumanState } from '@/application/daily-intelligence';
 import {
   prepareDailyRecommendation,
@@ -18,6 +19,9 @@ import { DomainId, useAppState } from '@/state/app-state';
 
 type StateLoadStatus = 'loading' | 'ready' | 'error';
 type DecisionStatus = 'idle' | 'saving' | OneMoveDecision | 'offline' | 'error';
+type FeedbackStatus = 'idle' | 'saving' | 'saved' | 'offline' | 'error';
+
+const OUTCOME_RATINGS = [1, 2, 3, 4, 5] as const;
 
 function stateLabelKey(key: string): TranslationKey | null {
   if (key === 'energy') return 'checkInEnergy';
@@ -58,12 +62,25 @@ function decisionMessageKey(status: DecisionStatus): TranslationKey | null {
   return null;
 }
 
+function feedbackMessageKey(status: FeedbackStatus): TranslationKey | null {
+  if (status === 'saving') return 'feedbackSaving';
+  if (status === 'saved') return 'feedbackSaved';
+  if (status === 'offline') return 'feedbackOffline';
+  if (status === 'error') return 'feedbackError';
+  return null;
+}
+
 export default function TodayScreen() {
   const { enabledDomains, isRtl, refreshSession, syncStatus, t, userId } = useAppState();
   const [humanState, setHumanState] = useState<HumanStateVector | null>(null);
   const [stateLoadStatus, setStateLoadStatus] = useState<StateLoadStatus>('loading');
   const [selectedActionId, setSelectedActionId] = useState<string | null>(null);
   const [decisionStatus, setDecisionStatus] = useState<DecisionStatus>('idle');
+  const [acceptedActionEventId, setAcceptedActionEventId] = useState<string | null>(null);
+  const [acceptedActionId, setAcceptedActionId] = useState<string | null>(null);
+  const [feedbackUsefulness, setFeedbackUsefulness] = useState<number | null>(null);
+  const [feedbackNote, setFeedbackNote] = useState('');
+  const [feedbackStatus, setFeedbackStatus] = useState<FeedbackStatus>('idle');
   const scheme = useColorScheme();
   const palette = Palette[scheme === 'dark' ? 'dark' : 'light'];
   const syncMessage = syncStatus === 'offline' ? t('syncOffline') : syncStatus === 'error' ? t('syncError') : null;
@@ -113,6 +130,11 @@ export default function TodayScreen() {
   useEffect(() => {
     setSelectedActionId(recommendation?.primary.actionId ?? null);
     setDecisionStatus('idle');
+    setAcceptedActionEventId(null);
+    setAcceptedActionId(null);
+    setFeedbackUsefulness(null);
+    setFeedbackNote('');
+    setFeedbackStatus('idle');
   }, [recommendation?.primary.actionId]);
 
   const recommendationOptions = recommendation
@@ -127,6 +149,7 @@ export default function TodayScreen() {
   const decisionFinished =
     decisionStatus === 'accepted' || decisionStatus === 'deferred' || decisionStatus === 'declined';
   const decisionMessage = decisionMessageKey(decisionStatus);
+  const feedbackMessage = feedbackMessageKey(feedbackStatus);
 
   const handleDecision = async (decision: OneMoveDecision) => {
     if (!userId || !recommendation || !activeRecommendation || decisionStatus === 'saving' || decisionFinished) return;
@@ -144,7 +167,49 @@ export default function TodayScreen() {
       );
       return;
     }
+
     setDecisionStatus(decision);
+    if (decision === 'accepted') {
+      setAcceptedActionEventId(result.value);
+      setAcceptedActionId(activeRecommendation.actionId);
+      setFeedbackUsefulness(null);
+      setFeedbackNote('');
+      setFeedbackStatus('idle');
+    } else {
+      setAcceptedActionEventId(null);
+      setAcceptedActionId(null);
+    }
+  };
+
+  const handleFeedback = async () => {
+    if (
+      !userId ||
+      !acceptedActionEventId ||
+      !acceptedActionId ||
+      feedbackUsefulness === null ||
+      feedbackStatus === 'saving' ||
+      feedbackStatus === 'saved'
+    ) {
+      return;
+    }
+
+    setFeedbackStatus('saving');
+    const result = await recordExplicitActionOutcome(
+      userId,
+      acceptedActionId,
+      acceptedActionEventId,
+      feedbackUsefulness,
+      feedbackNote,
+    );
+    if (!result.ok) {
+      if (result.error.kind === 'session-expired') await refreshSession();
+      setFeedbackStatus(
+        result.error.kind === 'unavailable' || result.error.kind === 'not-configured' ? 'offline' : 'error',
+      );
+      return;
+    }
+
+    setFeedbackStatus('saved');
   };
 
   return (
@@ -289,6 +354,88 @@ export default function TodayScreen() {
             </View>
 
             {decisionMessage ? <MizanText muted>{t(decisionMessage)}</MizanText> : null}
+
+            {decisionStatus === 'accepted' && acceptedActionEventId && acceptedActionId ? (
+              <View style={[styles.feedbackBlock, { borderTopColor: palette.border }]}>
+                <MizanText variant="title">{t('feedbackTitle')}</MizanText>
+                <MizanText muted>{t('feedbackBody')}</MizanText>
+                <MizanText variant="label">{t('feedbackUsefulness')}</MizanText>
+                <View style={[styles.ratingRow, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
+                  {OUTCOME_RATINGS.map((value) => {
+                    const selected = feedbackUsefulness === value;
+                    const disabled = feedbackStatus === 'saving' || feedbackStatus === 'saved';
+                    return (
+                      <Pressable
+                        key={value}
+                        accessibilityRole="button"
+                        accessibilityState={{ selected, disabled }}
+                        disabled={disabled}
+                        onPress={() => {
+                          setFeedbackUsefulness(value);
+                          if (feedbackStatus === 'offline' || feedbackStatus === 'error') setFeedbackStatus('idle');
+                        }}
+                        style={({ pressed }) => [
+                          styles.ratingButton,
+                          {
+                            borderColor: selected ? palette.accent : palette.border,
+                            backgroundColor: selected ? palette.accent : palette.surface,
+                            opacity: disabled ? 0.55 : pressed ? 0.76 : 1,
+                          },
+                        ]}>
+                        <MizanText variant="label" style={selected ? styles.primaryActionText : undefined}>
+                          {value}
+                        </MizanText>
+                      </Pressable>
+                    );
+                  })}
+                </View>
+                <View style={[styles.feedbackScaleLabels, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
+                  <MizanText variant="caption" muted>{t('feedbackLow')}</MizanText>
+                  <MizanText variant="caption" muted>{t('feedbackHigh')}</MizanText>
+                </View>
+                <TextInput
+                  accessibilityLabel={t('feedbackNotePlaceholder')}
+                  editable={feedbackStatus !== 'saving' && feedbackStatus !== 'saved'}
+                  maxLength={280}
+                  multiline
+                  onChangeText={(text) => {
+                    setFeedbackNote(text);
+                    if (feedbackStatus === 'offline' || feedbackStatus === 'error') setFeedbackStatus('idle');
+                  }}
+                  placeholder={t('feedbackNotePlaceholder')}
+                  placeholderTextColor={palette.textMuted}
+                  style={[
+                    styles.feedbackInput,
+                    {
+                      borderColor: palette.border,
+                      backgroundColor: palette.surface,
+                      color: palette.text,
+                      textAlign: isRtl ? 'right' : 'left',
+                    },
+                  ]}
+                  value={feedbackNote}
+                />
+                <Pressable
+                  accessibilityRole="button"
+                  disabled={feedbackUsefulness === null || feedbackStatus === 'saving' || feedbackStatus === 'saved'}
+                  onPress={() => void handleFeedback()}
+                  style={({ pressed }) => [
+                    styles.primaryAction,
+                    {
+                      backgroundColor: palette.accent,
+                      opacity:
+                        feedbackUsefulness === null || feedbackStatus === 'saving' || feedbackStatus === 'saved'
+                          ? 0.5
+                          : pressed
+                            ? 0.82
+                            : 1,
+                    },
+                  ]}>
+                  <MizanText variant="label" style={styles.primaryActionText}>{t('feedbackSave')}</MizanText>
+                </Pressable>
+                {feedbackMessage ? <MizanText muted>{t(feedbackMessage)}</MizanText> : null}
+              </View>
+            ) : null}
           </View>
         ) : null}
       </Card>
@@ -330,6 +477,11 @@ const styles = StyleSheet.create({
   decisionRow: { flexWrap: 'wrap', gap: Spacing.sm },
   decisionButton: { minHeight: 44, flexGrow: 1, minWidth: 120, alignItems: 'center', justifyContent: 'center', borderRadius: Radius.md, paddingHorizontal: Spacing.md },
   secondaryAction: { minHeight: 44, alignItems: 'center', justifyContent: 'center', borderRadius: Radius.md, borderWidth: 1, paddingHorizontal: Spacing.md },
+  feedbackBlock: { gap: Spacing.md, borderTopWidth: StyleSheet.hairlineWidth, paddingTop: Spacing.lg },
+  ratingRow: { flexWrap: 'wrap', gap: Spacing.sm },
+  ratingButton: { minWidth: 48, minHeight: 44, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderRadius: Radius.md },
+  feedbackScaleLabels: { justifyContent: 'space-between', gap: Spacing.md },
+  feedbackInput: { minHeight: 88, borderWidth: 1, borderRadius: Radius.md, paddingHorizontal: Spacing.md, paddingVertical: Spacing.md, textAlignVertical: 'top' },
   statusRow: { alignItems: 'center', gap: Spacing.sm },
   dot: { width: 8, height: 8, borderRadius: 4 },
   section: { gap: Spacing.lg },
