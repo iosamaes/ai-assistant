@@ -46,6 +46,9 @@ const insightCopy = {
     alignmentTitle: 'القيم والهوية',
     alignmentBody: 'راجع فقط الأدلة المرتبطة بالقيم التي اخترتها أنت، مع إبقاء القيم التي لا تملك إشارة مباشرة في حالة غير معروفة.',
     alignmentOpen: 'عرض محاذاة القيم',
+    invisibleWinsTitle: 'المكاسب غير المرئية',
+    invisibleWinsBody: 'سجّل لحظات مهمة مثل الراحة أو قول لا أو وقت العائلة بدون تحويلها إلى نقاط أو درجات إنتاجية.',
+    invisibleWinsOpen: 'فتح التأملات',
   },
   en: {
     lifeMapTitle: 'Life map',
@@ -66,6 +69,9 @@ const insightCopy = {
     alignmentTitle: 'Values & identity',
     alignmentBody: 'Review only evidence linked to values you selected, while values without a direct signal remain explicitly unknown.',
     alignmentOpen: 'View value alignment',
+    invisibleWinsTitle: 'Invisible Wins',
+    invisibleWinsBody: 'Record meaningful moments such as rest, saying no, or family time without turning them into points or productivity scores.',
+    invisibleWinsOpen: 'Open reflections',
   },
 } as const;
 
@@ -177,6 +183,12 @@ export default function SettingsScreen() {
         <MizanText variant="title">{insightLabels.alignmentTitle}</MizanText>
         <MizanText muted>{insightLabels.alignmentBody}</MizanText>
         <PrimaryButton label={insightLabels.alignmentOpen} onPress={() => router.push('/value-alignment')} />
+      </View>
+
+      <View style={styles.section}>
+        <MizanText variant="title">{insightLabels.invisibleWinsTitle}</MizanText>
+        <MizanText muted>{insightLabels.invisibleWinsBody}</MizanText>
+        <PrimaryButton label={insightLabels.invisibleWinsOpen} onPress={() => router.push('/invisible-wins')} />
       </View>
 
       <View style={styles.section}>
