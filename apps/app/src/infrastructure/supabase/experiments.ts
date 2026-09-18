@@ -103,8 +103,10 @@ export async function updateExperimentLifecycle(
     .update(patch)
     .eq('user_id', userId)
     .eq('id', experimentId)
+    .eq('status', 'active')
     .select('*')
-    .single();
+    .maybeSingle();
   if (error) return failure(error);
+  if (!data) return { ok: false, error: { kind: 'conflict' } };
   return { ok: true, value: data as StoredExperiment };
 }
