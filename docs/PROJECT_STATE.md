@@ -53,12 +53,13 @@
 - Refactored the interaction-heavy Check-in surface so its secondary navigation control also uses the shared primitive; its rating/scale composition remains feature-local.
 - Refactored Today so One Move acceptance/feedback submission use `PrimaryButton`, alternative/defer/decline use `SecondaryButton`, and the feedback note uses `MizanTextInput`.
 - Today keeps Link-owned settings/check-in controls and the numbered usefulness scale feature-local, but now consumes semantic control sizing, border, pressed/disabled opacity, and `onAccent` tokens instead of duplicated magic values.
-- Recommendation selection, persistence, confidence/evidence display, and feedback behavior remain outside generic UI primitives; no application/business logic moved into presentation abstractions.
-- Updated `docs/CP9_PRESENTATION_ARCHITECTURE.md` with the representative Today audit and remaining proof boundary.
+- Refactored both authentication entry and password-update recovery screens to use the shared `MizanTextInput`; local duplicates of standard input height, border, radius, padding, typography, palette colors, and RTL text alignment were removed without changing auth/session behavior.
+- Recommendation selection, persistence, confidence/evidence display, feedback behavior, and auth/session behavior remain outside generic UI primitives; no application/business logic moved into presentation abstractions.
+- Updated `docs/CP9_PRESENTATION_ARCHITECTURE.md` with Today plus authentication/recovery audit evidence and the remaining proof boundary.
 - The TASK-required final design-swap proof is **not yet claimed** because a substantially different visual direction still requires owner-side visual/runtime review.
 
 ## Exact next executable action
-1. Audit the remaining primary screens for hard-coded global colors, typography sizes, standard radii/control heights, and pressed/disabled opacity values; migrate only repeated global semantics to the existing theme/primitives and leave feature geometry local.
+1. Continue auditing the remaining primary screens (excluding the now-consolidated auth/recovery surfaces) for hard-coded global colors, typography sizes, standard radii/control heights, and pressed/disabled opacity values; migrate only repeated global semantics to the existing theme/primitives and leave feature geometry local.
 2. Continue Arabic/English RTL, semantic icon direction, truncation, dynamic type, keyboard/focus, screen-reader-label, light/dark, and representative-width audits from static code where useful.
 3. Complete the design-swap proof only during owner visual/runtime validation after Today, Life Map, WHY, and Check-in are exercised against a substantially different visual direction without edits to `packages/core`, application intelligence/data contracts, Supabase/data-access, or provider adapters.
 4. Leave CP1–CP8 execution-dependent checkpoint evidence and CP9 visual/runtime validation to owner validation under the current task policy.
@@ -74,6 +75,7 @@ Current worker policy:
 - Current auto3 CP8 commits: `9fca718f3e4099d2325438f027f0762da3712d0c` (queued check-in presentation), `ad21321618caeaba31a1dccb24856fda511153a3` (concurrent experiment lifecycle guard), and `94db687cde151e38ec3cd5471e415accdc4d8997` (preservation/concurrency audit ledger).
 - Current auto3 CP9 commits: `5505075d418a84061740fcb910290cbe212a1197` (semantic presentation tokens), `47ecd506e321b809e0150a4be673e75177c7fc7c` (shared primitives consume tokens), `d65d1f52060bb543895e3eefcc8abcaecf28d232` (responsive Screen layout tokens), `3b345a91a42fb8d48bcc24b7a4321d8362d3d8ae` (shared secondary button), `8ebd350e53651401a1a4f68b0280dc5c368fe36c` (Life Map controls), `616121223a33cc3b3790ba4215ca38d5766889b8` (WHY controls), `1c80a971da9022ff98b4b6aae84d85c35aaefac2` (Check-in secondary navigation), and `669a584feff4a8a63f8f38b58eff9e42e3f3dac0` (CP9 audit document).
 - Current auto2 CP9 commits: `28e0eb587904cba1118ecedba426d6c68caa5a6f` (Today shared control/input consolidation) and `4aadff5a7ddf954797256f16346933e3be09868b` (Today audit documentation).
+- Current auto4 CP9 commits: `729d83355297b3740379eef52ed7bd67f8b7b137` (auth shared semantic input), `557660e52e119ee6ba1d1555ffc7c386e1f69b95` (password-update shared semantic input), and `126516eecd7aa02d8cbd3f6bf2b18a58bc05cdf8` (auth/recovery presentation audit documentation).
 
 ## Known blockers / risks
 - CP1: Windows session must be unlocked normally for true narrow-phone Arabic/English interaction evidence; see `automation/HUMAN_REQUIRED.md`.
@@ -89,6 +91,8 @@ Current worker policy:
 - `apps/app/src/constants/theme.ts`
 - `apps/app/src/components/mizan-ui.tsx`
 - `apps/app/src/components/screen.tsx`
+- `apps/app/src/app/auth.tsx`
+- `apps/app/src/app/update-password.tsx`
 - `apps/app/src/app/life-map.tsx`
 - `apps/app/src/app/why.tsx`
 - `apps/app/src/app/check-in.tsx`
