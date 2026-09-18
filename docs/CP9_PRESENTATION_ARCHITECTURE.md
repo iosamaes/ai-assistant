@@ -92,17 +92,37 @@ Value Alignment previously used a custom `Pressable` back control with screen-lo
 
 Integrations keeps provider lifecycle, permissions, consent, sync status, and disconnect behavior in its application/infrastructure layers. Its remaining text-only Settings navigation now uses compact `SecondaryButton`, removing another screen-local navigation treatment while preserving provider-boundary separation and normalized integration state.
 
+### Personal experiments
+
+Experiments previously duplicated the standard multiline input surface and used text-only pressable actions for stopping an active experiment and returning to Settings. The hypothesis editor now uses `MizanTextInput`; only the feature-specific multiline height, top alignment, and explicit RTL writing direction remain local. Stopping an experiment uses the standard `SecondaryButton`, and Settings navigation uses its compact form. Experiment lifecycle, consent, usefulness capture, and evaluation math remain outside presentation primitives.
+
+### What If / scenarios
+
+The scenario chooser now mirrors its chip row with `row-reverse` in RTL instead of relying on a fixed left-to-right row. Returning to Settings now uses compact `SecondaryButton` rather than a primary action. Scenario definitions, personal-effect loading, uncertainty labels, conservative projection math, and evidence handling remain unchanged.
+
+### Settings
+
+Settings already used shared `ChoiceChip` and `PrimaryButton` controls for language, spiritual preference, and feature entry points. Its final text-only return-to-Today control now uses compact `SecondaryButton`, so the recurring navigation hit target, radius, pressed state, and accessibility role are centralized without changing settings behavior.
+
+### Personal learning
+
+Personal Learning retains feature-local evidence/history separators that consume the semantic palette border role, while its custom `Pressable` return control has moved to compact `SecondaryButton`. Benefit-learning logic, explicit-outcome rules, confidence labels, and history rendering remain feature-owned.
+
+### Personalization maturity
+
+Personalization keeps its feature-specific stage cards and semantic palette usage for active/inactive evidence stages. Its custom back `Pressable` has moved to compact `SecondaryButton`, removing one more screen-local navigation treatment without changing maturity calculation or evidence semantics.
+
 ## Current design-swap assessment
 
-The global visual levers for palette, typography, control sizing, spacing/radii, interaction opacity, and responsive screen layout are now centralized across Today, Life Map, WHY, Check-in, authentication/recovery, Capacity, Cost of Yes, Insights, Human ROI, Life Seasons, Recovery, Invisible Wins, Value Alignment, and Integrations. These screens demonstrate that repeated control/input treatment can move behind app-local primitives or semantic tokens without changing `packages/core`, application intelligence/data contracts, Supabase/data-access, or provider adapters.
+The global visual levers for palette, typography, control sizing, spacing/radii, interaction opacity, and responsive screen layout are now centralized across Today, Life Map, WHY, Check-in, authentication/recovery, Capacity, Cost of Yes, Insights, Human ROI, Life Seasons, Recovery, Invisible Wins, Value Alignment, Integrations, Experiments, What If, Settings, Personal Learning, and Personalization. These screens demonstrate that repeated control/input treatment can move behind app-local primitives or semantic tokens without changing `packages/core`, application intelligence/data contracts, Supabase/data-access, or provider adapters.
 
 This is **not yet the final CP9 design-swap proof**. A substantially different visual direction still needs owner-side visual/runtime review; workers must not claim that runtime proof from static implementation inspection alone.
 
 ## Remaining CP9 slices
 
-1. Continue auditing experiments, scenarios/What If, Settings, and other remaining primary screens for screen-local hard-coded colors, typography sizes, standard radii/control heights, repeated pressed/disabled values, and text-only pressable navigation; leave feature geometry/visualization math local.
-2. Audit responsive behavior at narrow phone, common phone, tablet portrait/landscape, and wide web widths when owner runtime/visual validation is available.
-3. Audit Arabic RTL mirroring/alignment, semantic icon direction, truncation, dynamic type, keyboard/focus behavior, screen-reader labels, and light/dark treatment.
+1. Continue the static audit on Onboarding and any remaining primary screens for screen-local hard-coded colors, typography sizes, standard radii/control heights, repeated pressed/disabled values, and duplicated navigation/input treatment; leave feature geometry/visualization math local.
+2. Continue code-level review for Arabic/English RTL mirroring/alignment, semantic icon direction, truncation, dynamic type, keyboard/focus behavior, screen-reader labels, and light/dark treatment.
+3. Audit responsive behavior at narrow phone, common phone, tablet portrait/landscape, and wide web widths when owner runtime/visual validation is available.
 4. Complete the TASK-required design-swap proof on Today, Life Map, WHY, and the interaction-heavy Check-in flow during owner visual/runtime validation, documenting the substantially different visual direction without keeping duplicate production themes.
 
 ## Verification policy
