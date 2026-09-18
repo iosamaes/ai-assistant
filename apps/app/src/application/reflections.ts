@@ -3,6 +3,7 @@ import {
   createClientMutationId,
   enqueuePendingUserMutation,
   readPendingUserMutations,
+  type PendingInvisibleWinMutation,
 } from '@/infrastructure/offline/pending-mutations';
 import type { DataResult } from '@/infrastructure/supabase/data-access';
 import {
@@ -27,14 +28,7 @@ function canQueue(kind: string) {
 
 function pendingReflectionToStored(
   userId: string,
-  mutation: Extract<
-    Awaited<ReturnType<typeof readPendingUserMutations>> extends { ok: true; value: infer T }
-      ? T extends Array<infer U>
-        ? U
-        : never
-      : never,
-    { kind: 'invisible-win' }
-  >,
+  mutation: PendingInvisibleWinMutation,
 ): StoredInvisibleWin {
   return {
     id: `pending:${mutation.id}`,
@@ -58,7 +52,7 @@ export async function loadInvisibleWins(
   ]);
   const pendingItems = pending.ok
     ? pending.value
-        .filter((item): item is Extract<typeof item, { kind: 'invisible-win' }> => item.kind === 'invisible-win')
+        .filter((item): item is PendingInvisibleWinMutation => item.kind === 'invisible-win')
         .map((item) => pendingReflectionToStored(userId, item))
     : [];
 
