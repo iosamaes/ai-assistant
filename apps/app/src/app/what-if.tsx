@@ -8,7 +8,7 @@ import {
   loadPersonalScenarioEffects,
   type LearnableScenarioId,
 } from '@/application/scenario-learning';
-import { Card, ChoiceChip, MizanText, PrimaryButton } from '@/components/mizan-ui';
+import { Card, ChoiceChip, MizanText, SecondaryButton } from '@/components/mizan-ui';
 import { Screen } from '@/components/screen';
 import { Spacing } from '@/constants/theme';
 import { useAppState } from '@/state/app-state';
@@ -152,7 +152,7 @@ function formatRange(min: number, max: number): string {
 }
 
 export default function WhatIfScreen() {
-  const { locale, refreshSession, userId } = useAppState();
+  const { isRtl, locale, refreshSession, userId } = useAppState();
   const [status, setStatus] = useState<LoadStatus>('loading');
   const [selected, setSelected] = useState<ScenarioId>('earlier-bedtime');
   const [projection, setProjection] = useState<ScenarioProjection | null>(null);
@@ -212,7 +212,7 @@ export default function WhatIfScreen() {
 
       <View style={styles.section}>
         <MizanText variant="title">{labels.choose}</MizanText>
-        <View style={styles.choices}>
+        <View style={[styles.choices, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
           {(Object.keys(definitions) as ScenarioId[]).map((id) => (
             <ChoiceChip
               key={id}
@@ -271,7 +271,7 @@ export default function WhatIfScreen() {
       ) : null}
 
       <MizanText variant="caption" muted>{labels.caveat}</MizanText>
-      <PrimaryButton label={labels.back} onPress={() => router.replace('/settings')} />
+      <SecondaryButton compact label={labels.back} onPress={() => router.replace('/settings')} />
     </Screen>
   );
 }
@@ -279,5 +279,5 @@ export default function WhatIfScreen() {
 const styles = StyleSheet.create({
   hero: { gap: Spacing.md },
   section: { gap: Spacing.md },
-  choices: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.sm },
+  choices: { flexWrap: 'wrap', gap: Spacing.sm },
 });
