@@ -48,14 +48,15 @@ Implemented shared presentation boundary:
 - navigation shell honors the platform reduced-motion preference.
 
 Current `auto4` static CP9 slice:
-- **Shared controls:** added explicit accessibility labels to `PrimaryButton`, `SecondaryButton`, and `ChoiceChip`, so screen-reader naming no longer relies only on descendant text inference. Their existing disabled/selected accessibility states remain intact.
-- **Shared card treatment:** replaced the remaining `StyleSheet.hairlineWidth` visual exception with the centralized semantic `Controls.borderWidth`, keeping global border treatment swappable from the app-local design foundation.
-- **Authentication RTL semantics:** the email-address field now remains explicitly left-to-right and left-aligned even when the surrounding locale is Arabic, while labels and the rest of the auth composition continue to mirror with the locale.
-- No authentication, persistence, recommendation, provider, or domain behavior moved into presentation primitives.
+- **Experiment localization:** experiment evaluation confidence no longer renders raw engine enum values. `known`, `likely`, `possible`, and `insufficient` now render through Arabic/English product copy, preventing untranslated English confidence labels inside Arabic experiment history.
+- **WHY semantic border:** the remaining WHY evidence-row separator width now consumes centralized `Controls.borderWidth` rather than `StyleSheet.hairlineWidth`, keeping the global border treatment swappable through the design foundation.
+- **Insights shared controls:** the screen-local back and quick-check-in `Pressable` controls were replaced with shared compact `SecondaryButton` and `PrimaryButton`; local duplicated radius, touch height, pressed opacity, and accent foreground treatment were removed while navigation and insight logic remain feature-owned.
+- No experiment evaluation logic, WHY evidence interpretation, insight confidence logic, persistence, provider, or domain behavior moved into presentation primitives.
 
 Commits from this slice:
-- `0fcc89ea04dd18e92308cdb1121683b91d7cb655` — shared control accessibility semantics and card border token use.
-- `83a1d8904144984b4716493b12c2523fe2ccd573` — semantic LTR email entry in Arabic locale.
+- `d89d61560a88125599b29f0d3102e69b10932dcb` — localized experiment confidence labels.
+- `4096464bdd08525708d2cb2b3d7f36be53f25d8c` — centralized WHY separator width.
+- `2cebc3ace1dffe1a56702381b34793cec80169fd` — shared Insights navigation/action controls.
 
 The TASK-required final design-swap proof is **not claimed**; it still requires owner visual/runtime validation with a substantially different visual direction.
 
@@ -101,6 +102,8 @@ Current worker policy:
 - `apps/app/src/app/today.tsx`
 - `apps/app/src/app/life-map.tsx`
 - `apps/app/src/app/why.tsx`
+- `apps/app/src/app/insights.tsx`
+- `apps/app/src/app/experiments.tsx`
 - `apps/app/src/app/check-in.tsx`
 - `apps/app/src/app/settings.tsx`
 - `automation/HUMAN_REQUIRED.md`
