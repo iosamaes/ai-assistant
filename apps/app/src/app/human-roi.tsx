@@ -180,6 +180,7 @@ export default function HumanROIScreen() {
               {RATINGS.map((rating) => (
                 <ChoiceChip
                   key={`benefit-${rating}`}
+                  accessibilityLabel={`${labels.benefit}: ${rating} / 5`}
                   label={String(rating)}
                   selected={benefitRating === rating}
                   onPress={() => setBenefitRating(rating)}
@@ -195,6 +196,7 @@ export default function HumanROIScreen() {
               {RATINGS.map((rating) => (
                 <ChoiceChip
                   key={`effort-${rating}`}
+                  accessibilityLabel={`${labels.effort}: ${rating} / 5`}
                   label={String(rating)}
                   selected={effortRating === rating}
                   onPress={() => setEffortRating(rating)}
