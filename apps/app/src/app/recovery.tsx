@@ -192,7 +192,7 @@ export default function RecoveryScreen() {
 
           {currentStep ? (
             <Card>
-              <MizanText variant="label" muted>
+              <MizanText accessibilityLiveRegion="polite" variant="label" muted>
                 {labels.step} {stepIndex + 1} {labels.of} {plan.steps.length}
               </MizanText>
               <MizanText variant="title">{labels.steps[currentStep.id as RecoveryStepId].title}</MizanText>
