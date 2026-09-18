@@ -78,11 +78,17 @@ Commits from this slice:
 - `2cf970b2765785958d0569fd97da46cf934fa126` — centralized Personalization border/radius tokens.
 
 Current `auto2` static CP9 slice:
-- **Human ROI localization:** Human ROI no longer renders the raw deterministic confidence enum. `known`, `likely`, `possible`, and `insufficient` now resolve through Arabic/English product copy while preserving the existing evidence count and assessment logic.
-- **Cost of Yes localization:** Cost of Yes now localizes the same confidence levels instead of exposing raw engine enum values in Arabic UI.
-- No Human ROI or Cost of Yes decision math, evidence handling, protected-meaning behavior, or persistence moved into presentation code.
+- **Invisible Wins async accessibility/localization:** the reflection list no longer exposes a bare ellipsis while loading; it now has explicit Arabic/English loading copy, and load/save/queued/error outcome messages use polite accessibility live regions so state changes can be announced to screen-reader users.
+- **Integrations async accessibility:** loading, load failure, and disconnect failure feedback now use polite accessibility live regions without moving provider lifecycle or data logic into presentation primitives.
+- **Earlier Human ROI localization:** Human ROI no longer renders the raw deterministic confidence enum. `known`, `likely`, `possible`, and `insufficient` resolve through Arabic/English product copy while preserving the existing evidence count and assessment logic.
+- **Earlier Cost of Yes localization:** Cost of Yes localizes the same confidence levels instead of exposing raw engine enum values in Arabic UI.
+- No reflection persistence/offline queue behavior, integration lifecycle behavior, Human ROI or Cost of Yes decision math, evidence handling, protected-meaning behavior, or provider logic moved into presentation code.
 
-Commits from this slice:
+Commits from the latest `auto2` accessibility slice:
+- `f42b0ffceb7dfe52839f17cad8c132ef398d2ac8` — localized and announced Invisible Wins async status.
+- `a8b2bcfa1f76fe3b0ca6c73362c761c11ef6a412` — announced integration async status and errors.
+
+Earlier `auto2` CP9 commits:
 - `bd6e4c179a1847e64087b3ebd65fe5bbf7c5681d` — localized Human ROI confidence labels.
 - `9e9a044aafe4d5a2e3edd465488e4080b9fa89ac` — localized Cost of Yes confidence labels.
 
@@ -150,5 +156,7 @@ Current worker policy:
 - `apps/app/src/app/personal-learning.tsx`
 - `apps/app/src/app/personalization.tsx`
 - `apps/app/src/app/check-in.tsx`
+- `apps/app/src/app/invisible-wins.tsx`
+- `apps/app/src/app/integrations.tsx`
 - `apps/app/src/app/settings.tsx`
 - `automation/HUMAN_REQUIRED.md`
