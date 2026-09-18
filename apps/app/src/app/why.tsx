@@ -1,7 +1,7 @@
 import type { ConfidenceLevel } from '@mizan/core';
-import { Link } from 'expo-router';
+import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Pressable, StyleSheet, useColorScheme, View } from 'react-native';
+import { StyleSheet, useColorScheme, View } from 'react-native';
 
 import {
   loadWhyExplanation,
@@ -9,9 +9,9 @@ import {
   type WhyExplanation,
   type WhyFactorKey,
 } from '@/application/why';
-import { Card, MizanText } from '@/components/mizan-ui';
+import { Card, MizanText, PrimaryButton, SecondaryButton } from '@/components/mizan-ui';
 import { Screen } from '@/components/screen';
-import { Palette, Radius, Spacing } from '@/constants/theme';
+import { Palette, Spacing } from '@/constants/theme';
 import { useAppState } from '@/state/app-state';
 
 type LoadStatus = 'loading' | 'ready' | 'error';
@@ -149,8 +149,6 @@ export default function WhyScreen() {
   const { isRtl, locale, refreshSession, userId } = useAppState();
   const [explanation, setExplanation] = useState<WhyExplanation | null>(null);
   const [status, setStatus] = useState<LoadStatus>('loading');
-  const scheme = useColorScheme();
-  const palette = Palette[scheme === 'dark' ? 'dark' : 'light'];
   const local = copy[locale];
 
   useEffect(() => {
@@ -187,31 +185,13 @@ export default function WhyScreen() {
           <MizanText variant="label" muted>{local.eyebrow}</MizanText>
           <MizanText variant="display">{local.title}</MizanText>
         </View>
-        <Link href="/today" asChild>
-          <Pressable
-            accessibilityRole="button"
-            style={({ pressed }) => [
-              styles.backButton,
-              { borderColor: palette.border, backgroundColor: palette.surface, opacity: pressed ? 0.72 : 1 },
-            ]}>
-            <MizanText variant="label">{local.back}</MizanText>
-          </Pressable>
-        </Link>
+        <SecondaryButton compact label={local.back} onPress={() => router.replace('/today')} />
       </View>
 
       <Card>
         <MizanText muted>{local.body}</MizanText>
         <MizanText variant="caption" muted>{local.caveat}</MizanText>
-        <Link href="/check-in" asChild>
-          <Pressable
-            accessibilityRole="button"
-            style={({ pressed }) => [
-              styles.primaryAction,
-              { backgroundColor: palette.accent, opacity: pressed ? 0.82 : 1 },
-            ]}>
-            <MizanText variant="label" style={styles.primaryActionText}>{local.checkIn}</MizanText>
-          </Pressable>
-        </Link>
+        <PrimaryButton label={local.checkIn} onPress={() => router.push('/check-in')} />
       </Card>
 
       {status === 'loading' ? <MizanText muted>{local.loading}</MizanText> : null}
@@ -232,21 +212,6 @@ export default function WhyScreen() {
 const styles = StyleSheet.create({
   topRow: { alignItems: 'center', justifyContent: 'space-between', gap: Spacing.lg },
   heading: { flex: 1, gap: Spacing.xs },
-  backButton: {
-    minHeight: 44,
-    justifyContent: 'center',
-    paddingHorizontal: Spacing.lg,
-    borderWidth: 1,
-    borderRadius: Radius.pill,
-  },
-  primaryAction: {
-    minHeight: 48,
-    borderRadius: Radius.md,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: Spacing.xl,
-  },
-  primaryActionText: { color: '#FFFFFF', textAlign: 'center' },
   detailRow: {
     alignItems: 'center',
     justifyContent: 'space-between',
