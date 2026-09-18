@@ -111,6 +111,7 @@ export default function AuthScreen() {
           autoCorrect={false}
           keyboardType="email-address"
           placeholder="name@example.com"
+          style={styles.ltrInput}
           value={email}
           onChangeText={setEmail}
         />
@@ -148,5 +149,6 @@ const styles = StyleSheet.create({
   section: { gap: Spacing.md },
   row: { flexWrap: 'wrap', gap: Spacing.sm },
   form: { gap: Spacing.sm },
+  ltrInput: { textAlign: 'left', writingDirection: 'ltr' },
   footer: { marginTop: 'auto', paddingTop: Spacing.xl },
 });
