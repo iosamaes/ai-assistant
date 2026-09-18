@@ -34,6 +34,7 @@ const copy = {
     save: 'حفظ الموسم والأهداف',
     saving: 'جارٍ الحفظ…',
     saved: 'تم حفظ الموسم. سيستخدم ميزان الأهداف الجديدة عند حساب التوازن القادم.',
+    loading: 'جارٍ تحميل مواسمك…',
     loadError: 'تعذر تحميل مواسمك الآن.',
     saveError: 'تعذر حفظ الموسم الآن. لم يتم اعتبار التغيير مكتملًا.',
     historyTitle: 'سجل المواسم',
@@ -63,6 +64,7 @@ const copy = {
     save: 'Save season & targets',
     saving: 'Saving…',
     saved: 'Season saved. MIZAN will use the new targets in the next Balance calculation.',
+    loading: 'Loading your Life Seasons…',
     loadError: 'MIZAN could not load your Life Seasons right now.',
     saveError: 'MIZAN could not save the season. The change was not treated as complete.',
     historyTitle: 'Season history',
@@ -262,7 +264,12 @@ export default function LifeSeasonsScreen() {
 
       <View style={styles.section}>
         <MizanText variant="title">{labels.historyTitle}</MizanText>
-        {loadStatus === 'ready' && history.length === 0 ? <MizanText muted>{labels.historyEmpty}</MizanText> : null}
+        {loadStatus === 'loading' ? (
+          <MizanText accessibilityLiveRegion="polite" muted>{labels.loading}</MizanText>
+        ) : null}
+        {loadStatus === 'ready' && history.length === 0 ? (
+          <MizanText accessibilityLiveRegion="polite" muted>{labels.historyEmpty}</MizanText>
+        ) : null}
         {history.map((entry) => {
           const recordedTargets = Object.entries(entry.target_snapshot)
             .map(([domainId, rating]) => `${isDomainId(domainId) ? t(domainId) : domainId}: ${rating}`)
