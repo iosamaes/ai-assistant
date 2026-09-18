@@ -4,6 +4,7 @@ import { useEffect } from 'react';
 import { useColorScheme } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
+import { flushPendingUserMutations } from '@/application/offline-sync';
 import { AppErrorBoundary } from '@/components/app-error-boundary';
 import { Palette } from '@/constants/theme';
 import { AppStateProvider, useAppState } from '@/state/app-state';
@@ -13,6 +14,12 @@ function AppNavigator() {
   const palette = Palette[scheme === 'dark' ? 'dark' : 'light'];
   const segments = useSegments();
   const { onboardingCompleted, sessionStatus, userId } = useAppState();
+
+  useEffect(() => {
+    if (!userId) return;
+    if (sessionStatus !== 'signed-in' && sessionStatus !== 'offline') return;
+    void flushPendingUserMutations(userId);
+  }, [sessionStatus, userId]);
 
   useEffect(() => {
     if (sessionStatus === 'loading') return;
