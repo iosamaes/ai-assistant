@@ -9,11 +9,17 @@ import {
   type HumanStateVector,
   type MomentumSummary,
   type Observation,
+  type UserTargets,
 } from '@mizan/core';
 
 import { loadUserTargets } from '@/application/user-targets';
 import {
+  readRecentDailySnapshot,
+  writeRecentDailySnapshot,
+} from '@/infrastructure/offline/recent-daily-snapshot';
+import {
   loadRecentObservations,
+  type DataFailureKind,
   type DataResult,
   type StoredObservation,
 } from '@/infrastructure/supabase/data-access';
@@ -50,6 +56,16 @@ export interface DailyOverview {
   balance: BalanceSummary | null;
   momentum: readonly DailyMomentumSignal[];
 }
+
+export interface DailySnapshot {
+  humanState: HumanStateVector;
+  overview: DailyOverview;
+  source: 'live' | 'cache';
+  cachedAt: string | null;
+  degradedBy: DataFailureKind | null;
+}
+
+type DailySnapshotCachePayload = Pick<DailySnapshot, 'humanState' | 'overview'>;
 
 function observationValue(row: StoredObservation): number | string | boolean | null {
   if (row.value_number !== null) return row.value_number;
@@ -124,6 +140,133 @@ function deriveBalanceSignals(
   });
 }
 
+function deriveDailyOverview(
+  observations: readonly Observation[],
+  targets: UserTargets | null,
+  generatedAt: string,
+): DailyOverview {
+  const balance = targets
+    ? calculateBalance(deriveBalanceSignals(observations, generatedAt), targets)
+    : null;
+  const momentum = momentumMetrics.flatMap(({ metric, higherIsBetter }) => {
+    const summary = summarizeTemporalMetric(observations, metric, generatedAt, higherIsBetter).momentum;
+    if (summary.direction === 'unknown' || summary.confidence.level === 'insufficient') return [];
+    return [{ metric, momentum: summary }];
+  });
+  return { balance, momentum };
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null;
+}
+
+function isConfidence(value: unknown): boolean {
+  if (!isRecord(value)) return false;
+  return (
+    ['insufficient', 'possible', 'likely', 'known'].includes(String(value.level)) &&
+    typeof value.score === 'number' &&
+    typeof value.evidenceCount === 'number' &&
+    (value.freshnessDays === null || typeof value.freshnessDays === 'number')
+  );
+}
+
+function isEvidence(value: unknown): boolean {
+  return (
+    isRecord(value) &&
+    typeof value.id === 'string' &&
+    ['observed', 'self_reported', 'inferred'].includes(String(value.source)) &&
+    typeof value.observedAt === 'string' &&
+    typeof value.label === 'string'
+  );
+}
+
+function isHumanStateVector(value: unknown): value is HumanStateVector {
+  if (!isRecord(value) || typeof value.generatedAt !== 'string') return false;
+  if (!['cold_start', 'learning', 'personalized'].includes(String(value.maturity))) return false;
+  if (!Array.isArray(value.components)) return false;
+  return value.components.every((component) => {
+    if (!isRecord(component) || typeof component.key !== 'string') return false;
+    if (component.value !== null && typeof component.value !== 'number') return false;
+    if (!isConfidence(component.confidence) || !Array.isArray(component.evidence)) return false;
+    if (!component.evidence.every(isEvidence)) return false;
+    return ['observed', 'self_reported', 'inferred', 'unknown'].includes(String(component.source));
+  });
+}
+
+function isDailyOverview(value: unknown): value is DailyOverview {
+  if (!isRecord(value) || !Array.isArray(value.momentum)) return false;
+  if (value.balance !== null) {
+    if (!isRecord(value.balance)) return false;
+    if (value.balance.score !== null && typeof value.balance.score !== 'number') return false;
+    if (!isConfidence(value.balance.confidence) || !Array.isArray(value.balance.evidence)) return false;
+    if (!value.balance.evidence.every(isEvidence)) return false;
+  }
+  return value.momentum.every((signal) => {
+    if (!isRecord(signal) || !momentumMetrics.some(({ metric }) => metric === signal.metric)) return false;
+    if (!isRecord(signal.momentum)) return false;
+    if (!['improving', 'stable', 'declining', 'unknown'].includes(String(signal.momentum.direction))) return false;
+    return (
+      isConfidence(signal.momentum.confidence) &&
+      Array.isArray(signal.momentum.evidence) &&
+      signal.momentum.evidence.every(isEvidence)
+    );
+  });
+}
+
+function isDailySnapshotCachePayload(value: unknown): value is DailySnapshotCachePayload {
+  return isRecord(value) && isHumanStateVector(value.humanState) && isDailyOverview(value.overview);
+}
+
+function canUseCachedSnapshot(kind: DataFailureKind) {
+  return kind === 'unavailable' || kind === 'not-configured' || kind === 'session-expired';
+}
+
+export async function loadDailySnapshot(
+  userId: string,
+  generatedAt = new Date().toISOString(),
+): Promise<DataResult<DailySnapshot>> {
+  const current = Date.parse(generatedAt);
+  if (!Number.isFinite(current)) return { ok: false, error: { kind: 'invalid' } };
+
+  const since = new Date(current - BASELINE_WINDOW_MS).toISOString();
+  const [observationResult, targetResult] = await Promise.all([
+    loadRecentObservations(userId, since),
+    loadUserTargets(userId),
+  ]);
+
+  if (observationResult.ok && targetResult.ok) {
+    const observations = observationResult.value.map(toCoreObservation);
+    const payload: DailySnapshotCachePayload = {
+      humanState: deriveHumanStateVector(observations, generatedAt),
+      overview: deriveDailyOverview(observations, targetResult.value, generatedAt),
+    };
+    const cachedAt = new Date().toISOString();
+    await writeRecentDailySnapshot(userId, payload, cachedAt);
+    return {
+      ok: true,
+      value: { ...payload, source: 'live', cachedAt: null, degradedBy: null },
+    };
+  }
+
+  const failure = !observationResult.ok ? observationResult.error : !targetResult.ok ? targetResult.error : { kind: 'unknown' as const };
+  if (canUseCachedSnapshot(failure.kind)) {
+    const cached = await readRecentDailySnapshot(userId, current);
+    if (cached.ok && cached.value && isDailySnapshotCachePayload(cached.value.payload)) {
+      return {
+        ok: true,
+        value: {
+          ...cached.value.payload,
+          source: 'cache',
+          cachedAt: cached.value.cachedAt,
+          degradedBy: failure.kind,
+        },
+      };
+    }
+  }
+
+  return { ok: false, error: failure };
+}
+
 export async function loadCurrentHumanState(
   userId: string,
   generatedAt = new Date().toISOString(),
@@ -157,17 +300,8 @@ export async function loadDailyOverview(
   if (!targetResult.ok) return targetResult;
 
   const observations = observationResult.value.map(toCoreObservation);
-  const balance = targetResult.value
-    ? calculateBalance(deriveBalanceSignals(observations, generatedAt), targetResult.value)
-    : null;
-  const momentum = momentumMetrics.flatMap(({ metric, higherIsBetter }) => {
-    const summary = summarizeTemporalMetric(observations, metric, generatedAt, higherIsBetter).momentum;
-    if (summary.direction === 'unknown' || summary.confidence.level === 'insufficient') return [];
-    return [{ metric, momentum: summary }];
-  });
-
   return {
     ok: true,
-    value: { balance, momentum },
+    value: deriveDailyOverview(observations, targetResult.value, generatedAt),
   };
 }
