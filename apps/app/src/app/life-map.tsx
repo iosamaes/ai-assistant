@@ -138,7 +138,7 @@ function DomainCard({ domain, locale, isRtl }: { domain: LifeMapDomainHistory; l
   return (
     <Card>
       <View style={[styles.domainHeader, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
-        <MizanText variant="title">{local.domains[domain.domainId]}</MizanText>
+        <MizanText variant="title" style={styles.flexibleRowText}>{local.domains[domain.domainId]}</MizanText>
         {domain.evidenceCount > 0 ? (
           <MizanText variant="caption" muted>{domain.evidenceCount} {local.observations}</MizanText>
         ) : null}
@@ -151,7 +151,7 @@ function DomainCard({ domain, locale, isRtl }: { domain: LifeMapDomainHistory; l
         return (
           <View key={metric.metric} style={[styles.metric, { borderTopColor: palette.border }]}>
             <View style={[styles.metricTitleRow, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
-              <MizanText variant="label">{metricLabel(metric.metric, locale)}</MizanText>
+              <MizanText variant="label" style={styles.flexibleRowText}>{metricLabel(metric.metric, locale)}</MizanText>
               <MizanText variant="title">{Math.round(metric.latestValue)} / 100</MizanText>
             </View>
 
@@ -239,10 +239,11 @@ export default function LifeMapScreen() {
 }
 
 const styles = StyleSheet.create({
-  topRow: { alignItems: 'center', justifyContent: 'space-between', gap: Spacing.lg },
-  heading: { flex: 1, gap: Spacing.xs },
-  domainHeader: { alignItems: 'center', justifyContent: 'space-between', gap: Spacing.md },
+  topRow: { alignItems: 'flex-start', justifyContent: 'space-between', gap: Spacing.lg, flexWrap: 'wrap' },
+  heading: { flex: 1, minWidth: 0, gap: Spacing.xs },
+  domainHeader: { alignItems: 'flex-start', justifyContent: 'space-between', gap: Spacing.md, flexWrap: 'wrap' },
   metric: { gap: Spacing.sm, borderTopWidth: Controls.borderWidth, paddingTop: Spacing.md },
-  metricTitleRow: { alignItems: 'center', justifyContent: 'space-between', gap: Spacing.md },
+  metricTitleRow: { alignItems: 'flex-start', justifyContent: 'space-between', gap: Spacing.md, flexWrap: 'wrap' },
+  flexibleRowText: { flexShrink: 1 },
   detailGroup: { gap: Spacing.xs },
 });
