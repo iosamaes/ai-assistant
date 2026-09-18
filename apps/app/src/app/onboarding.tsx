@@ -2,6 +2,7 @@ import { router } from 'expo-router';
 import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
+import { useSpiritualGroundingPreference } from '@/application/spiritual-grounding';
 import { ChoiceChip, MizanText, PrimaryButton } from '@/components/mizan-ui';
 import { Screen } from '@/components/screen';
 import { Spacing } from '@/constants/theme';
@@ -24,7 +25,12 @@ const copy = {
     seasonTitle: 'ما الموسم الذي تعيشه الآن؟',
     valuesTitle: 'ما القيم التي تريد أن يحميها ميزان؟',
     privacyTitle: 'كيف تريد أن يبدأ التتبع؟',
-    requirement: 'اختر مجال تركيز، وموسمًا، وقيمة واحدة على الأقل، وطريقة الخصوصية للمتابعة.',
+    spiritualTitle: 'هل تريد تفعيل مساحة السكينة والمعنى؟',
+    spiritualBody: 'اختياري بالكامل. يتابع فقط الممارسات التي تختارها أنت لاحقًا، ولا يحسب أي درجة للإيمان أو القيمة.',
+    spiritualEnable: 'نعم، فعّلها',
+    spiritualDisable: 'ليس الآن',
+    spiritualError: 'تعذر حفظ اختيار السكينة والمعنى الآن. حاول مرة أخرى عند توفر الاتصال.',
+    requirement: 'اختر مجال تركيز، وموسمًا، وقيمة واحدة على الأقل، وطريقة الخصوصية، وحدد اختيارك لمساحة السكينة والمعنى للمتابعة.',
     seasons: {
       balanced: 'مرحلة متوازنة',
       build: 'بناء أو مشروع مكثف',
@@ -49,7 +55,12 @@ const copy = {
     seasonTitle: 'What season are you in right now?',
     valuesTitle: 'Which values should MIZAN help protect?',
     privacyTitle: 'How should tracking begin?',
-    requirement: 'Choose a focus area, a season, at least one value, and a privacy mode to continue.',
+    spiritualTitle: 'Enable Spiritual Grounding?',
+    spiritualBody: 'Entirely optional. It only tracks practices you explicitly choose later and never creates a faith or worth score.',
+    spiritualEnable: 'Yes, enable it',
+    spiritualDisable: 'Not now',
+    spiritualError: 'MIZAN could not save this preference right now. Try again when the connection is available.',
+    requirement: 'Choose a focus area, a season, at least one value, a privacy mode, and your Spiritual Grounding preference to continue.',
     seasons: {
       balanced: 'Balanced season',
       build: 'Building or intense work',
@@ -89,16 +100,32 @@ export default function OnboardingScreen() {
     t,
     toggleDomain,
     togglePersonalValue,
+    userId,
   } = useAppState();
+  const {
+    choice: spiritualGroundingEnabled,
+    persistChoice: persistSpiritualGroundingChoice,
+    setChoice: setSpiritualGroundingChoice,
+    status: spiritualStatus,
+  } = useSpiritualGroundingPreference(userId);
   const [saving, setSaving] = useState(false);
   const syncMessage = syncStatus === 'offline' ? t('syncOffline') : syncStatus === 'error' ? t('syncError') : null;
   const labels = copy[locale];
   const canFinish =
-    focusDomain !== null && lifeSeason !== null && personalValues.length > 0 && privacyMode !== null;
+    focusDomain !== null &&
+    lifeSeason !== null &&
+    personalValues.length > 0 &&
+    privacyMode !== null &&
+    spiritualGroundingEnabled !== null;
 
   const finish = async () => {
-    if (saving || !canFinish) return;
+    if (saving || !canFinish || spiritualGroundingEnabled === null) return;
     setSaving(true);
+    const spiritualSaved = await persistSpiritualGroundingChoice(spiritualGroundingEnabled);
+    if (!spiritualSaved) {
+      setSaving(false);
+      return;
+    }
     await completeOnboarding();
     setSaving(false);
     router.replace('/today');
@@ -190,14 +217,32 @@ export default function OnboardingScreen() {
         </View>
       </View>
 
+      <View style={styles.section}>
+        <MizanText variant="title">{labels.spiritualTitle}</MizanText>
+        <MizanText muted>{labels.spiritualBody}</MizanText>
+        <View style={styles.domainList}>
+          <ChoiceChip
+            label={labels.spiritualEnable}
+            selected={spiritualGroundingEnabled === true}
+            onPress={() => setSpiritualGroundingChoice(true)}
+          />
+          <ChoiceChip
+            label={labels.spiritualDisable}
+            selected={spiritualGroundingEnabled === false}
+            onPress={() => setSpiritualGroundingChoice(false)}
+          />
+        </View>
+      </View>
+
       {!canFinish ? <MizanText muted>{labels.requirement}</MizanText> : null}
+      {spiritualStatus === 'error' ? <MizanText muted>{labels.spiritualError}</MizanText> : null}
       {syncMessage ? <MizanText muted>{syncMessage}</MizanText> : null}
 
       <View style={styles.footer}>
         <PrimaryButton
           label={saving ? t('saving') : t('continue')}
           onPress={() => void finish()}
-          disabled={saving || !canFinish}
+          disabled={saving || spiritualStatus === 'loading' || !canFinish}
         />
       </View>
     </Screen>

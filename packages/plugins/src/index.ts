@@ -30,3 +30,21 @@ export const foundationalPlugin: PluginManifest = {
     },
   ],
 };
+
+export const spiritualGroundingPlugin: PluginManifest = {
+  id: 'spiritual-grounding',
+  version: '0.1.0',
+  labelKey: 'plugins.spiritualGrounding.label',
+  optional: true,
+  dimensions: [
+    {
+      id: 'grounding',
+      labelKey: 'dimensions.grounding',
+      defaultWeight: 1,
+      optional: true,
+    },
+  ],
+  actions: [],
+};
+
+export const firstPartyPlugins = [foundationalPlugin, spiritualGroundingPlugin] as const;
