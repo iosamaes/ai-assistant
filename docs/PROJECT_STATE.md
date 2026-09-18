@@ -76,12 +76,17 @@ CP5 remaining gate:
 - Added `/what-if`, an Arabic/English What If surface wired to the real current Human State Vector and the deterministic scenario engine.
 - The first UI slice offers three small reversible scenarios: earlier bedtime, a notification-free focus block, and a short calm walk. Each exposes assumptions, uncertainty, current value when actually known, projected range, source, and evidence count.
 - The surface explicitly says that the projection is not a forecast or causal proof and refuses to invent a current value when state evidence is missing.
-- Conservative priors are labeled as such; the UI is already prepared to label future qualified personal effect estimates separately.
+- Added `packages/core/src/scenario-learning.ts`: personal scenario effects now require an explicit 1–5 outcome plus a later compatible observation, reject invalid/non-subsequent evidence, use bounded robust delta ranges, and carry conservative sample/freshness/consistency confidence.
+- Added `scenario-learning.test.ts` specifications covering subsequent-evidence requirements, repeated personal evidence, and one-off evidence remaining below the simulator's personal-effect threshold. These tests were authored but not run by workers.
+- Added persisted trial evidence reading from `action_events`/`feedback_outcomes` using the explicit `what_if_trial` context contract plus baseline values; no completion-only record can become benefit evidence.
+- Added `apps/app/src/application/scenario-learning.ts` to pair each explicit trial outcome with the first compatible later observation inside a bounded 14-day follow-up window and derive component-specific personal effects.
+- `/what-if` now loads those qualified personal effects and supplies them to the simulator; if the query is unavailable or evidence is insufficient, the UI safely remains on conservative priors rather than fabricating personalization.
+- The scenario trial producer is intentionally not faked here: the upcoming voluntary Experiment Engine is the real user-facing source for consented trial/action records and outcome collection.
 - The route is registered with Expo Router and exposed from Settings.
 
 ## Exact next executable action
-1. Worker-safe CP6 path: derive scenario-specific personal effect estimates only from explicit outcome feedback plus subsequent compatible observations, requiring minimum evidence/confidence before replacing conservative priors; never treat action completion alone as benefit.
-2. Then implement the voluntary Experiment Engine with a clear hypothesis, duration, observable outcome, consent, simple comparison logic, and limitations framing.
+1. Worker-safe CP6 path: implement the voluntary Experiment Engine with a clear hypothesis, duration, observable outcome, explicit consent, safe trial/action persistence, outcome capture, simple comparison logic, and limitations framing; use it as the real producer for `what_if_trial` evidence where a scenario experiment maps cleanly.
+2. Then implement Recovery / Save My Day with a low-cognitive-load sequence and no punishment for skipping/stopping.
 3. Owner path: unlock Windows and complete CP1 narrow-phone Arabic/English interaction verification.
 4. Owner path: configure Supabase Auth redirect allow-list from `automation/HUMAN_REQUIRED.md`, then validate auth/recovery/session/persistence and execute RLS verification.
 5. Owner path: run current core/app/plugin typechecks and tests before granting CP3/CP4/CP5/CP6 checkpoint credit.
@@ -96,7 +101,7 @@ Implemented after that verification and still awaiting owner validation:
 - CP3 Balance, Capacity/Interaction Risk, relationship/feedback learning, recommendation-context stability, optional baseline targets, and value-alignment core/specifications.
 - CP4 check-in, state integration, One Move decision/feedback loop, onboarding context/targets, Balance/Momentum, Spiritual Grounding preference.
 - CP5 Life Map, WHY, Insights, Personal Learning, Personalization Maturity, Values & Identity alignment, and Invisible Wins/reflection capture.
-- CP6 deterministic What If scenario engine/specifications plus the Arabic/English `/what-if` surface wired to current state.
+- CP6 deterministic What If scenario engine/specifications, qualified personal-effect learning/specifications, persisted trial-evidence reader/application bridge, and the Arabic/English `/what-if` surface wired to current state plus qualified personal effects.
 - Supabase migration `invisible_wins` was applied successfully to project `olfhjnropdrnujgpidfi`; direct policy inspection confirmed SELECT/INSERT/UPDATE/DELETE own-row policies on `public.reflections`.
 - Reflection RLS isolation checks were added to `supabase/tests/rls_cross_user.sql` but were not executed by the worker.
 - No product/database test script, cloud test, or build was run by workers for these post-baseline additions, per `automation/TASK.md`.
@@ -112,7 +117,7 @@ Implemented after that verification and still awaiting owner validation:
 - Insights is intentionally a small association slice, not a general causal graph.
 - Value alignment intentionally leaves values without a direct observation signal unknown rather than borrowing unrelated productivity data.
 - Invisible Wins are intentionally stored outside `observations` and `action_events`; they are reflection history, not scoring evidence.
-- What If currently uses explicit conservative priors because scenario-specific personal effect extraction is not yet implemented; unknown current state remains unknown rather than being filled by a prior.
+- What If personal estimates remain absent until a real consented trial producer records `what_if_trial` action context, an explicit outcome, and a later compatible observation; conservative priors remain the safe fallback.
 - Moderate npm advisories remain in the supported Expo dependency chain; no prior high/critical advisory was recorded.
 
 ## Evidence paths
@@ -134,7 +139,9 @@ Implemented after that verification and still awaiting owner validation:
 - `apps/app/src/application/why.ts`
 - `apps/app/src/application/insights.ts`
 - `apps/app/src/application/value-alignment.ts`
+- `apps/app/src/application/scenario-learning.ts`
 - `apps/app/src/infrastructure/supabase/reflections.ts`
+- `apps/app/src/infrastructure/supabase/scenario-trial-data.ts`
 - `apps/app/src/app/value-alignment.tsx`
 - `apps/app/src/app/invisible-wins.tsx`
 - `apps/app/src/app/what-if.tsx`
@@ -143,6 +150,8 @@ Implemented after that verification and still awaiting owner validation:
 - `packages/core/src/alignment.test.ts`
 - `packages/core/src/scenario.ts`
 - `packages/core/src/scenario.test.ts`
+- `packages/core/src/scenario-learning.ts`
+- `packages/core/src/scenario-learning.test.ts`
 - `packages/core/src/engine.ts`
 - `packages/core/src/temporal.ts`
 - `packages/core/src/leverage.ts`
