@@ -2,7 +2,7 @@ import { PropsWithChildren, ReactNode } from 'react';
 import { ScrollView, StyleSheet, useColorScheme, useWindowDimensions, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { MaxContentWidth, Palette, Spacing, WideBreakpoint } from '@/constants/theme';
+import { Layout, Palette, Spacing } from '@/constants/theme';
 
 interface ScreenProps extends PropsWithChildren {
   header?: ReactNode;
@@ -13,14 +13,19 @@ export function Screen({ children, header, scroll = true }: ScreenProps) {
   const scheme = useColorScheme();
   const palette = Palette[scheme === 'dark' ? 'dark' : 'light'];
   const { width } = useWindowDimensions();
-  const horizontalPadding = width < 380 ? Spacing.lg : width >= WideBreakpoint ? Spacing.xxxl : Spacing.xl;
+  const horizontalPadding =
+    width < Layout.compactWidth
+      ? Layout.horizontalPadding.compact
+      : width >= Layout.wideBreakpoint
+        ? Layout.horizontalPadding.wide
+        : Layout.horizontalPadding.regular;
 
   const content = (
     <View
       style={[
         styles.content,
         {
-          maxWidth: MaxContentWidth,
+          maxWidth: Layout.maxContentWidth,
           paddingHorizontal: horizontalPadding,
           alignSelf: 'center',
           width: '100%',
