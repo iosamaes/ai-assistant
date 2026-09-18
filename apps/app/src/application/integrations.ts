@@ -1,14 +1,18 @@
 import type {
   HealthDataProvider,
+  IntegrationCapability,
   IntegrationFailureKind,
   IntegrationResult,
   ObservationWindow,
 } from '@/integrations/contracts';
 import {
   disconnectIntegration,
+  loadIntegrationConnections,
   upsertIntegrationConnection,
   upsertNormalizedExternalObservations,
+  type StoredIntegrationConnection,
 } from '@/infrastructure/supabase/integrations';
+import type { DataResult } from '@/infrastructure/supabase/data-access';
 
 function mapDataFailure(kind: string): IntegrationFailureKind {
   if (kind === 'not-configured') return 'not-configured';
@@ -22,6 +26,12 @@ export interface HealthSyncSummary {
   providerId: string;
   observationCount: number;
   syncedAt: string;
+}
+
+export async function loadIntegrationSettings(
+  userId: string,
+): Promise<DataResult<StoredIntegrationConnection[]>> {
+  return loadIntegrationConnections(userId);
 }
 
 export async function syncHealthData(
@@ -85,11 +95,12 @@ export async function syncHealthData(
   };
 }
 
-export async function disableHealthIntegration(
+export async function disableIntegrationConnection(
   userId: string,
+  capability: IntegrationCapability,
   providerId: string,
 ): Promise<IntegrationResult<null>> {
-  const result = await disconnectIntegration(userId, 'health_data', providerId);
+  const result = await disconnectIntegration(userId, capability, providerId);
   if (!result.ok) {
     return {
       ok: false,
@@ -100,4 +111,11 @@ export async function disableHealthIntegration(
     };
   }
   return { ok: true, value: null };
+}
+
+export async function disableHealthIntegration(
+  userId: string,
+  providerId: string,
+): Promise<IntegrationResult<null>> {
+  return disableIntegrationConnection(userId, 'health_data', providerId);
 }
