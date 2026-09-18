@@ -12,6 +12,12 @@ export type StoredScenarioTrialFeedback = {
   feedbackObservedAt: string;
 };
 
+export type ExperimentTrialEvent = {
+  eventId: string;
+  usefulness: number | null;
+  feedbackObservedAt: string | null;
+};
+
 function classify(error: PostgrestError): DataFailureKind {
   const message = error.message.toLowerCase();
   if (error.code === 'PGRST301' || error.code === 'PGRST302' || error.code === 'PGRST303') return 'session-expired';
@@ -42,6 +48,46 @@ function parseBaseline(value: unknown): Record<string, number> {
       return typeof candidate === 'number' && Number.isFinite(candidate) && candidate >= 0 && candidate <= 100;
     }),
   );
+}
+
+export async function loadExperimentTrialEvent(
+  userId: string,
+  experimentId: string,
+): Promise<DataResult<ExperimentTrialEvent | null>> {
+  if (!supabase) return { ok: false, error: { kind: 'not-configured' } };
+  const { data: event, error: eventError } = await supabase
+    .from('action_events')
+    .select('id')
+    .eq('user_id', userId)
+    .eq('context->>source', 'what_if_trial')
+    .eq('context->>experiment_id', experimentId)
+    .in('event_type', ['accepted', 'completed'])
+    .order('occurred_at', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (eventError) return failure(eventError);
+  if (!event) return { ok: true, value: null };
+
+  const eventId = event.id as string;
+  const { data: feedback, error: feedbackError } = await supabase
+    .from('feedback_outcomes')
+    .select('usefulness,observed_at')
+    .eq('user_id', userId)
+    .eq('action_event_id', eventId)
+    .not('usefulness', 'is', null)
+    .order('observed_at', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (feedbackError) return failure(feedbackError);
+
+  return {
+    ok: true,
+    value: {
+      eventId,
+      usefulness: feedback?.usefulness == null ? null : Number(feedback.usefulness),
+      feedbackObservedAt: feedback?.observed_at == null ? null : String(feedback.observed_at),
+    },
+  };
 }
 
 export async function loadScenarioTrialFeedback(
