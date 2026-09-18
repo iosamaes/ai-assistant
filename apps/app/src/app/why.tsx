@@ -11,7 +11,7 @@ import {
 } from '@/application/why';
 import { Card, MizanText, PrimaryButton, SecondaryButton } from '@/components/mizan-ui';
 import { Screen } from '@/components/screen';
-import { Palette, Spacing } from '@/constants/theme';
+import { Controls, Palette, Spacing } from '@/constants/theme';
 import { useAppState } from '@/state/app-state';
 
 type LoadStatus = 'loading' | 'ready' | 'error';
@@ -217,7 +217,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     gap: Spacing.md,
-    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopWidth: Controls.borderWidth,
     paddingTop: Spacing.sm,
   },
 });
