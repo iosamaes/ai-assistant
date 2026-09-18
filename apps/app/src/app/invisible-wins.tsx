@@ -1,6 +1,6 @@
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { StyleSheet, TextInput, useColorScheme, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
 import {
   loadInvisibleWins,
@@ -8,9 +8,16 @@ import {
   type InvisibleWinCategory,
   type StoredInvisibleWin,
 } from '@/application/reflections';
-import { Card, ChoiceChip, MizanText, PrimaryButton } from '@/components/mizan-ui';
+import {
+  Card,
+  ChoiceChip,
+  MizanText,
+  MizanTextInput,
+  PrimaryButton,
+  SecondaryButton,
+} from '@/components/mizan-ui';
 import { Screen } from '@/components/screen';
-import { Palette, Radius, Spacing } from '@/constants/theme';
+import { Spacing } from '@/constants/theme';
 import { useAppState } from '@/state/app-state';
 
 const categories: InvisibleWinCategory[] = ['rest', 'boundary', 'family', 'repair', 'disconnect', 'health', 'other'];
@@ -71,8 +78,6 @@ const copy = {
 } as const;
 
 export default function InvisibleWinsScreen() {
-  const scheme = useColorScheme();
-  const palette = Palette[scheme === 'dark' ? 'dark' : 'light'];
   const { isRtl, locale, userId } = useAppState();
   const labels = copy[locale];
   const [category, setCategory] = useState<InvisibleWinCategory>('rest');
@@ -138,24 +143,14 @@ export default function InvisibleWinsScreen() {
             />
           ))}
         </View>
-        <TextInput
+        <MizanTextInput
           accessibilityLabel={labels.prompt}
           multiline
           maxLength={1000}
           placeholder={labels.placeholder}
-          placeholderTextColor={palette.textMuted}
           value={note}
           onChangeText={setNote}
-          style={[
-            styles.input,
-            {
-              borderColor: palette.border,
-              color: palette.text,
-              backgroundColor: palette.background,
-              textAlign: isRtl ? 'right' : 'left',
-              writingDirection: isRtl ? 'rtl' : 'ltr',
-            },
-          ]}
+          style={[styles.input, { writingDirection: isRtl ? 'rtl' : 'ltr' }]}
         />
         <PrimaryButton
           label={saving ? labels.saving : labels.save}
@@ -180,9 +175,7 @@ export default function InvisibleWinsScreen() {
         ))}
       </View>
 
-      <MizanText variant="label" style={styles.backLink} onPress={() => router.replace('/settings')}>
-        {labels.back}
-      </MizanText>
+      <SecondaryButton compact label={labels.back} onPress={() => router.replace('/settings')} />
     </Screen>
   );
 }
@@ -193,13 +186,6 @@ const styles = StyleSheet.create({
   chips: { flexWrap: 'wrap', gap: Spacing.sm },
   input: {
     minHeight: 120,
-    borderWidth: 1,
-    borderRadius: Radius.md,
-    paddingHorizontal: Spacing.lg,
-    paddingVertical: Spacing.md,
-    fontSize: 16,
-    lineHeight: 24,
     textAlignVertical: 'top',
   },
-  backLink: { textAlign: 'center', paddingVertical: Spacing.md },
 });
