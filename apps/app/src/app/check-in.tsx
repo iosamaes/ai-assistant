@@ -1,6 +1,6 @@
-import { Link, router } from 'expo-router';
+import { router } from 'expo-router';
 import { useMemo, useState } from 'react';
-import { Pressable, StyleSheet, useColorScheme, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
 import {
   submitDailyCheckIn,
@@ -8,9 +8,9 @@ import {
   type DailyCheckInRating,
   type DailyCheckInRatings,
 } from '@/application/check-in';
-import { Card, ChoiceChip, MizanText, PrimaryButton } from '@/components/mizan-ui';
+import { Card, ChoiceChip, MizanText, PrimaryButton, SecondaryButton } from '@/components/mizan-ui';
 import { Screen } from '@/components/screen';
-import { Palette, Radius, Spacing } from '@/constants/theme';
+import { Spacing } from '@/constants/theme';
 import { useAppState } from '@/state/app-state';
 
 const ratingOptions = [1, 2, 3, 4, 5] as const;
@@ -36,8 +36,6 @@ export default function CheckInScreen() {
   const { isRtl, locale, refreshSession, t, userId } = useAppState();
   const [ratings, setRatings] = useState<DailyCheckInRatings>({});
   const [submitState, setSubmitState] = useState<SubmitState>('idle');
-  const scheme = useColorScheme();
-  const palette = Palette[scheme === 'dark' ? 'dark' : 'light'];
   const answeredCount = useMemo(() => Object.keys(ratings).length, [ratings]);
 
   const setRating = (metric: DailyCheckInMetric, rating?: DailyCheckInRating) => {
@@ -123,20 +121,7 @@ export default function CheckInScreen() {
         onPress={() => void handleSubmit()}
       />
 
-      <Link href="/today" asChild>
-        <Pressable
-          accessibilityRole="button"
-          style={({ pressed }) => [
-            styles.backButton,
-            {
-              borderColor: palette.border,
-              backgroundColor: palette.surface,
-              opacity: pressed ? 0.72 : 1,
-            },
-          ]}>
-          <MizanText variant="label">{t('backToday')}</MizanText>
-        </Pressable>
-      </Link>
+      <SecondaryButton label={t('backToday')} onPress={() => router.replace('/today')} />
     </Screen>
   );
 }
@@ -145,12 +130,4 @@ const styles = StyleSheet.create({
   heading: { gap: Spacing.sm },
   ratingRow: { flexWrap: 'wrap', gap: Spacing.sm },
   scaleRow: { justifyContent: 'space-between', gap: Spacing.md },
-  backButton: {
-    minHeight: 48,
-    borderWidth: 1,
-    borderRadius: Radius.md,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: Spacing.xl,
-  },
 });
