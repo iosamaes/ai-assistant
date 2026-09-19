@@ -31,9 +31,9 @@ beforeEach(() => {
 
 describe('PrivacyScreen account-switch fencing', () => {
   test('requires a fresh delete confirmation after the active user changes', async () => {
-    const view = render(<PrivacyScreen />);
+    const view = await render(<PrivacyScreen />);
 
-    fireEvent.press(view.getByText('Start account deletion'));
+    await fireEvent.press(view.getByText('Start account deletion'));
     expect(view.getByText('Confirm permanent deletion')).toBeTruthy();
     expect(view.getByText('Delete permanently')).toBeTruthy();
 

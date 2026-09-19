@@ -91,12 +91,15 @@ export default function OneMoveScreen() {
 
   useEffect(() => {
     let active = true;
-    setLoadStatus('loading');
-    setRecommendation(null);
-    setSelectedActionId(null);
-    setDecisionStatus('idle');
 
     void (async () => {
+      await Promise.resolve();
+      if (!active) return;
+      setLoadStatus('loading');
+      setRecommendation(null);
+      setSelectedActionId(null);
+      setDecisionStatus('idle');
+
       if (!userId) {
         if (active) setLoadStatus('ready');
         return;

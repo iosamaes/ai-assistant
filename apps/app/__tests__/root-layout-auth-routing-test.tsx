@@ -24,6 +24,10 @@ jest.mock('expo-router', () => {
 
 jest.mock('expo-status-bar', () => ({ StatusBar: () => null }));
 
+jest.mock('@/components/app-navigation', () => ({
+  AppNavigation: () => null,
+}));
+
 jest.mock('@/application/offline-sync', () => ({
   flushPendingUserMutations: (...args: unknown[]) => mockFlushPendingUserMutations(...args),
 }));

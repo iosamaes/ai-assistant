@@ -28,7 +28,7 @@ describe('AppErrorBoundary privacy logging', () => {
     log.mockRestore();
   });
 
-  test('renders the fallback in the active app locale instead of the device RTL locale', () => {
+  test('renders the fallback in the active app locale instead of the device RTL locale', async () => {
     useAppStateMock.mockReturnValue({
       isRtl: true,
       locale: 'ar',
@@ -36,7 +36,7 @@ describe('AppErrorBoundary privacy logging', () => {
     const boundary = new AppErrorBoundary({ children: null } as PropsWithChildren);
     boundary.state = { hasError: true };
 
-    const view = render(boundary.render() as ReactElement);
+    const view = await render(boundary.render() as ReactElement);
 
     expect(view.getByText('تعذر عرض هذه الشاشة')).toBeTruthy();
     expect(view.getByText('إعادة المحاولة')).toBeTruthy();

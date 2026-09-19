@@ -108,16 +108,21 @@ export default function PrivacyScreen() {
   const [busy, setBusy] = useState<BusyAction>(null);
   const [confirmingDelete, setConfirmingDelete] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
+  const [confirmationUserId, setConfirmationUserId] = useState<string | null>(null);
   const activeUserRef = useRef(userId);
-  const confirmationUserRef = useRef(userId);
 
   useEffect(() => {
     activeUserRef.current = userId;
-    if (confirmationUserRef.current !== userId) {
+    let active = true;
+    void Promise.resolve().then(() => {
+      if (!active) return;
       setConfirmingDelete(false);
+      setConfirmationUserId(null);
       setMessage(null);
-      confirmationUserRef.current = userId;
-    }
+    });
+    return () => {
+      active = false;
+    };
   }, [userId]);
 
   const handleExport = async () => {
@@ -146,7 +151,7 @@ export default function PrivacyScreen() {
   };
 
   const handleDelete = async () => {
-    if (busy || !userId) return;
+    if (busy || !userId || confirmationUserId !== userId) return;
     const targetUserId = userId;
     setBusy('delete');
     setMessage(null);
@@ -250,7 +255,7 @@ export default function PrivacyScreen() {
               label={copy.deleteStart}
               onPress={() => {
                 setMessage(null);
-                confirmationUserRef.current = userId;
+                setConfirmationUserId(userId);
                 setConfirmingDelete(true);
               }}
               disabled={busy !== null || !userId}
@@ -264,11 +269,14 @@ export default function PrivacyScreen() {
               <PrimaryButton
                 label={busy === 'delete' ? copy.deleteWorking : copy.deleteConfirm}
                 onPress={() => void handleDelete()}
-                disabled={busy !== null || !userId || confirmationUserRef.current !== userId}
+                disabled={busy !== null || !userId || confirmationUserId !== userId}
               />
               <SecondaryButton
                 label={copy.deleteCancel}
-                onPress={() => setConfirmingDelete(false)}
+                onPress={() => {
+                  setConfirmingDelete(false);
+                  setConfirmationUserId(null);
+                }}
                 disabled={busy !== null}
               />
             </View>

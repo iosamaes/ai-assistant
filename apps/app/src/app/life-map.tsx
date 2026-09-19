@@ -222,7 +222,7 @@ function RadarChart({
     .map((domain) => `${local.domains[domain.domainId]}: ${domain.score === null ? local.unknown : `${formatLocalizedNumber(Math.round(domain.score), locale, 0)} / ${formatLocalizedNumber(100, locale, 0)}`}`)
     .join('. ')}`;
 
-  const dataSegments: Array<{ from: Point; to: Point; key: string }> = [];
+  const dataSegments: { from: Point; to: Point; key: string }[] = [];
   if (count >= 2) {
     for (let index = 0; index < count - 1; index += 1) {
       const from = dataPoints[index];
