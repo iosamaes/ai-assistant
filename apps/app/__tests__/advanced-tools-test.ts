@@ -3,7 +3,7 @@ import {
   assessExplicitCostOfYes,
 } from '@/application/cost-of-yes';
 import { assessExplicitHumanROI } from '@/application/human-roi';
-import { parseLocalizedDecimalInput } from '@/i18n/number-input';
+import { formatLocalizedNumber, parseLocalizedDecimalInput } from '@/i18n/number-input';
 import { createTimeContextProvider } from '@/integrations/provider-registry';
 
 const observedAt = '2026-09-18T12:00:00.000Z';
@@ -14,6 +14,12 @@ describe('advanced decision-tool application boundaries', () => {
     expect(parseLocalizedDecimalInput('۴,۵')).toBe(4.5);
     expect(parseLocalizedDecimalInput('3.25')).toBe(3.25);
     expect(parseLocalizedDecimalInput('٤٫٥٫٦')).toBeNull();
+  });
+
+  test('decision-tool numbers render in the selected locale', () => {
+    expect(formatLocalizedNumber(4.5, 'ar', 1)).toBe('٤٫٥');
+    expect(formatLocalizedNumber(5, 'ar', 0)).toBe('٥');
+    expect(formatLocalizedNumber(4.5, 'en', 1)).toBe('4.5');
   });
 
   test('Cost of Yes exposes displacement from explicit weekly margin', () => {
