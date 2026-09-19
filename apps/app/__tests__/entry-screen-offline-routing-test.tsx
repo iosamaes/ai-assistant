@@ -21,6 +21,7 @@ function appState(
   onboardingCompleted = true,
 ) {
   return {
+    locale: 'en',
     onboardingCompleted,
     sessionStatus,
     userId,
@@ -31,6 +32,16 @@ function appState(
 describe('EntryScreen offline routing', () => {
   beforeEach(() => {
     mockRedirect.mockClear();
+  });
+
+  test('renders a designed loading state without redirecting before session restoration finishes', () => {
+    useAppStateMock.mockReturnValue(appState('loading', null, true));
+
+    const view = render(<EntryScreen />);
+
+    expect(mockRedirect).not.toHaveBeenCalled();
+    expect(view.getByText('Restoring context before asking you to decide')).toBeTruthy();
+    expect(view.getByText('loading')).toBeTruthy();
   });
 
   test('keeps an offline authenticated user in the product', () => {
