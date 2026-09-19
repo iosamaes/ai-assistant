@@ -57,11 +57,12 @@ Presentation authority remains the compact app-local theme and shared primitives
 - `09010b3b130efaaf402aa9eea1404d2866bfebe9` — Life Seasons premium composition: season hero, responsive target panels, structured persistence feedback, premium history grid and state pills; Arabic history dates now force Latin digits and unknown stored domain ids use a localized generic fallback.
 - `c0fdf88655682900b36c90d531b3ef2114f065c2` — Personalization premium composition: current-maturity hero, responsive learning-stage cards with active/past/future state treatment, structured loading/error/empty states, and retained evidence-maturity caveats.
 - `726a969566a178332d0f21f09ca6e6694bfebc5e` — Invisible Wins premium composition plus account-state hardening: calm reflection hero/composer/history grid and structured delivery/load states; history is now explicitly owned by the active account and stale previous-account load/save completions cannot repaint the next account's reflection list.
+- `b88fb3a4d70994251300b52c8458e3409659aa17` — Update Password premium composition: secure recovery framing, structured credential form, designed requirement/match/session states, and input gating when no valid recovery session is active, while preserving the existing password-update behavior and raw-error shielding.
 
 Additional static CP9 evidence includes Western/ASCII digit enforcement for Arabic and English formatted output, Arabic localized-number parsing, Arabic timestamps using `nu-latn`, Today cross-user async fencing, and targeted RTL/localization/dynamic-type/accessibility hardening across primary routes.
 
 ### CP9 remaining
-- Continue the Premium Production Visual Pass only on remaining shipped routes that static inspection still shows at scaffold-level composition; prioritize recovery/password-update and any remaining secondary decision/state surfaces before touching already-premium screens again.
+- Continue the Premium Production Visual Pass only on any remaining shipped route that static inspection still shows at scaffold-level composition; password recovery/update now matches the premium auth direction, so prioritize only concrete remaining secondary/state surfaces before touching already-premium screens again.
 - Refine navigation shell/state/data presentation only where current code demonstrates a concrete need; avoid page-local design systems or wrapper-only abstraction.
 - Continue static defect review for untranslated production literals, Western-digit regressions, semantic RTL, accessibility/live announcements, truncation/dynamic-type, keyboard/focus, unknown technical identifiers, and duplicated global visual decisions.
 - Owner/runtime evidence is still required across representative phone/tablet/Web widths, Arabic/English, and shipped light/dark modes.
@@ -91,7 +92,7 @@ Implemented security/privacy work includes:
 - Supabase leaked-password protection remains an owner action in `automation/HUMAN_REQUIRED.md`.
 
 ## Exact next executable action
-1. Continue CP9 static inspection for the remaining scaffold-level shipped routes and apply the Premium Production Visual Pass only where the current composition still fails the new production-visual gate.
+1. Finish CP9 static inspection of remaining shipped routes/navigation state and apply the Premium Production Visual Pass only where a concrete scaffold-level composition still remains.
 2. Continue static CP9 defects: untranslated literals, Western-digit regressions, semantic RTL, accessibility/live announcements, truncation/dynamic type, keyboard/focus, and technical-id fallbacks.
 3. In parallel, continue CP10 repository-wide sensitive logging/error-reporting review for concrete uninspected sinks.
 4. Leave representative-width runtime checks, post-baseline tests/builds/typechecks/database validation suites, export/delete/local-purge proof, consent/account-switch runtime races, premium screenshot evidence, and final design-swap proof to owner validation under the active policy.
@@ -111,7 +112,7 @@ Post-baseline:
 - **No worker-run app tests, builds, typechecks, validation database scripts, cloud CI, or GitHub Actions are claimed for CP2–CP10 changes.**
 - Authorized product migrations `function_execute_hardening` and `account_data_export` were applied and resulting live function ACLs were read; this is implementation/state evidence, not a test-suite PASS.
 - `delete-account` deployment reports ACTIVE with JWT verification enabled; no destructive end-to-end deletion validation is claimed.
-- CP9 Premium Production Visual Pass commits through `726a969566a178332d0f21f09ca6e6694bfebc5e` are static implementation evidence only until owner runtime review.
+- CP9 Premium Production Visual Pass commits through `b88fb3a4d70994251300b52c8458e3409659aa17` are static implementation evidence only until owner runtime review.
 
 ## Known blockers / risks
 - CP1: Windows session must be unlocked normally for true narrow-phone Arabic/English interaction evidence; see `automation/HUMAN_REQUIRED.md`.
@@ -149,6 +150,7 @@ Post-baseline:
 - `apps/app/src/app/settings.tsx`
 - `apps/app/src/app/privacy.tsx`
 - `apps/app/src/app/auth.tsx`
+- `apps/app/src/app/update-password.tsx`
 - `apps/app/src/app/onboarding.tsx`
 - `apps/app/src/app/integrations.tsx`
 - `apps/app/src/app/capacity.tsx`
