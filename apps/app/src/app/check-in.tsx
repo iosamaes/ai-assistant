@@ -122,7 +122,7 @@ export default function CheckInScreen() {
         </View>
       </Card>
 
-      <View style={styles.metricGrid}>
+      <View style={[styles.metricGrid, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
         {metricItems.map(({ metric, label }) => {
           const selectedRating = ratings[metric];
           const selectedLabel = selectedRating === undefined
@@ -222,7 +222,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.lg,
     borderRadius: Radius.pill,
   },
-  metricGrid: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'stretch', gap: Spacing.lg },
+  metricGrid: { flexWrap: 'wrap', alignItems: 'stretch', gap: Spacing.lg },
   metricCard: { flexGrow: 1, flexShrink: 1, flexBasis: 320 },
   metricHeader: { alignItems: 'flex-start', justifyContent: 'space-between', gap: Spacing.md, flexWrap: 'wrap' },
   metricTitle: { flexGrow: 1, flexShrink: 1, flexBasis: 180 },
