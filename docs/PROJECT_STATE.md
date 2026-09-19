@@ -61,6 +61,7 @@ The earlier Premium Production Visual Pass remains useful foundation, but the ow
 - `b06529071d63c4437d54df5e2e150b51018d1e43` + `fc8e487eed24bf52b30bc410d8ca128142954640` + `a53732fbaa471fa45ba879cb5032a7f19f4804d8` — the root render-error fallback now derives Arabic/English copy and RTL from the active MIZAN app locale rather than device-global `I18nManager`; `AppStateProvider` now remains above the render boundary so that localized fallback context is available, and a regression specification records the Arabic fallback requirement.
 - `92c7f06ad33534b905e38252bfa4758bf950c907` — **Privacy & data** now has stronger owner-control visual hierarchy with shared semantic icons; the same change also scopes destructive delete confirmation to the active account so a confirmation opened before an account switch cannot authorize deletion for the newly active user.
 - `6c84bb8915103f16af68d4c630dc7373aece431a` — focused Privacy-screen regression specification requires a fresh two-step deletion confirmation after an account switch; intentionally not worker-run under the active policy.
+- `27d5b9cdcc1fd158afee7f62145a77a18081f51c` — **Life Seasons** now consumes the shared season/domain icon vocabulary across the hero, target panels, and history, and each 1–5 target choice has an explicit domain-scoped accessibility label instead of an ambiguous bare number. The same surface now passes the initiating user id through its save boundary for CP10 account fencing without changing the Life Season product semantics.
 - Existing navigation/auth/localization/account-switch hardening remains in place, including offline authenticated entry, password-recovery routing, Check-in fencing, Today RTL ordering, Western-digit normalization, and corrected neutral Life Debt Arabic wording.
 
 ### CP9 remaining
@@ -73,18 +74,24 @@ The earlier Premium Production Visual Pass remains useful foundation, but the ow
 ## CP10 current implementation
 Detailed ledger/threat model: `docs/CP10_SECURITY_PRIVACY.md`.
 
-Implemented security/privacy work includes live RLS/ownership review of the ten current user-owned client-visible tables, cross-user policy specifications, function-execute hardening migration `0009`, portable authenticated data export migration `0010`, deployed JWT-protected `delete-account` Edge Function, client export/two-step deletion UI with local cache purge attempts, safer error-boundary logging, targeted sensitive-log review, stronger auth password creation minimums, consent rechecks around health sync, and account-switch/session fencing across integrations, app-state hydration, Invisible Wins, Recovery, Check-in, and the Privacy destructive-confirmation flow. A confirmation opened under one user is now invalidated on account switch before any newly active user can execute deletion. The source-level sensitive-error review has now covered baseline-target, experiment, reflection, Life Season, onboarding-context, One Move decision/history, pending-feedback, plugin-setting, What If trial-data, app-owned integration adapter/contract/registry paths, the application-layer action-feedback, daily intelligence/recommendation, check-in, capacity, Cost of Yes, spiritual preference, user-target, personal-learning/scenario-learning, Human ROI, Value Alignment, WHY, and Recovery paths, plus the auth/config/session-storage, root app-state, render-boundary, and destructive account-deletion boundaries. No new raw-sensitive logging sink was found in those newly inspected paths; auth continues to return classified failure kinds/codes instead of raw backend messages, and the render boundary logs only component-stack diagnostics rather than arbitrary Error fields.
+Implemented security/privacy work includes live RLS/ownership review of the ten current user-owned client-visible tables, cross-user policy specifications, function-execute hardening migration `0009`, portable authenticated data export migration `0010`, Life Season expected-user account fencing migrations `0011`/`0012`, deployed JWT-protected `delete-account` Edge Function v2 with server-side expected-user matching, client export/two-step deletion UI with local cache purge attempts, safer error-boundary logging, targeted sensitive-log review, stronger auth password creation minimums, consent rechecks around health sync, and account-switch/session fencing across integrations, app-state hydration, Invisible Wins, Recovery, Check-in, Life Seasons, and the Privacy destructive-confirmation/deletion flow.
+
+The Life Season mutation now supplies `p_expected_user_id`; the database rejects the transition before any mutation when it differs from `auth.uid()`. Live ACL verification after migration confirmed the new `set_life_season(text,jsonb,uuid)` RPC is executable by `authenticated` but not `anon`. The Life Season SQL specification now records the expected-user and anonymous-execute requirements; it was not worker-run.
+
+Account deletion now carries `expected_user_id` to the Edge Function. Function version 2 resolves the bearer-token user and compares it with that expected id before invoking the admin delete operation, so a session switch between client preflight and Edge execution cannot delete the newly-active account. The client regression specification records the new request contract; it was not worker-run.
+
+The source-level sensitive-error review has covered baseline-target, experiment, reflection, Life Season, onboarding-context, One Move decision/history, pending-feedback, plugin-setting, What If trial-data, app-owned integration adapter/contract/registry paths, the application-layer action-feedback, daily intelligence/recommendation, check-in, capacity, Cost of Yes, spiritual preference, user-target, personal-learning/scenario-learning, Human ROI, Value Alignment, WHY, Recovery, offline pending mutations/recent snapshots, generic data access, privacy/export/deletion, plus auth/config/session-storage, root app-state, render-boundary, and destructive account-deletion boundaries. No new raw-sensitive logging sink was found in those newly inspected paths; auth and privacy continue to return classified/coarse failure kinds rather than raw backend messages, and the render boundary logs only component-stack diagnostics rather than arbitrary Error fields.
 
 ### CP10 remaining
 - Complete repository-wide sensitive logging/error-reporting review beyond the targeted boundaries already inspected; fix only concrete leakage paths.
-- Owner/runtime validation remains required for cross-user/database tests, export/delete/local purge, destructive Edge deletion, consent revocation races, account-switch races, and the new account-scoped deletion-confirmation specification.
+- Owner/runtime validation remains required for cross-user/database tests, the Life Season expected-user specification, export/delete/local purge, destructive Edge deletion v2, consent revocation races, account-switch races, and account-scoped deletion confirmation.
 - Supabase leaked-password protection remains an owner action in `automation/HUMAN_REQUIRED.md`.
 
 ## Exact next executable action
 1. Continue the final CP9 static owner-reference sweep across remaining shipped/secondary routes for concrete RTL/localization/accessibility/dynamic-type/focus/technical-id issues and presentation inconsistencies.
 2. Inspect only still-unreviewed quantitative surfaces and add a meter/chart when the domain contract provides a real bounded quantitative meaning; preserve unknown states and avoid false precision.
 3. Continue the independent CP10 repository-wide sensitive logging/error-reporting audit across application/presentation boundaries not yet explicitly inspected.
-4. Leave representative-width runtime checks, tests/builds/typechecks/database validation suites, premium screenshot comparison, and final design-swap proof to owner validation under the active execution policy.
+4. Leave representative-width runtime checks, tests/builds/typechecks/database validation suites, premium screenshot comparison, destructive account deletion, and final design-swap proof to owner validation under the active execution policy.
 
 ## Verification record
 Previously recorded owner-side baseline evidence:
@@ -99,17 +106,18 @@ Previously recorded owner-side baseline evidence:
 
 Post-baseline:
 - **No worker-run app tests, builds, typechecks, validation database scripts, cloud CI, or GitHub Actions are claimed for CP2–CP10 changes.**
-- Authorized migrations `function_execute_hardening` and `account_data_export` were applied and live function ACLs were read; this is implementation/state evidence, not a test-suite PASS.
-- `delete-account` deployment reports ACTIVE with JWT verification enabled; no destructive end-to-end deletion validation is claimed.
+- Authorized migrations `function_execute_hardening`, `account_data_export`, `life_season_expected_user_guard`, and `life_season_execute_hardening` were applied. Live reads confirmed the current Life Season RPC signature/ACL and `anon_execute=false`; this is implementation/state evidence, not a test-suite PASS.
+- `delete-account` version 2 deployment reports ACTIVE with JWT verification enabled; no destructive end-to-end deletion validation is claimed.
 - Adaptive navigation/iconography/One Move batch `a04dc88e452381051f2377de1bb994e4f55a4954` plus the direct One Move refinements `da2de9f60e5e632df84271e1fe1e6ee75821e38c` and `3b3126110a5b733b96dff14fb2c4648c9ac2c53c` are static implementation evidence only until owner typecheck/runtime/responsive validation.
 - Life Map radar/iconography/data-honesty commits `81f334b0e548c8ee8a9b794056344409e515c7fb`, `1195dee72b0ff63815e32eb4e8d462da2c93490a`, and `c45c8ca496d358bcc9343cf67f10a6c3c01f662f` are static implementation evidence only; the specification in `fbf457d90e4b8b2f9c2fd781586b01f58a0f1a0c` was added but not executed.
 - Today/Home owner-reference commits `9370d59476d26ff642506b9f32029eabddc8ce1a` and `137fd2fe9facda65aba2691f38a08d6afdbc848a` are static implementation evidence only.
 - WHY/Insights/What If owner-reference commits `2fbd4f17fc736faf039c6d357dcd8f28625f6b20`, `18747ebf8401bae4f596630554aab30fc4c52254`, `6c6fafed833e79c5ef5a60352f54199c09e7ce2c`, and `c80a4119f3e7c3c090751d4faec96b2e8615ce33` are static implementation evidence only.
 - Experiments/Recovery/Onboarding/Invisible Wins/Personalization/quantitative-visual commits `60193f0f4a1948d96f4512adfdc07114494dd293`, `7dd7e5f4b570ae012864297d1887e2e39e04fbe5`, `c9bfa4e7342fa01e09f9cc2a8159ad0fa21dfbbe`, `41656f61d234248683855f468b22943310299d4b`, `a3db6f54b5c6031ece29117f21bcdac7e6fdc1f2`, `3574f554aa4392d8573332a6f91991a797c8faf1`, `4fa3d9beb543fcb3b467232040fa7dd45d450fcf`, `4d792b40df1867f83268f95c73354ad4178ca9f2`, and `9ce78fe21550dbb62fc6ecc18abd823b11eff459` are **static implementation evidence only**.
-- Shared secondary-screen iconography commits `b5938695a7fac3dd49358900b4da59b60078b67b`, `168628b850aafe2b5db6c2952fd09587a95dafc8`, and `144473356aec4368c359eca1d29e9fce9599c14b` are static implementation evidence only. Workers did not run typecheck, tests, builds, screenshot capture, or representative device validation under the active policy.
-- Auth/entry/privacy owner-reference and privacy-fencing commits `a8a4ef8b3e4ea56fc70ccaac14a302e729f16742`, `4840728f73374ce8ceba88a030e5a04aaff53e30`, `c5c1bd79aced8e82b709960d150343d4ed362d30`, `92c7f06ad33534b905e38252bfa4758bf950c907`, and `6c84bb8915103f16af68d4c630dc7373aece431a` are static implementation/specification evidence only; the Privacy-screen regression specification was not executed.
+- Shared secondary-screen iconography commits `b5938695a7fac3dd49358900b4da59b60078b67b`, `168628b850aafe2b5db6c2952fd09587a95dafc8`, `144473356aec4368c359eca1d29e9fce9599c14b`, and Life Seasons `27d5b9cdcc1fd158afee7f62145a77a18081f51c` are static implementation evidence only. Workers did not run typecheck, tests, builds, screenshot capture, or representative device validation under the active policy.
+- Auth/entry/privacy owner-reference and privacy-fencing commits `a8a4ef8b3e4ea56fc70ccaac14a302e729f16742`, `4840728f73374ce8ceba88a030e5a04aaff53e30`, `c5c1bd79aced8e82b709960d150343d4ed362d30`, `92c7f06ad33534b905e38252bfa4758bf950c907`, `6c84bb8915103f16af68d4c630dc7373aece431a`, `3ec7793959b43cfd0a48e4210c91cc6acc3a1cc6`, `1edb466025638721aeda9487e2fec34322ddf354`, and `a47b4d337c2c70867e40c9a54b005db4a34c0c11` are static implementation/specification evidence only; the privacy regression specifications were not executed.
+- Life Season account-fencing commits `77c965caacc1015feff66dd681d7532b0c26af39`, `db022a8c38944f653a77ab7997c1b28848cff46d`, `c4258f7317089583a5ce3b9b5fcaa4615c12da5e`, `2620b019108782ed5d8a973407b87f4154505a04`, and specification `25caf304a51bf69e60755a78b7c20e6d2440ec92` are implementation/specification evidence; only migration application and ACL reads were performed, not behavioral validation.
 - Residual CP9 localization/RTL commits `abe28be456fdfe17367f414f0e22d1a57f1b32ea`, `b06529071d63c4437d54df5e2e150b51018d1e43`, and `fc8e487eed24bf52b30bc410d8ca128142954640`, with regression specifications `fa54cce062b59cb1e1f08de62a1a4d0f1435ec16` and `a53732fbaa471fa45ba879cb5032a7f19f4804d8`, are static implementation/specification evidence only and were not worker-run.
-- CP10 application-layer logging-audit expansion recorded in `75998a428c791893fdfa37a9c27f26ff09e66fa6`, plus this run's direct source review of auth/config/session-storage, root app-state, render-boundary, and delete-account boundaries, is static source-review evidence only, not runtime or test evidence.
+- CP10 application-layer logging-audit expansion recorded in `75998a428c791893fdfa37a9c27f26ff09e66fa6`, plus subsequent direct source review of auth/config/session-storage, offline storage, generic data access, root app-state, render-boundary, Life Season, privacy, and delete-account boundaries, is static source-review evidence only, not runtime or test evidence.
 
 ## Known blockers / risks
 - CP1: Windows session must be unlocked normally for true narrow-phone Arabic/English interaction evidence; see `automation/HUMAN_REQUIRED.md`.
@@ -118,7 +126,7 @@ Post-baseline:
 - Cross-user/database specifications and all post-baseline runtime/type/build gates still require owner execution evidence.
 - Recent Today snapshot native SecureStore behavior/capacity still needs owner runtime validation.
 - CP9 major owner-reference structural slices are statically present, but representative runtime screenshot evidence, interaction validation, and the design-swap proof are still outstanding; residual static defects may still surface in the final sweep.
-- Privacy export/delete UI, local cache purge/warning behavior, account-scoped confirmation behavior, and Edge deletion need owner Web/native end-to-end validation before CP10 can close.
+- Privacy export/delete UI, local cache purge/warning behavior, account-scoped confirmation behavior, Edge v2 expected-user deletion fencing, and Life Season expected-user fencing need owner Web/native/end-to-end validation before CP10 can close.
 - Repository-wide sensitive logging/error reporting review remains incomplete beyond the targeted boundaries already hardened.
 - No real AI, wearable, calendar, or location credentials are configured; deterministic/unavailable adapters remain the supported fallback path.
 
@@ -131,6 +139,7 @@ Post-baseline:
 - `apps/app/src/app/auth.tsx`
 - `apps/app/src/app/update-password.tsx`
 - `apps/app/src/app/one-move.tsx`
+- `apps/app/src/app/life-seasons.tsx`
 - `apps/app/src/components/app-navigation.tsx`
 - `apps/app/src/components/app-icon.tsx`
 - `apps/app/src/components/branded-illustration.tsx`
@@ -153,6 +162,8 @@ Post-baseline:
 - `apps/app/src/app/settings.tsx`
 - `apps/app/src/app/integrations.tsx`
 - `apps/app/src/app/privacy.tsx`
+- `apps/app/src/infrastructure/supabase/privacy.ts`
+- `apps/app/__tests__/privacy-session-fencing-test.ts`
 - `apps/app/__tests__/privacy-screen-session-fencing-test.tsx`
 - `apps/app/src/app/capacity.tsx`
 - `apps/app/src/app/cost-of-yes.tsx`
@@ -161,9 +172,13 @@ Post-baseline:
 - `apps/app/src/infrastructure/supabase/auth.ts`
 - `apps/app/src/infrastructure/supabase/config.ts`
 - `apps/app/src/infrastructure/supabase/session-storage.ts`
+- `apps/app/src/infrastructure/supabase/life-seasons.ts`
 - `supabase/tests/rls_cross_user.sql`
+- `supabase/tests/life_season_history.sql`
 - `supabase/tests/account_data_export_security.sql`
 - `supabase/migrations/0009_function_execute_hardening.sql`
 - `supabase/migrations/0010_account_data_export.sql`
+- `supabase/migrations/0011_life_season_expected_user_guard.sql`
+- `supabase/migrations/0012_life_season_execute_hardening.sql`
 - `supabase/functions/delete-account/index.ts`
 - `automation/HUMAN_REQUIRED.md`
