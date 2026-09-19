@@ -24,9 +24,13 @@ jest.mock('expo-router', () => {
 
 jest.mock('expo-status-bar', () => ({ StatusBar: () => null }));
 
-jest.mock('@/components/app-navigation', () => ({
-  AppNavigation: () => null,
-}));
+jest.mock('@/components/app-navigation', () => {
+  const React = require('react');
+  const { View } = require('react-native');
+  return {
+    AppNavigation: () => React.createElement(View, { testID: 'app-navigation' }),
+  };
+});
 
 jest.mock('@/application/offline-sync', () => ({
   flushPendingUserMutations: (...args: unknown[]) => mockFlushPendingUserMutations(...args),
@@ -45,6 +49,7 @@ function appState(
   onboardingCompleted = true,
 ) {
   return {
+    isRtl: false,
     onboardingCompleted,
     sessionStatus,
     userId,
@@ -62,26 +67,49 @@ describe('root auth routing', () => {
     mockUseSegments.mockReturnValue(['update-password']);
     useAppStateMock.mockReturnValue(appState('signed-out', null));
 
-    await render(<AppNavigator />);
+    const screen = await render(<AppNavigator />);
 
     expect(mockReplace).not.toHaveBeenCalled();
+    expect(screen.queryByTestId('app-navigation')).toBeNull();
+  });
+
+  test('keeps product navigation off password recovery even after the recovery link establishes an authenticated session', async () => {
+    mockUseSegments.mockReturnValue(['update-password']);
+    useAppStateMock.mockReturnValue(appState('signed-in', 'user-a', true));
+
+    const screen = await render(<AppNavigator />);
+
+    expect(mockReplace).not.toHaveBeenCalled();
+    expect(screen.queryByTestId('app-navigation')).toBeNull();
   });
 
   test('still sends other signed-out product routes to auth', async () => {
     mockUseSegments.mockReturnValue(['today']);
     useAppStateMock.mockReturnValue(appState('signed-out', null));
 
-    await render(<AppNavigator />);
+    const screen = await render(<AppNavigator />);
 
+    expect(screen.queryByTestId('app-navigation')).toBeNull();
     await waitFor(() => expect(mockReplace).toHaveBeenCalledWith('/auth'));
   });
 
-  test('sends an authenticated user away from auth after session restoration', async () => {
+  test('sends an authenticated user away from auth without painting product navigation first', async () => {
     mockUseSegments.mockReturnValue(['auth']);
     useAppStateMock.mockReturnValue(appState('signed-in', 'user-a', true));
 
-    await render(<AppNavigator />);
+    const screen = await render(<AppNavigator />);
 
+    expect(screen.queryByTestId('app-navigation')).toBeNull();
     await waitFor(() => expect(mockReplace).toHaveBeenCalledWith('/today'));
+  });
+
+  test('shows product navigation on an authenticated product route after onboarding', async () => {
+    mockUseSegments.mockReturnValue(['today']);
+    useAppStateMock.mockReturnValue(appState('signed-in', 'user-a', true));
+
+    const screen = await render(<AppNavigator />);
+
+    expect(screen.getByTestId('app-navigation')).toBeTruthy();
+    expect(mockReplace).not.toHaveBeenCalled();
   });
 });
