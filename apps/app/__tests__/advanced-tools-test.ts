@@ -3,11 +3,19 @@ import {
   assessExplicitCostOfYes,
 } from '@/application/cost-of-yes';
 import { assessExplicitHumanROI } from '@/application/human-roi';
+import { parseLocalizedDecimalInput } from '@/i18n/number-input';
 import { createTimeContextProvider } from '@/integrations/provider-registry';
 
 const observedAt = '2026-09-18T12:00:00.000Z';
 
 describe('advanced decision-tool application boundaries', () => {
+  test('Arabic decimal input normalizes supported numeral forms conservatively', () => {
+    expect(parseLocalizedDecimalInput('٤٫٥')).toBe(4.5);
+    expect(parseLocalizedDecimalInput('۴,۵')).toBe(4.5);
+    expect(parseLocalizedDecimalInput('3.25')).toBe(3.25);
+    expect(parseLocalizedDecimalInput('٤٫٥٫٦')).toBeNull();
+  });
+
   test('Cost of Yes exposes displacement from explicit weekly margin', () => {
     const result = assessExplicitCostOfYes({
       commitmentHoursPerWeek: 8,
