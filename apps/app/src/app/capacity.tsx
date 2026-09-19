@@ -1,11 +1,11 @@
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet, useColorScheme, View } from 'react-native';
 
 import { loadCapacitySnapshot, type CapacitySnapshot } from '@/application/capacity';
 import { Card, MizanText, SecondaryButton } from '@/components/mizan-ui';
 import { Screen } from '@/components/screen';
-import { Spacing } from '@/constants/theme';
+import { Controls, Palette, Radius, Spacing } from '@/constants/theme';
 import { formatLocalizedNumber } from '@/i18n/number-input';
 import type { DomainId } from '@/state/app-state';
 import { useAppState } from '@/state/app-state';
@@ -95,6 +95,8 @@ function confidenceLabel(level: string, locale: 'ar' | 'en'): string {
 export default function CapacityScreen() {
   const { isRtl, locale, refreshSession, t, userId } = useAppState();
   const labels = copy[locale];
+  const scheme = useColorScheme();
+  const palette = Palette[scheme === 'dark' ? 'dark' : 'light'];
   const [snapshot, setSnapshot] = useState<CapacitySnapshot | null>(null);
   const [status, setStatus] = useState<LoadStatus>('loading');
   const hundred = formatLocalizedNumber(100, locale, 0);
@@ -139,117 +141,171 @@ export default function CapacityScreen() {
   const bufferEvidence = snapshot
     ? formatLocalizedNumber(snapshot.buffer.confidence.evidenceCount, locale, 0)
     : '—';
+  const bufferScore = snapshot?.buffer.score;
 
   return (
     <Screen>
-      <View style={styles.hero}>
-        <MizanText variant="label" muted>{labels.eyebrow}</MizanText>
-        <MizanText variant="display">{labels.title}</MizanText>
-        <MizanText muted>{labels.body}</MizanText>
+      <View style={[styles.topRow, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
+        <View style={styles.heading}>
+          <MizanText variant="label" muted>{labels.eyebrow}</MizanText>
+          <MizanText variant="display">{labels.title}</MizanText>
+        </View>
+        <SecondaryButton compact label={labels.back} onPress={() => router.replace('/settings')} />
       </View>
 
+      <Card style={[styles.heroCard, { backgroundColor: palette.accentSoft, borderColor: palette.accent }]}>
+        <View style={styles.heroCopy}>
+          <MizanText variant="title">{labels.bufferTitle}</MizanText>
+          <MizanText muted>{labels.body}</MizanText>
+        </View>
+        {status === 'ready' && bufferScore !== null && bufferScore !== undefined ? (
+          <View style={[styles.heroReading, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
+            <View style={styles.heroValueGroup}>
+              <MizanText variant="caption" muted>{labels.buffer}</MizanText>
+              <MizanText variant="display">{formatLocalizedNumber(Math.round(bufferScore), locale, 0)} / {hundred}</MizanText>
+            </View>
+            <View style={[styles.bandPill, { backgroundColor: palette.surface }]}>
+              <MizanText variant="label">{bufferBandLabel}</MizanText>
+            </View>
+          </View>
+        ) : null}
+      </Card>
+
       {status === 'loading' ? (
-        <MizanText accessibilityLiveRegion="polite" muted>{labels.loading}</MizanText>
+        <Card style={{ backgroundColor: palette.surfaceMuted }}>
+          <MizanText accessibilityLiveRegion="polite" muted>{labels.loading}</MizanText>
+        </Card>
       ) : null}
       {status === 'error' ? (
-        <Card><MizanText accessibilityLiveRegion="polite" muted>{labels.error}</MizanText></Card>
+        <Card style={{ backgroundColor: palette.surfaceMuted }}>
+          <MizanText accessibilityLiveRegion="polite" muted>{labels.error}</MizanText>
+        </Card>
       ) : null}
 
       {status === 'ready' ? (
-        <Card>
-          <MizanText variant="title">{labels.bufferTitle}</MizanText>
-          <MizanText muted>{labels.bufferBody}</MizanText>
-          {snapshot?.buffer.score === null || snapshot?.buffer.score === undefined ? (
-            <MizanText accessibilityLiveRegion="polite" muted>{labels.bufferUnknown}</MizanText>
+        <Card style={styles.bufferCard}>
+          <View style={styles.sectionHeader}>
+            <MizanText variant="title">{labels.bufferTitle}</MizanText>
+            <MizanText muted>{labels.bufferBody}</MizanText>
+          </View>
+          {bufferScore === null || bufferScore === undefined ? (
+            <View style={[styles.unknownPanel, { backgroundColor: palette.surfaceMuted }]}>
+              <MizanText accessibilityLiveRegion="polite" muted>{labels.bufferUnknown}</MizanText>
+            </View>
           ) : (
             <View style={[styles.metrics, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
-              <View style={styles.metric}>
-                <MizanText variant="caption" muted>{labels.buffer}</MizanText>
-                <MizanText variant="title">{formatLocalizedNumber(Math.round(snapshot.buffer.score), locale, 0)} / {hundred}</MizanText>
-              </View>
-              <View style={styles.metric}>
+              <View style={[styles.metricTile, { backgroundColor: palette.surfaceMuted }]}>
                 <MizanText variant="caption" muted>{labels.fragility}</MizanText>
                 <MizanText variant="title">
-                  {snapshot.buffer.fragility === null || snapshot.buffer.fragility === undefined
+                  {snapshot?.buffer.fragility === null || snapshot?.buffer.fragility === undefined
                     ? labels.unknown
                     : `${formatLocalizedNumber(Math.round(snapshot.buffer.fragility), locale, 0)} / ${hundred}`}
                 </MizanText>
               </View>
-              <View style={styles.metric}>
-                <MizanText variant="caption" muted>{labels.band}</MizanText>
-                <MizanText variant="label">{bufferBandLabel}</MizanText>
+              <View style={[styles.metricTile, { backgroundColor: palette.surfaceMuted }]}>
+                <MizanText variant="caption" muted>{labels.confidence}</MizanText>
+                <MizanText variant="label">{confidenceLabel(snapshot?.buffer.confidence.level ?? 'insufficient', locale)}</MizanText>
+              </View>
+              <View style={[styles.metricTile, { backgroundColor: palette.surfaceMuted }]}>
+                <MizanText variant="caption" muted>{labels.evidence}</MizanText>
+                <MizanText variant="title">{bufferEvidence}</MizanText>
               </View>
             </View>
           )}
-          <MizanText variant="caption" muted>
-            {labels.confidence}: {confidenceLabel(snapshot?.buffer.confidence.level ?? 'insufficient', locale)} · {labels.evidence}: {bufferEvidence}
-          </MizanText>
         </Card>
       ) : null}
 
       {status === 'ready' ? (
         <View style={styles.section}>
-          <MizanText variant="title">{labels.debtTitle}</MizanText>
-          <MizanText muted>{labels.debtBody}</MizanText>
-          {(snapshot?.debts ?? []).map((debt) => {
-            const direction =
-              debt.direction === 'accumulating'
-                ? labels.accumulating
-                : debt.direction === 'stable'
-                  ? labels.stable
-                  : debt.direction === 'recovering'
-                    ? labels.recovering
-                    : labels.unknown;
-            const urgency =
-              debt.urgency === 'low'
-                ? labels.lowUrgency
-                : debt.urgency === 'moderate'
-                  ? labels.moderateUrgency
-                  : debt.urgency === 'high'
-                    ? labels.highUrgency
-                    : labels.unknown;
-            return (
-              <Card key={debt.dimensionId}>
-                <MizanText variant="title">{t(debt.dimensionId as DomainId)}</MizanText>
-                {debt.amount === null ? (
-                  <MizanText muted>{labels.debtUnknown}</MizanText>
-                ) : (
-                  <View style={[styles.metrics, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
-                    <View style={styles.metric}>
-                      <MizanText variant="caption" muted>{labels.amount}</MizanText>
-                      <MizanText variant="title">{formatLocalizedNumber(Math.round(debt.amount), locale, 0)} / {hundred}</MizanText>
-                    </View>
-                    <View style={styles.metric}>
-                      <MizanText variant="caption" muted>{labels.direction}</MizanText>
-                      <MizanText variant="label">{direction}</MizanText>
-                    </View>
-                    <View style={styles.metric}>
-                      <MizanText variant="caption" muted>{labels.urgency}</MizanText>
-                      <MizanText variant="label">{urgency}</MizanText>
+          <View style={styles.sectionHeader}>
+            <MizanText variant="title">{labels.debtTitle}</MizanText>
+            <MizanText muted>{labels.debtBody}</MizanText>
+          </View>
+          <View style={[styles.debtGrid, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
+            {(snapshot?.debts ?? []).map((debt) => {
+              const direction =
+                debt.direction === 'accumulating'
+                  ? labels.accumulating
+                  : debt.direction === 'stable'
+                    ? labels.stable
+                    : debt.direction === 'recovering'
+                      ? labels.recovering
+                      : labels.unknown;
+              const urgency =
+                debt.urgency === 'low'
+                  ? labels.lowUrgency
+                  : debt.urgency === 'moderate'
+                    ? labels.moderateUrgency
+                    : debt.urgency === 'high'
+                      ? labels.highUrgency
+                      : labels.unknown;
+              return (
+                <Card key={debt.dimensionId} style={styles.debtCard}>
+                  <View style={[styles.debtHeader, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
+                    <MizanText variant="title" style={styles.flexibleText}>{t(debt.dimensionId as DomainId)}</MizanText>
+                    <View style={[styles.urgencyPill, { backgroundColor: palette.accentSoft }]}>
+                      <MizanText variant="caption">{labels.urgency}: {urgency}</MizanText>
                     </View>
                   </View>
-                )}
-                {debt.history !== 'unknown' ? (
-                  <MizanText variant="caption" muted>{debt.history === 'tracked' ? labels.tracked : labels.snapshot}</MizanText>
-                ) : null}
-                <MizanText variant="caption" muted>
-                  {labels.confidence}: {confidenceLabel(debt.confidence.level, locale)} · {labels.evidence}: {formatLocalizedNumber(debt.confidence.evidenceCount, locale, 0)}
-                </MizanText>
-              </Card>
-            );
-          })}
+                  {debt.amount === null ? (
+                    <View style={[styles.unknownPanel, { backgroundColor: palette.surfaceMuted }]}>
+                      <MizanText muted>{labels.debtUnknown}</MizanText>
+                    </View>
+                  ) : (
+                    <View style={[styles.metrics, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
+                      <View style={[styles.metricTile, { backgroundColor: palette.surfaceMuted }]}>
+                        <MizanText variant="caption" muted>{labels.amount}</MizanText>
+                        <MizanText variant="title">{formatLocalizedNumber(Math.round(debt.amount), locale, 0)} / {hundred}</MizanText>
+                      </View>
+                      <View style={[styles.metricTile, { backgroundColor: palette.surfaceMuted }]}>
+                        <MizanText variant="caption" muted>{labels.direction}</MizanText>
+                        <MizanText variant="label">{direction}</MizanText>
+                      </View>
+                    </View>
+                  )}
+                  {debt.history !== 'unknown' ? (
+                    <MizanText variant="caption" muted>{debt.history === 'tracked' ? labels.tracked : labels.snapshot}</MizanText>
+                  ) : null}
+                  <View style={[styles.evidenceRow, { borderTopColor: palette.border }]}>
+                    <MizanText variant="caption" muted>
+                      {labels.confidence}: {confidenceLabel(debt.confidence.level, locale)}
+                    </MizanText>
+                    <MizanText variant="caption" muted>
+                      {labels.evidence}: {formatLocalizedNumber(debt.confidence.evidenceCount, locale, 0)}
+                    </MizanText>
+                  </View>
+                </Card>
+              );
+            })}
+          </View>
         </View>
       ) : null}
 
-      <MizanText variant="caption" muted>{labels.caveat}</MizanText>
-      <SecondaryButton label={labels.back} onPress={() => router.replace('/settings')} />
+      <Card style={{ backgroundColor: palette.surfaceMuted }}>
+        <MizanText variant="caption" muted>{labels.caveat}</MizanText>
+      </Card>
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  hero: { gap: Spacing.md, paddingTop: Spacing.xl },
+  topRow: { alignItems: 'flex-start', justifyContent: 'space-between', gap: Spacing.lg, flexWrap: 'wrap' },
+  heading: { flex: 1, minWidth: 0, gap: Spacing.xs },
+  heroCard: { gap: Spacing.xl },
+  heroCopy: { gap: Spacing.sm },
+  heroReading: { alignItems: 'flex-end', justifyContent: 'space-between', gap: Spacing.lg, flexWrap: 'wrap' },
+  heroValueGroup: { gap: Spacing.xs, flexGrow: 1, minWidth: 0 },
+  bandPill: { minHeight: Controls.minimumTouchHeight, justifyContent: 'center', paddingHorizontal: Spacing.lg, borderRadius: Radius.pill },
+  bufferCard: { gap: Spacing.xl },
   section: { gap: Spacing.lg },
+  sectionHeader: { gap: Spacing.sm },
   metrics: { flexWrap: 'wrap', gap: Spacing.md },
-  metric: { flexGrow: 1, flexBasis: 140, minWidth: 120, gap: Spacing.xs },
+  metricTile: { flexGrow: 1, flexBasis: 160, minWidth: 0, gap: Spacing.xs, borderRadius: Radius.md, padding: Spacing.md },
+  unknownPanel: { borderRadius: Radius.md, padding: Spacing.lg },
+  debtGrid: { flexWrap: 'wrap', alignItems: 'stretch', gap: Spacing.lg },
+  debtCard: { flexGrow: 1, flexShrink: 1, flexBasis: 360 },
+  debtHeader: { alignItems: 'flex-start', justifyContent: 'space-between', gap: Spacing.md, flexWrap: 'wrap' },
+  flexibleText: { flexShrink: 1 },
+  urgencyPill: { minHeight: Controls.minimumTouchHeight, justifyContent: 'center', paddingHorizontal: Spacing.md, borderRadius: Radius.pill, maxWidth: '100%' },
+  evidenceRow: { gap: Spacing.xs, borderTopWidth: Controls.borderWidth, paddingTop: Spacing.md },
 });
