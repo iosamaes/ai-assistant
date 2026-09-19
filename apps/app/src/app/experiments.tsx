@@ -1,5 +1,5 @@
 import { router } from 'expo-router';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Pressable, StyleSheet, useColorScheme, View } from 'react-native';
 
 import {
@@ -225,85 +225,143 @@ export default function ExperimentsScreen() {
   const [hypothesis, setHypothesis] = useState<string>(labels.templates['earlier-bedtime'].hypothesis);
   const [consented, setConsented] = useState(false);
   const [history, setHistory] = useState<ExperimentWithEvaluation[]>([]);
+  const [historyOwnerId, setHistoryOwnerId] = useState<string | null>(null);
   const [ratingById, setRatingById] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
+  const activeUserRef = useRef(userId);
+  const loadRequestRef = useRef(0);
+  const mutationRequestRef = useRef(0);
+  activeUserRef.current = userId;
+
+  const visibleHistory = historyOwnerId === userId ? history : [];
 
   const load = useCallback(async () => {
-    if (!userId) {
+    const requestedUserId = userId;
+    const requestId = ++loadRequestRef.current;
+    const requestIsCurrent = () =>
+      loadRequestRef.current === requestId && activeUserRef.current === requestedUserId;
+
+    setHistory([]);
+    setHistoryOwnerId(null);
+    setMessage(null);
+    if (!requestedUserId) {
       setLoading(false);
       return;
     }
+
     setLoading(true);
-    const result = await loadExperimentHistory(userId);
+    const result = await loadExperimentHistory(requestedUserId);
+    if (!requestIsCurrent()) return;
+
     if (!result.ok) {
-      if (result.error.kind === 'session-expired') await refreshSession();
+      if (result.error.kind === 'session-expired') {
+        await refreshSession();
+        if (!requestIsCurrent()) return;
+      }
       setMessage(labels.loadError);
     } else {
       setHistory(result.value);
+      setHistoryOwnerId(requestedUserId);
     }
     setLoading(false);
   }, [labels.loadError, refreshSession, userId]);
 
   useEffect(() => {
-    let active = true;
-    void Promise.resolve().then(() => {
-      if (active) return load();
-      return undefined;
-    });
+    mutationRequestRef.current += 1;
+    setBusy(false);
+    setMessage(null);
+    setRatingById({});
+    setConsented(false);
+  }, [userId]);
+
+  useEffect(() => {
+    void load();
     return () => {
-      active = false;
+      loadRequestRef.current += 1;
     };
   }, [load]);
 
   const activeExperiment = useMemo(
-    () => history.find((item) => item.experiment.status === 'active') ?? null,
-    [history],
+    () => visibleHistory.find((item) => item.experiment.status === 'active') ?? null,
+    [visibleHistory],
   );
 
   const start = async () => {
-    if (!userId || loading || busy || activeExperiment || !consented || hypothesis.trim().length < 8) return;
+    const requestedUserId = userId;
+    if (!requestedUserId || loading || busy || activeExperiment || !consented || hypothesis.trim().length < 8) return;
+    const requestId = ++mutationRequestRef.current;
+    const requestIsCurrent = () =>
+      mutationRequestRef.current === requestId && activeUserRef.current === requestedUserId;
+
     setBusy(true);
     setMessage(null);
-    const result = await startExperiment({ userId, templateId: selected, hypothesis, consented });
+    const result = await startExperiment({ userId: requestedUserId, templateId: selected, hypothesis, consented });
+    if (!requestIsCurrent()) return;
+
     if (!result.ok) {
-      if (result.error.kind === 'session-expired') await refreshSession();
+      if (result.error.kind === 'session-expired') {
+        await refreshSession();
+        if (!requestIsCurrent()) return;
+      }
       setMessage(labels.saveError);
     } else {
       setConsented(false);
       await load();
+      if (!requestIsCurrent()) return;
     }
     setBusy(false);
   };
 
   const stop = async (experimentId: string) => {
-    if (!userId || busy) return;
+    const requestedUserId = userId;
+    if (!requestedUserId || busy) return;
+    const requestId = ++mutationRequestRef.current;
+    const requestIsCurrent = () =>
+      mutationRequestRef.current === requestId && activeUserRef.current === requestedUserId;
+
     setBusy(true);
     setMessage(null);
-    const result = await cancelExperiment(userId, experimentId);
+    const result = await cancelExperiment(requestedUserId, experimentId);
+    if (!requestIsCurrent()) return;
+
     if (!result.ok) {
-      if (result.error.kind === 'session-expired') await refreshSession();
+      if (result.error.kind === 'session-expired') {
+        await refreshSession();
+        if (!requestIsCurrent()) return;
+      }
       setMessage(labels.saveError);
     } else {
       await load();
+      if (!requestIsCurrent()) return;
     }
     setBusy(false);
   };
 
   const finish = async (item: ExperimentWithEvaluation) => {
-    if (!userId || busy) return;
+    const requestedUserId = userId;
+    if (!requestedUserId || busy) return;
     const usefulness = ratingById[item.experiment.id];
     if (!usefulness) return;
+    const requestId = ++mutationRequestRef.current;
+    const requestIsCurrent = () =>
+      mutationRequestRef.current === requestId && activeUserRef.current === requestedUserId;
+
     setBusy(true);
     setMessage(null);
     const result = await completeExperimentWithOutcome({
-      userId,
+      userId: requestedUserId,
       experiment: item.experiment,
       usefulness,
     });
+    if (!requestIsCurrent()) return;
+
     if (!result.ok) {
-      if (result.error.kind === 'session-expired') await refreshSession();
+      if (result.error.kind === 'session-expired') {
+        await refreshSession();
+        if (!requestIsCurrent()) return;
+      }
       setMessage(labels.saveError);
     } else {
       setRatingById((current) => {
@@ -312,6 +370,7 @@ export default function ExperimentsScreen() {
         return next;
       });
       await load();
+      if (!requestIsCurrent()) return;
     }
     setBusy(false);
   };
@@ -649,14 +708,14 @@ export default function ExperimentsScreen() {
           </Card>
         ) : null}
 
-        {!loading && history.length === 0 ? (
+        {!loading && visibleHistory.length === 0 ? (
           <Card style={{ backgroundColor: palette.surfaceMuted }}>
             <MizanText accessibilityLiveRegion="polite" variant="title">{labels.empty}</MizanText>
             <MizanText muted>{labels.emptyBody}</MizanText>
           </Card>
         ) : null}
 
-        {history.map(renderExperiment)}
+        {visibleHistory.map(renderExperiment)}
       </View>
 
       <Card style={[styles.limitationsCard, { backgroundColor: palette.surfaceMuted }]}>
