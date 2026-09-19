@@ -110,11 +110,11 @@ export function AppNavigator() {
 export default function RootLayout() {
   return (
     <SafeAreaProvider>
-      <AppErrorBoundary>
-        <AppStateProvider>
+      <AppStateProvider>
+        <AppErrorBoundary>
           <AppNavigator />
-        </AppStateProvider>
-      </AppErrorBoundary>
+        </AppErrorBoundary>
+      </AppStateProvider>
     </SafeAreaProvider>
   );
 }
