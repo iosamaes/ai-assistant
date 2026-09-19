@@ -12,6 +12,7 @@ import {
 import { Card, MizanText, PrimaryButton, SecondaryButton } from '@/components/mizan-ui';
 import { Screen } from '@/components/screen';
 import { Controls, Palette, Spacing } from '@/constants/theme';
+import { formatLocalizedNumber } from '@/i18n/number-input';
 import { useAppState } from '@/state/app-state';
 
 type LoadStatus = 'loading' | 'ready' | 'error';
@@ -20,7 +21,7 @@ const copy = {
   ar: {
     eyebrow: 'ميزان',
     title: 'الرؤى والأنماط',
-    body: 'يعرض ميزان العلاقات التي ظهرت مرارًا في ملاحظاتك المقترنة خلال آخر 90 يومًا. الارتباط لا يعني أن أحد العاملين سبّب الآخر.',
+    body: 'يعرض ميزان العلاقات التي ظهرت مرارًا في ملاحظاتك المقترنة خلال آخر ٩٠ يومًا. الارتباط لا يعني أن أحد العاملين سبّب الآخر.',
     back: 'اليوم',
     loading: 'جاري فحص الأنماط الشخصية…',
     error: 'تعذر قراءة تاريخ الملاحظات الآن. لم يتم إنشاء نمط بديل أو افتراض بيانات مفقودة.',
@@ -108,32 +109,36 @@ function InsightCard({ insight, locale, isRtl }: { insight: PersonalInsight; loc
   const palette = Palette[scheme === 'dark' ? 'dark' : 'light'];
   const local = copy[locale];
   const key: InsightRelationshipKey = insight.key;
-  const window = insight.hypothesis.windowDays === null ? '—' : `${Math.max(1, Math.round(insight.hypothesis.windowDays))} ${local.days}`;
-  const effect = insight.hypothesis.effect === null ? '—' : insight.hypothesis.effect.toFixed(2);
+  const window = insight.hypothesis.windowDays === null
+    ? '—'
+    : `${formatLocalizedNumber(Math.max(1, Math.round(insight.hypothesis.windowDays)), locale, 0)} ${local.days}`;
+  const effect = insight.hypothesis.effect === null
+    ? '—'
+    : formatLocalizedNumber(insight.hypothesis.effect, locale, 2);
 
   return (
     <Card>
       <MizanText variant="title">{local.relationships[key]}</MizanText>
       <MizanText muted>{directionLabel(insight, locale)}</MizanText>
       <View style={[styles.detailRow, { flexDirection: isRtl ? 'row-reverse' : 'row', borderTopColor: palette.border }]}>
-        <MizanText variant="caption" muted>{local.status}</MizanText>
-        <MizanText variant="label">{statusLabel(insight.hypothesis.status, locale)}</MizanText>
+        <MizanText variant="caption" muted style={styles.detailText}>{local.status}</MizanText>
+        <MizanText variant="label" style={styles.detailText}>{statusLabel(insight.hypothesis.status, locale)}</MizanText>
       </View>
       <View style={[styles.detailRow, { flexDirection: isRtl ? 'row-reverse' : 'row', borderTopColor: palette.border }]}>
-        <MizanText variant="caption" muted>{local.confidence}</MizanText>
-        <MizanText variant="label">{confidenceLabel(insight.hypothesis.confidence.level, locale)}</MizanText>
+        <MizanText variant="caption" muted style={styles.detailText}>{local.confidence}</MizanText>
+        <MizanText variant="label" style={styles.detailText}>{confidenceLabel(insight.hypothesis.confidence.level, locale)}</MizanText>
       </View>
       <View style={[styles.detailRow, { flexDirection: isRtl ? 'row-reverse' : 'row', borderTopColor: palette.border }]}>
-        <MizanText variant="caption" muted>{local.samples}</MizanText>
-        <MizanText variant="label">{insight.hypothesis.sampleSize}</MizanText>
+        <MizanText variant="caption" muted style={styles.detailText}>{local.samples}</MizanText>
+        <MizanText variant="label" style={styles.detailText}>{formatLocalizedNumber(insight.hypothesis.sampleSize, locale, 0)}</MizanText>
       </View>
       <View style={[styles.detailRow, { flexDirection: isRtl ? 'row-reverse' : 'row', borderTopColor: palette.border }]}>
-        <MizanText variant="caption" muted>{local.window}</MizanText>
-        <MizanText variant="label">{window}</MizanText>
+        <MizanText variant="caption" muted style={styles.detailText}>{local.window}</MizanText>
+        <MizanText variant="label" style={styles.detailText}>{window}</MizanText>
       </View>
       <View style={[styles.detailRow, { flexDirection: isRtl ? 'row-reverse' : 'row', borderTopColor: palette.border }]}>
-        <MizanText variant="caption" muted>{local.effect}</MizanText>
-        <MizanText variant="label">{effect}</MizanText>
+        <MizanText variant="caption" muted style={styles.detailText}>{local.effect}</MizanText>
+        <MizanText variant="label" style={styles.detailText}>{effect}</MizanText>
       </View>
     </Card>
   );
@@ -200,7 +205,15 @@ export default function InsightsScreen() {
 }
 
 const styles = StyleSheet.create({
-  topRow: { alignItems: 'center', justifyContent: 'space-between', gap: Spacing.lg },
-  heading: { flex: 1, gap: Spacing.xs },
-  detailRow: { alignItems: 'center', justifyContent: 'space-between', gap: Spacing.md, borderTopWidth: Controls.borderWidth, paddingTop: Spacing.sm },
+  topRow: { alignItems: 'flex-start', justifyContent: 'space-between', gap: Spacing.lg, flexWrap: 'wrap' },
+  heading: { flex: 1, minWidth: 0, gap: Spacing.xs },
+  detailRow: {
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+    gap: Spacing.md,
+    flexWrap: 'wrap',
+    borderTopWidth: Controls.borderWidth,
+    paddingTop: Spacing.sm,
+  },
+  detailText: { flexShrink: 1 },
 });
