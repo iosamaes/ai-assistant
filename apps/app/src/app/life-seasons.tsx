@@ -7,6 +7,7 @@ import {
   saveLifeSeason,
   type LifeSeasonsState,
 } from '@/application/life-seasons';
+import { AppIcon, type AppIconName } from '@/components/app-icon';
 import { Card, ChoiceChip, MizanText, PrimaryButton, SecondaryButton } from '@/components/mizan-ui';
 import { Screen } from '@/components/screen';
 import { Controls, Palette, Radius, Spacing } from '@/constants/theme';
@@ -22,6 +23,12 @@ type SaveStatus = 'idle' | 'saving' | 'saved' | 'error';
 const SEASONS: readonly LifeSeason[] = ['balanced', 'build', 'recovery', 'parenting', 'study', 'travel'];
 const RATINGS: readonly Rating[] = [1, 2, 3, 4, 5];
 const DOMAIN_IDS: readonly DomainId[] = ['recovery', 'connection', 'work', 'margin'];
+const DOMAIN_ICONS: Record<DomainId, AppIconName> = {
+  recovery: 'recovery',
+  connection: 'connection',
+  work: 'work',
+  margin: 'margin',
+};
 
 const copy = {
   ar: {
@@ -237,7 +244,7 @@ export default function LifeSeasonsScreen() {
       }
     }
 
-    const result = await saveLifeSeason(seasonToSave, filteredTargets);
+    const result = await saveLifeSeason(requestedUserId, seasonToSave, filteredTargets);
     if (!requestIsCurrent()) return;
 
     if (!result.ok) {
@@ -265,7 +272,12 @@ export default function LifeSeasonsScreen() {
       </View>
 
       <Card style={[styles.heroCard, { backgroundColor: palette.accentSoft, borderColor: palette.accent }]}>
-        <MizanText variant="title">{labels.seasonTitle}</MizanText>
+        <View style={[styles.iconTitleRow, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
+          <View style={[styles.iconWell, { backgroundColor: palette.surface }]}>
+            <AppIcon name="season" color={palette.accent} size={22} />
+          </View>
+          <MizanText variant="title" style={styles.flexibleText}>{labels.seasonTitle}</MizanText>
+        </View>
         <MizanText>{labels.body}</MizanText>
         <MizanText variant="caption" muted>{labels.seasonBody}</MizanText>
         <View style={[styles.wrap, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
@@ -295,23 +307,33 @@ export default function LifeSeasonsScreen() {
             <View
               key={domainId}
               style={[styles.targetPanel, { backgroundColor: palette.surfaceMuted, borderColor: palette.border }]}>
-              <MizanText variant="label">{t(domainId)}</MizanText>
+              <View style={[styles.iconTitleRow, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
+                <View style={[styles.iconWell, { backgroundColor: palette.accentSoft }]}>
+                  <AppIcon name={DOMAIN_ICONS[domainId]} color={palette.accent} size={20} />
+                </View>
+                <MizanText variant="label" style={styles.flexibleText}>{t(domainId)}</MizanText>
+              </View>
               <View style={[styles.wrap, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
                 <ChoiceChip
+                  accessibilityLabel={`${t(domainId)}: ${labels.unset}`}
                   label={labels.unset}
                   selected={visibleTargets[domainId] === undefined}
                   disabled={controlsDisabled}
                   onPress={() => setTarget(domainId, null)}
                 />
-                {RATINGS.map((rating) => (
-                  <ChoiceChip
-                    key={`${domainId}-${rating}`}
-                    label={formatLocalizedNumber(rating, locale, 0)}
-                    selected={visibleTargets[domainId] === rating}
-                    disabled={controlsDisabled}
-                    onPress={() => setTarget(domainId, rating)}
-                  />
-                ))}
+                {RATINGS.map((rating) => {
+                  const localizedRating = formatLocalizedNumber(rating, locale, 0);
+                  return (
+                    <ChoiceChip
+                      key={`${domainId}-${rating}`}
+                      accessibilityLabel={`${t(domainId)}: ${localizedRating}`}
+                      label={localizedRating}
+                      selected={visibleTargets[domainId] === rating}
+                      disabled={controlsDisabled}
+                      onPress={() => setTarget(domainId, rating)}
+                    />
+                  );
+                })}
               </View>
             </View>
           ))}
@@ -361,7 +383,12 @@ export default function LifeSeasonsScreen() {
             return (
               <Card key={entry.id} style={styles.historyCard}>
                 <View style={[styles.historyHeader, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
-                  <MizanText variant="title" style={styles.flexibleText}>{labels.seasons[entry.season]}</MizanText>
+                  <View style={[styles.iconTitleRow, styles.historyTitleGroup, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
+                    <View style={[styles.iconWell, { backgroundColor: palette.accentSoft }]}>
+                      <AppIcon name="season" color={palette.accent} size={20} />
+                    </View>
+                    <MizanText variant="title" style={styles.flexibleText}>{labels.seasons[entry.season]}</MizanText>
+                  </View>
                   <View style={[styles.historyPill, { backgroundColor: palette.accentSoft }]}>
                     <MizanText variant="caption">{entry.ended_at ? labels.ended : labels.current}</MizanText>
                   </View>
@@ -389,6 +416,15 @@ const styles = StyleSheet.create({
   targetCard: { gap: Spacing.xl },
   section: { gap: Spacing.lg },
   sectionHeader: { gap: Spacing.sm },
+  iconTitleRow: { alignItems: 'center', gap: Spacing.md },
+  iconWell: {
+    width: Controls.minimumTouchHeight,
+    height: Controls.minimumTouchHeight,
+    borderRadius: Radius.md,
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexShrink: 0,
+  },
   wrap: { flexWrap: 'wrap', gap: Spacing.sm },
   targetGrid: { flexWrap: 'wrap', gap: Spacing.md },
   targetPanel: {
@@ -404,6 +440,7 @@ const styles = StyleSheet.create({
   historyGrid: { flexWrap: 'wrap', alignItems: 'stretch', gap: Spacing.lg },
   historyCard: { flexGrow: 1, flexShrink: 1, flexBasis: 360 },
   historyHeader: { alignItems: 'flex-start', justifyContent: 'space-between', gap: Spacing.md, flexWrap: 'wrap' },
+  historyTitleGroup: { flexGrow: 1, flexShrink: 1, minWidth: 0 },
   flexibleText: { flexShrink: 1 },
   historyPill: { minHeight: Controls.minimumTouchHeight, justifyContent: 'center', borderRadius: Radius.pill, paddingHorizontal: Spacing.md },
   recordedTargets: { borderTopWidth: Controls.borderWidth, paddingTop: Spacing.md, gap: Spacing.sm },
