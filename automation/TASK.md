@@ -575,6 +575,81 @@ Required:
 - Before CP9 is considered complete, the owner must be able to open a current representative build/server and see a clearly premium production-level visual transformation; a mostly functional development UI with only technical polish does not satisfy this gate.
 - Perform a **design-swap proof** on representative screens including Today, Life Map, WHY, and at least one interaction-heavy flow. Demonstrate that a substantially different visual direction can be achieved through theme/tokens, shared visual primitives/navigation, and feature composition only, with no edits required in `packages/core`, application intelligence/data contracts, Supabase/data-access, or provider adapters. Record the evidence in `docs/PROJECT_STATE.md`. Do not keep duplicate production themes solely for this proof.
 - Preserve the chosen production visual direction after the proof; design-swappability must not become runtime theme infrastructure or speculative over-engineering.
+### CP9 owner-approved premium reference contract — blocking
+
+The owner-approved MIZAN showcase is the required visual/product direction for CP9. Workers must treat the following as a **blocking implementation contract**, not as optional inspiration and not as a future enhancement. The purpose is not pixel-copying; the shipped product must reproduce the same information architecture, navigation density, visual richness, iconography, data-visualization language, calm botanical identity, and responsive adaptation while preserving real MIZAN data semantics and the SIMPLE/RIGHT/STRONG doctrine.
+
+**Navigation shell — mandatory**
+- On mobile/common-phone layouts, ship a persistent bottom navigation bar with icon + label destinations equivalent to **Home / Life Map / One Move / Insights / More**. The active destination must have a clear selected state, minimum accessible touch targets, Arabic RTL ordering/mirroring, English LTR ordering, safe-area handling, and screen-reader labels.
+- `One Move` must be directly reachable from that shell. It may be a dedicated route or a focused routed surface, but it must not remain discoverable only by scrolling inside Today.
+- `More` must provide access to the remaining primary/secondary tools without turning the bottom bar into a long list.
+- On tablet/wide Web, adapt the same primary destinations into an intentional sidebar/rail or equivalent desktop navigation treatment rather than stretching the phone bottom bar.
+- Navigation implementation must remain Expo Router-native and must not duplicate product/business state.
+
+**Iconography — mandatory**
+- Establish one consistent app iconography layer for navigation, life domains, confidence/status cues, experiment/scenario categories, settings/integrations, and key actions.
+- Do not use emoji as the primary production icon system. Use supported vector/symbol assets with deterministic cross-platform fallbacks and accessible labels where icons carry meaning.
+- Domain icons must be visually recognizable and consistent across Today, Life Map, Personalization, Insights, Experiments, What If, Settings, and any other repeated domain surface.
+
+**Today / Home composition — mandatory**
+- The mobile Home/Today surface must visibly include: a premium greeting/header area; a compact date/day context strip when relevant; a visually distinct **Today Focus / One Move** hero; compact state/progress tiles with icons; a concise balance/momentum/reflection summary; and the persistent primary navigation shell.
+- The hero must have a calm branded visual/illustrative treatment rather than being only a bordered text card.
+- State/progress tiles should use visual meters, progress treatment, trend direction, or compact gauges where the underlying data supports them. Unknown evidence must remain explicitly unknown and must never be rendered as zero.
+- Avoid turning Today into a dense analytics wall; hierarchy must match the calm reference direction.
+
+**Life Map visualization — mandatory**
+- Life Map must include a real responsive radar/spider/polygon visualization of the enabled life domains, with a central balance summary where evidence allows it.
+- The visualization must represent only supported/known values, visually distinguish insufficient/unknown evidence, and remain inspectable/accessibly described. It must not fabricate missing values to close a polygon.
+- Keep a concise quick-overview/list below or beside the chart for exact values, trend direction, confidence/evidence, and accessibility.
+- On wide layouts, compose the radar and overview intentionally side-by-side where space allows.
+
+**Insights / WHY — mandatory visual language**
+- WHY must present ranked candidate-factor cards with meaningful icons, evidence/confidence cues, and a clearly separated non-diagnostic/correlation caveat.
+- Insights must have category/filter chips and visually differentiated insight types (for example pattern, opportunity, important note) using icon + semantic surface treatment, not a uniform stack of text-only cards.
+- Evidence count/window/confidence must remain visible and scientifically honest.
+
+**What If / experiments / decision tools — mandatory data visualization**
+- What If scenario cards must show uncertainty/range visually with range meters/bars or equivalent compact charts in addition to text values; estimates must remain clearly labeled as estimates, not predictions.
+- Experiments must use recognizable category icons, status/duration/progress treatment, and an obvious create-new-experiment action while retaining the N-of-1 evidence caveats.
+- Cost of Yes, Human ROI, Capacity/Life Buffer, Balance/Momentum, and similar quantitative surfaces must use restrained visual meters/gauges/trend indicators where they improve comprehension. Do not add decoration that implies unsupported precision.
+
+**Personalization / Invisible Wins / Recovery — mandatory composition**
+- Personalization must use recognizable domain icon + label + enable/disable rows/toggles with clear grouping and state.
+- Invisible Wins must use category filtering plus visually distinct reflection/win cards and a prominent add/capture affordance without gamification.
+- Recovery / Save My Day must include a calm branded illustration/visual hero, a low-cognitive-load checklist/step sequence, and a clear primary recovery action; it must not look like a generic settings form.
+
+**Onboarding and illustration system — mandatory**
+- Onboarding must carry the MIZAN brand immediately with a calm premium botanical/landscape illustration treatment, clear logo/wordmark presence, welcoming hierarchy, and a dominant primary action.
+- Create a small reusable, app-owned illustration language for the few surfaces that benefit from it (at minimum onboarding plus Today focus and/or Recovery). Assets may be custom SVG/vector/shape compositions or other repository-owned artwork. Do not use watermarked stock art or unlicensed third-party assets.
+- Illustrations must support light/dark treatment where shipped and must not compromise performance or accessibility.
+
+**Responsive reference behavior — mandatory**
+- Mobile: bottom navigation and phone-first compositions.
+- Tablet: intentional multi-column/card layouts with preserved reading order and touch targets.
+- Wide Web/Desktop: sidebar/rail navigation, bounded content measures, and side-by-side dashboard/map compositions where appropriate.
+- Arabic RTL must mirror navigation ordering, wrapped grid flow, directional icons, and composition semantics; English remains LTR.
+- Western digits `0-9` remain mandatory in both Arabic and English per the global numeric glyph policy.
+
+**Implementation order for workers**
+1. Adaptive navigation shell: mobile bottom nav + tablet/desktop sidebar/rail.
+2. Shared production iconography layer and repeated domain/action icons.
+3. Life Map radar/spider visualization plus accessible exact-value overview.
+4. Today/Home visual composition: focus hero, day strip/context, icon state tiles, meters/trends, bottom-nav integration.
+5. WHY + Insights visual card/icon/evidence language.
+6. What If range meters and richer Experiments/status visuals.
+7. Personalization, Invisible Wins, Recovery, Onboarding illustrations/composition.
+8. Remaining quantitative gauges/meters and secondary-route visual alignment.
+9. Representative visual/runtime comparison and design-swap proof.
+
+**Anti-shortcut / acceptance rules**
+- CP9 must **not** be marked complete if the app is still primarily text cards with premium spacing/colors while the mandatory navigation, iconography, radar/map, meters/charts, and illustration language above are absent.
+- A technically polished Stack-only phone experience does not satisfy the reference; the adaptive mobile bottom navigation + desktop/tablet navigation treatment is required.
+- A Life Map made only from domain cards does not satisfy the reference; the radar/spider visualization is required.
+- Adding decorative icons without meaningful repeated use does not satisfy the iconography requirement.
+- Charts/illustrations must be real production components wired to actual domain state, not detached mocks, screenshots, or fake demo-only surfaces.
+- If a small Expo-compatible visualization/icon dependency is genuinely the simplest solution, workers may add it deliberately; avoid heavyweight chart frameworks or redundant UI systems.
+- Existing working business logic, deterministic intelligence, RLS/data boundaries, offline behavior, and accessibility must be preserved while the visual composition is upgraded.
+
 **Gate:** no primary flow has horizontal overflow, unusable tap targets, inaccessible unlabeled controls, broken RTL, or layout collapse at representative widths; repeated global design decisions are not scattered across feature screens; the representative design-swap proof demonstrates that a future full visual redesign does not require changes to core intelligence, application/data contracts, Supabase/data-access, or provider infrastructure; and the current shipped visual identity has completed the Premium Production Visual Pass with representative runtime visual evidence showing a coherent premium product across primary surfaces and screen classes.
 
 ### CP10 — Security, privacy, and owner-data control
