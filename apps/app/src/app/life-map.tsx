@@ -415,7 +415,14 @@ export default function LifeMapScreen() {
   const palette = Palette[scheme === 'dark' ? 'dark' : 'light'];
   const { width } = useWindowDimensions();
   const wide = width >= Layout.wideBreakpoint;
-  const chartSize = Math.max(268, Math.min(wide ? 348 : width - Spacing.xl * 2, 348));
+  const screenHorizontalPadding =
+    width < Layout.compactWidth
+      ? Layout.horizontalPadding.compact
+      : wide
+        ? Layout.horizontalPadding.wide
+        : Layout.horizontalPadding.regular;
+  const availableChartWidth = width - screenHorizontalPadding * 2 - Spacing.xl * 2;
+  const chartSize = Math.min(348, Math.max(180, availableChartWidth));
 
   useEffect(() => {
     let active = true;
