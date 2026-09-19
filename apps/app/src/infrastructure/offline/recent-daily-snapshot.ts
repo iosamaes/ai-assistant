@@ -101,3 +101,14 @@ export async function writeRecentDailySnapshot(
     return { ok: false, error: 'storage-unavailable' };
   }
 }
+
+export async function clearRecentDailySnapshot(
+  userId: string,
+): Promise<RecentDailySnapshotStorageResult<null>> {
+  try {
+    await writeRaw(storageKey(userId), null);
+    return { ok: true, value: null };
+  } catch {
+    return { ok: false, error: 'storage-unavailable' };
+  }
+}
