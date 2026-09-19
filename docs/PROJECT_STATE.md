@@ -62,10 +62,12 @@ The earlier Premium Production Visual Pass remains useful foundation, but the ow
 - `92c7f06ad33534b905e38252bfa4758bf950c907` — **Privacy & data** now has stronger owner-control visual hierarchy with shared semantic icons; the same change also scopes destructive delete confirmation to the active account so a confirmation opened before an account switch cannot authorize deletion for the newly active user.
 - `6c84bb8915103f16af68d4c630dc7373aece431a` — focused Privacy-screen regression specification requires a fresh two-step deletion confirmation after an account switch; intentionally not worker-run under the active policy.
 - `27d5b9cdcc1fd158afee7f62145a77a18081f51c` — **Life Seasons** now consumes the shared season/domain icon vocabulary across the hero, target panels, and history, and each 1–5 target choice has an explicit domain-scoped accessibility label instead of an ambiguous bare number. The same surface now passes the initiating user id through its save boundary for CP10 account fencing without changing the Life Season product semantics.
+- `57a4b696db348d7302688570cb0016881ea1cad4` + `848fa290e8e4f29c4d5a29b1f78a781bc25cc24f` — the interaction-heavy **Check-in** proof surface now distinguishes untouched metrics from an explicit “Not sure” choice, counts an explicit skip in review progress without persisting fake evidence, allows the skip to be toggled back to unanswered, and gives every skip control a metric-specific accessibility label. Regression specifications were expanded in `1a4b09c3af06fa31c27deea5e09beea9dc943180` + `2ec47a1fcef73c5b441e63852a860ae6778c1e3a` and were intentionally not worker-run.
+- `3287a73fb4460f1b9f2741b869d37e2b27a8aa2a` + `763b90bdef35d94e9c3eb26db0716144328b62dc` — shared Web presentation polish moves branded-illustration pointer-event suppression into style and renders shared Card/PrimaryButton shadows with modern `boxShadow` on Web while preserving the existing native shadow/elevation treatment; this addresses concrete deprecation noise seen in representative Web rendering without changing product logic.
 - Existing navigation/auth/localization/account-switch hardening remains in place, including offline authenticated entry, password-recovery routing, Check-in fencing, Today RTL ordering, Western-digit normalization, and corrected neutral Life Debt Arabic wording.
 
 ### CP9 remaining
-- Run the residual **static** owner-reference sweep over shipped routes and fix only demonstrated gaps: untranslated production literals, Western-digit regressions, semantic RTL, accessibility/live announcements, dynamic-type/truncation, keyboard/focus, technical-id fallbacks, and duplicated global presentation decisions.
+- Run the residual **static** owner-reference sweep over shipped routes and fix only demonstrated gaps: untranslated production literals, Western-digit regressions, semantic RTL, accessibility/live announcements, dynamic-type/truncation, keyboard/focus, technical-id fallbacks, duplicated global presentation decisions, and remaining deprecated Web presentation props such as the Life Map radar's decorative `pointerEvents` props.
 - Inspect any still-unreviewed secondary quantitative surface for a truthful visualization only where the underlying data has a meaningful bounded scale. Do **not** invent meters for categorical confidence, evidence counts, or incomparable values merely for visual density.
 - Confirm shared icon semantics remain consistent on remaining secondary screens without building another icon/design abstraction layer.
 - Owner/runtime evidence remains required across representative phone/tablet/Web widths, Arabic/English, and shipped light/dark modes. All owner-reference commits above remain static implementation evidence until that validation occurs.
@@ -88,7 +90,7 @@ The source-level sensitive-error review has covered baseline-target, experiment,
 - Supabase leaked-password protection remains an owner action in `automation/HUMAN_REQUIRED.md`.
 
 ## Exact next executable action
-1. Continue the final CP9 static owner-reference sweep across remaining shipped/secondary routes for concrete RTL/localization/accessibility/dynamic-type/focus/technical-id issues and presentation inconsistencies.
+1. Finish the final CP9 static owner-reference sweep, starting with the remaining deprecated Web-only presentation props in the Life Map radar, then continue only concrete RTL/localization/accessibility/dynamic-type/focus/technical-id inconsistencies on still-unreviewed surfaces.
 2. Inspect only still-unreviewed quantitative surfaces and add a meter/chart when the domain contract provides a real bounded quantitative meaning; preserve unknown states and avoid false precision.
 3. Continue the independent CP10 repository-wide sensitive logging/error-reporting audit across application/presentation boundaries not yet explicitly inspected.
 4. Leave representative-width runtime checks, tests/builds/typechecks/database validation suites, premium screenshot comparison, destructive account deletion, and final design-swap proof to owner validation under the active execution policy.
@@ -117,6 +119,7 @@ Post-baseline:
 - Auth/entry/privacy owner-reference and privacy-fencing commits `a8a4ef8b3e4ea56fc70ccaac14a302e729f16742`, `4840728f73374ce8ceba88a030e5a04aaff53e30`, `c5c1bd79aced8e82b709960d150343d4ed362d30`, `92c7f06ad33534b905e38252bfa4758bf950c907`, `6c84bb8915103f16af68d4c630dc7373aece431a`, `3ec7793959b43cfd0a48e4210c91cc6acc3a1cc6`, `1edb466025638721aeda9487e2fec34322ddf354`, and `a47b4d337c2c70867e40c9a54b005db4a34c0c11` are static implementation/specification evidence only; the privacy regression specifications were not executed.
 - Life Season account-fencing commits `77c965caacc1015feff66dd681d7532b0c26af39`, `db022a8c38944f653a77ab7997c1b28848cff46d`, `c4258f7317089583a5ce3b9b5fcaa4615c12da5e`, `2620b019108782ed5d8a973407b87f4154505a04`, and specification `25caf304a51bf69e60755a78b7c20e6d2440ec92` are implementation/specification evidence; only migration application and ACL reads were performed, not behavioral validation.
 - Residual CP9 localization/RTL commits `abe28be456fdfe17367f414f0e22d1a57f1b32ea`, `b06529071d63c4437d54df5e2e150b51018d1e43`, and `fc8e487eed24bf52b30bc410d8ca128142954640`, with regression specifications `fa54cce062b59cb1e1f08de62a1a4d0f1435ec16` and `a53732fbaa471fa45ba879cb5032a7f19f4804d8`, are static implementation/specification evidence only and were not worker-run.
+- Check-in interaction/accessibility commits `57a4b696db348d7302688570cb0016881ea1cad4`, `848fa290e8e4f29c4d5a29b1f78a781bc25cc24f`, `1a4b09c3af06fa31c27deea5e09beea9dc943180`, and `2ec47a1fcef73c5b441e63852a860ae6778c1e3a`, plus Web presentation-polish commits `3287a73fb4460f1b9f2741b869d37e2b27a8aa2a` and `763b90bdef35d94e9c3eb26db0716144328b62dc`, are static implementation/specification evidence only; no worker-run runtime/test/build claim is made.
 - CP10 application-layer logging-audit expansion recorded in `75998a428c791893fdfa37a9c27f26ff09e66fa6`, plus subsequent direct source review of auth/config/session-storage, offline storage, generic data access, root app-state, render-boundary, Life Season, privacy, and delete-account boundaries, is static source-review evidence only, not runtime or test evidence.
 
 ## Known blockers / risks
@@ -143,10 +146,13 @@ Post-baseline:
 - `apps/app/src/components/app-navigation.tsx`
 - `apps/app/src/components/app-icon.tsx`
 - `apps/app/src/components/branded-illustration.tsx`
+- `apps/app/src/components/mizan-ui.tsx`
 - `apps/app/src/components/app-error-boundary.tsx`
 - `apps/app/__tests__/entry-screen-offline-routing-test.tsx`
 - `apps/app/__tests__/app-error-boundary-privacy-test.tsx`
 - `apps/app/src/app/today.tsx`
+- `apps/app/src/app/check-in.tsx`
+- `apps/app/__tests__/check-in-session-fencing-test.tsx`
 - `apps/app/src/app/life-map.tsx`
 - `apps/app/src/application/life-map.ts`
 - `apps/app/__tests__/life-map-visualization-data-test.ts`
