@@ -1,11 +1,11 @@
 import { router } from 'expo-router';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet, useColorScheme, View } from 'react-native';
 
 import { loadRecoveryPlan } from '@/application/recovery';
 import { Card, MizanText, PrimaryButton, SecondaryButton } from '@/components/mizan-ui';
 import { Screen } from '@/components/screen';
-import { Spacing } from '@/constants/theme';
+import { Controls, Palette, Radius, Spacing } from '@/constants/theme';
 import { formatLocalizedNumber } from '@/i18n/number-input';
 import { useAppState } from '@/state/app-state';
 import type { RecoveryPlan, RecoveryReasonKey, RecoveryStepId } from '@mizan/core';
@@ -24,12 +24,15 @@ const copy = {
     available: 'هذا المسار متاح كإعادة ضبط خفيفة.',
     suggested: 'هناك أكثر من إشارة تدعم أخذ إعادة ضبط قصيرة.',
     strongly_suggested: 'الإشارات الحالية تدعم بقوة تقليل الحمل وأخذ استعادة قصيرة.',
+    planLabel: 'قراءة اليوم',
+    resetLabel: 'إعادة ضبط هادئة',
     step: 'الخطوة',
     of: 'من',
     next: 'الخطوة التالية',
     done: 'انتهيت الآن',
     skip: 'تخطي هذه الخطوة بدون عقوبة',
     back: 'العودة لليوم',
+    caveatTitle: 'مهم',
     caveat: 'هذا دعم يومي غير طبي، وليس تشخيصًا أو علاجًا. إذا كانت الأدلة ناقصة سيقول ميزان ذلك بوضوح.',
     confidenceLevels: {
       insufficient: 'دليل غير كافٍ',
@@ -71,12 +74,15 @@ const copy = {
     available: 'This path is available as a gentle reset.',
     suggested: 'More than one signal supports taking a short reset.',
     strongly_suggested: 'Current signals strongly support reducing load and taking a short recovery reset.',
+    planLabel: 'Today’s reading',
+    resetLabel: 'Gentle reset',
     step: 'Step',
     of: 'of',
     next: 'Next tiny step',
     done: 'I am done for now',
     skip: 'Skip this step without penalty',
     back: 'Back to Today',
+    caveatTitle: 'Important',
     caveat: 'This is non-medical daily support, not diagnosis or treatment. When evidence is limited, MIZAN says so explicitly.',
     confidenceLevels: {
       insufficient: 'Insufficient evidence',
@@ -108,12 +114,14 @@ const copy = {
 } as const;
 
 export default function RecoveryScreen() {
-  const { locale, refreshSession, userId } = useAppState();
+  const { isRtl, locale, refreshSession, userId } = useAppState();
   const labels = copy[locale];
   const [plan, setPlan] = useState<RecoveryPlan | null>(null);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState<string | null>(null);
   const [stepIndex, setStepIndex] = useState(0);
+  const scheme = useColorScheme();
+  const palette = Palette[scheme === 'dark' ? 'dark' : 'light'];
 
   const load = useCallback(async () => {
     if (!userId) {
@@ -167,55 +175,169 @@ export default function RecoveryScreen() {
 
   return (
     <Screen>
-      <View style={styles.hero}>
-        <MizanText variant="label" muted>{labels.eyebrow}</MizanText>
-        <MizanText variant="display">{labels.title}</MizanText>
-        <MizanText muted>{labels.body}</MizanText>
+      <View style={[styles.topRow, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
+        <View style={styles.heading}>
+          <MizanText variant="label" muted>{labels.eyebrow}</MizanText>
+          <MizanText variant="display">{labels.title}</MizanText>
+        </View>
+        <SecondaryButton compact label={labels.back} onPress={() => router.replace('/today')} />
       </View>
 
-      {loading ? <MizanText accessibilityLiveRegion="polite" muted>{labels.loading}</MizanText> : null}
-      {message ? <MizanText accessibilityLiveRegion="polite" muted>{message}</MizanText> : null}
+      <Card style={[styles.heroCard, { backgroundColor: palette.accentSoft, borderColor: palette.accent }]}>
+        <MizanText variant="title">{labels.resetLabel}</MizanText>
+        <MizanText muted>{labels.body}</MizanText>
+      </Card>
+
+      {loading ? (
+        <Card style={{ backgroundColor: palette.surfaceMuted }}>
+          <MizanText accessibilityLiveRegion="polite" muted>{labels.loading}</MizanText>
+        </Card>
+      ) : null}
+      {message ? (
+        <Card style={{ backgroundColor: palette.surfaceMuted }}>
+          <MizanText accessibilityLiveRegion="polite" muted>{message}</MizanText>
+        </Card>
+      ) : null}
 
       {plan ? (
         <>
-          <Card>
-            <MizanText variant="title">{needText}</MizanText>
-            <MizanText variant="caption" muted>
-              {labels.confidence}: {labels.confidenceLevels[plan.confidence.level]} · {labels.evidence}: {formatLocalizedNumber(plan.confidence.evidenceCount, locale, 0)}
-            </MizanText>
+          <Card style={styles.planCard}>
+            <View style={[styles.planHeader, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
+              <View style={styles.flexibleText}>
+                <MizanText variant="label" muted>{labels.planLabel}</MizanText>
+                <MizanText variant="title">{needText}</MizanText>
+              </View>
+              <View style={[styles.confidencePill, { backgroundColor: palette.accentSoft }]}>
+                <MizanText variant="caption">
+                  {labels.confidence}: {labels.confidenceLevels[plan.confidence.level]}
+                </MizanText>
+              </View>
+            </View>
+
+            <View style={[styles.planStats, { borderTopColor: palette.border }]}>
+              <View style={styles.statBlock}>
+                <MizanText variant="caption" muted>{labels.evidence}</MizanText>
+                <MizanText variant="title">{formatLocalizedNumber(plan.confidence.evidenceCount, locale, 0)}</MizanText>
+              </View>
+              <View style={styles.statBlock}>
+                <MizanText variant="caption" muted>{labels.confidence}</MizanText>
+                <MizanText variant="label">{labels.confidenceLevels[plan.confidence.level]}</MizanText>
+              </View>
+            </View>
+
             {reasonLabels.length > 0 ? (
-              <View style={styles.reasonGroup}>
+              <View style={[styles.reasonGroup, { borderTopColor: palette.border }]}>
                 <MizanText variant="label">{labels.reasons}</MizanText>
-                {reasonLabels.map((reason) => <MizanText key={reason} muted>• {reason}</MizanText>)}
+                {reasonLabels.map((reason) => (
+                  <View key={reason} style={[styles.reasonRow, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
+                    <View style={[styles.reasonDot, { backgroundColor: palette.accent }]} />
+                    <MizanText muted style={styles.flexibleText}>{reason}</MizanText>
+                  </View>
+                ))}
               </View>
             ) : null}
           </Card>
 
           {currentStep ? (
-            <Card>
-              <MizanText accessibilityLiveRegion="polite" variant="label" muted>
-                {labels.step} {formatLocalizedNumber(stepIndex + 1, locale, 0)} {labels.of} {formatLocalizedNumber(plan.steps.length, locale, 0)}
-              </MizanText>
-              <MizanText variant="title">{labels.steps[currentStep.id as RecoveryStepId].title}</MizanText>
-              <MizanText>{labels.steps[currentStep.id as RecoveryStepId].body}</MizanText>
-              <PrimaryButton
-                label={stepIndex >= plan.steps.length - 1 ? labels.done : labels.next}
-                onPress={advance}
-              />
-              <SecondaryButton label={labels.skip} onPress={advance} />
+            <Card style={[styles.stepCard, { borderColor: palette.accent }]}>
+              <View style={styles.progressGroup}>
+                <View style={[styles.stepMetaRow, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
+                  <MizanText accessibilityLiveRegion="polite" variant="label" muted>
+                    {labels.step} {formatLocalizedNumber(stepIndex + 1, locale, 0)} {labels.of} {formatLocalizedNumber(plan.steps.length, locale, 0)}
+                  </MizanText>
+                  <MizanText variant="caption" muted>{labels.resetLabel}</MizanText>
+                </View>
+                <View style={styles.progressTrack} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
+                  {plan.steps.map((step, index) => (
+                    <View
+                      key={step.id}
+                      style={[
+                        styles.progressSegment,
+                        { backgroundColor: index <= stepIndex ? palette.accent : palette.border },
+                      ]}
+                    />
+                  ))}
+                </View>
+              </View>
+
+              <View style={styles.stepCopy}>
+                <MizanText variant="title">{labels.steps[currentStep.id as RecoveryStepId].title}</MizanText>
+                <MizanText>{labels.steps[currentStep.id as RecoveryStepId].body}</MizanText>
+              </View>
+
+              <View style={styles.actions}>
+                <PrimaryButton
+                  label={stepIndex >= plan.steps.length - 1 ? labels.done : labels.next}
+                  onPress={advance}
+                />
+                <SecondaryButton label={labels.skip} onPress={advance} />
+              </View>
             </Card>
           ) : null}
 
-          <MizanText variant="caption" muted>{labels.caveat}</MizanText>
+          <Card style={[styles.caveatCard, { backgroundColor: palette.surfaceMuted }]}>
+            <MizanText variant="label">{labels.caveatTitle}</MizanText>
+            <MizanText variant="caption" muted>{labels.caveat}</MizanText>
+          </Card>
         </>
       ) : null}
-
-      <SecondaryButton compact label={labels.back} onPress={() => router.replace('/today')} />
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  hero: { gap: Spacing.md, paddingTop: Spacing.xl },
-  reasonGroup: { gap: Spacing.sm, paddingTop: Spacing.sm },
+  topRow: {
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+    gap: Spacing.lg,
+    flexWrap: 'wrap',
+  },
+  heading: { flex: 1, minWidth: 0, gap: Spacing.xs },
+  flexibleText: { flex: 1, minWidth: 0 },
+  heroCard: { gap: Spacing.md },
+  planCard: { gap: Spacing.lg },
+  planHeader: {
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+    gap: Spacing.md,
+    flexWrap: 'wrap',
+  },
+  confidencePill: {
+    borderRadius: Radius.pill,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm,
+  },
+  planStats: {
+    borderTopWidth: Controls.borderWidth,
+    paddingTop: Spacing.lg,
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: Spacing.xl,
+  },
+  statBlock: { minWidth: 120, gap: Spacing.xs },
+  reasonGroup: {
+    borderTopWidth: Controls.borderWidth,
+    paddingTop: Spacing.lg,
+    gap: Spacing.md,
+  },
+  reasonRow: { alignItems: 'flex-start', gap: Spacing.sm },
+  reasonDot: {
+    width: Spacing.sm,
+    height: Spacing.sm,
+    borderRadius: Radius.pill,
+    marginTop: Spacing.sm,
+  },
+  stepCard: { gap: Spacing.xl },
+  progressGroup: { gap: Spacing.md },
+  stepMetaRow: {
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    gap: Spacing.md,
+    flexWrap: 'wrap',
+  },
+  progressTrack: { flexDirection: 'row', gap: Spacing.sm },
+  progressSegment: { flex: 1, height: Spacing.xs, borderRadius: Radius.pill },
+  stepCopy: { gap: Spacing.md },
+  actions: { gap: Spacing.md },
+  caveatCard: { gap: Spacing.sm },
 });
