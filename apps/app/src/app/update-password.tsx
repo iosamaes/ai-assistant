@@ -1,5 +1,5 @@
 import { router } from 'expo-router';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { StyleSheet, useColorScheme, useWindowDimensions, View } from 'react-native';
 
 import { AppIcon } from '@/components/app-icon';
@@ -36,7 +36,7 @@ const updatePasswordVisualCopy = {
 } as const;
 
 export default function UpdatePasswordScreen() {
-  const { isRtl, locale, onboardingCompleted, sessionStatus, t } = useAppState();
+  const { isRtl, locale, onboardingCompleted, sessionStatus, t, userId } = useAppState();
   const scheme = useColorScheme();
   const palette = Palette[scheme === 'dark' ? 'dark' : 'light'];
   const { width } = useWindowDimensions();
@@ -46,13 +46,22 @@ export default function UpdatePasswordScreen() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
+  const activeUserRef = useRef(userId);
+
+  useEffect(() => {
+    activeUserRef.current = userId;
+    setPassword('');
+    setConfirmPassword('');
+    setBusy(false);
+    setMessage(null);
+  }, [userId]);
 
   const passwordLongEnough = password.length >= 8;
   const passwordsMatch = confirmPassword.length > 0 && password === confirmPassword;
-  const canEdit = sessionStatus === 'signed-in' && !busy;
+  const canEdit = sessionStatus === 'signed-in' && Boolean(userId) && !busy;
   const canSubmit = useMemo(
-    () => sessionStatus === 'signed-in' && passwordLongEnough && passwordsMatch && !busy,
-    [busy, passwordLongEnough, passwordsMatch, sessionStatus],
+    () => sessionStatus === 'signed-in' && Boolean(userId) && passwordLongEnough && passwordsMatch && !busy,
+    [busy, passwordLongEnough, passwordsMatch, sessionStatus, userId],
   );
 
   const authErrorText = (kind: AuthFailureKind) => {
@@ -69,10 +78,13 @@ export default function UpdatePasswordScreen() {
   };
 
   const submit = async () => {
-    if (!canSubmit) return;
+    if (!canSubmit || !userId) return;
+    const targetUserId = userId;
+    const targetOnboardingCompleted = onboardingCompleted;
     setBusy(true);
     setMessage(null);
-    const result = await updatePassword(password);
+    const result = await updatePassword(password, targetUserId);
+    if (activeUserRef.current !== targetUserId) return;
     if (!result.ok) {
       setMessage(authErrorText(result.error.kind));
       setBusy(false);
@@ -81,7 +93,7 @@ export default function UpdatePasswordScreen() {
 
     setMessage(t('passwordUpdated'));
     setBusy(false);
-    router.replace(onboardingCompleted ? '/today' : '/onboarding');
+    router.replace(targetOnboardingCompleted ? '/today' : '/onboarding');
   };
 
   return (
@@ -129,7 +141,7 @@ export default function UpdatePasswordScreen() {
             <MizanText muted>{labels.formBody}</MizanText>
           </View>
 
-          {sessionStatus !== 'signed-in' ? (
+          {sessionStatus !== 'signed-in' || !userId ? (
             <View style={[styles.messagePanel, styles.messagePanelBorder, { backgroundColor: palette.surfaceMuted, borderColor: palette.border }]}>
               <MizanText accessibilityLiveRegion="polite">{labels.sessionMissing}</MizanText>
             </View>
