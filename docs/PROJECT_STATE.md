@@ -37,6 +37,8 @@ Presentation boundary:
 - broad static pass over RTL, dynamic type, accessibility states/live regions, async interaction fencing, localization, and repeated visual semantics across primary routes.
 
 Latest static CP9 work:
+- **Invisible Wins state honesty:** load failures are now tracked separately from save feedback, so a failed history request no longer renders the contradictory “no reflections yet” empty state at the same time. The load failure remains a polite live announcement. Commit `6c9062a858a58b68603de703218695a02757e95f`.
+- **Integrations async-state fencing:** refresh failures now clear stale connection data, connection cards render only for a confirmed ready state, and a successful disconnect keeps controls fenced until the authoritative reload finishes. This prevents stale “connected” UI or a second disconnect action while the refreshed lifecycle state is unresolved. Commit `412658e1ddf1f51676d2b1c0beae7f244c505843`.
 - **Onboarding baseline numeric localization:** the optional baseline-target explanation now uses Arabic-Indic digits in Arabic, and the 1–5 target chips render through the shared locale-aware formatter so Arabic and English remain consistent with the rest of the product. Commit `f1c29980f7f22785576052d077c3732bb596461d`.
 - **What If numeric localization:** scenario assumptions now use Arabic-Indic minute values in Arabic, while current-state values, plausible ranges, and evidence counts render through the shared locale-aware formatter. English retains Western digits. Commit `4da2ef10335ce1399acf838885e520f15fb649b3`.
 - **Today numeric localization:** Today now uses the shared locale-aware formatter for current-state scores and `/100` denominators, state/balance/momentum evidence counts, One Move evidence counts, and feedback rating text plus its assistive labels. Arabic therefore renders Arabic-Indic digits consistently on the primary dashboard while English retains Western digits. Commit `92c9a3a6a6a1fa0f7cd1039daaaf26c81e71548f`.
@@ -106,5 +108,7 @@ Post-baseline:
 - `apps/app/src/app/value-alignment.tsx`
 - `apps/app/src/app/check-in.tsx`
 - `apps/app/src/app/today.tsx`
+- `apps/app/src/app/invisible-wins.tsx`
+- `apps/app/src/app/integrations.tsx`
 - `apps/app/__tests__/advanced-tools-test.ts`
 - `automation/HUMAN_REQUIRED.md`
