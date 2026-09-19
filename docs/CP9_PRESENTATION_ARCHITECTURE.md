@@ -86,7 +86,7 @@ Invisible Wins previously duplicated the standard multiline input treatment loca
 
 ### Values & identity alignment
 
-Value Alignment previously used a custom `Pressable` back control with screen-local padding. It now uses compact `SecondaryButton`, centralizing touch target, border/radius, pressed state, dynamic text behavior, and accessibility role without moving evidence interpretation, confidence, or identity-drift semantics into presentation code.
+Value Alignment previously used a custom `Pressable` back control with screen-local padding. It now uses compact `SecondaryButton`, centralizing touch target, border/radius, pressed state, dynamic text behavior, and accessibility role without moving evidence interpretation, confidence, or identity-drift semantics into presentation code. The final owner-reference sweep also removed a residual text-heavy state treatment: selected values now reuse the shared semantic icon vocabulary, supported/watch/insufficient summaries combine icon + semantic tone + border treatment, and declining/supporting signal headings only receive alert/accent emphasis when corresponding evidence exists. This remains feature-local composition over the existing `PersonalValueAlignment` contract; no identity score or new business rule was introduced.
 
 ### External integrations
 
@@ -130,7 +130,7 @@ The entry redirect route was statically audited and already uses the shared `Scr
 
 ## Owner-approved premium reference contract
 
-The owner-approved MIZAN showcase revealed that the existing foundation, while technically cleaner and more premium than the original scaffold, is still materially short of the agreed visual product. The binding requirements are now in `automation/TASK.md`; this document records the presentation delta workers must close.
+The owner-approved MIZAN showcase is the binding visual/product direction recorded in `automation/TASK.md`. The major structural deltas below are now present in source, but they remain acceptance requirements until representative runtime evidence confirms the actual production appearance and interaction quality.
 
 The required visual/product deltas are:
 - mobile persistent bottom navigation with **Home / Life Map / One Move / Insights / More**, icon + label + selected state;
@@ -145,7 +145,7 @@ The required visual/product deltas are:
 - restrained gauges/meters/progress/range visualization on quantitative decision surfaces where evidence supports them;
 - the same visual system adapted intentionally across Arabic RTL, English LTR, mobile, tablet, and desktop/Web.
 
-The previous shared token/primitives work remains the correct implementation boundary. The next work must add these missing structural visual elements **through that boundary**, not create page-local mini design systems.
+The shared token/primitives boundary remains the implementation rule for all of those surfaces. Residual work must correct demonstrated defects through the same semantic tokens, shared primitives/navigation shell, and feature-local composition rather than introducing page-local design systems or a second theme framework.
 
 CP9 is not visually complete while the app remains primarily text cards with premium spacing/colors but lacks the navigation, iconography, radar/map, meters/charts, and illustration language above.
 
