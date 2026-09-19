@@ -126,6 +126,27 @@ The entry redirect route was statically audited and already uses the shared `Scr
 
 The root `AppErrorBoundary` is intentionally outside `AppStateProvider` so it can still catch bootstrap/provider render failures. Its fallback previously hard-coded an Arabic-only light-theme surface, typography, colors, sizing, and button treatment. The fallback now remains bootstrap-safe while consuming semantic palette, typography, spacing, radius, control-size, and interaction tokens; it supports light/dark appearance, scalable text, explicit retry-button accessibility, and Arabic/English fallback copy selected from platform direction without depending on app state. No domain, persistence, routing, or recovery behavior moved into the presentation layer.
 
+## Owner-approved premium reference contract
+
+The owner-approved MIZAN showcase revealed that the existing foundation, while technically cleaner and more premium than the original scaffold, is still materially short of the agreed visual product. The binding requirements are now in `automation/TASK.md`; this document records the presentation delta workers must close.
+
+The required visual/product deltas are:
+- mobile persistent bottom navigation with **Home / Life Map / One Move / Insights / More**, icon + label + selected state;
+- tablet/wide-Web adaptive sidebar or rail using the same primary destinations;
+- a coherent cross-platform production iconography layer instead of text-heavy/emoji-led UI;
+- a real responsive Life Map radar/spider visualization backed by actual known domain values plus an accessible exact-value overview;
+- a richer Today dashboard with branded focus hero, date/day context, icon state tiles, trend/progress treatment, and direct One Move reachability;
+- WHY and Insights cards with differentiated icon/evidence/confidence visual language;
+- What If range meters and richer experiment/status visualization;
+- Personalization rows with domain icons/toggles, stronger Invisible Wins capture/filter composition, and a visually branded low-load Recovery flow;
+- a small reusable app-owned illustration language for onboarding plus focus/recovery surfaces;
+- restrained gauges/meters/progress/range visualization on quantitative decision surfaces where evidence supports them;
+- the same visual system adapted intentionally across Arabic RTL, English LTR, mobile, tablet, and desktop/Web.
+
+The previous shared token/primitives work remains the correct implementation boundary. The next work must add these missing structural visual elements **through that boundary**, not create page-local mini design systems.
+
+CP9 is not visually complete while the app remains primarily text cards with premium spacing/colors but lacks the navigation, iconography, radar/map, meters/charts, and illustration language above.
+
 ## Current design-swap assessment
 
 The global visual levers for palette, typography, control sizing, spacing/radii, interaction opacity, and responsive screen layout are now centralized across Today, Life Map, WHY, Check-in, authentication/recovery, Capacity, Cost of Yes, Insights, Human ROI, Life Seasons, Recovery, Invisible Wins, Value Alignment, Integrations, Experiments, What If, Settings, Personal Learning, Personalization, Onboarding, the entry route, and the bootstrap-safe root error fallback. The navigation shell also consumes semantic background color and now honors the platform reduced-motion preference. These surfaces demonstrate that repeated control/input treatment can move behind app-local primitives or semantic tokens without changing `packages/core`, application intelligence/data contracts, Supabase/data-access, or provider adapters.
