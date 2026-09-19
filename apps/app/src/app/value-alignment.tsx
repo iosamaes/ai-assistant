@@ -6,6 +6,7 @@ import {
   loadPersonalValueAlignments,
   type PersonalValueAlignment,
 } from '@/application/value-alignment';
+import { AppIcon } from '@/components/app-icon';
 import { Card, MizanText, SecondaryButton } from '@/components/mizan-ui';
 import { Screen } from '@/components/screen';
 import { Controls, Palette, Radius, Spacing } from '@/constants/theme';
@@ -153,7 +154,12 @@ export default function ValueAlignmentScreen() {
       </View>
 
       <Card style={[styles.heroCard, { backgroundColor: palette.accentSoft, borderColor: palette.accent }]}>
-        <MizanText variant="title">{labels.overviewTitle}</MizanText>
+        <View style={[styles.heroHeading, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
+          <View style={[styles.iconWell, { backgroundColor: palette.surface }]}>
+            <AppIcon name="values" color={palette.accent} size={24} />
+          </View>
+          <MizanText variant="title" style={styles.flexibleText}>{labels.overviewTitle}</MizanText>
+        </View>
         <MizanText>{labels.body}</MizanText>
         <MizanText variant="caption" muted>{labels.overviewBody}</MizanText>
       </Card>
@@ -181,7 +187,12 @@ export default function ValueAlignmentScreen() {
             return (
               <Card key={summary.valueId} style={styles.valueCard}>
                 <View style={[styles.cardHeader, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
-                  <MizanText variant="title" style={styles.flexibleText}>{labels.values[valueId]}</MizanText>
+                  <View style={[styles.titleGroup, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
+                    <View style={[styles.iconWell, { backgroundColor: palette.accentSoft }]}>
+                      <AppIcon name="values" color={palette.accent} size={22} />
+                    </View>
+                    <MizanText variant="title" style={styles.flexibleText}>{labels.values[valueId]}</MizanText>
+                  </View>
                   <View style={[styles.statusPill, { backgroundColor: palette.accentSoft }]}>
                     <MizanText variant="caption">{statusLabel(summary)}</MizanText>
                   </View>
@@ -189,17 +200,26 @@ export default function ValueAlignmentScreen() {
 
                 <View style={[styles.metrics, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
                   <View style={[styles.metricTile, { backgroundColor: palette.surfaceMuted }]}>
-                    <MizanText variant="caption" muted>{labels.confidence}</MizanText>
+                    <View style={[styles.metricHeading, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
+                      <AppIcon name="confidence" color={palette.accent} size={18} />
+                      <MizanText variant="caption" muted>{labels.confidence}</MizanText>
+                    </View>
                     <MizanText variant="label">{labels.confidenceLevels[summary.confidence.level]}</MizanText>
                   </View>
                   <View style={[styles.metricTile, { backgroundColor: palette.surfaceMuted }]}>
-                    <MizanText variant="caption" muted>{labels.evidence}</MizanText>
+                    <View style={[styles.metricHeading, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
+                      <AppIcon name="evidence" color={palette.accent} size={18} />
+                      <MizanText variant="caption" muted>{labels.evidence}</MizanText>
+                    </View>
                     <MizanText variant="title">{formatLocalizedNumber(summary.confidence.evidenceCount, locale, 0)}</MizanText>
                   </View>
                 </View>
 
                 <View style={[styles.signalSection, { borderTopColor: palette.border }]}>
-                  <MizanText variant="label">{labels.watchSignals}</MizanText>
+                  <View style={[styles.signalHeading, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
+                    <AppIcon name="trendDown" color={palette.accent} size={18} />
+                    <MizanText variant="label">{labels.watchSignals}</MizanText>
+                  </View>
                   <MizanText muted>
                     {summary.watchSignals.length > 0
                       ? summary.watchSignals.map((signal) => signalLabel(signal, locale)).join(' · ')
@@ -208,7 +228,10 @@ export default function ValueAlignmentScreen() {
                 </View>
 
                 <View style={[styles.signalSection, { borderTopColor: palette.border }]}>
-                  <MizanText variant="label">{labels.supportingSignals}</MizanText>
+                  <View style={[styles.signalHeading, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
+                    <AppIcon name="trendUp" color={palette.accent} size={18} />
+                    <MizanText variant="label">{labels.supportingSignals}</MizanText>
+                  </View>
                   <MizanText muted>
                     {summary.supportingSignals.length > 0
                       ? summary.supportingSignals.map((signal) => signalLabel(signal, locale)).join(' · ')
@@ -232,12 +255,24 @@ const styles = StyleSheet.create({
   topRow: { alignItems: 'flex-start', justifyContent: 'space-between', gap: Spacing.lg, flexWrap: 'wrap' },
   heading: { flex: 1, minWidth: 0, gap: Spacing.xs },
   heroCard: { gap: Spacing.md },
+  heroHeading: { alignItems: 'center', gap: Spacing.md },
+  iconWell: {
+    width: Controls.minimumTouchHeight,
+    height: Controls.minimumTouchHeight,
+    borderRadius: Radius.md,
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexShrink: 0,
+  },
   valueGrid: { flexWrap: 'wrap', alignItems: 'stretch', gap: Spacing.lg },
   valueCard: { flexGrow: 1, flexShrink: 1, flexBasis: 360 },
   cardHeader: { alignItems: 'flex-start', justifyContent: 'space-between', gap: Spacing.md, flexWrap: 'wrap' },
-  flexibleText: { flexShrink: 1 },
+  titleGroup: { flexGrow: 1, flexShrink: 1, flexBasis: 220, minWidth: 0, alignItems: 'center', gap: Spacing.md },
+  flexibleText: { flexShrink: 1, minWidth: 0 },
   statusPill: { minHeight: Controls.minimumTouchHeight, justifyContent: 'center', borderRadius: Radius.pill, paddingHorizontal: Spacing.md, maxWidth: '100%' },
   metrics: { flexWrap: 'wrap', gap: Spacing.md },
   metricTile: { flexGrow: 1, flexBasis: 150, minWidth: 0, borderRadius: Radius.md, padding: Spacing.md, gap: Spacing.xs },
+  metricHeading: { alignItems: 'center', gap: Spacing.xs },
   signalSection: { borderTopWidth: Controls.borderWidth, paddingTop: Spacing.md, gap: Spacing.sm },
+  signalHeading: { alignItems: 'center', gap: Spacing.xs },
 });
