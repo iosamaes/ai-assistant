@@ -9,6 +9,7 @@ import {
 import { Card, MizanText, SecondaryButton } from '@/components/mizan-ui';
 import { Screen } from '@/components/screen';
 import { Spacing } from '@/constants/theme';
+import { formatLocalizedNumber } from '@/i18n/number-input';
 import { useAppState, type PersonalValue } from '@/state/app-state';
 
 type LoadStatus = 'loading' | 'ready' | 'error';
@@ -156,7 +157,7 @@ export default function ValueAlignmentScreen() {
             <MizanText variant="title">{labels.values[valueId]}</MizanText>
             <MizanText variant="label">{statusLabel(summary)}</MizanText>
             <MizanText variant="caption" muted>
-              {labels.confidence}: {labels.confidenceLevels[summary.confidence.level]} · {labels.evidence}: {summary.confidence.evidenceCount}
+              {labels.confidence}: {labels.confidenceLevels[summary.confidence.level]} · {labels.evidence}: {formatLocalizedNumber(summary.confidence.evidenceCount, locale, 0)}
             </MizanText>
             {summary.watchSignals.length > 0 ? (
               <MizanText muted>
