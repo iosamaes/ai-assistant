@@ -11,6 +11,7 @@ import {
 import { Card, ChoiceChip, MizanText, PrimaryButton, SecondaryButton } from '@/components/mizan-ui';
 import { Screen } from '@/components/screen';
 import { Spacing } from '@/constants/theme';
+import { formatLocalizedNumber } from '@/i18n/number-input';
 import { useAppState } from '@/state/app-state';
 
 const ratingOptions = [1, 2, 3, 4, 5] as const;
@@ -91,16 +92,19 @@ export default function CheckInScreen() {
         <Card key={metric}>
           <MizanText variant="title">{t(label)}</MizanText>
           <View style={[styles.ratingRow, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
-            {ratingOptions.map((rating) => (
-              <ChoiceChip
-                key={rating}
-                accessibilityLabel={`${t(label)}: ${rating}`}
-                label={String(rating)}
-                selected={ratings[metric] === rating}
-                onPress={() => setRating(metric, rating)}
-                disabled={interactionsLocked}
-              />
-            ))}
+            {ratingOptions.map((rating) => {
+              const localizedRating = formatLocalizedNumber(rating, locale, 0);
+              return (
+                <ChoiceChip
+                  key={rating}
+                  accessibilityLabel={`${t(label)}: ${localizedRating}`}
+                  label={localizedRating}
+                  selected={ratings[metric] === rating}
+                  onPress={() => setRating(metric, rating)}
+                  disabled={interactionsLocked}
+                />
+              );
+            })}
           </View>
           <View style={[styles.scaleRow, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
             <MizanText variant="caption" muted style={styles.scaleLabel}>{t('checkInLow')}</MizanText>
