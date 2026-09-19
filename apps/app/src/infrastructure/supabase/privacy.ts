@@ -16,6 +16,10 @@ export type PortableAccountExport = Record<string, unknown> & {
   };
 };
 
+export type AccountDeletionOutcome = {
+  localDataCleared: boolean;
+};
+
 function unavailable<T>(): PrivacyResult<T> {
   return { ok: false, error: { kind: 'not-configured' } };
 }
@@ -57,7 +61,9 @@ export async function exportMyData(expectedUserId: string): Promise<PrivacyResul
   };
 }
 
-export async function deleteMyAccount(expectedUserId: string): Promise<PrivacyResult<null>> {
+export async function deleteMyAccount(
+  expectedUserId: string,
+): Promise<PrivacyResult<AccountDeletionOutcome>> {
   if (!supabase) return unavailable();
 
   const sessionBefore = await sessionForUser(expectedUserId);
@@ -71,12 +77,14 @@ export async function deleteMyAccount(expectedUserId: string): Promise<PrivacyRe
   }
 
   // The authoritative account is gone at this point, so remove app-owned
-  // device/browser caches keyed to that user as well. Cleanup is best-effort:
-  // a storage failure cannot roll back the already-confirmed server deletion.
-  await Promise.all([
+  // device/browser caches keyed to that user as well. A storage failure cannot
+  // roll back the server deletion, so report cleanup status explicitly instead
+  // of falsely reporting that the account itself was not deleted.
+  const [pendingCleanup, snapshotCleanup] = await Promise.all([
     clearPendingUserMutations(expectedUserId),
     clearRecentDailySnapshot(expectedUserId),
   ]);
+  const localDataCleared = pendingCleanup.ok && snapshotCleanup.ok;
 
   // Clear the local auth session only if the same user is still active; never
   // sign out a new user that may have become active while deletion was in flight.
@@ -84,5 +92,5 @@ export async function deleteMyAccount(expectedUserId: string): Promise<PrivacyRe
   if (sessionData.session?.user.id === expectedUserId) {
     await supabase.auth.signOut({ scope: 'local' });
   }
-  return { ok: true, value: null };
+  return { ok: true, value: { localDataCleared } };
 }
