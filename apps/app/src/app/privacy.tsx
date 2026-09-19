@@ -1,5 +1,5 @@
 import { router } from 'expo-router';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Alert, Platform, Share, StyleSheet, useColorScheme, View } from 'react-native';
 
 import { Card, MizanText, PrimaryButton, SecondaryButton } from '@/components/mizan-ui';
@@ -108,7 +108,10 @@ export default function PrivacyScreen() {
   const [confirmingDelete, setConfirmingDelete] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const activeUserRef = useRef(userId);
-  activeUserRef.current = userId;
+
+  useEffect(() => {
+    activeUserRef.current = userId;
+  }, [userId]);
 
   const handleExport = async () => {
     if (busy || !userId) return;

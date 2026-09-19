@@ -5,11 +5,11 @@ const mockPersistObservations = jest.fn();
 const mockDisconnectIntegration = jest.fn();
 
 jest.mock('@/infrastructure/supabase/integrations', () => ({
-  loadIntegrationConnections: mockLoadIntegrationConnections,
-  markIntegrationSyncError: mockMarkIntegrationSyncError,
-  markIntegrationSyncSuccess: mockMarkIntegrationSyncSuccess,
-  upsertNormalizedExternalObservations: mockPersistObservations,
-  disconnectIntegration: mockDisconnectIntegration,
+  loadIntegrationConnections: (...args: unknown[]) => mockLoadIntegrationConnections(...args),
+  markIntegrationSyncError: (...args: unknown[]) => mockMarkIntegrationSyncError(...args),
+  markIntegrationSyncSuccess: (...args: unknown[]) => mockMarkIntegrationSyncSuccess(...args),
+  upsertNormalizedExternalObservations: (...args: unknown[]) => mockPersistObservations(...args),
+  disconnectIntegration: (...args: unknown[]) => mockDisconnectIntegration(...args),
 }));
 
 import { syncHealthData } from '@/application/integrations';

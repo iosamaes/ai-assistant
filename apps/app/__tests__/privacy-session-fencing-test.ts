@@ -6,20 +6,20 @@ const mockClearPendingUserMutations = jest.fn();
 const mockClearRecentDailySnapshot = jest.fn();
 
 jest.mock('@/infrastructure/offline/pending-mutations', () => ({
-  clearPendingUserMutations: mockClearPendingUserMutations,
+  clearPendingUserMutations: (...args: unknown[]) => mockClearPendingUserMutations(...args),
 }));
 
 jest.mock('@/infrastructure/offline/recent-daily-snapshot', () => ({
-  clearRecentDailySnapshot: mockClearRecentDailySnapshot,
+  clearRecentDailySnapshot: (...args: unknown[]) => mockClearRecentDailySnapshot(...args),
 }));
 
 jest.mock('@/infrastructure/supabase/client', () => ({
   supabase: {
-    rpc: mockRpc,
-    functions: { invoke: mockInvoke },
+    rpc: (...args: unknown[]) => mockRpc(...args),
+    functions: { invoke: (...args: unknown[]) => mockInvoke(...args) },
     auth: {
-      getSession: mockGetSession,
-      signOut: mockSignOut,
+      getSession: (...args: unknown[]) => mockGetSession(...args),
+      signOut: (...args: unknown[]) => mockSignOut(...args),
     },
   },
 }));

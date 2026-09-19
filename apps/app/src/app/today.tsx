@@ -247,7 +247,7 @@ export default function TodayScreen() {
         if (result.error.kind === 'session-expired') await refreshSession();
         return;
       }
-      setFeedbackTarget({ ...result.value, userId });
+      setFeedbackTarget(result.value ? { ...result.value, userId } : null);
     })();
 
     return () => {

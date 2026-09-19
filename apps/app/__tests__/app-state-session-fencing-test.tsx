@@ -118,14 +118,17 @@ describe('AppStateProvider session fencing', () => {
       });
     });
 
-    const view = render(
+    const view = await render(
       <AppStateProvider>
         <StateProbe />
       </AppStateProvider>,
     );
 
     await waitFor(() => expect(authListener).not.toBeNull());
-    act(() => authListener?.('SIGNED_IN', session('user-b')));
+    await act(async () => {
+      authListener?.('SIGNED_IN', session('user-b'));
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
 
     await waitFor(() => {
       expect(view.getByTestId('state').props.children.join('')).toBe('user-b|en|build|minimal');

@@ -101,6 +101,7 @@ export function AppStateProvider({ children }: PropsWithChildren) {
   const [syncStatus, setSyncStatus] = useState<SyncStatus>('idle');
   const [userId, setUserId] = useState<string | null>(null);
   const activeUserRef = useRef<string | null>(null);
+  const sessionRevisionRef = useRef(0);
   const persistenceQueue = useRef<Promise<void>>(Promise.resolve());
 
   const resetUserState = useCallback(() => {
@@ -114,7 +115,8 @@ export function AppStateProvider({ children }: PropsWithChildren) {
   }, []);
 
   const hydrateSession = useCallback(
-    async (session: Session | null) => {
+    async (session: Session | null, revision = ++sessionRevisionRef.current) => {
+      if (revision !== sessionRevisionRef.current) return;
       if (!session) {
         activeUserRef.current = null;
         setUserId(null);
@@ -140,7 +142,7 @@ export function AppStateProvider({ children }: PropsWithChildren) {
         loadDomainPreferences(nextUserId),
         loadOnboardingContext(nextUserId),
       ]);
-      if (activeUserRef.current !== nextUserId) return;
+      if (revision !== sessionRevisionRef.current || activeUserRef.current !== nextUserId) return;
 
       const failures = collectFailures(
         profileResult.ok ? null : profileResult.error.kind,
@@ -209,8 +211,10 @@ export function AppStateProvider({ children }: PropsWithChildren) {
   );
 
   const refreshSession = useCallback(async () => {
+    const revision = ++sessionRevisionRef.current;
     setSessionStatus('loading');
     const result = await getCurrentSession();
+    if (revision !== sessionRevisionRef.current) return;
     if (!result.ok) {
       if (result.error.kind === 'network' && activeUserRef.current) {
         setSyncStatus('offline');
@@ -222,7 +226,7 @@ export function AppStateProvider({ children }: PropsWithChildren) {
       setSessionStatus(result.error.kind === 'not-configured' ? 'not-configured' : 'error');
       return;
     }
-    await hydrateSession(result.value);
+    await hydrateSession(result.value, revision);
   }, [hydrateSession]);
 
   useEffect(() => {
@@ -233,15 +237,18 @@ export function AppStateProvider({ children }: PropsWithChildren) {
     });
 
     const unsubscribeAuth = subscribeToAuthSession((_event, session) => {
+      const revision = ++sessionRevisionRef.current;
       setTimeout(() => {
-        void hydrateSession(session);
+        void hydrateSession(session, revision);
       }, 0);
     });
 
     const consumeUrl = async (url: string | null) => {
       if (!url) return;
+      const revision = ++sessionRevisionRef.current;
       const result = await consumeAuthRedirectUrl(url);
-      if (result.ok && result.value) await hydrateSession(result.value);
+      if (revision !== sessionRevisionRef.current) return;
+      if (result.ok && result.value) await hydrateSession(result.value, revision);
     };
 
     void Linking.getInitialURL().then(consumeUrl);
@@ -251,6 +258,7 @@ export function AppStateProvider({ children }: PropsWithChildren) {
 
     return () => {
       active = false;
+      sessionRevisionRef.current += 1;
       unsubscribeAuth();
       linkingSubscription.remove();
     };

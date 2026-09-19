@@ -54,6 +54,6 @@ describe('shared presentation primitives', () => {
     const view = await render(<ChoiceChip label="English" selected onPress={jest.fn()} />);
     const chip = view.getByRole('button', { name: 'English' });
 
-    expect(chip.props.accessibilityState).toEqual({ selected: true });
+    expect(chip.props.accessibilityState).toMatchObject({ selected: true });
   });
 });

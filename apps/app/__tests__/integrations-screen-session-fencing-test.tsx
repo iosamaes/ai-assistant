@@ -68,11 +68,11 @@ describe('IntegrationsScreen session fencing', () => {
       });
     });
 
-    const view = render(<IntegrationsScreen />);
+    const view = await render(<IntegrationsScreen />);
     await waitFor(() => expect(loadIntegrationSettingsMock).toHaveBeenCalledWith('user-a'));
 
     useAppStateMock.mockReturnValue(appState('user-b'));
-    view.rerender(<IntegrationsScreen />);
+    await view.rerender(<IntegrationsScreen />);
 
     await waitFor(() => {
       expect(view.getByText('Approximate location context')).toBeTruthy();

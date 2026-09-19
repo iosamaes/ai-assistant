@@ -167,7 +167,10 @@ export default function IntegrationsScreen() {
   const [message, setMessage] = useState<string | null>(null);
   const activeUserRef = useRef(userId);
   const loadRequestRef = useRef(0);
-  activeUserRef.current = userId;
+
+  useEffect(() => {
+    activeUserRef.current = userId;
+  }, [userId]);
 
   const reload = useCallback(async () => {
     const requestedUserId = userId;
@@ -201,10 +204,15 @@ export default function IntegrationsScreen() {
   }, [refreshSession, userId]);
 
   useEffect(() => {
-    setBusyId(null);
-    setMessage(null);
-    void reload();
+    let active = true;
+    void Promise.resolve().then(() => {
+      if (!active) return;
+      setBusyId(null);
+      setMessage(null);
+      return reload();
+    });
     return () => {
+      active = false;
       loadRequestRef.current += 1;
     };
   }, [reload]);

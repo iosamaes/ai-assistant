@@ -84,17 +84,18 @@ describe('OnboardingScreen', () => {
     const view = await render(<OnboardingScreen />);
     const button = view.getByRole('button', { name: 'Continue' });
 
-    expect(button.props.accessibilityState).toEqual({ disabled: true });
+    expect(button.props.accessibilityState).toMatchObject({ disabled: true });
     expect(view.getByText(/Choose a focus area/)).toBeTruthy();
   });
 
   test('persists onboarding choices before completing and routing to Today', async () => {
     useAppStateMock.mockReturnValue(appState());
     const view = await render(<OnboardingScreen />);
-    const button = view.getByRole('button', { name: 'Continue' });
-
-    await waitFor(() => expect(button.props.accessibilityState).toEqual({ disabled: false }));
-    await fireEvent.press(button);
+    await waitFor(() =>
+      expect(view.getByRole('button', { name: 'Continue' }).props.accessibilityState)
+        .toMatchObject({ disabled: false }),
+    );
+    await fireEvent.press(view.getByRole('button', { name: 'Continue' }));
 
     await waitFor(() => expect(replaceMock).toHaveBeenCalledWith('/today'));
     expect(loadBaselineMock).toHaveBeenCalledWith('user-1');

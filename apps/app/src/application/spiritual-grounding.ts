@@ -10,22 +10,23 @@ export function useSpiritualGroundingPreference(userId: string | null) {
   const [choice, setChoice] = useState<boolean | null>(null);
   const [status, setStatus] = useState<SpiritualGroundingStatus>('idle');
   const activeUserRef = useRef(userId);
-  activeUserRef.current = userId;
 
   useEffect(() => {
+    activeUserRef.current = userId;
     let active = true;
     const requestedUserId = userId;
 
-    setChoice(null);
-    if (!requestedUserId) {
-      setStatus('idle');
-      return () => {
-        active = false;
-      };
-    }
+    void (async () => {
+      await Promise.resolve();
+      if (!active) return;
+      setChoice(null);
+      if (!requestedUserId) {
+        setStatus('idle');
+        return;
+      }
 
-    setStatus('loading');
-    void loadPluginSetting(requestedUserId, SPIRITUAL_GROUNDING_PLUGIN_ID).then((result) => {
+      setStatus('loading');
+      const result = await loadPluginSetting(requestedUserId, SPIRITUAL_GROUNDING_PLUGIN_ID);
       if (!active || activeUserRef.current !== requestedUserId) return;
       if (!result.ok) {
         setChoice(null);
@@ -34,7 +35,7 @@ export function useSpiritualGroundingPreference(userId: string | null) {
       }
       setChoice(result.value ? result.value.enabled : null);
       setStatus('ready');
-    });
+    })();
 
     return () => {
       active = false;

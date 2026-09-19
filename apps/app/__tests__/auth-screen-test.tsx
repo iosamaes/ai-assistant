@@ -29,7 +29,11 @@ type RenderView = Awaited<ReturnType<typeof render>>;
 function actionButton(view: RenderView, label: string) {
   const match = view
     .getAllByRole('button', { name: label })
-    .find((button) => button.props.accessibilityState?.disabled !== undefined);
+    .find(
+      (button) =>
+        button.props.accessibilityState?.disabled !== undefined &&
+        button.props.accessibilityState?.selected === undefined,
+    );
   if (!match) throw new Error(`Action button not found: ${label}`);
   return match;
 }
@@ -54,7 +58,7 @@ describe('AuthScreen', () => {
     const view = await render(<AuthScreen />);
 
     expect(actionButton(view, 'Sign in').props.accessibilityState)
-      .toEqual({ disabled: true });
+      .toMatchObject({ disabled: true });
     await fireEvent.changeText(view.getByLabelText('Email'), 'person@example.com');
     await fireEvent.changeText(view.getByLabelText('Password'), '123456');
 
@@ -96,7 +100,7 @@ describe('AuthScreen', () => {
     await fireEvent.changeText(view.getByLabelText('Email'), 'person@example.com');
     await fireEvent.changeText(view.getByLabelText('Password'), '123456');
     await waitFor(() => expect(actionButton(view, 'Sign in').props.accessibilityState)
-      .toEqual({ disabled: false }));
+      .toMatchObject({ disabled: false }));
     await fireEvent.press(actionButton(view, 'Sign in'));
 
     await waitFor(() => {
