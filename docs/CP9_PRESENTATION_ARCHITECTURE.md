@@ -110,7 +110,7 @@ Personal Learning retains feature-local evidence/history separators that consume
 
 ### Personalization maturity
 
-Personalization keeps its feature-specific stage cards and semantic palette usage for active/inactive evidence stages. Its custom back `Pressable` has moved to compact `SecondaryButton`, removing one more screen-local navigation treatment without changing maturity calculation or evidence semantics.
+Personalization keeps its feature-specific stage cards and semantic palette usage for active/inactive evidence stages. Its custom back `Pressable` has moved to compact `SecondaryButton`, removing one more screen-local navigation treatment without changing maturity calculation or evidence semantics. The residual static RTL sweep also found that each enable/disable state pill kept a fixed left-to-right dot/text order while its containing row already followed the app-local locale. The pill now mirrors from `isRtl` as well, so the status marker and label follow the same semantic reading edge without depending on device-global direction.
 
 ### Onboarding
 
@@ -120,11 +120,13 @@ A static audit found the onboarding flow already uses the shared `ChoiceChip`, `
 
 The root Expo Router stack previously always used a fade transition. The navigation shell now reads the platform reduced-motion accessibility preference through `AccessibilityInfo`, listens for preference changes during the session, and disables stack animation when reduced motion is enabled. Session routing, offline mutation flushing, status-bar contrast, and semantic background colors remain unchanged.
 
+The wide rail also now places its inner divider explicitly from the app-local `isRtl` state instead of relying on React Native's device-global logical `borderEndWidth`. This matters because MIZAN can change its own Arabic/English locale without assuming the host runtime direction changed with it. A focused regression specification in `apps/app/__tests__/app-navigation-rtl-test.tsx` records the Arabic-left-edge and English-right-edge requirements; it is intentionally not worker-run under the active execution policy.
+
 ### Entry redirect and root error fallback
 
 The entry redirect route was statically audited and already uses the shared `Screen`/`MizanText` boundary plus the translated loading key before routing to Auth, Onboarding, or Today; no rewrite was justified.
 
-The root `AppErrorBoundary` is intentionally outside `AppStateProvider` so it can still catch bootstrap/provider render failures. Its fallback previously hard-coded an Arabic-only light-theme surface, typography, colors, sizing, and button treatment. The fallback now remains bootstrap-safe while consuming semantic palette, typography, spacing, radius, control-size, and interaction tokens; it supports light/dark appearance, scalable text, explicit retry-button accessibility, and Arabic/English fallback copy selected from platform direction without depending on app state. No domain, persistence, routing, or recovery behavior moved into the presentation layer.
+`AppStateProvider` now sits above `AppErrorBoundary` in the root layout so the fallback can use MIZAN's active app-local `locale` and `isRtl` values rather than device-global direction. The boundary still protects descendant product rendering, and its fallback consumes semantic palette, typography, spacing, radius, control-size, and interaction tokens; it supports light/dark appearance, scalable text, explicit retry-button accessibility, and Arabic/English copy. This arrangement deliberately does not claim to catch a failure thrown by `AppStateProvider` itself. Development diagnostics serialize only the React component stack, not arbitrary `Error` fields that may contain backend or user data. No domain, persistence, routing, or recovery behavior moved into the presentation layer.
 
 ## Owner-approved premium reference contract
 
@@ -149,7 +151,7 @@ CP9 is not visually complete while the app remains primarily text cards with pre
 
 ## Current design-swap assessment
 
-The global visual levers for palette, typography, control sizing, spacing/radii, interaction opacity, and responsive screen layout are now centralized across Today, Life Map, WHY, Check-in, authentication/recovery, Capacity, Cost of Yes, Insights, Human ROI, Life Seasons, Recovery, Invisible Wins, Value Alignment, Integrations, Experiments, What If, Settings, Personal Learning, Personalization, Onboarding, the entry route, and the bootstrap-safe root error fallback. The navigation shell also consumes semantic background color and now honors the platform reduced-motion preference. These surfaces demonstrate that repeated control/input treatment can move behind app-local primitives or semantic tokens without changing `packages/core`, application intelligence/data contracts, Supabase/data-access, or provider adapters.
+The global visual levers for palette, typography, control sizing, spacing/radii, interaction opacity, and responsive screen layout are now centralized across Today, Life Map, WHY, Check-in, authentication/recovery, Capacity, Cost of Yes, Insights, Human ROI, Life Seasons, Recovery, Invisible Wins, Value Alignment, Integrations, Experiments, What If, Settings, Personal Learning, Personalization, Onboarding, the entry route, and the localized root error fallback. The navigation shell also consumes semantic background color, honors the platform reduced-motion preference, and binds RTL-sensitive rail geometry to the app-local locale. These surfaces demonstrate that repeated control/input treatment can move behind app-local primitives or semantic tokens without changing `packages/core`, application intelligence/data contracts, Supabase/data-access, or provider adapters.
 
 This is **not yet the final CP9 design-swap proof**. A substantially different visual direction still needs owner-side visual/runtime review; workers must not claim that runtime proof from static implementation inspection alone.
 
