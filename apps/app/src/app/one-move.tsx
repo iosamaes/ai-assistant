@@ -27,11 +27,13 @@ const copy = {
     eyebrow: 'تركيز اليوم',
     title: 'خطوتك الواحدة، مباشرة',
     body: 'اقتراح واحد محافظ مبني على أدلتك الحالية. القرار يظل لك، ويمكنك التأجيل أو الرفض بلا عقوبة.',
+    confidence: 'الثقة',
   },
   en: {
     eyebrow: 'Today focus',
     title: 'Your One Move, directly',
     body: 'One conservative suggestion based on your current evidence. The decision stays yours, with no penalty for deferring or declining.',
+    confidence: 'Confidence',
   },
 } as const;
 
@@ -208,7 +210,7 @@ export default function OneMoveScreen() {
             <View style={[styles.detailTile, { backgroundColor: palette.surfaceMuted }]}>
               <View style={[styles.detailHeading, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
                 <AppIcon name="confidence" color={palette.accent} size={18} />
-                <MizanText variant="caption" muted>{t('confidenceLabel')}</MizanText>
+                <MizanText variant="caption" muted>{pageCopy.confidence}</MizanText>
               </View>
               <MizanText variant="label">{t(confidenceLabelKey(activeRecommendation.confidence.level))}</MizanText>
             </View>
