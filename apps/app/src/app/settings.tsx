@@ -145,6 +145,7 @@ export default function SettingsScreen() {
   const syncMessage = syncStatus === 'offline' ? t('syncOffline') : syncStatus === 'error' ? t('syncError') : null;
   const spiritualLabels = spiritualCopy[locale];
   const insightLabels = insightCopy[locale];
+  const spiritualControlsDisabled = busy || spiritualStatus === 'loading' || spiritualStatus === 'saving';
 
   const editPriorities = async () => {
     if (busy) return;
@@ -295,11 +296,13 @@ export default function SettingsScreen() {
             label={spiritualLabels.enable}
             selected={spiritualGroundingEnabled === true}
             onPress={() => void changeSpiritualGrounding(true)}
+            disabled={spiritualControlsDisabled}
           />
           <ChoiceChip
             label={spiritualLabels.disable}
             selected={spiritualGroundingEnabled === false}
             onPress={() => void changeSpiritualGrounding(false)}
+            disabled={spiritualControlsDisabled}
           />
         </View>
       </View>
