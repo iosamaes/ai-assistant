@@ -6,6 +6,7 @@ import { loadCapacitySnapshot, type CapacitySnapshot } from '@/application/capac
 import { Card, MizanText, SecondaryButton } from '@/components/mizan-ui';
 import { Screen } from '@/components/screen';
 import { Spacing } from '@/constants/theme';
+import { formatLocalizedNumber } from '@/i18n/number-input';
 import type { DomainId } from '@/state/app-state';
 import { useAppState } from '@/state/app-state';
 
@@ -96,6 +97,7 @@ export default function CapacityScreen() {
   const labels = copy[locale];
   const [snapshot, setSnapshot] = useState<CapacitySnapshot | null>(null);
   const [status, setStatus] = useState<LoadStatus>('loading');
+  const hundred = formatLocalizedNumber(100, locale, 0);
 
   useEffect(() => {
     let active = true;
@@ -134,6 +136,9 @@ export default function CapacityScreen() {
         : bufferBand === 'low'
           ? labels.low
           : labels.unknown;
+  const bufferEvidence = snapshot
+    ? formatLocalizedNumber(snapshot.buffer.confidence.evidenceCount, locale, 0)
+    : '—';
 
   return (
     <Screen>
@@ -160,14 +165,14 @@ export default function CapacityScreen() {
             <View style={[styles.metrics, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
               <View style={styles.metric}>
                 <MizanText variant="caption" muted>{labels.buffer}</MizanText>
-                <MizanText variant="title">{Math.round(snapshot.buffer.score)} / 100</MizanText>
+                <MizanText variant="title">{formatLocalizedNumber(Math.round(snapshot.buffer.score), locale, 0)} / {hundred}</MizanText>
               </View>
               <View style={styles.metric}>
                 <MizanText variant="caption" muted>{labels.fragility}</MizanText>
                 <MizanText variant="title">
                   {snapshot.buffer.fragility === null || snapshot.buffer.fragility === undefined
                     ? labels.unknown
-                    : `${Math.round(snapshot.buffer.fragility)} / 100`}
+                    : `${formatLocalizedNumber(Math.round(snapshot.buffer.fragility), locale, 0)} / ${hundred}`}
                 </MizanText>
               </View>
               <View style={styles.metric}>
@@ -177,7 +182,7 @@ export default function CapacityScreen() {
             </View>
           )}
           <MizanText variant="caption" muted>
-            {labels.confidence}: {confidenceLabel(snapshot?.buffer.confidence.level ?? 'insufficient', locale)} · {labels.evidence}: {snapshot?.buffer.confidence.evidenceCount ?? 0}
+            {labels.confidence}: {confidenceLabel(snapshot?.buffer.confidence.level ?? 'insufficient', locale)} · {labels.evidence}: {bufferEvidence}
           </MizanText>
         </Card>
       ) : null}
@@ -212,7 +217,7 @@ export default function CapacityScreen() {
                   <View style={[styles.metrics, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
                     <View style={styles.metric}>
                       <MizanText variant="caption" muted>{labels.amount}</MizanText>
-                      <MizanText variant="title">{Math.round(debt.amount)} / 100</MizanText>
+                      <MizanText variant="title">{formatLocalizedNumber(Math.round(debt.amount), locale, 0)} / {hundred}</MizanText>
                     </View>
                     <View style={styles.metric}>
                       <MizanText variant="caption" muted>{labels.direction}</MizanText>
@@ -228,7 +233,7 @@ export default function CapacityScreen() {
                   <MizanText variant="caption" muted>{debt.history === 'tracked' ? labels.tracked : labels.snapshot}</MizanText>
                 ) : null}
                 <MizanText variant="caption" muted>
-                  {labels.confidence}: {confidenceLabel(debt.confidence.level, locale)} · {labels.evidence}: {debt.confidence.evidenceCount}
+                  {labels.confidence}: {confidenceLabel(debt.confidence.level, locale)} · {labels.evidence}: {formatLocalizedNumber(debt.confidence.evidenceCount, locale, 0)}
                 </MizanText>
               </Card>
             );
