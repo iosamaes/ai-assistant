@@ -40,13 +40,14 @@ function ErrorFallback({ onRetry }: { onRetry: () => void }) {
   const isRtl = I18nManager.isRTL;
   const copy = fallbackCopy[isRtl ? 'ar' : 'en'];
   const textAlign = isRtl ? 'right' : 'left';
+  const writingDirection = isRtl ? 'rtl' : 'ltr';
 
   return (
     <View style={[styles.container, { backgroundColor: palette.background }]} accessibilityRole="alert">
-      <Text allowFontScaling style={[styles.title, { color: palette.text, textAlign }]}>
+      <Text allowFontScaling style={[styles.title, { color: palette.text, textAlign, writingDirection }]}>
         {copy.title}
       </Text>
-      <Text allowFontScaling style={[styles.body, { color: palette.textMuted, textAlign }]}>
+      <Text allowFontScaling style={[styles.body, { color: palette.textMuted, textAlign, writingDirection }]}>
         {copy.body}
       </Text>
       <Pressable
@@ -57,7 +58,7 @@ function ErrorFallback({ onRetry }: { onRetry: () => void }) {
           styles.button,
           { backgroundColor: palette.accent, opacity: pressed ? Interaction.pressed : 1 },
         ]}>
-        <Text allowFontScaling style={[styles.buttonText, { color: palette.onAccent }]}>
+        <Text allowFontScaling style={[styles.buttonText, { color: palette.onAccent, writingDirection }]}>
           {copy.retry}
         </Text>
       </Pressable>
