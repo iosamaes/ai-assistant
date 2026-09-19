@@ -403,7 +403,7 @@ export default function TodayScreen() {
         </Link>
       </Card>
 
-      <View style={styles.dashboardGrid}>
+      <View style={[styles.dashboardGrid, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
         <Card style={styles.dashboardCard}>
           <MizanText variant="title">{t('currentStateTitle')}</MizanText>
           <MizanText muted>{t('currentStateBody')}</MizanText>
@@ -618,7 +618,7 @@ export default function TodayScreen() {
 
       <View style={styles.section}>
         <MizanText variant="title">{t('priorities')}</MizanText>
-        <View style={styles.grid}>
+        <View style={[styles.grid, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
           {enabledDomains.map((domainId: DomainId) => (
             <Card key={domainId} style={[styles.domainCard, { backgroundColor: palette.surfaceMuted }]}>
               <MizanText variant="label">{t(domainId)}</MizanText>
@@ -651,7 +651,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.xl,
   },
   primaryActionText: { textAlign: 'center' },
-  dashboardGrid: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'stretch', gap: Spacing.lg },
+  dashboardGrid: { flexWrap: 'wrap', alignItems: 'stretch', gap: Spacing.lg },
   dashboardCard: { flexGrow: 1, flexShrink: 1, flexBasis: 320 },
   stateItem: { gap: Spacing.sm, borderTopWidth: Controls.borderWidth, paddingTop: Spacing.md },
   stateRow: { alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: Spacing.md },
@@ -681,6 +681,6 @@ const styles = StyleSheet.create({
   statusRow: { alignItems: 'center', gap: Spacing.sm },
   dot: { width: 8, height: 8, borderRadius: 4 },
   section: { gap: Spacing.lg },
-  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.md },
+  grid: { flexWrap: 'wrap', gap: Spacing.md },
   domainCard: { flexGrow: 1, flexShrink: 1, flexBasis: 240 },
 });
