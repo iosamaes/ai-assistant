@@ -77,6 +77,52 @@ const copy = {
   },
 } as const;
 
+const providerLabels: Record<'ar' | 'en', Record<string, string>> = {
+  ar: {
+    'unavailable-time-context': 'سياق الوقت غير مهيأ',
+    'deterministic-time-primary': 'سياق وقت تجريبي — أساسي',
+    'deterministic-time-alternate': 'سياق وقت تجريبي — بديل',
+    'deterministic-time-context': 'سياق وقت تجريبي',
+    'unavailable-health-data': 'بيانات الصحة غير مهيأة',
+    'deterministic-health-data': 'بيانات صحة تجريبية',
+    'unavailable-location-context': 'سياق الموقع غير مهيأ',
+    'deterministic-location-context': 'سياق موقع تجريبي',
+  },
+  en: {
+    'unavailable-time-context': 'Time context unavailable',
+    'deterministic-time-primary': 'Deterministic time — primary',
+    'deterministic-time-alternate': 'Deterministic time — alternate',
+    'deterministic-time-context': 'Deterministic time context',
+    'unavailable-health-data': 'Health data unavailable',
+    'deterministic-health-data': 'Deterministic health data',
+    'unavailable-location-context': 'Location context unavailable',
+    'deterministic-location-context': 'Deterministic location context',
+  },
+};
+
+const scopeLabels: Record<'ar' | 'en', Record<string, string>> = {
+  ar: {
+    read_busy_time: 'قراءة الوقت المشغول',
+    read_activity: 'قراءة بيانات النشاط',
+    read_recovery: 'قراءة بيانات التعافي',
+    read_approximate_context: 'قراءة سياق الموقع التقريبي',
+  },
+  en: {
+    read_busy_time: 'Read busy time',
+    read_activity: 'Read activity data',
+    read_recovery: 'Read recovery data',
+    read_approximate_context: 'Read approximate location context',
+  },
+};
+
+function providerLabel(providerId: string, locale: 'ar' | 'en'): string {
+  return providerLabels[locale][providerId] ?? providerId;
+}
+
+function scopeLabel(scope: string, locale: 'ar' | 'en'): string {
+  return scopeLabels[locale][scope] ?? scope;
+}
+
 function formatDate(value: string | null, locale: 'ar' | 'en'): string {
   if (!value) return '—';
   const date = new Date(value);
@@ -171,15 +217,16 @@ export default function IntegrationsScreen() {
               : connection.status === 'disabled'
                 ? labels.disabled
                 : labels.error;
+        const permissionLabels = connection.scopes.map((scope) => scopeLabel(scope, locale));
         return (
           <Card key={connection.id}>
             <MizanText variant="title">
               {labels.capabilityLabels[connection.capability] ?? connection.capability}
             </MizanText>
             <View style={styles.details}>
-              <MizanText>{labels.provider}: {connection.providerId}</MizanText>
+              <MizanText>{labels.provider}: {providerLabel(connection.providerId, locale)}</MizanText>
               <MizanText>{labels.status}: {statusLabel}</MizanText>
-              <MizanText>{labels.scopes}: {connection.scopes.join(' · ') || labels.never}</MizanText>
+              <MizanText>{labels.scopes}: {permissionLabels.join(' · ') || labels.never}</MizanText>
               <MizanText>{labels.lastSync}: {connection.lastSyncedAt ? formatDate(connection.lastSyncedAt, locale) : labels.never}</MizanText>
               <MizanText>{labels.consent}: {connection.consentedAt ? formatDate(connection.consentedAt, locale) : labels.never}</MizanText>
             </View>
