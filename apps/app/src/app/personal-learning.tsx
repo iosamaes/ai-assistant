@@ -176,7 +176,7 @@ export default function PersonalLearningScreen() {
             <MizanText variant="caption" muted>{labels.adherenceRule}</MizanText>
           </View>
         </View>
-        <View style={styles.heroStats}>
+        <View style={[styles.heroStats, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
           <View style={[styles.heroStat, { backgroundColor: palette.surface }]}>
             <MizanText variant="caption" muted>{labels.learnedActions}</MizanText>
             <MizanText variant="title">
@@ -210,7 +210,7 @@ export default function PersonalLearningScreen() {
       ) : null}
 
       {status === 'ready' ? (
-        <View style={styles.actionGrid}>
+        <View style={[styles.actionGrid, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
           {visible.map((action) => {
             const estimateLabel = responseLabel(action.estimate.usefulness, locale);
             const freshness = action.estimate.confidence.freshnessDays;
@@ -230,7 +230,7 @@ export default function PersonalLearningScreen() {
                   </View>
                 </View>
 
-                <View style={styles.metricGrid}>
+                <View style={[styles.metricGrid, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
                   <View style={[styles.metricTile, { backgroundColor: palette.surfaceMuted }]}>
                     <MizanText variant="caption" muted>{labels.samples}</MizanText>
                     <MizanText variant="title">{formatLocalizedNumber(action.estimate.feedbackCount, locale, 0)}</MizanText>
@@ -286,10 +286,10 @@ const styles = StyleSheet.create({
   heroCopy: { gap: Spacing.sm },
   cardAccent: { height: 4, borderRadius: Radius.pill, alignSelf: 'stretch' },
   ruleBox: { paddingHorizontal: Spacing.md, paddingVertical: Spacing.sm, borderRadius: Radius.md },
-  heroStats: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.sm },
+  heroStats: { flexWrap: 'wrap', gap: Spacing.sm },
   heroStat: { flexGrow: 1, flexShrink: 1, flexBasis: 180, padding: Spacing.lg, borderRadius: Radius.md, gap: Spacing.xs },
   stateCard: { paddingVertical: Spacing.lg },
-  actionGrid: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'stretch', gap: Spacing.lg },
+  actionGrid: { flexWrap: 'wrap', alignItems: 'stretch', gap: Spacing.lg },
   actionCard: { flexGrow: 1, flexShrink: 1, flexBasis: 360, overflow: 'hidden' },
   actionHeader: { alignItems: 'flex-start', justifyContent: 'space-between', gap: Spacing.lg, flexWrap: 'wrap' },
   actionTitle: { flexGrow: 1, flexShrink: 1, flexBasis: 220 },
@@ -300,7 +300,7 @@ const styles = StyleSheet.create({
     borderRadius: Radius.pill,
     borderWidth: Controls.borderWidth,
   },
-  metricGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.sm },
+  metricGrid: { flexWrap: 'wrap', gap: Spacing.sm },
   metricTile: {
     flexGrow: 1,
     flexShrink: 1,
