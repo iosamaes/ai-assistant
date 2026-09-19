@@ -17,7 +17,7 @@
 - [ ] CP6 — Advanced decision tools — implementation present; validation pending
 - [ ] CP7 — Plugins, unified integrations, provider boundaries — implementation present; validation pending
 - [ ] CP8 — Reliability, offline tolerance, sync — statically reviewed complete; owner/runtime validation pending
-- [ ] CP9 — Responsive UX, accessibility, localization, polish, design-swappability — **IN_PROGRESS; Premium Production Visual Pass progressing**
+- [ ] CP9 — Responsive UX, accessibility, localization, polish, design-swappability — **IN_PROGRESS; Premium Production Visual Pass progressing across primary routes**
 - [ ] CP10 — Security, privacy, owner-data control — **IN_PROGRESS in parallel**
 - [ ] CP11 — Test matrix, performance, release readiness
 - [ ] CP12 — Independent final review and handoff
@@ -49,13 +49,21 @@ Presentation authority remains the compact app-local theme and shared primitives
 - `1002a24b375fcd435617066cd8d07ef7659d7be7` — Settings premium composition: replaces the long undifferentiated route list with grouped preferences, responsive decision-tool cards, explicit data/connection controls, calm status messaging, and separated account actions while keeping shared primitives as visual authority.
 - `344ef43ef58e653fbd4bd5e6a85b1a6073f0d612` — Privacy premium composition: trust-focused hero, separate export and permanent-deletion surfaces, explicit non-destructive pre-confirmation messaging, responsive action layout, danger-semantic borders, and preserved initiating-user/session fencing.
 - `1b0da78cebdae408703dbbb7ab17784033c3f5a1` + `6f831b51e7930d1e4ae476d684b85961efe382af` — Auth premium composition: trust-focused hero, grouped language/access-mode controls, structured account form, designed live-message surface, and semantic radius-token cleanup without changing auth/session behavior.
+- `b54f2012b8a45f1edf155b84de3a4a48a3717d42` — Onboarding premium composition: personalized setup hero with live selection summary, grouped foundation/priorities/baseline/boundaries sections, responsive target panels, structured preference/status feedback, and a clear final readiness surface while preserving existing persistence behavior.
+- `d70439bc381477c6f94c2b3455c219903a885a1a` — Capacity premium composition: accent Life Buffer hero, structured buffer/confidence/evidence tiles, responsive Life Debt cards, urgency/evidence hierarchy, and explicit unknown/loading/error/caveat surfaces without inventing missing capacity evidence.
+- `8312dbf56047dec4a83b99e20b280145ed75fc29` — Cost of Yes premium composition: premium decision-tool hero, responsive explicit-input grid, designed assessment state, inspectable margin metrics/evidence, and calm caveat treatment while preserving deterministic planning semantics.
+- `577eecb41f8231887ae23c28f133186306ea0a80` — Human ROI premium composition: explicit protected-vs-compare framing, responsive benefit/effort input panels, inspectable assessment/evidence hierarchy, and preservation of the non-scalar/no-human-worth rule.
+- `7bcf6b8664b96c0dbcbd0b84458c5802dc15ff4a` — Value Alignment premium composition: value-signal hero, responsive alignment cards, confidence/evidence tiles, separated watch/supporting signals, and localized generic fallback instead of exposing unknown technical signal ids.
+- `09010b3b130efaaf402aa9eea1404d2866bfebe9` — Life Seasons premium composition: season hero, responsive target panels, structured persistence feedback, premium history grid and state pills; Arabic history dates now force Latin digits and unknown stored domain ids use a localized generic fallback.
+- `c0fdf88655682900b36c90d531b3ef2114f065c2` — Personalization premium composition: current-maturity hero, responsive learning-stage cards with active/past/future state treatment, structured loading/error/empty states, and retained evidence-maturity caveats.
+- `726a969566a178332d0f21f09ca6e6694bfebc5e` — Invisible Wins premium composition plus account-state hardening: calm reflection hero/composer/history grid and structured delivery/load states; history is now explicitly owned by the active account and stale previous-account load/save completions cannot repaint the next account's reflection list.
 
-Additional static CP9 evidence includes Western/ASCII digit enforcement for Arabic and English formatted output, Arabic localized-number parsing, Arabic integration timestamps using `ar-QA-u-nu-latn`, Today cross-user async fencing, and targeted RTL/localization/dynamic-type/accessibility hardening across Personal Learning, Personalization, Spiritual Grounding, Invisible Wins, Integrations, Insights, onboarding/auth/password recovery, What If, Experiments, Life Seasons, Settings, Privacy, and Check-in.
+Additional static CP9 evidence includes Western/ASCII digit enforcement for Arabic and English formatted output, Arabic localized-number parsing, Arabic timestamps using `nu-latn`, Today cross-user async fencing, and targeted RTL/localization/dynamic-type/accessibility hardening across primary routes.
 
 ### CP9 remaining
-- Continue the Premium Production Visual Pass with **Onboarding next**, then remaining primary routes that still retain scaffold-level composition.
-- Refine navigation shell/state/data presentation only where current code demonstrates a real need; avoid page-local design systems or wrapper-only abstraction.
-- Continue static defect review for untranslated production literals, Western-digit regressions, semantic RTL, accessibility/live announcements, truncation/dynamic-type, keyboard/focus, and duplicated global visual decisions.
+- Continue the Premium Production Visual Pass only on remaining shipped routes that static inspection still shows at scaffold-level composition; prioritize recovery/password-update and any remaining secondary decision/state surfaces before touching already-premium screens again.
+- Refine navigation shell/state/data presentation only where current code demonstrates a concrete need; avoid page-local design systems or wrapper-only abstraction.
+- Continue static defect review for untranslated production literals, Western-digit regressions, semantic RTL, accessibility/live announcements, truncation/dynamic-type, keyboard/focus, unknown technical identifiers, and duplicated global visual decisions.
 - Owner/runtime evidence is still required across representative phone/tablet/Web widths, Arabic/English, and shipped light/dark modes.
 - TASK-required design-swap proof is not claimed and still requires representative runtime evidence on Today, Life Map, WHY, and an interaction-heavy flow without edits outside the presentation boundary.
 
@@ -74,16 +82,17 @@ Implemented security/privacy work includes:
 - Targeted logging/error review completed for Supabase config/data access, integration persistence/sync, session storage, offline caches, privacy/Auth/delete paths, integration UI, and root error boundary.
 - Health integration sync now rechecks authoritative consent/connection/scopes before provider read, before retry, after provider read, and before success bookkeeping; stale/revoked sync cannot silently reconnect.
 - Integration settings and global app-state hydration are fenced against previous-account async results.
+- Invisible Wins history now binds loaded items to the active user and rejects prior-account async load/save completion from repainting a new account; runtime validation remains pending.
 - Focused static specifications exist for privacy session fencing/local purge, consent revocation, integration-screen account switching, and app-state account-switch hydration.
 
 ### CP10 remaining
 - Complete repository-wide sensitive logging/error-reporting review beyond the already inspected boundaries; fix only concrete leakage paths.
-- Owner/runtime validation remains required for cross-user/database tests, export/delete/local-purge, destructive Edge deletion, consent revocation races, and account-switch races.
+- Owner/runtime validation remains required for cross-user/database tests, export/delete/local-purge, destructive Edge deletion, consent revocation races, account-switch races, and the newly hardened reflection account-switch path.
 - Supabase leaked-password protection remains an owner action in `automation/HUMAN_REQUIRED.md`.
 
 ## Exact next executable action
-1. Continue CP9 Premium Production Visual Pass at feature-composition level with **Onboarding** next, preserving shared semantic tokens/primitives as the visual authority.
-2. Then continue remaining primary routes and navigation/state presentation only where static inspection shows scaffold-level composition or a concrete accessibility/localization defect.
+1. Continue CP9 static inspection for the remaining scaffold-level shipped routes and apply the Premium Production Visual Pass only where the current composition still fails the new production-visual gate.
+2. Continue static CP9 defects: untranslated literals, Western-digit regressions, semantic RTL, accessibility/live announcements, truncation/dynamic type, keyboard/focus, and technical-id fallbacks.
 3. In parallel, continue CP10 repository-wide sensitive logging/error-reporting review for concrete uninspected sinks.
 4. Leave representative-width runtime checks, post-baseline tests/builds/typechecks/database validation suites, export/delete/local-purge proof, consent/account-switch runtime races, premium screenshot evidence, and final design-swap proof to owner validation under the active policy.
 
@@ -102,7 +111,7 @@ Post-baseline:
 - **No worker-run app tests, builds, typechecks, validation database scripts, cloud CI, or GitHub Actions are claimed for CP2–CP10 changes.**
 - Authorized product migrations `function_execute_hardening` and `account_data_export` were applied and resulting live function ACLs were read; this is implementation/state evidence, not a test-suite PASS.
 - `delete-account` deployment reports ACTIVE with JWT verification enabled; no destructive end-to-end deletion validation is claimed.
-- CP9 premium-pass commits through `6f831b51e7930d1e4ae476d684b85961efe382af` are static implementation evidence only until owner runtime review.
+- CP9 Premium Production Visual Pass commits through `726a969566a178332d0f21f09ca6e6694bfebc5e` are static implementation evidence only until owner runtime review.
 
 ## Known blockers / risks
 - CP1: Windows session must be unlocked normally for true narrow-phone Arabic/English interaction evidence; see `automation/HUMAN_REQUIRED.md`.
@@ -110,7 +119,7 @@ Post-baseline:
 - CP10: Supabase leaked-password protection remains disabled pending the recorded owner Auth-setting action.
 - Cross-user/database specifications and all post-baseline runtime/type/build gates still require owner execution evidence.
 - Recent Today snapshot native SecureStore behavior/capacity still needs owner runtime validation.
-- CP9 Premium Production Visual Pass remains incomplete across onboarding and several remaining primary routes/navigation/state presentation, with representative runtime screenshot evidence still outstanding.
+- CP9 Premium Production Visual Pass still needs a final static sweep of remaining secondary/scaffold-level routes plus representative runtime screenshot evidence.
 - Privacy export/delete UI, local cache purge/warning behavior, and Edge deletion need owner Web/native end-to-end validation before CP10 can close.
 - Repository-wide sensitive logging/error reporting review remains incomplete beyond the targeted boundaries already hardened.
 - Health consent revocation and account-switch fencing are statically implemented but still need runtime proof; future time/location collectors must adopt the same authoritative consent pattern.
@@ -142,6 +151,13 @@ Post-baseline:
 - `apps/app/src/app/auth.tsx`
 - `apps/app/src/app/onboarding.tsx`
 - `apps/app/src/app/integrations.tsx`
+- `apps/app/src/app/capacity.tsx`
+- `apps/app/src/app/cost-of-yes.tsx`
+- `apps/app/src/app/human-roi.tsx`
+- `apps/app/src/app/value-alignment.tsx`
+- `apps/app/src/app/life-seasons.tsx`
+- `apps/app/src/app/personalization.tsx`
+- `apps/app/src/app/invisible-wins.tsx`
 - `apps/app/src/infrastructure/supabase/privacy.ts`
 - `apps/app/src/infrastructure/supabase/integrations.ts`
 - `apps/app/src/infrastructure/offline/pending-mutations.ts`
