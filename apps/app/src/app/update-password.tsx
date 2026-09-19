@@ -110,6 +110,7 @@ export default function UpdatePasswordScreen() {
             autoCorrect={false}
             editable={canEdit}
             secureTextEntry
+            style={styles.ltrInput}
             textContentType="newPassword"
             value={password}
             onChangeText={setPassword}
@@ -125,6 +126,7 @@ export default function UpdatePasswordScreen() {
             autoCorrect={false}
             editable={canEdit}
             secureTextEntry
+            style={styles.ltrInput}
             textContentType="newPassword"
             value={confirmPassword}
             onChangeText={setConfirmPassword}
@@ -171,6 +173,7 @@ const styles = StyleSheet.create({
   formCard: { gap: Spacing.xl },
   sectionHeading: { gap: Spacing.sm },
   field: { gap: Spacing.sm },
+  ltrInput: { textAlign: 'left', writingDirection: 'ltr' },
   messagePanel: { borderRadius: Radius.md, padding: Spacing.md },
   messagePanelBorder: { borderWidth: 1 },
   actionGroup: { gap: Spacing.md, paddingTop: Spacing.sm },
