@@ -35,7 +35,7 @@ type DailyLoadStatus = 'loading' | 'ready' | 'error';
 type RecommendationLoadStatus = 'loading' | 'ready';
 type DecisionStatus = 'idle' | 'saving' | OneMoveDecision | 'offline' | 'error';
 type FeedbackStatus = 'idle' | 'saving' | 'saved' | 'offline' | 'error';
-type FeedbackTarget = { actionEventId: string; actionId: string; acceptedAt: string };
+type FeedbackTarget = { userId: string; actionEventId: string; actionId: string; acceptedAt: string };
 
 const OUTCOME_RATINGS = [1, 2, 3, 4, 5] as const;
 
@@ -138,6 +138,7 @@ function feedbackMessageKey(status: FeedbackStatus): TranslationKey | null {
 export default function TodayScreen() {
   const { enabledDomains, isRtl, locale, refreshSession, syncStatus, t, userId } = useAppState();
   const [dailySnapshot, setDailySnapshot] = useState<DailySnapshot | null>(null);
+  const [dailySnapshotUserId, setDailySnapshotUserId] = useState<string | null>(null);
   const [dailyLoadStatus, setDailyLoadStatus] = useState<DailyLoadStatus>('loading');
   const [recommendation, setRecommendation] = useState<DailyRecommendation | null>(null);
   const [recommendationLoadStatus, setRecommendationLoadStatus] = useState<RecommendationLoadStatus>('loading');
@@ -152,9 +153,13 @@ export default function TodayScreen() {
   const syncMessage = syncStatus === 'offline' ? t('syncOffline') : syncStatus === 'error' ? t('syncError') : null;
   const dailyCopy = overviewCopy[locale];
   const formatWhole = (value: number) => formatLocalizedNumber(value, locale, 0);
-  const humanState = dailySnapshot?.humanState ?? null;
-  const dailyOverview = dailySnapshot?.overview ?? null;
-  const snapshotMessage = cachedSnapshotMessage(dailySnapshot, locale);
+  const currentDailySnapshot = userId !== null && dailySnapshotUserId === userId ? dailySnapshot : null;
+  const displayedDailyLoadStatus: DailyLoadStatus =
+    userId !== null && dailyLoadStatus === 'ready' && dailySnapshotUserId !== userId ? 'loading' : dailyLoadStatus;
+  const humanState = currentDailySnapshot?.humanState ?? null;
+  const dailyOverview = currentDailySnapshot?.overview ?? null;
+  const snapshotMessage = cachedSnapshotMessage(currentDailySnapshot, locale);
+  const activeFeedbackTarget = feedbackTarget?.userId === userId ? feedbackTarget : null;
 
   useEffect(() => {
     let active = true;
@@ -163,21 +168,26 @@ export default function TodayScreen() {
       if (!active) return;
       if (!userId) {
         setDailySnapshot(null);
+        setDailySnapshotUserId(null);
         setDailyLoadStatus('ready');
         return;
       }
 
+      setDailySnapshot(null);
+      setDailySnapshotUserId(null);
       setDailyLoadStatus('loading');
       const result = await loadDailySnapshot(userId);
       if (!active) return;
       if (result.ok) {
         setDailySnapshot(result.value);
+        setDailySnapshotUserId(userId);
         setDailyLoadStatus('ready');
         return;
       }
       if (result.error.kind === 'session-expired') await refreshSession();
       if (active) {
         setDailySnapshot(null);
+        setDailySnapshotUserId(null);
         setDailyLoadStatus('error');
       }
     })();
@@ -230,13 +240,14 @@ export default function TodayScreen() {
         return;
       }
 
+      setFeedbackTarget(null);
       const result = await recoverPendingActionFeedback(userId);
       if (!active) return;
       if (!result.ok) {
         if (result.error.kind === 'session-expired') await refreshSession();
         return;
       }
-      setFeedbackTarget(result.value);
+      setFeedbackTarget({ ...result.value, userId });
     })();
 
     return () => {
@@ -267,7 +278,7 @@ export default function TodayScreen() {
     return () => {
       active = false;
     };
-  }, [feedbackTarget?.actionEventId]);
+  }, [activeFeedbackTarget?.actionEventId]);
 
   const recommendationOptions = recommendation
     ? [recommendation.primary, ...recommendation.alternatives]
@@ -303,6 +314,7 @@ export default function TodayScreen() {
     setDecisionStatus(decision);
     if (decision === 'accepted') {
       setFeedbackTarget({
+        userId,
         actionEventId: result.value,
         actionId: activeRecommendation.actionId,
         acceptedAt: new Date().toISOString(),
@@ -313,7 +325,7 @@ export default function TodayScreen() {
   const handleFeedback = async () => {
     if (
       !userId ||
-      !feedbackTarget ||
+      !activeFeedbackTarget ||
       feedbackUsefulness === null ||
       feedbackStatus === 'saving' ||
       feedbackStatus === 'saved'
@@ -324,8 +336,8 @@ export default function TodayScreen() {
     setFeedbackStatus('saving');
     const result = await recordExplicitActionOutcome(
       userId,
-      feedbackTarget.actionId,
-      feedbackTarget.actionEventId,
+      activeFeedbackTarget.actionId,
+      activeFeedbackTarget.actionEventId,
       feedbackUsefulness,
       feedbackNote,
     );
@@ -392,10 +404,10 @@ export default function TodayScreen() {
       <Card>
         <MizanText variant="title">{t('currentStateTitle')}</MizanText>
         <MizanText muted>{t('currentStateBody')}</MizanText>
-        {dailyLoadStatus === 'loading' ? <MizanText accessibilityLiveRegion="polite" muted>{t('loading')}</MizanText> : null}
-        {dailyLoadStatus === 'error' ? <MizanText accessibilityLiveRegion="polite" muted>{t('currentStateError')}</MizanText> : null}
-        {dailyLoadStatus === 'ready' && visibleState.length === 0 ? (
-          <MizanText muted>{t('currentStateEmpty')}</MizanText>
+        {displayedDailyLoadStatus === 'loading' ? <MizanText accessibilityLiveRegion="polite" muted>{t('loading')}</MizanText> : null}
+        {displayedDailyLoadStatus === 'error' ? <MizanText accessibilityLiveRegion="polite" muted>{t('currentStateError')}</MizanText> : null}
+        {displayedDailyLoadStatus === 'ready' && visibleState.length === 0 ? (
+          <MizanText accessibilityLiveRegion="polite" muted>{t('currentStateEmpty')}</MizanText>
         ) : null}
         {visibleState.map(({ component, labelKey }) => (
           <View key={component.key} style={[styles.stateItem, { borderTopColor: palette.border }]}>
@@ -413,9 +425,9 @@ export default function TodayScreen() {
       <Card>
         <MizanText variant="title">{dailyCopy.title}</MizanText>
         <MizanText muted>{dailyCopy.body}</MizanText>
-        {dailyLoadStatus === 'loading' ? <MizanText muted>{t('loading')}</MizanText> : null}
-        {dailyLoadStatus === 'error' ? <MizanText muted>{dailyCopy.error}</MizanText> : null}
-        {dailyLoadStatus === 'ready' ? (
+        {displayedDailyLoadStatus === 'loading' ? <MizanText accessibilityLiveRegion="polite" muted>{t('loading')}</MizanText> : null}
+        {displayedDailyLoadStatus === 'error' ? <MizanText accessibilityLiveRegion="polite" muted>{dailyCopy.error}</MizanText> : null}
+        {displayedDailyLoadStatus === 'ready' ? (
           <View style={styles.oneMoveContent}>
             <View style={[styles.stateItem, { borderTopColor: palette.border }]}>
               <View style={[styles.stateRow, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
@@ -429,14 +441,14 @@ export default function TodayScreen() {
                   {t(confidenceLabelKey(dailyOverview.balance.confidence.level))} · {t('evidenceLabel')}: {formatWhole(dailyOverview.balance.evidence.length)}
                 </MizanText>
               ) : (
-                <MizanText muted>{dailyCopy.balanceEmpty}</MizanText>
+                <MizanText accessibilityLiveRegion="polite" muted>{dailyCopy.balanceEmpty}</MizanText>
               )}
             </View>
 
             <View style={[styles.stateItem, { borderTopColor: palette.border }]}>
               <MizanText variant="label">{dailyCopy.momentum}</MizanText>
               {(dailyOverview?.momentum.length ?? 0) === 0 ? (
-                <MizanText muted>{dailyCopy.momentumEmpty}</MizanText>
+                <MizanText accessibilityLiveRegion="polite" muted>{dailyCopy.momentumEmpty}</MizanText>
               ) : null}
               {dailyOverview?.momentum.map(({ metric, momentum }) => {
                 const labelKey = stateLabelKey(metric);
@@ -461,10 +473,10 @@ export default function TodayScreen() {
       <Card>
         <MizanText variant="title">{t('oneMoveTitle')}</MizanText>
         <MizanText muted>{t('oneMoveBody')}</MizanText>
-        {dailyLoadStatus === 'loading' || recommendationLoadStatus === 'loading' ? (
+        {displayedDailyLoadStatus === 'loading' || recommendationLoadStatus === 'loading' ? (
           <MizanText accessibilityLiveRegion="polite" muted>{t('loading')}</MizanText>
         ) : null}
-        {dailyLoadStatus === 'ready' && recommendationLoadStatus === 'ready' && (!activeRecommendation || !activeActionLabel) ? (
+        {displayedDailyLoadStatus === 'ready' && recommendationLoadStatus === 'ready' && (!activeRecommendation || !activeActionLabel) ? (
           <MizanText accessibilityLiveRegion="polite" muted>{t('oneMoveEmpty')}</MizanText>
         ) : null}
         {activeRecommendation && activeActionLabel ? (
@@ -517,7 +529,7 @@ export default function TodayScreen() {
           </View>
         ) : null}
 
-        {feedbackTarget ? (
+        {activeFeedbackTarget ? (
           <View style={[styles.feedbackBlock, { borderTopColor: palette.border }]}>
             <MizanText variant="title">{t('feedbackTitle')}</MizanText>
             <MizanText muted>{t('feedbackBody')}</MizanText>
