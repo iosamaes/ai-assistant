@@ -40,6 +40,7 @@ export function Screen({ children, header, scroll = true }: ScreenProps) {
     <SafeAreaView style={[styles.safeArea, { backgroundColor: palette.background }]}>
       {scroll ? (
         <ScrollView
+          automaticallyAdjustKeyboardInsets
           contentContainerStyle={styles.scrollContent}
           keyboardShouldPersistTaps="handled"
           style={styles.scroll}
