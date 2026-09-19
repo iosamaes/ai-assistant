@@ -149,7 +149,10 @@ export default function OneMoveScreen() {
     );
     if (activeUserRef.current !== actingUserId) return;
     if (!result.ok) {
-      if (result.error.kind === 'session-expired') await refreshSession();
+      if (result.error.kind === 'session-expired') {
+        await refreshSession();
+        if (activeUserRef.current !== actingUserId) return;
+      }
       setDecisionStatus(
         result.error.kind === 'unavailable' || result.error.kind === 'not-configured' ? 'offline' : 'error',
       );
