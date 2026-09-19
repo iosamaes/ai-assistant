@@ -2,9 +2,10 @@
 
 ## Current checkpoint
 - Active engineering checkpoint: **CP9 — Responsive UX, accessibility, localization, polish, and design-swappability** (`IN_PROGRESS`).
+- CP10 security/privacy implementation has started in parallel because the remaining CP9 gate is primarily owner-side runtime/visual evidence; this does not mark CP9 complete.
 - Product authority: GitHub `iosamaes/ai-assistant@main`.
 - Task digest: `8ad16d4d56ff9369c3f35fa3ce11a13de5260df5`.
-- Current worker policy: GitHub source changes are allowed; workers must not run product tests, builds, typechecks, database scripts, GitHub Actions, or cloud CI. Execution-dependent gates remain owner validation.
+- Current worker policy: GitHub source changes and explicitly authorized Supabase product/schema mutations are allowed; workers must not run product tests, builds, typechecks, validation database scripts, GitHub Actions, or cloud CI. Execution-dependent gates remain owner validation.
 
 ## Checkpoints
 - [x] CP0 — Reconnaissance, product model, executable plan
@@ -17,7 +18,7 @@
 - [ ] CP7 — Plugins, unified integrations, provider boundaries — implementation present; validation pending
 - [ ] CP8 — Reliability, offline tolerance, sync — statically reviewed complete; owner/runtime validation pending
 - [ ] CP9 — Responsive UX, accessibility, localization, polish, design-swappability — **IN_PROGRESS**
-- [ ] CP10 — Security, privacy, owner-data control
+- [ ] CP10 — Security, privacy, owner-data control — **IN_PROGRESS in parallel; live schema audit/export/delete foundation present; validation and remaining audit work pending**
 - [ ] CP11 — Test matrix, performance, release readiness
 - [ ] CP12 — Independent final review and handoff
 
@@ -52,16 +53,32 @@ Latest static CP9 work:
 
 The TASK-required final design-swap proof is **not claimed**. It still requires owner visual/runtime validation using a substantially different visual direction and representative device widths.
 
+## CP10 current implementation
+Detailed ledger/threat model: `docs/CP10_SECURITY_PRIVACY.md`.
+
+Security/privacy work completed in this slice:
+- **Live RLS inventory:** the authoritative Supabase project currently has ten public client-visible user-owned tables; all ten report RLS enabled with four CRUD policies, and all current `user_id` foreign keys point to `auth.users(id) ON DELETE CASCADE`. No Storage buckets currently exist.
+- **Cross-user test expansion:** `supabase/tests/rls_cross_user.sql` now covers all ten current user-owned tables for read isolation plus representative cross-user write rejection while preserving own-user writes. Commit `4368b83e7a9cc42dcf2667c6a970129541eaac05`; not worker-run under current policy.
+- **Function ACL least privilege:** live audit found anonymous execute on `set_life_season` and direct client execute on trigger helper `set_updated_at`. Migration `0009_function_execute_hardening.sql` removed anonymous/public execute from the user RPC and removed public/anon/authenticated direct execute from the trigger helper while retaining authenticated use of `set_life_season`. Commit `769ab19bbe5de6e1a5395b03a77ac14b53bb0fd2`; migration applied successfully to project `olfhjnropdrnujgpidfi` and live ACLs were re-read after application.
+- **Portable export RPC:** migration `0010_account_data_export.sql` adds authenticated-only, `SECURITY INVOKER` `export_my_data()` returning all current application-owned data families as portable JSON under the caller's existing RLS boundary. Commit `ae38bc26526ec3d1b7e9201c8ed0395fbbe8dc6b`; migration applied successfully and live ACL re-read confirms no anon/public execute.
+- **Account deletion server boundary:** `supabase/functions/delete-account/index.ts` validates JWT plus an explicit deletion confirmation and uses the Edge runtime service-role secret only server-side to hard-delete the authenticated Supabase Auth user. Existing cascades delete all current MIZAN-owned rows. Source commit `0f71a0aaad89aa17e4dd0fb9596fadcd83116750`; deployed Edge Function `delete-account` is ACTIVE with JWT verification enabled.
+- **Client privacy boundary/UI:** `apps/app/src/infrastructure/supabase/privacy.ts` exposes coarse export/delete results without leaking backend errors; `apps/app/src/app/privacy.tsx` provides Arabic/English export plus two-step permanent deletion; Web export downloads JSON and native export uses the platform share sheet. The route is registered in `_layout.tsx`, and Settings now exposes a visible Privacy & Data entry point. Commits `4a8ede924fca0176fd117f847b21c1e87a35cc30`, `fcf7d3b593911cd1c53310ac8d8f0652b7c3c8cd`, `e9bba3f21445a60509ec72d76872faac511b9b9e`, `692e4bd4720bc4d790cca60144abbc5223ad9133`.
+- **Threat model/documentation:** `docs/CP10_SECURITY_PRIVACY.md` records assets, trust boundaries, RLS/function/storage inventory, export/delete design, service-role separation, provider-side deletion boundary, logging posture, and remaining CP10 work. Commit `cb5cd867c56a73eab531c8b83b5ac18acc044533`.
+- **Auth advisor owner action:** the live Supabase Security Advisor reports leaked-password protection disabled. This cannot be changed by the available connector, so a non-blocking exact owner action was added to `automation/HUMAN_REQUIRED.md` rather than stopping engineering work.
+
+CP10 is **not complete**. Remaining requirements include owner-executed authorization/export/delete validation, focused test additions around export/function ACL/delete boundaries, repository-wide sensitive logging/error-reporting audit, and explicit proof that optional-data consent revocation stops future collection.
+
 ## Test matrix progress
 - Broad CP2–CP9 app/runtime validation scaffolding exists (`d32636ddd253e3ec688376a4a42596e2844704df`).
 - Localized-number input parsing plus Western-digit output coverage exists; Arabic-Indic/Eastern keyboard input is accepted for normalization, while both Arabic and English formatted output are asserted as `0-9`. Latest expectation update: `5421ecd4c3dc84c52f6e0005774b886109365eb2`.
+- CP10 cross-user RLS coverage now includes every current public user-owned table, but the updated suite has not been executed by workers.
 - These suites have **not** been executed by workers under the current policy; no PASS is claimed from their presence alone.
 
 ## Exact next executable action
-1. Continue repository-wide CP9 static review for remaining untranslated production literals and any regression that emits Arabic-Indic/Eastern digits. All user-facing numbers in Arabic and English must remain Western `0-9`, including dates/times, percentages, ranges, counters, placeholders, and accessibility labels; parsing may accept localized input only to normalize it.
-2. Then continue semantic RTL issues, missing accessibility labels/states/live announcements, truncation/dynamic-type risks, duplicated global visual values, unjustified local control treatments, and keyboard/focus usability gaps; prioritize concrete defects over abstraction-only cleanup.
-3. Revisit an already-audited surface only when static inspection finds a concrete remaining defect.
-4. Leave representative-width runtime checks, post-baseline tests/builds/typechecks, CP1–CP8 execution-dependent evidence, and final design-swap proof to owner validation under the active policy.
+1. Continue the repository-wide CP9 static pass only for concrete remaining defects: untranslated production literals, Western-digit regressions, semantic RTL, accessibility states/live announcements, truncation/dynamic-type risks, keyboard/focus gaps, and unjustified duplicated global visual decisions.
+2. In parallel continue CP10 static engineering: audit logs/error-reporting and provider/optional-module consent revocation paths for sensitive-data leakage or collection-after-revocation; add focused authorization/export/delete specifications where gaps are found without running them.
+3. Revisit already-audited CP9 surfaces only when inspection finds a concrete defect; do not create abstraction-only cleanup.
+4. Leave representative-width runtime checks, post-baseline tests/builds/typechecks/database validation suites, end-to-end export/delete proof, CP1–CP8 execution-dependent evidence, and final design-swap proof to owner validation under the active policy.
 
 ## Verification record
 Previously recorded owner-side baseline evidence:
@@ -75,20 +92,31 @@ Previously recorded owner-side baseline evidence:
 - Earlier auth/data-access app typecheck and lint PASS.
 
 Post-baseline:
-- No worker-run app tests, builds, typechecks, database scripts, cloud CI, or GitHub Actions are claimed for CP2–CP9 changes.
-- Current CP9 evidence is static implementation/code-review evidence only until owner validation runs the validation matrix and representative device/browser/screen-reader checks.
+- No worker-run app tests, builds, typechecks, validation database scripts, cloud CI, or GitHub Actions are claimed for CP2–CP10 changes.
+- Authorized product migrations `function_execute_hardening` and `account_data_export` were applied to the named Supabase project and their resulting live function ACLs were queried directly; this is implementation/state evidence, not a test-suite PASS.
+- `delete-account` Edge Function deployment reports ACTIVE with JWT verification enabled; no end-to-end destructive deletion test was run by the worker.
+- Current CP9 evidence remains static implementation/code-review evidence until owner validation runs the validation matrix and representative device/browser/screen-reader checks.
 
 ## Known blockers / risks
 - CP1: Windows session must be unlocked normally for true narrow-phone Arabic/English interaction evidence; see `automation/HUMAN_REQUIRED.md`.
 - CP2: hosted Supabase Auth redirect allow-list owner action remains open; see `automation/HUMAN_REQUIRED.md`.
+- CP10: Supabase leaked-password protection remains disabled pending the recorded owner Auth-setting action; see `automation/HUMAN_REQUIRED.md`.
 - Cross-user/database specifications and all post-baseline runtime/type/build gates still require owner execution evidence.
 - Recent Today snapshot native SecureStore behavior/capacity still needs owner runtime validation.
 - Static CP9 review is not a substitute for visual/device/screen-reader validation.
+- Privacy export/delete UI and Edge deletion still need owner Web/native end-to-end validation before the CP10 gate can be credited.
 - No real AI, wearable, calendar, or location credentials are configured; deterministic/unavailable adapters remain the supported fallback path.
 
 ## Evidence paths
 - `docs/CP8_RELIABILITY.md`
 - `docs/CP9_PRESENTATION_ARCHITECTURE.md`
+- `docs/CP10_SECURITY_PRIVACY.md`
+- `supabase/tests/rls_cross_user.sql`
+- `supabase/migrations/0009_function_execute_hardening.sql`
+- `supabase/migrations/0010_account_data_export.sql`
+- `supabase/functions/delete-account/index.ts`
+- `apps/app/src/infrastructure/supabase/privacy.ts`
+- `apps/app/src/app/privacy.tsx`
 - `apps/app/src/constants/theme.ts`
 - `apps/app/src/components/mizan-ui.tsx`
 - `apps/app/src/components/screen.tsx`
@@ -112,5 +140,6 @@ Post-baseline:
 - `apps/app/src/app/today.tsx`
 - `apps/app/src/app/invisible-wins.tsx`
 - `apps/app/src/app/integrations.tsx`
+- `apps/app/src/app/settings.tsx`
 - `apps/app/__tests__/advanced-tools-test.ts`
 - `automation/HUMAN_REQUIRED.md`
