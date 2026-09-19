@@ -1,5 +1,5 @@
 import { router } from 'expo-router';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import {
@@ -153,48 +153,70 @@ export default function IntegrationsScreen() {
   const [status, setStatus] = useState<LoadStatus>('loading');
   const [busyId, setBusyId] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
+  const activeUserRef = useRef(userId);
+  const loadRequestRef = useRef(0);
+  activeUserRef.current = userId;
 
   const reload = useCallback(async () => {
-    if (!userId) {
+    const requestedUserId = userId;
+    const requestId = ++loadRequestRef.current;
+    const requestIsCurrent = () =>
+      loadRequestRef.current === requestId && activeUserRef.current === requestedUserId;
+
+    if (!requestedUserId) {
+      if (!requestIsCurrent()) return;
       setConnections([]);
       setStatus('ready');
       return;
     }
-    setStatus('loading');
-    const result = await loadIntegrationSettings(userId);
+
+    if (requestIsCurrent()) setStatus('loading');
+    const result = await loadIntegrationSettings(requestedUserId);
+    if (!requestIsCurrent()) return;
+
     if (!result.ok) {
-      if (result.error.kind === 'session-expired') await refreshSession();
+      if (result.error.kind === 'session-expired') {
+        await refreshSession();
+        if (!requestIsCurrent()) return;
+      }
       setConnections([]);
       setStatus('error');
       return;
     }
+
     setConnections(result.value);
     setStatus('ready');
   }, [refreshSession, userId]);
 
   useEffect(() => {
-    let active = true;
-    void Promise.resolve().then(() => {
-      if (active) return reload();
-      return undefined;
-    });
+    setBusyId(null);
+    setMessage(null);
+    void reload();
     return () => {
-      active = false;
+      loadRequestRef.current += 1;
     };
   }, [reload]);
 
   const disable = async (connection: StoredIntegrationConnection) => {
     if (!userId || busyId) return;
+    const requestedUserId = userId;
     setBusyId(connection.id);
     setMessage(null);
-    const result = await disableIntegrationConnection(userId, connection.capability, connection.providerId);
+    const result = await disableIntegrationConnection(
+      requestedUserId,
+      connection.capability,
+      connection.providerId,
+    );
+    if (activeUserRef.current !== requestedUserId) return;
+
     if (!result.ok) {
       setMessage(labels.disconnectError);
       setBusyId(null);
       return;
     }
+
     await reload();
-    setBusyId(null);
+    if (activeUserRef.current === requestedUserId) setBusyId(null);
   };
 
   return (
