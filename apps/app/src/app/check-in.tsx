@@ -26,9 +26,11 @@ const metricItems: readonly { metric: DailyCheckInMetric; label: 'checkInEnergy'
 const deliveryCopy = {
   ar: {
     queued: 'تم حفظ التسجيل بأمان على هذا الجهاز وسيحاول ميزان مزامنته تلقائيًا عند عودة الاتصال.',
+    unanswered: 'لم تُجب بعد',
   },
   en: {
     queued: 'This check-in is safely stored on this device. MIZAN will retry syncing it when connection returns.',
+    unanswered: 'Not answered yet',
   },
 } as const;
 
@@ -39,12 +41,14 @@ export default function CheckInScreen() {
   const scheme = useColorScheme();
   const palette = Palette[scheme === 'dark' ? 'dark' : 'light'];
   const [ratings, setRatings] = useState<DailyCheckInRatings>({});
+  const [skippedMetrics, setSkippedMetrics] = useState<DailyCheckInMetric[]>([]);
   const [submitState, setSubmitState] = useState<SubmitState>('idle');
   const activeUserRef = useRef(userId);
   const answeredCount = useMemo(() => Object.keys(ratings).length, [ratings]);
+  const completedCount = answeredCount + skippedMetrics.length;
   const interactionsLocked = submitState === 'saving' || submitState === 'queued';
-  const progressLabel = `${formatLocalizedNumber(answeredCount, locale, 0)} / ${formatLocalizedNumber(metricItems.length, locale, 0)}`;
-  const progressPercent = (answeredCount / metricItems.length) * 100;
+  const progressLabel = `${formatLocalizedNumber(completedCount, locale, 0)} / ${formatLocalizedNumber(metricItems.length, locale, 0)}`;
+  const progressPercent = (completedCount / metricItems.length) * 100;
 
   useEffect(() => {
     activeUserRef.current = userId;
@@ -52,6 +56,7 @@ export default function CheckInScreen() {
     void Promise.resolve().then(() => {
       if (!active) return;
       setRatings({});
+      setSkippedMetrics([]);
       setSubmitState('idle');
     });
     return () => {
@@ -59,15 +64,22 @@ export default function CheckInScreen() {
     };
   }, [userId]);
 
-  const setRating = (metric: DailyCheckInMetric, rating?: DailyCheckInRating) => {
+  const setRating = (metric: DailyCheckInMetric, rating: DailyCheckInRating) => {
+    if (interactionsLocked) return;
+    setSubmitState('idle');
+    setSkippedMetrics((current) => current.filter((item) => item !== metric));
+    setRatings((current) => ({ ...current, [metric]: rating }));
+  };
+
+  const skipMetric = (metric: DailyCheckInMetric) => {
     if (interactionsLocked) return;
     setSubmitState('idle');
     setRatings((current) => {
       const next = { ...current };
-      if (rating === undefined) delete next[metric];
-      else next[metric] = rating;
+      delete next[metric];
       return next;
     });
+    setSkippedMetrics((current) => (current.includes(metric) ? current : [...current, metric]));
   };
 
   const handleSubmit = async () => {
@@ -80,6 +92,7 @@ export default function CheckInScreen() {
     if (result.ok) {
       if (result.value.delivery === 'queued') {
         setRatings({});
+        setSkippedMetrics([]);
         setSubmitState('queued');
         return;
       }
@@ -125,7 +138,7 @@ export default function CheckInScreen() {
         <View
           accessibilityRole="progressbar"
           accessibilityLabel={`${t('checkInTitle')}: ${progressLabel}`}
-          accessibilityValue={{ min: 0, max: metricItems.length, now: answeredCount, text: progressLabel }}
+          accessibilityValue={{ min: 0, max: metricItems.length, now: completedCount, text: progressLabel }}
           style={[styles.progressTrack, { backgroundColor: palette.surface }]}>
           <View
             style={[
@@ -143,16 +156,19 @@ export default function CheckInScreen() {
       <View style={[styles.metricGrid, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
         {metricItems.map(({ metric, label, icon }) => {
           const selectedRating = ratings[metric];
-          const selectedLabel = selectedRating === undefined
-            ? t('checkInSkip')
-            : `${formatLocalizedNumber(selectedRating, locale, 0)} / ${formatLocalizedNumber(ratingOptions.length, locale, 0)}`;
+          const isSkipped = skippedMetrics.includes(metric);
+          const selectedLabel = selectedRating !== undefined
+            ? `${formatLocalizedNumber(selectedRating, locale, 0)} / ${formatLocalizedNumber(ratingOptions.length, locale, 0)}`
+            : isSkipped
+              ? t('checkInSkip')
+              : deliveryCopy[locale].unanswered;
 
           return (
             <Card
               key={metric}
               style={[
                 styles.metricCard,
-                selectedRating !== undefined ? { borderColor: palette.accent } : null,
+                selectedRating !== undefined || isSkipped ? { borderColor: palette.accent } : null,
               ]}
             >
               <View style={[styles.metricHeader, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
@@ -190,8 +206,8 @@ export default function CheckInScreen() {
 
               <ChoiceChip
                 label={t('checkInSkip')}
-                selected={selectedRating === undefined}
-                onPress={() => setRating(metric)}
+                selected={isSkipped}
+                onPress={() => skipMetric(metric)}
                 disabled={interactionsLocked}
               />
             </Card>
