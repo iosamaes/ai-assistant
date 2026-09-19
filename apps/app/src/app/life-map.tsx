@@ -245,7 +245,7 @@ export default function LifeMapScreen() {
       ) : null}
 
       {status === 'ready' ? (
-        <View style={styles.domainGrid}>
+        <View style={[styles.domainGrid, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
           {snapshot?.domains.map((domain) => (
             <DomainCard key={domain.domainId} domain={domain} locale={locale} isRtl={isRtl} />
           ))}
@@ -260,7 +260,7 @@ const styles = StyleSheet.create({
   heading: { flex: 1, minWidth: 0, gap: Spacing.xs },
   heroCard: { gap: Spacing.xl },
   heroCopy: { gap: Spacing.sm },
-  domainGrid: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'stretch', gap: Spacing.lg },
+  domainGrid: { flexWrap: 'wrap', alignItems: 'stretch', gap: Spacing.lg },
   domainCard: { flexGrow: 1, flexShrink: 1, flexBasis: 360 },
   domainHeader: { alignItems: 'flex-start', justifyContent: 'space-between', gap: Spacing.md, flexWrap: 'wrap' },
   evidencePill: { minHeight: Controls.minimumTouchHeight, justifyContent: 'center', paddingHorizontal: Spacing.md, borderRadius: Radius.pill },
