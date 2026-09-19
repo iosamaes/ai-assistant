@@ -140,6 +140,8 @@ export function AppStateProvider({ children }: PropsWithChildren) {
         loadDomainPreferences(nextUserId),
         loadOnboardingContext(nextUserId),
       ]);
+      if (activeUserRef.current !== nextUserId) return;
+
       const failures = collectFailures(
         profileResult.ok ? null : profileResult.error.kind,
         preferenceResult.ok ? null : preferenceResult.error.kind,
