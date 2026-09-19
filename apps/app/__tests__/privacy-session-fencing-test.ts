@@ -144,7 +144,10 @@ describe('privacy session fencing', () => {
       .mockResolvedValueOnce(sessionResult('user-b'));
     mockInvoke.mockResolvedValue({ data: null, error: null });
 
-    await expect(deleteMyAccount('user-a')).resolves.toEqual({ ok: true, value: null });
+    await expect(deleteMyAccount('user-a')).resolves.toEqual({
+      ok: true,
+      value: { localDataCleared: true },
+    });
     expect(mockInvoke).toHaveBeenCalledWith('delete-account', {
       body: { confirmation: 'DELETE' },
     });
@@ -160,7 +163,27 @@ describe('privacy session fencing', () => {
     mockInvoke.mockResolvedValue({ data: null, error: null });
     mockSignOut.mockResolvedValue({ error: null });
 
-    await expect(deleteMyAccount('user-a')).resolves.toEqual({ ok: true, value: null });
+    await expect(deleteMyAccount('user-a')).resolves.toEqual({
+      ok: true,
+      value: { localDataCleared: true },
+    });
+    expect(mockClearPendingUserMutations).toHaveBeenCalledWith('user-a');
+    expect(mockClearRecentDailySnapshot).toHaveBeenCalledWith('user-a');
+    expect(mockSignOut).toHaveBeenCalledWith({ scope: 'local' });
+  });
+
+  test('reports incomplete local cleanup separately from confirmed server deletion', async () => {
+    mockGetSession
+      .mockResolvedValueOnce(sessionResult('user-a'))
+      .mockResolvedValueOnce(sessionResult('user-a'));
+    mockInvoke.mockResolvedValue({ data: null, error: null });
+    mockClearPendingUserMutations.mockResolvedValue({ ok: false, error: 'storage-unavailable' });
+    mockSignOut.mockResolvedValue({ error: null });
+
+    await expect(deleteMyAccount('user-a')).resolves.toEqual({
+      ok: true,
+      value: { localDataCleared: false },
+    });
     expect(mockClearPendingUserMutations).toHaveBeenCalledWith('user-a');
     expect(mockClearRecentDailySnapshot).toHaveBeenCalledWith('user-a');
     expect(mockSignOut).toHaveBeenCalledWith({ scope: 'local' });
