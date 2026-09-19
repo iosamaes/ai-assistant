@@ -148,6 +148,11 @@ export default function CapacityScreen() {
   const bufferScore = snapshot?.buffer.score;
   const bufferPercent = bufferScore === null || bufferScore === undefined ? null : clampPercent(bufferScore);
   const bufferPercentText = bufferPercent === null ? null : `${formatLocalizedNumber(bufferPercent, locale, 0)}%`;
+  const fragilityScore = snapshot?.buffer.fragility;
+  const fragilityPercent =
+    fragilityScore === null || fragilityScore === undefined ? null : clampPercent(fragilityScore);
+  const fragilityPercentText =
+    fragilityPercent === null ? null : `${formatLocalizedNumber(fragilityPercent, locale, 0)}%`;
 
   return (
     <Screen>
@@ -222,10 +227,29 @@ export default function CapacityScreen() {
               <View style={[styles.metricTile, { backgroundColor: palette.surfaceMuted }]}>
                 <MizanText variant="caption" muted>{labels.fragility}</MizanText>
                 <MizanText variant="title">
-                  {snapshot?.buffer.fragility === null || snapshot?.buffer.fragility === undefined
+                  {fragilityScore === null || fragilityScore === undefined
                     ? labels.unknown
-                    : `${formatLocalizedNumber(Math.round(snapshot.buffer.fragility), locale, 0)} / ${hundred}`}
+                    : `${formatLocalizedNumber(Math.round(fragilityScore), locale, 0)} / ${hundred}`}
                 </MizanText>
+                {fragilityPercent !== null && fragilityPercentText ? (
+                  <View
+                    accessibilityRole="progressbar"
+                    accessibilityLabel={labels.fragility}
+                    accessibilityValue={{ min: 0, max: 100, now: fragilityPercent, text: fragilityPercentText }}
+                    style={[styles.meterTrack, { backgroundColor: palette.surface }]}
+                  >
+                    <View
+                      style={[
+                        styles.meterFill,
+                        {
+                          alignSelf: isRtl ? 'flex-end' : 'flex-start',
+                          backgroundColor: palette.accent,
+                          width: `${fragilityPercent}%`,
+                        },
+                      ]}
+                    />
+                  </View>
+                ) : null}
               </View>
               <View style={[styles.metricTile, { backgroundColor: palette.surfaceMuted }]}>
                 <MizanText variant="caption" muted>{labels.confidence}</MizanText>
