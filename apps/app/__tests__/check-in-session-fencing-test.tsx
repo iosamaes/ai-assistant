@@ -70,13 +70,14 @@ describe('CheckInScreen session fencing', () => {
     });
 
     const view = await render(<CheckInScreen />);
+    const recoverySkip = () => view.getByRole('button', { name: 'checkInRecovery: checkInSkip' });
 
     expect(view.getAllByText('Not answered yet')).toHaveLength(4);
-    expect(view.getAllByRole('button', { name: 'checkInSkip' })[0].props.accessibilityState.selected).toBe(false);
+    expect(recoverySkip().props.accessibilityState.selected).toBe(false);
 
-    await fireEvent.press(view.getAllByRole('button', { name: 'checkInSkip' })[0]);
+    await fireEvent.press(recoverySkip());
     await waitFor(() => expect(view.getByText('1 / 4')).toBeTruthy());
-    expect(view.getAllByRole('button', { name: 'checkInSkip' })[0].props.accessibilityState.selected).toBe(true);
+    expect(recoverySkip().props.accessibilityState.selected).toBe(true);
     expect(view.getByRole('button', { name: 'checkInSave' }).props.accessibilityState.disabled).toBe(true);
 
     await fireEvent.press(view.getByLabelText('checkInEnergy: 5'));
