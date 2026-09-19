@@ -47,6 +47,7 @@ describe('privacy session fencing', () => {
 
     const result = await exportMyData('user-a');
 
+    expect(mockRpc).toHaveBeenCalledWith('export_my_data');
     expect(result).toEqual({
       ok: true,
       value: {
@@ -81,6 +82,44 @@ describe('privacy session fencing', () => {
     expect(mockRpc).not.toHaveBeenCalled();
   });
 
+  test('returns a coarse export error without exposing backend error content', async () => {
+    mockGetSession.mockResolvedValueOnce(sessionResult('user-a'));
+    mockRpc.mockResolvedValue({
+      data: null,
+      error: { message: 'sensitive backend detail', code: '42501' },
+    });
+
+    await expect(exportMyData('user-a')).resolves.toEqual({
+      ok: false,
+      error: { kind: 'export-failed' },
+    });
+  });
+
+  test('does not start deletion when the expected user is not the active session', async () => {
+    mockGetSession.mockResolvedValueOnce(sessionResult('user-b'));
+
+    await expect(deleteMyAccount('user-a')).resolves.toEqual({
+      ok: false,
+      error: { kind: 'delete-failed' },
+    });
+    expect(mockInvoke).not.toHaveBeenCalled();
+    expect(mockSignOut).not.toHaveBeenCalled();
+  });
+
+  test('returns a coarse deletion error and leaves the local session untouched on function failure', async () => {
+    mockGetSession.mockResolvedValueOnce(sessionResult('user-a'));
+    mockInvoke.mockResolvedValue({
+      data: null,
+      error: { message: 'sensitive edge-function detail', context: { token: 'do-not-surface' } },
+    });
+
+    await expect(deleteMyAccount('user-a')).resolves.toEqual({
+      ok: false,
+      error: { kind: 'delete-failed' },
+    });
+    expect(mockSignOut).not.toHaveBeenCalled();
+  });
+
   test('does not clear a different user session after deleting the original account', async () => {
     mockGetSession
       .mockResolvedValueOnce(sessionResult('user-a'))
@@ -88,6 +127,9 @@ describe('privacy session fencing', () => {
     mockInvoke.mockResolvedValue({ data: null, error: null });
 
     await expect(deleteMyAccount('user-a')).resolves.toEqual({ ok: true, value: null });
+    expect(mockInvoke).toHaveBeenCalledWith('delete-account', {
+      body: { confirmation: 'DELETE' },
+    });
     expect(mockSignOut).not.toHaveBeenCalled();
   });
 
