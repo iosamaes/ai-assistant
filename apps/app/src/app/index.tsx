@@ -42,7 +42,13 @@ export default function EntryScreen() {
               </View>
             </View>
             <View
-              style={[styles.statusBlock, { backgroundColor: palette.surface }]}
+              style={[
+                styles.statusBlock,
+                {
+                  alignSelf: isRtl ? 'flex-end' : 'flex-start',
+                  backgroundColor: palette.surface,
+                },
+              ]}
               accessibilityLiveRegion="polite">
               <MizanText variant="label">{t('loading')}</MizanText>
             </View>
@@ -92,7 +98,6 @@ const styles = StyleSheet.create({
   },
   statusBlock: {
     borderRadius: Radius.pill,
-    alignSelf: 'flex-start',
     paddingHorizontal: Spacing.lg,
     paddingVertical: Spacing.sm,
   },
