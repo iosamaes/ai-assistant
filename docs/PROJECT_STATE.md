@@ -69,6 +69,8 @@ The earlier Premium Production Visual Pass remains useful foundation, but the ow
 - `a13397dd5ca41b633547e589b314248ec05774fe` + `3b585904774f1ab419ae509c64a465b4b5591aac` + `81730bfacacb71c7803f1c0bd2b83659427e9b1c` — the residual stored-date sweep now applies the same safe fallback rule to **Life Seasons**, **Invisible Wins**, and **Experiments**: malformed persisted timestamps render a neutral em dash instead of raw storage text or an `Invalid Date` implementation artifact, while valid Arabic/English dates retain locale formatting and Latin digits.
 - `2025658adc83666c9c4863e2cefcee61f6617b79` + `5182630018f6c5209981da011ba27cb9ea523f06` + `b93734d36a594cd86c614003ff02b0c30f26ca67` — the residual app-local RTL sweep now mirrors Personalization status-dot/label pills from `isRtl` and places the wide navigation rail divider on the actual inner edge from the app locale instead of relying on device-global logical border direction. A focused navigation regression specification records Arabic-left-edge and English-right-edge behavior; it was added but not worker-run.
 - `db4a6b26881361886f51178ba98193bb7ed3b29f` — the CP9 presentation ledger now matches the actual provider/error-boundary ordering and records the app-local RTL rail/status treatment without claiming provider-bootstrap coverage or runtime proof.
+- `20ac0fa640e7dc743b5b74136b8cda470e22a44a` + `7f818820e192183bef63d3028e4b8ec265283188` — **Settings** now fences reset-onboarding, optional Spiritual Grounding save feedback, and sign-out completion to the initiating account so a late result from User A cannot redirect, refresh, or paint an error into User B; focused regression specifications cover stale reset and sign-out completions and were intentionally not worker-run.
+- `13d6d0a347d40caaa75631103211b8974965d1d9` + `2d48707e7118f5797ff9a9f35b3f1bb5849d93f0` — **Onboarding** now fences baseline-save, optional-module persistence, final onboarding persistence, and the `/today` redirect to the initiating account; an account change also clears the stale saving state before loading the new account's baseline targets. The focused account-switch regression specification was added but not worker-run.
 - Existing navigation/auth/localization/account-switch hardening remains in place, including offline authenticated entry, password-recovery routing, Check-in fencing, Today RTL ordering, Western-digit normalization, and corrected neutral Life Debt Arabic wording.
 
 ### CP9 remaining
@@ -81,7 +83,7 @@ The earlier Premium Production Visual Pass remains useful foundation, but the ow
 ## CP10 current implementation
 Detailed ledger/threat model: `docs/CP10_SECURITY_PRIVACY.md`.
 
-Implemented security/privacy work includes live RLS/ownership review of the ten current user-owned client-visible tables, cross-user policy specifications, function-execute hardening migration `0009`, portable authenticated data export migration `0010`, Life Season expected-user account fencing migrations `0011`/`0012`, deployed JWT-protected `delete-account` Edge Function v2 with server-side expected-user matching, client export/two-step deletion UI with local cache purge attempts, safer error-boundary logging, targeted sensitive-log review, stronger auth password creation minimums, consent rechecks around health sync, and account-switch/session fencing across integrations, app-state hydration, Invisible Wins, Recovery, Check-in, Life Seasons, and the Privacy destructive-confirmation/deletion flow.
+Implemented security/privacy work includes live RLS/ownership review of the ten current user-owned client-visible tables, cross-user policy specifications, function-execute hardening migration `0009`, portable authenticated data export migration `0010`, Life Season expected-user account fencing migrations `0011`/`0012`, deployed JWT-protected `delete-account` Edge Function v2 with server-side expected-user matching, client export/two-step deletion UI with local cache purge attempts, safer error-boundary logging, targeted sensitive-log review, stronger auth password creation minimums, consent rechecks around health sync, and account-switch/session fencing across integrations, app-state hydration, Invisible Wins, Recovery, Check-in, Life Seasons, Settings, Onboarding finalization, and the Privacy destructive-confirmation/deletion flow.
 
 The Life Season mutation now supplies `p_expected_user_id`; the database rejects the transition before any mutation when it differs from `auth.uid()`. Live ACL verification after migration confirmed the new `set_life_season(text,jsonb,uuid)` RPC is executable by `authenticated` but not `anon`. The Life Season SQL specification now records the expected-user and anonymous-execute requirements; it was not worker-run.
 
@@ -91,14 +93,14 @@ The source-level sensitive-error review has covered baseline-target, experiment,
 
 ### CP10 remaining
 - Complete repository-wide sensitive logging/error-reporting review beyond the targeted boundaries already inspected; fix only concrete leakage paths.
-- Owner/runtime validation remains required for cross-user/database tests, the Life Season expected-user specification, export/delete/local purge, destructive Edge deletion v2, consent revocation races, account-switch races, and account-scoped deletion confirmation.
+- Owner/runtime validation remains required for cross-user/database tests, the Life Season expected-user specification, export/delete/local purge, destructive Edge deletion v2, consent revocation races, account-switch races including Settings and Onboarding late-completion cases, and account-scoped deletion confirmation.
 - Supabase leaked-password protection remains an owner action in `automation/HUMAN_REQUIRED.md`.
 
 ## Exact next executable action
-1. Continue the final CP9 static owner-reference sweep only for concrete RTL/localization/accessibility/dynamic-type/focus/technical-id inconsistencies on still-unreviewed shipped surfaces; the app-local Personalization status pill and wide-rail divider issues are now closed.
+1. Continue the final CP9 static owner-reference sweep only for concrete RTL/localization/accessibility/dynamic-type/focus/technical-id inconsistencies on still-unreviewed shipped surfaces; the Settings/Onboarding account-switch gaps found in this sweep are now statically closed.
 2. Inspect only still-unreviewed quantitative surfaces and add a meter/chart when the domain contract provides a real bounded quantitative meaning; preserve unknown states and avoid false precision.
 3. Continue the independent CP10 repository-wide sensitive logging/error-reporting audit across still-unreviewed application/package boundaries; the shared presentation boundary is now explicitly covered.
-4. Leave representative-width runtime checks, tests/builds/typechecks/database validation suites, premium screenshot comparison, destructive account deletion, and final design-swap proof to owner validation under the active execution policy.
+4. Leave representative-width runtime checks, tests/builds/typechecks/database validation suites, premium screenshot comparison, destructive account deletion, account-switch runtime races, and final design-swap proof to owner validation under the active execution policy.
 
 ## Verification record
 Previously recorded owner-side baseline evidence:
@@ -127,6 +129,7 @@ Post-baseline:
 - Check-in interaction/accessibility commits `57a4b696db348d7302688570cb0016881ea1cad4`, `848fa290e8e4f29c4d5a29b1f78a781bc25cc24f`, `1a4b09c3af06fa31c27deea5e09beea9dc943180`, and `2ec47a1fcef73c5b441e63852a860ae6778c1e3a`, plus Web presentation-polish commits `3287a73fb4460f1b9f2741b869d37e2b27a8aa2a` and `763b90bdef35d94e9c3eb26db0716144328b62dc`, are static implementation/specification evidence only; no worker-run runtime/test/build claim is made.
 - Life Map residual Web/responsive commits `060bdd47832e02aa68b9d35e7961af4116117a81` and `0ae07067388fcb3e11fd502fd2aae8cb72cab946`, plus technical-date-fallback commits `7cf4595d8db11d1d66ee278dc46b2e924f643028`, `bc2f2e323342ddab3c62a833c15fa36c8389d30b`, `a13397dd5ca41b633547e589b314248ec05774fe`, `3b585904774f1ab419ae509c64a465b4b5591aac`, and `81730bfacacb71c7803f1c0bd2b83659427e9b1c`, are static implementation evidence only; no worker-run runtime, typecheck, test, or screenshot claim is made.
 - App-local RTL hardening commits `2025658adc83666c9c4863e2cefcee61f6617b79` and `5182630018f6c5209981da011ba27cb9ea523f06`, focused navigation specification `b93734d36a594cd86c614003ff02b0c30f26ca67`, and architecture-ledger update `db4a6b26881361886f51178ba98193bb7ed3b29f` are static implementation/specification evidence only; the new regression specification was not executed.
+- Settings/Onboarding account-switch hardening commits `20ac0fa640e7dc743b5b74136b8cda470e22a44a` and `13d6d0a347d40caaa75631103211b8974965d1d9`, with focused specifications `7f818820e192183bef63d3028e4b8ec265283188` and `2d48707e7118f5797ff9a9f35b3f1bb5849d93f0`, are static implementation/specification evidence only; the specifications were intentionally not executed under worker policy.
 - CP10 application-layer logging-audit expansion recorded in `75998a428c791893fdfa37a9c27f26ff09e66fa6`, plus subsequent direct source review of auth/config/session-storage, offline storage, generic data access, root app-state, render-boundary, Life Season, privacy, delete-account, first-party plugin registry/manifests, the core human-state engine, and the shared presentation boundary recorded in `765b08d196423e841a91cd861b23191c4e077d4a`, is static source-review evidence only, not runtime or test evidence.
 
 ## Known blockers / risks
@@ -136,7 +139,7 @@ Post-baseline:
 - Cross-user/database specifications and all post-baseline runtime/type/build gates still require owner execution evidence.
 - Recent Today snapshot native SecureStore behavior/capacity still needs owner runtime validation.
 - CP9 major owner-reference structural slices are statically present, but representative runtime screenshot evidence, interaction validation, and the design-swap proof are still outstanding; residual static defects may still surface in the final sweep.
-- Privacy export/delete UI, local cache purge/warning behavior, account-scoped confirmation behavior, Edge v2 expected-user deletion fencing, and Life Season expected-user fencing need owner Web/native/end-to-end validation before CP10 can close.
+- Privacy export/delete UI, local cache purge/warning behavior, account-scoped confirmation behavior, Edge v2 expected-user deletion fencing, Life Season expected-user fencing, and Settings/Onboarding account-switch races need owner Web/native/end-to-end validation before CP10 can close.
 - Repository-wide sensitive logging/error reporting review remains incomplete beyond the targeted boundaries already hardened.
 - No real AI, wearable, calendar, or location credentials are configured; deterministic/unavailable adapters remain the supported fallback path.
 
@@ -170,10 +173,12 @@ Post-baseline:
 - `apps/app/src/app/experiments.tsx`
 - `apps/app/src/app/recovery.tsx`
 - `apps/app/src/app/onboarding.tsx`
+- `apps/app/__tests__/onboarding-session-fencing-test.tsx`
 - `apps/app/src/app/invisible-wins.tsx`
 - `apps/app/src/app/personalization.tsx`
 - `apps/app/src/app/personal-learning.tsx`
 - `apps/app/src/app/settings.tsx`
+- `apps/app/__tests__/settings-screen-session-fencing-test.tsx`
 - `apps/app/src/app/integrations.tsx`
 - `apps/app/src/app/privacy.tsx`
 - `apps/app/src/infrastructure/supabase/privacy.ts`
