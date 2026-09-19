@@ -105,10 +105,10 @@ export function MizanTextInput({ style, ...props }: MizanTextInputProps) {
     props.keyboardType === 'decimal-pad' ||
     props.keyboardType === 'number-pad' ||
     props.keyboardType === 'numeric';
-  const forceLtrInput =
-    isNumericInput ||
+  const isLtrIdentityInput =
     props.secureTextEntry === true ||
     props.keyboardType === 'email-address';
+  const forceLtrInput = isNumericInput || isLtrIdentityInput;
 
   return (
     <TextInput
@@ -128,7 +128,7 @@ export function MizanTextInput({ style, ...props }: MizanTextInputProps) {
           backgroundColor: palette.surface,
           borderColor: palette.border,
           color: palette.text,
-          textAlign: isRtl ? 'right' : 'left',
+          textAlign: isLtrIdentityInput ? 'left' : isRtl ? 'right' : 'left',
         },
         style,
         { writingDirection: forceLtrInput ? 'ltr' : isRtl ? 'rtl' : 'ltr' },
