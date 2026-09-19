@@ -193,7 +193,7 @@ export default function PrivacyScreen() {
         <MizanText variant="caption" muted>{copy.heroBody}</MizanText>
       </Card>
 
-      <View style={styles.actionGrid}>
+      <View style={[styles.actionGrid, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
         <Card style={styles.actionCard}>
           <View style={styles.cardCopy}>
             <MizanText variant="label" muted>{copy.exportEyebrow}</MizanText>
@@ -268,7 +268,6 @@ const styles = StyleSheet.create({
   heading: { flexGrow: 1, flexShrink: 1, minWidth: 0, gap: Spacing.xs },
   heroCard: { gap: Spacing.md },
   actionGrid: {
-    flexDirection: 'row',
     flexWrap: 'wrap',
     alignItems: 'stretch',
     gap: Spacing.lg,
