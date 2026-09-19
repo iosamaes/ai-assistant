@@ -80,4 +80,33 @@ test.describe('live completed-account product journeys', () => {
     await expectNoHorizontalOverflow(page);
     expect(pageErrors).toEqual([]);
   });
+
+  test('optional Spiritual Grounding preference can toggle and restore on a dedicated live account', async ({ page }) => {
+    test.skip(!mutationsEnabled, 'Set MIZAN_E2E_MUTATIONS=1 only for a disposable or dedicated E2E account.');
+    const pageErrors = collectPageErrors(page);
+    await signInCompletedAccount(page);
+    await page.goto('/settings');
+
+    const enabled = page.getByRole('button', { name: /Enabled|مفعّلة/, exact: true });
+    const disabled = page.getByRole('button', { name: /Off|متوقفة/, exact: true });
+    await expect(enabled).toBeVisible();
+    await expect(disabled).toBeVisible();
+    await expect.poll(async () =>
+      (await enabled.getAttribute('aria-selected')) === 'true' ||
+      (await disabled.getAttribute('aria-selected')) === 'true',
+    ).toBe(true);
+
+    const initiallyEnabled = (await enabled.getAttribute('aria-selected')) === 'true';
+    const original = initiallyEnabled ? enabled : disabled;
+    const target = initiallyEnabled ? disabled : enabled;
+
+    await target.click();
+    await expect(target).toHaveAttribute('aria-selected', 'true');
+    await expect(target).toBeEnabled();
+    await original.click();
+    await expect(original).toHaveAttribute('aria-selected', 'true');
+    await expect(original).toBeEnabled();
+    await expectNoHorizontalOverflow(page);
+    expect(pageErrors).toEqual([]);
+  });
 });
