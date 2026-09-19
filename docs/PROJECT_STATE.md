@@ -18,7 +18,7 @@
 - [ ] CP7 — Plugins, unified integrations, provider boundaries — implementation present; validation pending
 - [ ] CP8 — Reliability, offline tolerance, sync — statically reviewed complete; owner/runtime validation pending
 - [ ] CP9 — Responsive UX, accessibility, localization, polish, design-swappability — **IN_PROGRESS**
-- [ ] CP10 — Security, privacy, owner-data control — **IN_PROGRESS in parallel; live schema audit/export/delete foundation and health-consent fencing present; validation and remaining audit work pending**
+- [ ] CP10 — Security, privacy, owner-data control — **IN_PROGRESS in parallel; live schema audit/export/delete foundation, health-consent fencing, and integration-screen session fencing present; validation and remaining audit work pending**
 - [ ] CP11 — Test matrix, performance, release readiness
 - [ ] CP12 — Independent final review and handoff
 
@@ -50,25 +50,27 @@ Security/privacy work completed so far:
 - **Portable export:** migration `0010_account_data_export.sql` adds authenticated-only, `SECURITY INVOKER` `export_my_data()` for all current application-owned data families under caller RLS; migration applied and live ACL re-read (`ae38bc26526ec3d1b7e9201c8ed0395fbbe8dc6b`).
 - **Account deletion:** deployed `delete-account` Edge Function validates JWT plus explicit confirmation, keeps the service-role key server-only, deletes the authenticated Auth user, and relies on current cascades for MIZAN-owned rows (`0f71a0aaad89aa17e4dd0fb9596fadcd83116750`).
 - **Client privacy UI/boundary:** Arabic/English export plus two-step permanent deletion are reachable from Settings; Web downloads JSON and native uses the share sheet. Export/deletion are fenced to the initiating user so mid-flight session switches cannot mix account data or sign out a newly active user (`0477db9b58d94e0dea919fad70d329dce0b52074`, `cd20bb8d8f9a3a4ceee27499bcd6a30baf6c3180`, `e9716ba30916ecc011a012a0121fb970c3094826`).
-- **Health integration consent revocation fencing:** `syncHealthData` now requires the authoritative connection to remain connected, undisconnected, on the same consent timestamp, and still contain the requested/required scopes before the first provider read, before a retry, and again after provider read before persistence. Sync success bookkeeping is conditional and can no longer upsert `connected` over a concurrent revocation; stale sync errors only mutate rows still connected. Commits: infrastructure `bc0140962c7fa708e1bf6d320c99c43d39e535f0`, application `c2b3382a6748e4cee3e14226cdba899e003e7831`.
+- **Health integration consent revocation fencing:** `syncHealthData` requires the authoritative connection to remain connected, undisconnected, on the same consent timestamp, and still contain the requested/required scopes before the first provider read, before a retry, and again after provider read before persistence. Sync success bookkeeping is conditional and can no longer upsert `connected` over a concurrent revocation; stale sync errors only mutate rows still connected. Commits: infrastructure `bc0140962c7fa708e1bf6d320c99c43d39e535f0`, application `c2b3382a6748e4cee3e14226cdba899e003e7831`.
 - **Consent-revocation specifications:** `apps/app/__tests__/integration-consent-revocation-test.ts` covers already-disabled consent, revocation during provider read, revocation before retry, and final state-update race; added in `44d7124f03d2686fa54ae5677e989599c016f527` and not worker-run under current policy.
-- **Threat model/documentation:** `docs/CP10_SECURITY_PRIVACY.md` records the actual trust boundaries, export/delete design, function/storage inventory, provider boundary, logging posture, and the new consent fencing; latest documentation commit `32fff38ba28d08e4c7b73eed49675956e826ed07`.
+- **Current optional-module consent audit:** Spiritual Grounding is currently only an app-owned plugin preference; disabling it writes `enabled=false` and clears consent, and its manifest has no provider-backed data requirement. Time/location capabilities currently expose deterministic/unavailable contracts and registration only; there is no application collector/persistence path for them. A future collector must reuse authoritative lifecycle/consent fencing before provider reads and persistence.
+- **Integration settings session fencing:** async integration-connection loads now bind to both the initiating user and a request generation, and disconnect completions are discarded after an account switch. This prevents a previous account's provider metadata from painting into a newly active account (`374ddcb24e43c62b103ff0037c889d2b24931c7f`). A focused regression specification was added in `apps/app/__tests__/integrations-screen-session-fencing-test.tsx` (`b732b58cfed218e42555c110cc6f80ff5e8f52df`) and was not worker-run.
+- **Threat model/documentation:** `docs/CP10_SECURITY_PRIVACY.md` records the actual trust boundaries, export/delete design, function/storage inventory, provider boundary, consent audit, and session-fencing posture; latest documentation commit `0c428f93247e7423e9f2553c737653c1171e7fc6`.
 - **Auth advisor owner action:** Supabase Security Advisor reports leaked-password protection disabled; the exact owner action remains recorded in `automation/HUMAN_REQUIRED.md`.
 
-CP10 is **not complete**. Remaining code/static work includes the broader optional-module consent-revocation audit beyond health sync, repository-wide sensitive logging/error-reporting review, and remaining focused authorization/export/delete specifications. Runtime/export/delete/database validation remains owner-side under current policy.
+CP10 is **not complete**. Current-code optional provider collection paths are statically accounted for, but repository-wide sensitive logging/error-reporting review and remaining focused authorization/export/delete specifications still need code/static work. Runtime/export/delete/database and consent-race validation remains owner-side under current policy.
 
 ## Test matrix progress
 - Broad CP2–CP9 app/runtime validation scaffolding exists (`d32636ddd253e3ec688376a4a42596e2844704df`).
 - Localized-number parsing and Western-digit output coverage exists (`5421ecd4c3dc84c52f6e0005774b886109365eb2`).
 - CP10 cross-user RLS coverage exists but has not been executed by workers.
-- CP10 privacy session-fencing and integration consent-revocation specifications exist but have not been executed by workers.
+- CP10 privacy session-fencing, integration consent-revocation, and integration-screen account-switch fencing specifications exist but have not been executed by workers.
 - No worker-run app tests, builds, typechecks, validation database scripts, cloud CI, or GitHub Actions are claimed for CP2–CP10 changes.
 
 ## Exact next executable action
 1. Continue CP9 static review only for concrete remaining defects: untranslated production literals, Western-digit regressions, semantic RTL, accessibility states/live announcements, truncation/dynamic-type risks, keyboard/focus gaps, and unjustified duplicated global visual decisions.
-2. Continue CP10 static engineering with the remaining optional-module consent paths (especially Spiritual Grounding/future provider-backed collectors), repository-wide sensitive logging/error-reporting review, and focused export/function-ACL/delete-boundary specifications where gaps remain.
+2. Continue CP10 with the repository-wide sensitive logging/error-reporting review and focused authenticated-only export/function-ACL/delete-boundary specifications where concrete gaps remain; do not invent new provider collectors solely for validation.
 3. Revisit already-audited surfaces only when inspection finds a concrete defect; do not create abstraction-only cleanup.
-4. Leave representative-width runtime checks, post-baseline tests/builds/typechecks/database validation suites, end-to-end export/delete proof, CP1–CP8 execution-dependent evidence, and the final design-swap proof to owner validation under the active policy.
+4. Leave representative-width runtime checks, post-baseline tests/builds/typechecks/database validation suites, end-to-end export/delete proof, integration revocation/account-switch runtime races, CP1–CP8 execution-dependent evidence, and the final design-swap proof to owner validation under the active policy.
 
 ## Verification record
 Previously recorded owner-side baseline evidence:
@@ -86,7 +88,7 @@ Post-baseline:
 - Authorized product migrations `function_execute_hardening` and `account_data_export` were applied to the named Supabase project and their resulting live function ACLs were queried directly; this is implementation/state evidence, not a test-suite PASS.
 - `delete-account` Edge Function deployment reports ACTIVE with JWT verification enabled; no end-to-end destructive deletion test was run by the worker.
 - Current CP9 evidence remains static implementation/code-review evidence until owner validation runs representative device/browser/screen-reader checks.
-- Integration consent-revocation changes are static implementation/specification evidence only until owner validation executes the new tests and a real runtime disconnect/sync race check.
+- Integration consent-revocation and integration-screen session-fencing changes are static implementation/specification evidence only until owner validation executes the relevant tests and real runtime races.
 
 ## Known blockers / risks
 - CP1: Windows session must be unlocked normally for true narrow-phone Arabic/English interaction evidence; see `automation/HUMAN_REQUIRED.md`.
@@ -96,7 +98,7 @@ Post-baseline:
 - Recent Today snapshot native SecureStore behavior/capacity still needs owner runtime validation.
 - Static CP9 review is not a substitute for visual/device/screen-reader validation.
 - Privacy export/delete UI and Edge deletion still need owner Web/native end-to-end validation before the CP10 gate can be credited.
-- The health integration consent path is now statically fenced, but broader optional-module consent revocation still needs completion and runtime proof.
+- Health consent revocation and integration-screen account-switch fencing are statically implemented but still need runtime proof; future time/location collectors must adopt the same authoritative consent pattern if they are introduced.
 - No real AI, wearable, calendar, or location credentials are configured; deterministic/unavailable adapters remain the supported fallback path.
 
 ## Evidence paths
@@ -114,6 +116,7 @@ Post-baseline:
 - `apps/app/src/app/integrations.tsx`
 - `apps/app/__tests__/privacy-session-fencing-test.ts`
 - `apps/app/__tests__/integration-consent-revocation-test.ts`
+- `apps/app/__tests__/integrations-screen-session-fencing-test.tsx`
 - `apps/app/src/constants/theme.ts`
 - `apps/app/src/components/mizan-ui.tsx`
 - `apps/app/src/components/screen.tsx`
