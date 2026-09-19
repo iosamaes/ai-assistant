@@ -57,6 +57,8 @@ The earlier Premium Production Visual Pass remains useful foundation, but the ow
 - `a8a4ef8b3e4ea56fc70ccaac14a302e729f16742` — **Auth** now uses the same owner-reference premium language instead of a functional form-only surface: responsive narrow/wide composition, shared welcome illustration, explicit MIZAN hierarchy, a privacy/trust panel with shared semantics, and clearer access/language controls while preserving authentication behavior and localized live feedback.
 - `4840728f73374ce8ceba88a030e5a04aaff53e30` — **Password recovery/update** now matches the premium Auth surface with responsive narrow/wide composition, the shared welcome illustration, privacy/trust treatment, secure LTR password fields, and the existing 8-character recovery policy unchanged.
 - `c5c1bd79aced8e82b709960d150343d4ed362d30` — the initial session/restoration entry surface now uses the shared branded illustration, responsive RTL-aware hierarchy, and a designed restoration status treatment while leaving redirect/session behavior unchanged.
+- `abe28be456fdfe17367f414f0e22d1a57f1b32ea` + `fa54cce062b59cb1e1f08de62a1a4d0f1435ec16` — residual CP9 RTL hardening now aligns the session-restoration status pill to the actual reading edge in Arabic instead of a physical left/start assumption, with focused regression coverage added but not executed under worker policy.
+- `b06529071d63c4437d54df5e2e150b51018d1e43` + `fc8e487eed24bf52b30bc410d8ca128142954640` + `a53732fbaa471fa45ba879cb5032a7f19f4804d8` — the root render-error fallback now derives Arabic/English copy and RTL from the active MIZAN app locale rather than device-global `I18nManager`; `AppStateProvider` now remains above the render boundary so that localized fallback context is available, and a regression specification records the Arabic fallback requirement.
 - `92c7f06ad33534b905e38252bfa4758bf950c907` — **Privacy & data** now has stronger owner-control visual hierarchy with shared semantic icons; the same change also scopes destructive delete confirmation to the active account so a confirmation opened before an account switch cannot authorize deletion for the newly active user.
 - `6c84bb8915103f16af68d4c630dc7373aece431a` — focused Privacy-screen regression specification requires a fresh two-step deletion confirmation after an account switch; intentionally not worker-run under the active policy.
 - Existing navigation/auth/localization/account-switch hardening remains in place, including offline authenticated entry, password-recovery routing, Check-in fencing, Today RTL ordering, Western-digit normalization, and corrected neutral Life Debt Arabic wording.
@@ -71,7 +73,7 @@ The earlier Premium Production Visual Pass remains useful foundation, but the ow
 ## CP10 current implementation
 Detailed ledger/threat model: `docs/CP10_SECURITY_PRIVACY.md`.
 
-Implemented security/privacy work includes live RLS/ownership review of the ten current user-owned client-visible tables, cross-user policy specifications, function-execute hardening migration `0009`, portable authenticated data export migration `0010`, deployed JWT-protected `delete-account` Edge Function, client export/two-step deletion UI with local cache purge attempts, safer error-boundary logging, targeted sensitive-log review, stronger auth password creation minimums, consent rechecks around health sync, and account-switch/session fencing across integrations, app-state hydration, Invisible Wins, Recovery, Check-in, and the Privacy destructive-confirmation flow. A confirmation opened under one user is now invalidated on account switch before any newly active user can execute deletion. The source-level sensitive-error review has now covered baseline-target, experiment, reflection, Life Season, onboarding-context, One Move decision/history, pending-feedback, plugin-setting, What If trial-data, app-owned integration adapter/contract/registry paths, and the application-layer action-feedback, daily intelligence/recommendation, check-in, capacity, Cost of Yes, spiritual preference, user-target, personal-learning/scenario-learning, Human ROI, Value Alignment, WHY, and Recovery paths without finding a new raw-sensitive logging sink in those inspected boundaries.
+Implemented security/privacy work includes live RLS/ownership review of the ten current user-owned client-visible tables, cross-user policy specifications, function-execute hardening migration `0009`, portable authenticated data export migration `0010`, deployed JWT-protected `delete-account` Edge Function, client export/two-step deletion UI with local cache purge attempts, safer error-boundary logging, targeted sensitive-log review, stronger auth password creation minimums, consent rechecks around health sync, and account-switch/session fencing across integrations, app-state hydration, Invisible Wins, Recovery, Check-in, and the Privacy destructive-confirmation flow. A confirmation opened under one user is now invalidated on account switch before any newly active user can execute deletion. The source-level sensitive-error review has now covered baseline-target, experiment, reflection, Life Season, onboarding-context, One Move decision/history, pending-feedback, plugin-setting, What If trial-data, app-owned integration adapter/contract/registry paths, the application-layer action-feedback, daily intelligence/recommendation, check-in, capacity, Cost of Yes, spiritual preference, user-target, personal-learning/scenario-learning, Human ROI, Value Alignment, WHY, and Recovery paths, plus the auth/config/session-storage, root app-state, render-boundary, and destructive account-deletion boundaries. No new raw-sensitive logging sink was found in those newly inspected paths; auth continues to return classified failure kinds/codes instead of raw backend messages, and the render boundary logs only component-stack diagnostics rather than arbitrary Error fields.
 
 ### CP10 remaining
 - Complete repository-wide sensitive logging/error-reporting review beyond the targeted boundaries already inspected; fix only concrete leakage paths.
@@ -106,7 +108,8 @@ Post-baseline:
 - Experiments/Recovery/Onboarding/Invisible Wins/Personalization/quantitative-visual commits `60193f0f4a1948d96f4512adfdc07114494dd293`, `7dd7e5f4b570ae012864297d1887e2e39e04fbe5`, `c9bfa4e7342fa01e09f9cc2a8159ad0fa21dfbbe`, `41656f61d234248683855f468b22943310299d4b`, `a3db6f54b5c6031ece29117f21bcdac7e6fdc1f2`, `3574f554aa4392d8573332a6f91991a797c8faf1`, `4fa3d9beb543fcb3b467232040fa7dd45d450fcf`, `4d792b40df1867f83268f95c73354ad4178ca9f2`, and `9ce78fe21550dbb62fc6ecc18abd823b11eff459` are **static implementation evidence only**.
 - Shared secondary-screen iconography commits `b5938695a7fac3dd49358900b4da59b60078b67b`, `168628b850aafe2b5db6c2952fd09587a95dafc8`, and `144473356aec4368c359eca1d29e9fce9599c14b` are static implementation evidence only. Workers did not run typecheck, tests, builds, screenshot capture, or representative device validation under the active policy.
 - Auth/entry/privacy owner-reference and privacy-fencing commits `a8a4ef8b3e4ea56fc70ccaac14a302e729f16742`, `4840728f73374ce8ceba88a030e5a04aaff53e30`, `c5c1bd79aced8e82b709960d150343d4ed362d30`, `92c7f06ad33534b905e38252bfa4758bf950c907`, and `6c84bb8915103f16af68d4c630dc7373aece431a` are static implementation/specification evidence only; the Privacy-screen regression specification was not executed.
-- CP10 application-layer logging-audit expansion recorded in `75998a428c791893fdfa37a9c27f26ff09e66fa6` is static source-review evidence only, not runtime or test evidence.
+- Residual CP9 localization/RTL commits `abe28be456fdfe17367f414f0e22d1a57f1b32ea`, `b06529071d63c4437d54df5e2e150b51018d1e43`, and `fc8e487eed24bf52b30bc410d8ca128142954640`, with regression specifications `fa54cce062b59cb1e1f08de62a1a4d0f1435ec16` and `a53732fbaa471fa45ba879cb5032a7f19f4804d8`, are static implementation/specification evidence only and were not worker-run.
+- CP10 application-layer logging-audit expansion recorded in `75998a428c791893fdfa37a9c27f26ff09e66fa6`, plus this run's direct source review of auth/config/session-storage, root app-state, render-boundary, and delete-account boundaries, is static source-review evidence only, not runtime or test evidence.
 
 ## Known blockers / risks
 - CP1: Windows session must be unlocked normally for true narrow-phone Arabic/English interaction evidence; see `automation/HUMAN_REQUIRED.md`.
@@ -131,6 +134,9 @@ Post-baseline:
 - `apps/app/src/components/app-navigation.tsx`
 - `apps/app/src/components/app-icon.tsx`
 - `apps/app/src/components/branded-illustration.tsx`
+- `apps/app/src/components/app-error-boundary.tsx`
+- `apps/app/__tests__/entry-screen-offline-routing-test.tsx`
+- `apps/app/__tests__/app-error-boundary-privacy-test.tsx`
 - `apps/app/src/app/today.tsx`
 - `apps/app/src/app/life-map.tsx`
 - `apps/app/src/application/life-map.ts`
@@ -152,6 +158,9 @@ Post-baseline:
 - `apps/app/src/app/cost-of-yes.tsx`
 - `apps/app/src/app/human-roi.tsx`
 - `apps/app/src/state/app-state.tsx`
+- `apps/app/src/infrastructure/supabase/auth.ts`
+- `apps/app/src/infrastructure/supabase/config.ts`
+- `apps/app/src/infrastructure/supabase/session-storage.ts`
 - `supabase/tests/rls_cross_user.sql`
 - `supabase/tests/account_data_export_security.sql`
 - `supabase/migrations/0009_function_execute_hardening.sql`
