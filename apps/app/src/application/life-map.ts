@@ -17,6 +17,7 @@ export type LifeMapMetricId = 'energy' | 'recovery' | 'mental_load' | 'connectio
 export interface LifeMapMetricHistory {
   metric: LifeMapMetricId;
   latestValue: number;
+  latestScore: number;
   latestObservedAt: string;
   monthMedian: number | null;
   monthEvidenceCount: number;
@@ -28,6 +29,7 @@ export interface LifeMapMetricHistory {
 export interface LifeMapDomainHistory {
   domainId: LifeMapDomainId;
   evidenceCount: number;
+  score: number | null;
   metrics: readonly LifeMapMetricHistory[];
 }
 
@@ -52,6 +54,10 @@ function numericValue(row: StoredObservation): number | null {
   if (row.value_number === null || !Number.isFinite(row.value_number)) return null;
   if (row.value_number < 0 || row.value_number > 100) return null;
   return row.value_number;
+}
+
+function normalizedScore(value: number, higherIsBetter: boolean): number {
+  return higherIsBetter ? value : 100 - value;
 }
 
 function toCoreObservation(row: StoredObservation, domainId: LifeMapDomainId): Observation {
@@ -103,6 +109,7 @@ export function buildLifeMapSnapshot(
       return [{
         metric,
         latestValue,
+        latestScore: normalizedScore(latestValue, higherIsBetter),
         latestObservedAt: latest.observed_at,
         monthMedian: summary.windows.month.median,
         monthEvidenceCount: summary.windows.month.evidenceCount,
@@ -111,10 +118,14 @@ export function buildLifeMapSnapshot(
         momentumConfidence: summary.momentum.confidence,
       }];
     });
+    const score = metrics.length === 0
+      ? null
+      : metrics.reduce((total, metric) => total + metric.latestScore, 0) / metrics.length;
 
     return {
       domainId,
       evidenceCount: metrics.reduce((total, metric) => total + metric.monthEvidenceCount, 0),
+      score,
       metrics,
     };
   });
