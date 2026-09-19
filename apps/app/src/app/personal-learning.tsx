@@ -109,11 +109,11 @@ function responseLabel(usefulness: number | null, locale: 'ar' | 'en'): string |
 
 function formatDate(value: string, locale: 'ar' | 'en'): string {
   const parsed = new Date(value);
-  if (Number.isNaN(parsed.getTime())) return value;
+  if (Number.isNaN(parsed.getTime())) return '—';
   try {
     return new Intl.DateTimeFormat(locale === 'ar' ? 'ar-QA-u-nu-latn' : 'en-QA-u-nu-latn', { dateStyle: 'medium' }).format(parsed);
   } catch {
-    return parsed.toISOString().slice(0, 10);
+    return '—';
   }
 }
 
