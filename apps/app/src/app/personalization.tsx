@@ -189,7 +189,14 @@ export default function PersonalizationScreen() {
                     {isLastEnabled ? <MizanText variant="caption" muted>{labels.keepOne}</MizanText> : null}
                   </View>
                 </View>
-                <View style={[styles.statePill, { backgroundColor: palette.surface }]}>
+                <View
+                  style={[
+                    styles.statePill,
+                    {
+                      backgroundColor: palette.surface,
+                      flexDirection: isRtl ? 'row-reverse' : 'row',
+                    },
+                  ]}>
                   <View style={[styles.stateDot, { backgroundColor: enabled ? palette.accent : palette.textMuted }]} />
                   <MizanText variant="caption">{enabled ? labels.enabled : labels.disabled}</MizanText>
                 </View>
@@ -276,7 +283,7 @@ const styles = StyleSheet.create({
   },
   areaIdentity: { flex: 1, minWidth: 0, alignItems: 'center', gap: Spacing.md },
   domainIcon: { width: 42, height: 42, borderRadius: Radius.sm, alignItems: 'center', justifyContent: 'center', flexShrink: 0 },
-  statePill: { minHeight: 34, borderRadius: Radius.pill, paddingHorizontal: Spacing.md, flexDirection: 'row', alignItems: 'center', gap: Spacing.xs },
+  statePill: { minHeight: 34, borderRadius: Radius.pill, paddingHorizontal: Spacing.md, alignItems: 'center', gap: Spacing.xs },
   stateDot: { width: 8, height: 8, borderRadius: Radius.pill },
   sectionHeader: { gap: Spacing.sm },
   progression: { flexWrap: 'wrap', alignItems: 'stretch', gap: Spacing.lg },
