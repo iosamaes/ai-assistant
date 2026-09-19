@@ -6,6 +6,7 @@ import { loadRecoveryPlan } from '@/application/recovery';
 import { Card, MizanText, PrimaryButton, SecondaryButton } from '@/components/mizan-ui';
 import { Screen } from '@/components/screen';
 import { Spacing } from '@/constants/theme';
+import { formatLocalizedNumber } from '@/i18n/number-input';
 import { useAppState } from '@/state/app-state';
 import type { RecoveryPlan, RecoveryReasonKey, RecoveryStepId } from '@mizan/core';
 
@@ -180,7 +181,7 @@ export default function RecoveryScreen() {
           <Card>
             <MizanText variant="title">{needText}</MizanText>
             <MizanText variant="caption" muted>
-              {labels.confidence}: {labels.confidenceLevels[plan.confidence.level]} · {labels.evidence}: {plan.confidence.evidenceCount}
+              {labels.confidence}: {labels.confidenceLevels[plan.confidence.level]} · {labels.evidence}: {formatLocalizedNumber(plan.confidence.evidenceCount, locale, 0)}
             </MizanText>
             {reasonLabels.length > 0 ? (
               <View style={styles.reasonGroup}>
@@ -193,7 +194,7 @@ export default function RecoveryScreen() {
           {currentStep ? (
             <Card>
               <MizanText accessibilityLiveRegion="polite" variant="label" muted>
-                {labels.step} {stepIndex + 1} {labels.of} {plan.steps.length}
+                {labels.step} {formatLocalizedNumber(stepIndex + 1, locale, 0)} {labels.of} {formatLocalizedNumber(plan.steps.length, locale, 0)}
               </MizanText>
               <MizanText variant="title">{labels.steps[currentStep.id as RecoveryStepId].title}</MizanText>
               <MizanText>{labels.steps[currentStep.id as RecoveryStepId].body}</MizanText>
