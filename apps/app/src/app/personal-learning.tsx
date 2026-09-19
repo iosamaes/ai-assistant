@@ -24,6 +24,8 @@ const copy = {
     error: 'تعذر تحميل سجل التعلّم الشخصي الآن.',
     empty: 'لا توجد تقييمات أثر صريحة بعد. عندما تجرّب خطوة وتسجل فائدتها، ستظهر هنا.',
     samples: 'تقييمات الأثر',
+    learnedActions: 'خطوات لها دليل',
+    totalReports: 'إجمالي التقييمات',
     confidence: 'الثقة',
     recency: 'أحدث دليل',
     days: 'يوم',
@@ -41,6 +43,7 @@ const copy = {
     back: 'العودة للإعدادات',
     actionRecovery: 'احمِ 20 دقيقة للتعافي',
     actionConnection: 'خصص 15 دقيقة لتواصل له معنى',
+    actionGeneric: 'خطوة شخصية',
     confidenceKnown: 'ثقة عالية',
     confidenceLikely: 'مرجّح',
     confidencePossible: 'ممكن',
@@ -54,6 +57,8 @@ const copy = {
     error: 'Your personal learning history could not be loaded right now.',
     empty: 'There are no explicit outcome ratings yet. After you try an action and report its effect, it will appear here.',
     samples: 'Outcome reports',
+    learnedActions: 'Actions with evidence',
+    totalReports: 'Total outcome reports',
     confidence: 'Confidence',
     recency: 'Freshest evidence',
     days: 'days',
@@ -71,6 +76,7 @@ const copy = {
     back: 'Back to settings',
     actionRecovery: 'Protect 20 minutes for recovery',
     actionConnection: 'Set aside 15 minutes for meaningful connection',
+    actionGeneric: 'Personal action',
     confidenceKnown: 'High confidence',
     confidenceLikely: 'Likely',
     confidencePossible: 'Possible',
@@ -82,7 +88,7 @@ function actionLabel(actionId: string, locale: 'ar' | 'en'): string {
   const labels = copy[locale];
   if (actionId === 'protect-recovery-window') return labels.actionRecovery;
   if (actionId === 'meaningful-connection') return labels.actionConnection;
-  return actionId;
+  return labels.actionGeneric;
 }
 
 function confidenceLabel(level: ConfidenceLevel, locale: 'ar' | 'en'): string {
@@ -149,6 +155,7 @@ export default function PersonalLearningScreen() {
   }, [refreshSession, userId]);
 
   const visible = actions.filter((action) => action.estimate.feedbackCount > 0 || action.outcomes.length > 0);
+  const totalReports = visible.reduce((sum, action) => sum + action.estimate.feedbackCount, 0);
 
   return (
     <Screen>
@@ -161,21 +168,42 @@ export default function PersonalLearningScreen() {
       </View>
 
       <Card style={[styles.heroCard, { backgroundColor: palette.accentSoft, borderColor: palette.accent }]}>
+        <View style={[styles.cardAccent, { backgroundColor: palette.accent }]} />
         <View style={styles.heroCopy}>
           <MizanText variant="title">{labels.eyebrow}</MizanText>
-          <MizanText muted>{labels.body}</MizanText>
-          <MizanText variant="caption" muted>{labels.adherenceRule}</MizanText>
+          <MizanText>{labels.body}</MizanText>
+          <View style={[styles.ruleBox, { backgroundColor: palette.surface }]}>
+            <MizanText variant="caption" muted>{labels.adherenceRule}</MizanText>
+          </View>
+        </View>
+        <View style={styles.heroStats}>
+          <View style={[styles.heroStat, { backgroundColor: palette.surface }]}>
+            <MizanText variant="caption" muted>{labels.learnedActions}</MizanText>
+            <MizanText variant="title">
+              {status === 'ready' ? formatLocalizedNumber(visible.length, locale, 0) : '—'}
+            </MizanText>
+          </View>
+          <View style={[styles.heroStat, { backgroundColor: palette.surface }]}>
+            <MizanText variant="caption" muted>{labels.totalReports}</MizanText>
+            <MizanText variant="title">
+              {status === 'ready' ? formatLocalizedNumber(totalReports, locale, 0) : '—'}
+            </MizanText>
+          </View>
         </View>
       </Card>
 
-      {status === 'loading' ? <MizanText accessibilityLiveRegion="polite" muted>{labels.loading}</MizanText> : null}
+      {status === 'loading' ? (
+        <Card style={[styles.stateCard, { backgroundColor: palette.surfaceMuted }]}>
+          <MizanText accessibilityLiveRegion="polite" muted>{labels.loading}</MizanText>
+        </Card>
+      ) : null}
       {status === 'error' ? (
-        <Card style={{ backgroundColor: palette.surfaceMuted }}>
+        <Card style={[styles.stateCard, { backgroundColor: palette.surfaceMuted }]}>
           <MizanText accessibilityLiveRegion="polite" muted>{labels.error}</MizanText>
         </Card>
       ) : null}
       {status === 'ready' && visible.length === 0 ? (
-        <Card style={{ backgroundColor: palette.surfaceMuted }}>
+        <Card style={[styles.stateCard, { backgroundColor: palette.surfaceMuted }]}>
           <MizanText accessibilityLiveRegion="polite" muted>{labels.empty}</MizanText>
           <MizanText variant="caption" muted>{labels.adherenceRule}</MizanText>
         </Card>
@@ -194,9 +222,10 @@ export default function PersonalLearningScreen() {
 
             return (
               <Card key={action.actionId} style={styles.actionCard}>
+                <View style={[styles.cardAccent, { backgroundColor: palette.accent }]} />
                 <View style={[styles.actionHeader, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
                   <MizanText variant="title" style={styles.actionTitle}>{actionLabel(action.actionId, locale)}</MizanText>
-                  <View style={[styles.estimatePill, { backgroundColor: palette.accentSoft }]}>
+                  <View style={[styles.estimatePill, { backgroundColor: palette.accentSoft, borderColor: palette.accent }]}>
                     <MizanText variant="caption">{estimateLabel ?? labels.confidenceInsufficient}</MizanText>
                   </View>
                 </View>
@@ -204,7 +233,7 @@ export default function PersonalLearningScreen() {
                 <View style={styles.metricGrid}>
                   <View style={[styles.metricTile, { backgroundColor: palette.surfaceMuted }]}>
                     <MizanText variant="caption" muted>{labels.samples}</MizanText>
-                    <MizanText variant="label">{formatLocalizedNumber(action.estimate.feedbackCount, locale, 0)}</MizanText>
+                    <MizanText variant="title">{formatLocalizedNumber(action.estimate.feedbackCount, locale, 0)}</MizanText>
                   </View>
                   <View style={[styles.metricTile, { backgroundColor: palette.surfaceMuted }]}>
                     <MizanText variant="caption" muted>{labels.confidence}</MizanText>
@@ -217,8 +246,8 @@ export default function PersonalLearningScreen() {
                 </View>
 
                 <View style={[styles.learningBox, { backgroundColor: palette.accentSoft }]}>
-                  <MizanText variant="label">{labels.estimate}</MizanText>
-                  <MizanText muted>{estimateLabel ?? labels.noEstimate}</MizanText>
+                  <MizanText variant="caption" muted>{labels.estimate}</MizanText>
+                  <MizanText variant="title">{estimateLabel ?? labels.noEstimate}</MizanText>
                 </View>
 
                 {action.outcomes.length > 0 ? (
@@ -227,7 +256,9 @@ export default function PersonalLearningScreen() {
                     {action.outcomes.slice(0, 3).map((outcome) => (
                       <View key={outcome.id} style={[styles.outcome, { backgroundColor: palette.surfaceMuted }]}>
                         <View style={[styles.metricRow, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
-                          <MizanText variant="caption" muted>{formatDate(outcome.observedAt, locale)}</MizanText>
+                          <View style={[styles.datePill, { backgroundColor: palette.surface }]}>
+                            <MizanText variant="caption" muted>{formatDate(outcome.observedAt, locale)}</MizanText>
+                          </View>
                           <MizanText variant="label">
                             {labels.rating}: {formatLocalizedNumber(outcome.usefulness, locale, 0)}/{formatLocalizedNumber(5, locale, 0)}
                           </MizanText>
@@ -253,8 +284,13 @@ const styles = StyleSheet.create({
   heading: { flex: 1, minWidth: 0, gap: Spacing.xs },
   heroCard: { gap: Spacing.xl },
   heroCopy: { gap: Spacing.sm },
+  cardAccent: { height: 4, borderRadius: Radius.pill, alignSelf: 'stretch' },
+  ruleBox: { paddingHorizontal: Spacing.md, paddingVertical: Spacing.sm, borderRadius: Radius.md },
+  heroStats: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.sm },
+  heroStat: { flexGrow: 1, flexShrink: 1, flexBasis: 180, padding: Spacing.lg, borderRadius: Radius.md, gap: Spacing.xs },
+  stateCard: { paddingVertical: Spacing.lg },
   actionGrid: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'stretch', gap: Spacing.lg },
-  actionCard: { flexGrow: 1, flexShrink: 1, flexBasis: 360 },
+  actionCard: { flexGrow: 1, flexShrink: 1, flexBasis: 360, overflow: 'hidden' },
   actionHeader: { alignItems: 'flex-start', justifyContent: 'space-between', gap: Spacing.lg, flexWrap: 'wrap' },
   actionTitle: { flexGrow: 1, flexShrink: 1, flexBasis: 220 },
   estimatePill: {
@@ -262,6 +298,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingHorizontal: Spacing.md,
     borderRadius: Radius.pill,
+    borderWidth: Controls.borderWidth,
   },
   metricGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.sm },
   metricTile: {
@@ -276,5 +313,6 @@ const styles = StyleSheet.create({
   metricRow: { alignItems: 'center', justifyContent: 'space-between', gap: Spacing.md, flexWrap: 'wrap' },
   learningBox: { padding: Spacing.lg, borderRadius: Radius.md, gap: Spacing.xs },
   history: { gap: Spacing.sm },
-  outcome: { padding: Spacing.md, borderRadius: Radius.md, gap: Spacing.xs },
+  outcome: { padding: Spacing.md, borderRadius: Radius.md, gap: Spacing.sm },
+  datePill: { minHeight: Controls.minimumTouchHeight, justifyContent: 'center', paddingHorizontal: Spacing.md, borderRadius: Radius.pill },
 });
