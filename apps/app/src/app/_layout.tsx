@@ -51,6 +51,7 @@ export function AppNavigator() {
     if (sessionStatus === 'loading') return;
 
     const isAuthRoute = firstSegment === 'auth';
+    const isOnboardingRoute = firstSegment === 'onboarding';
     const isPasswordRecoveryRoute = firstSegment === 'update-password';
 
     if (!hasUsableSession) {
@@ -58,9 +59,19 @@ export function AppNavigator() {
       return;
     }
 
-    if (isAuthRoute) {
-      router.replace(onboardingCompleted ? '/today' : '/onboarding');
+    // Recovery links must remain mounted even while Auth establishes or refreshes a session.
+    if (isPasswordRecoveryRoute) return;
+
+    // A signed-in account that has not completed onboarding must not bypass setup by deep-linking
+    // directly into a product route or restoring one from browser history.
+    if (!onboardingCompleted) {
+      if (!isOnboardingRoute) router.replace('/onboarding');
+      return;
     }
+
+    // Completed accounts should not remain on entry/setup surfaces unless Settings first resets
+    // onboarding state. That reset flips onboardingCompleted before navigating to /onboarding.
+    if (isAuthRoute || isOnboardingRoute) router.replace('/today');
   }, [firstSegment, hasUsableSession, onboardingCompleted, sessionStatus]);
 
   return (
