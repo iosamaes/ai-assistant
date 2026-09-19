@@ -1,5 +1,8 @@
 import { defineConfig, devices } from '@playwright/test';
 
+const liveSupabaseUrl = process.env.MIZAN_E2E_SUPABASE_URL ?? '';
+const liveSupabasePublishableKey = process.env.MIZAN_E2E_SUPABASE_PUBLISHABLE_KEY ?? '';
+
 export default defineConfig({
   testDir: './tests/e2e',
   fullyParallel: false,
@@ -20,8 +23,8 @@ export default defineConfig({
     timeout: 120_000,
     env: {
       EXPO_NO_DOTENV: '1',
-      EXPO_PUBLIC_SUPABASE_URL: '',
-      EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY: '',
+      EXPO_PUBLIC_SUPABASE_URL: liveSupabaseUrl,
+      EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY: liveSupabasePublishableKey,
     },
   },
 });
