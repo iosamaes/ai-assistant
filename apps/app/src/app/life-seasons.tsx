@@ -10,6 +10,7 @@ import {
 import { Card, ChoiceChip, MizanText, PrimaryButton, SecondaryButton } from '@/components/mizan-ui';
 import { Screen } from '@/components/screen';
 import { Spacing } from '@/constants/theme';
+import { formatLocalizedNumber } from '@/i18n/number-input';
 import type { DomainId, LifeSeason } from '@/state/app-state';
 import { useAppState } from '@/state/app-state';
 
@@ -29,7 +30,7 @@ const copy = {
     body: 'غيّر الموسم عندما تتغيّر أولوياتك المؤقتة، وعدّل المستوى المستدام الذي تريد حمايته لكل مجال. التوازن يُعاد حسابه مقابل هذه الأهداف التي اخترتها أنت، وليس مقابل توزيع مثالي ثابت.',
     seasonTitle: 'الموسم الحالي',
     targetTitle: 'أهداف هذا الموسم',
-    targetBody: 'اختياري. استخدم 1–5 للمستوى الذي تعتبره كافيًا ومستدامًا في هذا الموسم. ترك المجال بلا هدف يبقيه مجهول الهدف.',
+    targetBody: 'اختياري. استخدم ١–٥ للمستوى الذي تعتبره كافيًا ومستدامًا في هذا الموسم. ترك المجال بلا هدف يبقيه مجهول الهدف.',
     unset: 'غير محدد',
     save: 'حفظ الموسم والأهداف',
     saving: 'جارٍ الحفظ…',
@@ -242,7 +243,7 @@ export default function LifeSeasonsScreen() {
               {RATINGS.map((rating) => (
                 <ChoiceChip
                   key={`${domainId}-${rating}`}
-                  label={String(rating)}
+                  label={formatLocalizedNumber(rating, locale, 0)}
                   selected={targets[domainId] === rating}
                   disabled={controlsDisabled}
                   onPress={() => setTarget(domainId, rating)}
@@ -278,7 +279,7 @@ export default function LifeSeasonsScreen() {
         ) : null}
         {history.map((entry) => {
           const recordedTargets = Object.entries(entry.target_snapshot)
-            .map(([domainId, rating]) => `${isDomainId(domainId) ? t(domainId) : domainId}: ${rating}`)
+            .map(([domainId, rating]) => `${isDomainId(domainId) ? t(domainId) : domainId}: ${formatLocalizedNumber(Number(rating), locale, 0)}`)
             .join(' · ');
           return (
             <Card key={entry.id}>
