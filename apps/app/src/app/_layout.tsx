@@ -19,7 +19,12 @@ export function AppNavigator() {
   const [reduceMotionEnabled, setReduceMotionEnabled] = useState(true);
   const firstSegment = segments[0];
   const hasUsableSession = sessionStatus === 'signed-in' || (sessionStatus === 'offline' && Boolean(userId));
-  const showProductNavigation = hasUsableSession && onboardingCompleted;
+  const isProductChromeRoute =
+    firstSegment !== undefined &&
+    firstSegment !== 'auth' &&
+    firstSegment !== 'update-password' &&
+    firstSegment !== 'onboarding';
+  const showProductNavigation = hasUsableSession && onboardingCompleted && isProductChromeRoute;
   const wideNavigation = showProductNavigation && width >= Layout.wideBreakpoint;
 
   useEffect(() => {
