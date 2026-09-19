@@ -1,7 +1,7 @@
 import { simulateScenario, type Confidence, type ScenarioDefinition, type ScenarioProjection } from '@mizan/core';
 import { router } from 'expo-router';
 import { useEffect, useMemo, useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet, useColorScheme, View } from 'react-native';
 
 import { loadCurrentHumanState } from '@/application/daily-intelligence';
 import {
@@ -10,7 +10,7 @@ import {
 } from '@/application/scenario-learning';
 import { Card, ChoiceChip, MizanText, SecondaryButton } from '@/components/mizan-ui';
 import { Screen } from '@/components/screen';
-import { Spacing } from '@/constants/theme';
+import { Controls, Palette, Radius, Spacing } from '@/constants/theme';
 import { formatLocalizedNumber } from '@/i18n/number-input';
 import { useAppState } from '@/state/app-state';
 
@@ -32,20 +32,24 @@ const copy = {
     loading: 'جارٍ قراءة حالتك الحالية…',
     error: 'تعذر تحميل الحالة الحالية الآن. لم يتم إنشاء توقع بديل.',
     choose: 'اختر سيناريو قابلًا للعكس',
+    chooseHint: 'غيّر السيناريو في أي وقت. كل نتيجة أدناه تبقى فرضية قابلة للمراجعة وليست وعدًا.',
     uncertainty: 'عدم اليقين',
     uncertaintyLevels: {
       high: 'مرتفع',
       moderate: 'متوسط',
       lower: 'أقل',
     },
-    assumptions: 'الافتراضات',
+    assumptions: 'ما الذي تفترضه المحاكاة؟',
     effects: 'النطاقات المحتملة',
     current: 'الحالي',
     projected: 'النطاق المحتمل',
     unknown: 'غير معروف — يحتاج بيانات فعلية',
+    source: 'مصدر التقدير',
     sourcePrior: 'تقدير محافظ عام',
     sourcePersonal: 'تقدير شخصي من أدلتك',
     evidence: 'عدد الأدلة',
+    componentOther: 'مؤشر آخر',
+    caveatTitle: 'حدود هذه المحاكاة',
     caveat: 'النطاقات لا تثبت أن التغيير سيسبب النتيجة. يتعلم ميزان تقديرًا شخصيًا فقط عند وجود تقييم أثر صريح ثم ملاحظة لاحقة متوافقة؛ مجرد إكمال الخطوة لا يُعد فائدة.',
     back: 'العودة للإعدادات',
     scenarios: {
@@ -76,20 +80,24 @@ const copy = {
     loading: 'Reading your current state…',
     error: 'Your current state could not be loaded. MIZAN did not invent a substitute projection.',
     choose: 'Choose a reversible scenario',
+    chooseHint: 'Switch scenarios at any time. Every result below remains a revisable hypothesis, not a promise.',
     uncertainty: 'Uncertainty',
     uncertaintyLevels: {
       high: 'High',
       moderate: 'Moderate',
       lower: 'Lower',
     },
-    assumptions: 'Assumptions',
+    assumptions: 'What does the simulation assume?',
     effects: 'Plausible ranges',
     current: 'Current',
     projected: 'Plausible range',
     unknown: 'Unknown — needs real evidence',
+    source: 'Estimate source',
     sourcePrior: 'Conservative general estimate',
     sourcePersonal: 'Personal estimate from your evidence',
     evidence: 'Evidence count',
+    componentOther: 'Another signal',
+    caveatTitle: 'Limits of this simulation',
     caveat: 'These ranges do not prove causation. MIZAN only learns a personal estimate when explicit outcome feedback is followed by a compatible later observation; completion alone is not benefit evidence.',
     back: 'Back to settings',
     scenarios: {
@@ -159,6 +167,8 @@ export default function WhatIfScreen() {
   const [projection, setProjection] = useState<ScenarioProjection | null>(null);
   const labels = copy[locale];
   const definitions = useMemo(() => scenarioDefinitions(locale), [locale]);
+  const scheme = useColorScheme();
+  const palette = Palette[scheme === 'dark' ? 'dark' : 'light'];
 
   useEffect(() => {
     let active = true;
@@ -212,14 +222,24 @@ export default function WhatIfScreen() {
 
   return (
     <Screen>
-      <View style={styles.hero}>
-        <MizanText variant="label" muted>{labels.eyebrow}</MizanText>
-        <MizanText variant="display">{labels.title}</MizanText>
-        <MizanText muted>{labels.body}</MizanText>
+      <View style={[styles.topRow, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
+        <View style={styles.heading}>
+          <MizanText variant="label" muted>{labels.eyebrow}</MizanText>
+          <MizanText variant="display">{labels.title}</MizanText>
+        </View>
+        <SecondaryButton compact label={labels.back} onPress={() => router.replace('/settings')} />
       </View>
 
-      <View style={styles.section}>
-        <MizanText variant="title">{labels.choose}</MizanText>
+      <Card style={[styles.heroCard, { backgroundColor: palette.accentSoft, borderColor: palette.accent }]}>
+        <MizanText variant="title">{labels.eyebrow}</MizanText>
+        <MizanText muted>{labels.body}</MizanText>
+      </Card>
+
+      <Card style={styles.scenarioCard}>
+        <View style={styles.sectionHeading}>
+          <MizanText variant="title">{labels.choose}</MizanText>
+          <MizanText variant="caption" muted>{labels.chooseHint}</MizanText>
+        </View>
         <View style={[styles.choices, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
           {(Object.keys(definitions) as ScenarioId[]).map((id) => (
             <ChoiceChip
@@ -231,66 +251,153 @@ export default function WhatIfScreen() {
             />
           ))}
         </View>
-      </View>
+      </Card>
 
       {status === 'loading' ? (
-        <MizanText accessibilityLiveRegion="polite" muted>{labels.loading}</MizanText>
+        <Card style={{ backgroundColor: palette.surfaceMuted }}>
+          <MizanText accessibilityLiveRegion="polite" muted>{labels.loading}</MizanText>
+        </Card>
       ) : null}
       {status === 'error' ? (
-        <Card>
+        <Card style={{ backgroundColor: palette.surfaceMuted }}>
           <MizanText accessibilityLiveRegion="polite" muted>{labels.error}</MizanText>
         </Card>
       ) : null}
 
       {status === 'ready' && projection ? (
         <>
-          <Card>
-            <MizanText variant="title">{labels.scenarios[selected].label}</MizanText>
-            <MizanText variant="label">
-              {labels.uncertainty}: {labels.uncertaintyLevels[projection.uncertainty]}
-            </MizanText>
-            <MizanText variant="caption" muted>{labels.assumptions}</MizanText>
-            {projection.assumptions.map((assumption) => (
-              <MizanText key={assumption} muted>• {assumption}</MizanText>
-            ))}
+          <Card style={styles.projectionCard}>
+            <View style={[styles.projectionHeader, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
+              <View style={styles.flexibleText}>
+                <MizanText variant="label" muted>{labels.eyebrow}</MizanText>
+                <MizanText variant="title">{labels.scenarios[selected].label}</MizanText>
+              </View>
+              <View style={[styles.uncertaintyPill, { backgroundColor: palette.accentSoft }]}>
+                <MizanText variant="caption">
+                  {labels.uncertainty}: {labels.uncertaintyLevels[projection.uncertainty]}
+                </MizanText>
+              </View>
+            </View>
+
+            <View style={[styles.assumptions, { borderTopColor: palette.border }]}>
+              <MizanText variant="label">{labels.assumptions}</MizanText>
+              {projection.assumptions.map((assumption) => (
+                <MizanText key={assumption} muted>• {assumption}</MizanText>
+              ))}
+            </View>
           </Card>
 
           <View style={styles.section}>
             <MizanText variant="title">{labels.effects}</MizanText>
-            {projection.effects.map((effect) => {
-              const componentLabel = (labels.components as Record<string, string>)[effect.componentKey] ?? effect.componentKey;
-              const sourceLabel = effect.source === 'personal' ? labels.sourcePersonal : labels.sourcePrior;
-              return (
-                <Card key={effect.componentKey}>
-                  <MizanText variant="title">{componentLabel}</MizanText>
-                  <MizanText muted>
-                    {labels.current}: {effect.currentValue === null
-                      ? labels.unknown
-                      : formatLocalizedNumber(Math.round(effect.currentValue), locale, 0)}
-                  </MizanText>
-                  <MizanText muted>
-                    {labels.projected}: {effect.projectedMin === null || effect.projectedMax === null
-                      ? labels.unknown
-                      : formatRange(effect.projectedMin, effect.projectedMax, locale)}
-                  </MizanText>
-                  <MizanText variant="caption" muted>
-                    {sourceLabel} · {labels.evidence}: {formatLocalizedNumber(effect.evidenceCount, locale, 0)}
-                  </MizanText>
-                </Card>
-              );
-            })}
+            <View style={styles.effectsGrid}>
+              {projection.effects.map((effect) => {
+                const componentLabel = (labels.components as Record<string, string>)[effect.componentKey] ?? labels.componentOther;
+                const sourceLabel = effect.source === 'personal' ? labels.sourcePersonal : labels.sourcePrior;
+                return (
+                  <Card key={effect.componentKey} style={styles.effectCard}>
+                    <View style={[styles.effectHeader, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
+                      <MizanText variant="title" style={styles.flexibleText}>{componentLabel}</MizanText>
+                      <View style={[styles.sourcePill, { backgroundColor: palette.surfaceMuted }]}>
+                        <MizanText variant="caption">{sourceLabel}</MizanText>
+                      </View>
+                    </View>
+
+                    <View style={[styles.valueGroup, { borderTopColor: palette.border }]}>
+                      <View style={styles.valueBlock}>
+                        <MizanText variant="caption" muted>{labels.current}</MizanText>
+                        <MizanText variant="title">
+                          {effect.currentValue === null
+                            ? labels.unknown
+                            : formatLocalizedNumber(Math.round(effect.currentValue), locale, 0)}
+                        </MizanText>
+                      </View>
+                      <View style={styles.valueBlock}>
+                        <MizanText variant="caption" muted>{labels.projected}</MizanText>
+                        <MizanText variant="title">
+                          {effect.projectedMin === null || effect.projectedMax === null
+                            ? labels.unknown
+                            : formatRange(effect.projectedMin, effect.projectedMax, locale)}
+                        </MizanText>
+                      </View>
+                    </View>
+
+                    <MizanText variant="caption" muted>
+                      {labels.source}: {sourceLabel} · {labels.evidence}: {formatLocalizedNumber(effect.evidenceCount, locale, 0)}
+                    </MizanText>
+                  </Card>
+                );
+              })}
+            </View>
           </View>
         </>
       ) : null}
 
-      <MizanText variant="caption" muted>{labels.caveat}</MizanText>
-      <SecondaryButton compact label={labels.back} onPress={() => router.replace('/settings')} />
+      <Card style={[styles.caveatCard, { backgroundColor: palette.surfaceMuted }]}>
+        <MizanText variant="label">{labels.caveatTitle}</MizanText>
+        <MizanText variant="caption" muted>{labels.caveat}</MizanText>
+      </Card>
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  hero: { gap: Spacing.md },
-  section: { gap: Spacing.md },
+  topRow: {
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+    gap: Spacing.lg,
+    flexWrap: 'wrap',
+  },
+  heading: { flex: 1, minWidth: 0, gap: Spacing.xs },
+  heroCard: { gap: Spacing.md },
+  scenarioCard: { gap: Spacing.lg },
+  sectionHeading: { gap: Spacing.xs },
+  section: { gap: Spacing.lg },
   choices: { flexWrap: 'wrap', gap: Spacing.sm },
+  projectionCard: { gap: Spacing.lg },
+  projectionHeader: {
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+    gap: Spacing.md,
+    flexWrap: 'wrap',
+  },
+  flexibleText: { flex: 1, minWidth: 0 },
+  uncertaintyPill: {
+    borderRadius: Radius.pill,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm,
+  },
+  assumptions: {
+    borderTopWidth: Controls.borderWidth,
+    paddingTop: Spacing.lg,
+    gap: Spacing.sm,
+  },
+  effectsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: Spacing.lg,
+  },
+  effectCard: {
+    flexGrow: 1,
+    flexBasis: 300,
+    minWidth: 0,
+  },
+  effectHeader: {
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+    gap: Spacing.md,
+    flexWrap: 'wrap',
+  },
+  sourcePill: {
+    borderRadius: Radius.pill,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.xs,
+    maxWidth: '100%',
+  },
+  valueGroup: {
+    borderTopWidth: Controls.borderWidth,
+    paddingTop: Spacing.lg,
+    gap: Spacing.lg,
+  },
+  valueBlock: { gap: Spacing.xs },
+  caveatCard: { gap: Spacing.sm },
 });
