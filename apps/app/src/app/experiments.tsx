@@ -199,7 +199,7 @@ export default function ExperimentsScreen() {
   );
 
   const start = async () => {
-    if (!userId || busy || activeExperiment || !consented || hypothesis.trim().length < 8) return;
+    if (!userId || loading || busy || activeExperiment || !consented || hypothesis.trim().length < 8) return;
     setBusy(true);
     setMessage(null);
     const result = await startExperiment({ userId, templateId: selected, hypothesis, consented });
@@ -284,6 +284,7 @@ export default function ExperimentsScreen() {
                     label={label}
                     selected={selectedRating === value}
                     onPress={() => setRatingById((current) => ({ ...current, [experiment.id]: value }))}
+                    disabled={busy}
                   />
                 );
               })}
@@ -336,12 +337,14 @@ export default function ExperimentsScreen() {
                   setHypothesis(labels.templates[id].hypothesis);
                   setConsented(false);
                 }}
+                disabled={loading || busy}
               />
             ))}
           </View>
           <MizanText variant="label">{labels.hypothesis}</MizanText>
           <MizanTextInput
             accessibilityLabel={labels.hypothesis}
+            editable={!loading && !busy}
             multiline
             maxLength={500}
             value={hypothesis}
@@ -351,11 +354,16 @@ export default function ExperimentsScreen() {
           <MizanText muted>
             {labels.duration}: {experimentTemplates[selected].durationDays} {labels.days} · {labels.metric}: {labels.metrics[experimentTemplates[selected].metric]}
           </MizanText>
-          <ChoiceChip label={labels.consent} selected={consented} onPress={() => setConsented((value) => !value)} />
+          <ChoiceChip
+            label={labels.consent}
+            selected={consented}
+            onPress={() => setConsented((value) => !value)}
+            disabled={loading || busy}
+          />
           <PrimaryButton
             label={busy ? labels.starting : labels.start}
             onPress={() => void start()}
-            disabled={busy || !consented || hypothesis.trim().length < 8 || !userId}
+            disabled={loading || busy || !consented || hypothesis.trim().length < 8 || !userId}
           />
         </Card>
       ) : null}
