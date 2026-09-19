@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test, type Locator } from '@playwright/test';
 
 import {
   collectPageErrors,
@@ -9,6 +9,11 @@ import {
 } from './live-account';
 
 const liveReason = 'Requires MIZAN_E2E_SUPABASE_URL, MIZAN_E2E_SUPABASE_PUBLISHABLE_KEY, and a dedicated incomplete-onboarding account.';
+
+async function ensureSelected(control: Locator) {
+  if ((await control.getAttribute('aria-selected')) !== 'true') await control.click();
+  await expect(control).toHaveAttribute('aria-selected', 'true');
+}
 
 test.describe('live onboarding journey', () => {
   test.skip(!onboardingAccountConfigured, liveReason);
@@ -29,15 +34,18 @@ test.describe('live onboarding journey', () => {
     await signInOnboardingAccount(page);
 
     const english = page.getByRole('button', { name: 'English', exact: true });
-    if (await english.isVisible()) await english.click();
+    await ensureSelected(english);
 
     const recoveryChoices = page.getByRole('button', { name: 'Recovery & energy', exact: true });
+    const recoveryDomainToggle = recoveryChoices.first();
+    await ensureSelected(recoveryDomainToggle);
     await expect(recoveryChoices).toHaveCount(2);
-    await recoveryChoices.last().click();
-    await page.getByRole('button', { name: 'Balanced season', exact: true }).click();
-    await page.getByRole('button', { name: 'Stability', exact: true }).click();
-    await page.getByRole('button', { name: 'Minimal — only what I explicitly choose', exact: true }).click();
-    await page.getByRole('button', { name: 'Not now', exact: true }).click();
+    await ensureSelected(recoveryChoices.last());
+
+    await ensureSelected(page.getByRole('button', { name: 'Balanced season', exact: true }));
+    await ensureSelected(page.getByRole('button', { name: 'Stability', exact: true }));
+    await ensureSelected(page.getByRole('button', { name: 'Minimal — only what I explicitly choose', exact: true }));
+    await ensureSelected(page.getByRole('button', { name: 'Not now', exact: true }));
 
     const finish = page.getByRole('button', { name: 'Continue', exact: true });
     await expect(finish).toBeEnabled();
