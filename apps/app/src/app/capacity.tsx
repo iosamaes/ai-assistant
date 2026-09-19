@@ -92,6 +92,10 @@ function confidenceLabel(level: string, locale: 'ar' | 'en'): string {
   return labels[level as keyof typeof labels] ?? labels.insufficient;
 }
 
+function clampPercent(value: number): number {
+  return Math.max(0, Math.min(100, Math.round(value)));
+}
+
 export default function CapacityScreen() {
   const { isRtl, locale, refreshSession, t, userId } = useAppState();
   const labels = copy[locale];
@@ -142,6 +146,8 @@ export default function CapacityScreen() {
     ? formatLocalizedNumber(snapshot.buffer.confidence.evidenceCount, locale, 0)
     : '—';
   const bufferScore = snapshot?.buffer.score;
+  const bufferPercent = bufferScore === null || bufferScore === undefined ? null : clampPercent(bufferScore);
+  const bufferPercentText = bufferPercent === null ? null : `${formatLocalizedNumber(bufferPercent, locale, 0)}%`;
 
   return (
     <Screen>
@@ -158,16 +164,35 @@ export default function CapacityScreen() {
           <MizanText variant="title">{labels.bufferTitle}</MizanText>
           <MizanText muted>{labels.body}</MizanText>
         </View>
-        {status === 'ready' && bufferScore !== null && bufferScore !== undefined ? (
-          <View style={[styles.heroReading, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
-            <View style={styles.heroValueGroup}>
-              <MizanText variant="caption" muted>{labels.buffer}</MizanText>
-              <MizanText variant="display">{formatLocalizedNumber(Math.round(bufferScore), locale, 0)} / {hundred}</MizanText>
+        {status === 'ready' && bufferScore !== null && bufferScore !== undefined && bufferPercent !== null && bufferPercentText ? (
+          <>
+            <View style={[styles.heroReading, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
+              <View style={styles.heroValueGroup}>
+                <MizanText variant="caption" muted>{labels.buffer}</MizanText>
+                <MizanText variant="display">{formatLocalizedNumber(Math.round(bufferScore), locale, 0)} / {hundred}</MizanText>
+              </View>
+              <View style={[styles.bandPill, { backgroundColor: palette.surface }]}>
+                <MizanText variant="label">{bufferBandLabel}</MizanText>
+              </View>
             </View>
-            <View style={[styles.bandPill, { backgroundColor: palette.surface }]}>
-              <MizanText variant="label">{bufferBandLabel}</MizanText>
+            <View
+              accessibilityRole="progressbar"
+              accessibilityLabel={labels.buffer}
+              accessibilityValue={{ min: 0, max: 100, now: bufferPercent, text: bufferPercentText }}
+              style={[styles.meterTrack, { backgroundColor: palette.surface }]}
+            >
+              <View
+                style={[
+                  styles.meterFill,
+                  {
+                    alignSelf: isRtl ? 'flex-end' : 'flex-start',
+                    backgroundColor: palette.accent,
+                    width: `${bufferPercent}%`,
+                  },
+                ]}
+              />
             </View>
-          </View>
+          </>
         ) : null}
       </Card>
 
@@ -239,6 +264,8 @@ export default function CapacityScreen() {
                     : debt.urgency === 'high'
                       ? labels.highUrgency
                       : labels.unknown;
+              const debtPercent = debt.amount === null ? null : clampPercent(debt.amount);
+              const debtPercentText = debtPercent === null ? null : `${formatLocalizedNumber(debtPercent, locale, 0)}%`;
               return (
                 <Card key={debt.dimensionId} style={styles.debtCard}>
                   <View style={[styles.debtHeader, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
@@ -247,19 +274,38 @@ export default function CapacityScreen() {
                       <MizanText variant="caption">{labels.urgency}: {urgency}</MizanText>
                     </View>
                   </View>
-                  {debt.amount === null ? (
+                  {debt.amount === null || debtPercent === null || !debtPercentText ? (
                     <View style={[styles.unknownPanel, { backgroundColor: palette.surfaceMuted }]}>
                       <MizanText muted>{labels.debtUnknown}</MizanText>
                     </View>
                   ) : (
-                    <View style={[styles.metrics, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
-                      <View style={[styles.metricTile, { backgroundColor: palette.surfaceMuted }]}>
-                        <MizanText variant="caption" muted>{labels.amount}</MizanText>
-                        <MizanText variant="title">{formatLocalizedNumber(Math.round(debt.amount), locale, 0)} / {hundred}</MizanText>
+                    <View style={styles.debtReading}>
+                      <View style={[styles.metrics, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
+                        <View style={[styles.metricTile, { backgroundColor: palette.surfaceMuted }]}>
+                          <MizanText variant="caption" muted>{labels.amount}</MizanText>
+                          <MizanText variant="title">{formatLocalizedNumber(Math.round(debt.amount), locale, 0)} / {hundred}</MizanText>
+                        </View>
+                        <View style={[styles.metricTile, { backgroundColor: palette.surfaceMuted }]}>
+                          <MizanText variant="caption" muted>{labels.direction}</MizanText>
+                          <MizanText variant="label">{direction}</MizanText>
+                        </View>
                       </View>
-                      <View style={[styles.metricTile, { backgroundColor: palette.surfaceMuted }]}>
-                        <MizanText variant="caption" muted>{labels.direction}</MizanText>
-                        <MizanText variant="label">{direction}</MizanText>
+                      <View
+                        accessibilityRole="progressbar"
+                        accessibilityLabel={`${t(debt.dimensionId as DomainId)} — ${labels.amount}`}
+                        accessibilityValue={{ min: 0, max: 100, now: debtPercent, text: debtPercentText }}
+                        style={[styles.meterTrack, { backgroundColor: palette.surfaceMuted }]}
+                      >
+                        <View
+                          style={[
+                            styles.meterFill,
+                            {
+                              alignSelf: isRtl ? 'flex-end' : 'flex-start',
+                              backgroundColor: palette.accent,
+                              width: `${debtPercent}%`,
+                            },
+                          ]}
+                        />
                       </View>
                     </View>
                   )}
@@ -296,6 +342,8 @@ const styles = StyleSheet.create({
   heroReading: { alignItems: 'flex-end', justifyContent: 'space-between', gap: Spacing.lg, flexWrap: 'wrap' },
   heroValueGroup: { gap: Spacing.xs, flexGrow: 1, minWidth: 0 },
   bandPill: { minHeight: Controls.minimumTouchHeight, justifyContent: 'center', paddingHorizontal: Spacing.lg, borderRadius: Radius.pill },
+  meterTrack: { height: 10, borderRadius: Radius.pill, overflow: 'hidden' },
+  meterFill: { height: '100%', borderRadius: Radius.pill },
   bufferCard: { gap: Spacing.xl },
   section: { gap: Spacing.lg },
   sectionHeader: { gap: Spacing.sm },
@@ -305,6 +353,7 @@ const styles = StyleSheet.create({
   debtGrid: { flexWrap: 'wrap', alignItems: 'stretch', gap: Spacing.lg },
   debtCard: { flexGrow: 1, flexShrink: 1, flexBasis: 360 },
   debtHeader: { alignItems: 'flex-start', justifyContent: 'space-between', gap: Spacing.md, flexWrap: 'wrap' },
+  debtReading: { gap: Spacing.md },
   flexibleText: { flexShrink: 1 },
   urgencyPill: { minHeight: Controls.minimumTouchHeight, justifyContent: 'center', paddingHorizontal: Spacing.md, borderRadius: Radius.pill, maxWidth: '100%' },
   evidenceRow: { gap: Spacing.xs, borderTopWidth: Controls.borderWidth, paddingTop: Spacing.md },
