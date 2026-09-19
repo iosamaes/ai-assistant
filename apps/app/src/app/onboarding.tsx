@@ -1,5 +1,5 @@
 import { router } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { StyleSheet, useColorScheme, View } from 'react-native';
 
 import { useSpiritualGroundingPreference } from '@/application/spiritual-grounding';
@@ -164,6 +164,7 @@ export default function OnboardingScreen() {
   const [baselineTargets, setBaselineTargets] = useState<DomainBaselineTargets>({});
   const [baselineStatus, setBaselineStatus] = useState<BaselineStatus>('idle');
   const [saving, setSaving] = useState(false);
+  const activeUserRef = useRef(userId);
   const syncMessage = syncStatus === 'offline' ? t('syncOffline') : syncStatus === 'error' ? t('syncError') : null;
   const labels = copy[locale];
   const baselineChoicesLocked = saving || baselineStatus === 'loading';
@@ -178,10 +179,12 @@ export default function OnboardingScreen() {
     spiritualGroundingEnabled !== null;
 
   useEffect(() => {
+    activeUserRef.current = userId;
     let active = true;
     void (async () => {
       await Promise.resolve();
       if (!active) return;
+      setSaving(false);
       if (!userId) {
         setBaselineTargets({});
         setBaselineStatus('idle');
@@ -224,9 +227,11 @@ export default function OnboardingScreen() {
       spiritualGroundingEnabled === null ||
       !userId
     ) return;
+    const targetUserId = userId;
     setSaving(true);
     setBaselineStatus('loading');
-    const baselineSaved = await saveDomainBaselineTargets(userId, enabledDomains, baselineTargets);
+    const baselineSaved = await saveDomainBaselineTargets(targetUserId, enabledDomains, baselineTargets);
+    if (activeUserRef.current !== targetUserId) return;
     if (!baselineSaved.ok) {
       setBaselineStatus('error');
       setSaving(false);
@@ -235,11 +240,13 @@ export default function OnboardingScreen() {
     setBaselineStatus('idle');
 
     const spiritualSaved = await persistSpiritualGroundingChoice(spiritualGroundingEnabled);
+    if (activeUserRef.current !== targetUserId) return;
     if (!spiritualSaved) {
       setSaving(false);
       return;
     }
     await completeOnboarding();
+    if (activeUserRef.current !== targetUserId) return;
     setSaving(false);
     router.replace('/today');
   };
