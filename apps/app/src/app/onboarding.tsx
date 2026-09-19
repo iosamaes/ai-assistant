@@ -130,6 +130,8 @@ export default function OnboardingScreen() {
   const [saving, setSaving] = useState(false);
   const syncMessage = syncStatus === 'offline' ? t('syncOffline') : syncStatus === 'error' ? t('syncError') : null;
   const labels = copy[locale];
+  const baselineChoicesLocked = saving || baselineStatus === 'loading';
+  const spiritualChoicesLocked = saving || spiritualStatus === 'loading';
   const canFinish =
     focusDomain !== null &&
     lifeSeason !== null &&
@@ -165,6 +167,7 @@ export default function OnboardingScreen() {
   }, [userId]);
 
   const setBaselineTarget = (domainId: DomainId, rating: BaselineTargetRating | null) => {
+    if (baselineChoicesLocked) return;
     setBaselineTargets((current) => {
       const next = { ...current };
       if (rating === null) delete next[domainId];
@@ -175,7 +178,14 @@ export default function OnboardingScreen() {
   };
 
   const finish = async () => {
-    if (saving || !canFinish || spiritualGroundingEnabled === null || !userId) return;
+    if (
+      saving ||
+      baselineStatus === 'loading' ||
+      spiritualStatus === 'loading' ||
+      !canFinish ||
+      spiritualGroundingEnabled === null ||
+      !userId
+    ) return;
     setSaving(true);
     setBaselineStatus('loading');
     const baselineSaved = await saveDomainBaselineTargets(userId, enabledDomains, baselineTargets);
@@ -207,8 +217,8 @@ export default function OnboardingScreen() {
       <View style={styles.section}>
         <MizanText variant="title">{t('language')}</MizanText>
         <View style={[styles.wrap, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
-          <ChoiceChip label={t('arabic')} selected={locale === 'ar'} onPress={() => setLocale('ar')} />
-          <ChoiceChip label={t('english')} selected={locale === 'en'} onPress={() => setLocale('en')} />
+          <ChoiceChip label={t('arabic')} selected={locale === 'ar'} onPress={() => setLocale('ar')} disabled={saving} />
+          <ChoiceChip label={t('english')} selected={locale === 'en'} onPress={() => setLocale('en')} disabled={saving} />
         </View>
       </View>
 
@@ -221,6 +231,7 @@ export default function OnboardingScreen() {
               label={t(domainId)}
               selected={enabledDomains.includes(domainId)}
               onPress={() => toggleDomain(domainId)}
+              disabled={saving}
             />
           ))}
         </View>
@@ -235,6 +246,7 @@ export default function OnboardingScreen() {
               label={t(domainId)}
               selected={focusDomain === domainId}
               onPress={() => setFocusDomain(domainId)}
+              disabled={saving}
             />
           ))}
         </View>
@@ -249,6 +261,7 @@ export default function OnboardingScreen() {
               label={labels.seasons[season]}
               selected={lifeSeason === season}
               onPress={() => setLifeSeason(season)}
+              disabled={saving}
             />
           ))}
         </View>
@@ -266,6 +279,7 @@ export default function OnboardingScreen() {
                   label={labels.baselineUnset}
                   selected={baselineTargets[domainId] === undefined}
                   onPress={() => setBaselineTarget(domainId, null)}
+                  disabled={baselineChoicesLocked}
                 />
                 {baselineLevels.map((level) => (
                   <ChoiceChip
@@ -273,6 +287,7 @@ export default function OnboardingScreen() {
                     label={String(level)}
                     selected={baselineTargets[domainId] === level}
                     onPress={() => setBaselineTarget(domainId, level)}
+                    disabled={baselineChoicesLocked}
                   />
                 ))}
               </View>
@@ -290,6 +305,7 @@ export default function OnboardingScreen() {
               label={labels.values[value]}
               selected={personalValues.includes(value)}
               onPress={() => togglePersonalValue(value)}
+              disabled={saving}
             />
           ))}
         </View>
@@ -304,6 +320,7 @@ export default function OnboardingScreen() {
               label={labels.privacy[mode]}
               selected={privacyMode === mode}
               onPress={() => setPrivacyMode(mode)}
+              disabled={saving}
             />
           ))}
         </View>
@@ -317,11 +334,13 @@ export default function OnboardingScreen() {
             label={labels.spiritualEnable}
             selected={spiritualGroundingEnabled === true}
             onPress={() => setSpiritualGroundingChoice(true)}
+            disabled={spiritualChoicesLocked}
           />
           <ChoiceChip
             label={labels.spiritualDisable}
             selected={spiritualGroundingEnabled === false}
             onPress={() => setSpiritualGroundingChoice(false)}
+            disabled={spiritualChoicesLocked}
           />
         </View>
       </View>
