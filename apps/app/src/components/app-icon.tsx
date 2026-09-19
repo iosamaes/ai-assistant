@@ -1,0 +1,34 @@
+import { SymbolView } from 'expo-symbols';
+
+export type AppIconName =
+  | 'home'
+  | 'lifeMap'
+  | 'oneMove'
+  | 'insights'
+  | 'more'
+  | 'recovery'
+  | 'connection'
+  | 'work'
+  | 'margin';
+
+const symbols = {
+  home: { ios: 'house.fill', android: 'home', web: 'home' },
+  lifeMap: { ios: 'map.fill', android: 'explore', web: 'explore' },
+  oneMove: { ios: 'bolt.fill', android: 'bolt', web: 'bolt' },
+  insights: { ios: 'chart.bar.fill', android: 'insights', web: 'insights' },
+  more: { ios: 'ellipsis.circle.fill', android: 'more_horiz', web: 'more_horiz' },
+  recovery: { ios: 'bed.double.fill', android: 'bed', web: 'bed' },
+  connection: { ios: 'person.2.fill', android: 'groups', web: 'groups' },
+  work: { ios: 'briefcase.fill', android: 'work', web: 'work' },
+  margin: { ios: 'clock.fill', android: 'schedule', web: 'schedule' },
+} as const;
+
+interface AppIconProps {
+  name: AppIconName;
+  color: string;
+  size?: number;
+}
+
+export function AppIcon({ name, color, size = 22 }: AppIconProps) {
+  return <SymbolView name={symbols[name]} size={size} tintColor={color} />;
+}
