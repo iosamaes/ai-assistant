@@ -85,6 +85,7 @@ export default function PersonalizationScreen() {
         return;
       }
 
+      setState(null);
       setStatus('loading');
       const result = await loadCurrentHumanState(userId);
       if (!active) return;
@@ -118,7 +119,7 @@ export default function PersonalizationScreen() {
         </Card>
       ) : null}
 
-      {state ? (
+      {status === 'ready' && state ? (
         <>
           <Card>
             <MizanText variant="label" muted>{labels.current}</MizanText>
