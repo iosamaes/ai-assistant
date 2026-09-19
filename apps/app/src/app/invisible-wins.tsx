@@ -1,6 +1,6 @@
 import { router } from 'expo-router';
-import { useEffect, useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { useEffect, useRef, useState } from 'react';
+import { StyleSheet, useColorScheme, View } from 'react-native';
 
 import {
   loadInvisibleWins,
@@ -17,7 +17,7 @@ import {
   SecondaryButton,
 } from '@/components/mizan-ui';
 import { Screen } from '@/components/screen';
-import { Spacing } from '@/constants/theme';
+import { Palette, Radius, Spacing } from '@/constants/theme';
 import { useAppState } from '@/state/app-state';
 
 const categories: InvisibleWinCategory[] = ['rest', 'boundary', 'family', 'repair', 'disconnect', 'health', 'other'];
@@ -29,6 +29,7 @@ const copy = {
     body: 'سجّل شيئًا كان مهمًا لك حتى لو لم يكن إنجازًا إنتاجيًا. الراحة، قول لا، وقت العائلة، الاعتذار، الانفصال عن الشاشات، أو حماية صحتك كلها قد تكون مكاسب حقيقية.',
     privacy: 'هذه التأملات منفصلة عن درجات الإنتاجية ولا تمنح نقاطًا أو سلاسل استمرار.',
     prompt: 'ما الذي يستحق أن تتذكره اليوم؟',
+    promptBody: 'اختر نوع اللحظة ثم اكتب ما يكفي لتتذكر لماذا كانت مهمة. لا تحتاج إلى تحويلها إلى هدف أو إنجاز.',
     placeholder: 'مثال: أغلقت العمل مبكرًا وجلست مع عائلتي بدون هاتف.',
     save: 'حفظ التأمل',
     saving: 'جارٍ الحفظ…',
@@ -38,6 +39,7 @@ const copy = {
     loading: 'جارٍ تحميل التأملات…',
     loadError: 'تعذر تحميل تأملاتك الآن.',
     recent: 'تأملات حديثة',
+    recentBody: 'سجل شخصي هادئ لما اخترت أنت اعتباره مهمًا، بدون ترتيب أو نقاط.',
     empty: 'لا توجد تأملات بعد. لا يلزم تسجيل شيء إلا عندما يكون له معنى بالنسبة لك.',
     back: 'العودة إلى الإعدادات',
     categories: {
@@ -56,6 +58,7 @@ const copy = {
     body: 'Record something that mattered even when it was not a productivity output. Resting, saying no, family time, apologizing, disconnecting, or protecting your health can all be real wins.',
     privacy: 'These reflections stay separate from productivity scoring and never create points or streaks.',
     prompt: 'What is worth remembering today?',
+    promptBody: 'Choose the kind of moment, then write just enough to remember why it mattered. It never needs to become a goal or achievement.',
     placeholder: 'Example: I stopped work early and spent phone-free time with my family.',
     save: 'Save reflection',
     saving: 'Saving…',
@@ -65,6 +68,7 @@ const copy = {
     loading: 'Loading reflections…',
     loadError: 'MIZAN could not load your reflections right now.',
     recent: 'Recent reflections',
+    recentBody: 'A quiet personal record of what you chose to recognize, without ranking or points.',
     empty: 'No reflections yet. You never need to log something unless it feels meaningful to you.',
     back: 'Back to settings',
     categories: {
@@ -82,25 +86,37 @@ const copy = {
 export default function InvisibleWinsScreen() {
   const { isRtl, locale, userId } = useAppState();
   const labels = copy[locale];
+  const scheme = useColorScheme();
+  const palette = Palette[scheme === 'dark' ? 'dark' : 'light'];
+  const activeUserRef = useRef(userId);
+  activeUserRef.current = userId;
   const [category, setCategory] = useState<InvisibleWinCategory>('rest');
   const [note, setNote] = useState('');
   const [items, setItems] = useState<StoredInvisibleWin[]>([]);
+  const [itemsOwnerId, setItemsOwnerId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
+  const visibleItems = itemsOwnerId === userId ? items : [];
 
   useEffect(() => {
     let cancelled = false;
+    setItems([]);
+    setItemsOwnerId(null);
+    setLoadError(null);
+    setMessage(null);
+    setNote('');
+    setCategory('rest');
+    setLoading(Boolean(userId));
+
     const load = async () => {
-      if (!userId) {
-        if (!cancelled) setLoading(false);
-        return;
-      }
+      if (!userId) return;
       const result = await loadInvisibleWins(userId);
-      if (cancelled) return;
+      if (cancelled || activeUserRef.current !== userId) return;
       if (result.ok) {
         setItems(result.value);
+        setItemsOwnerId(userId);
         setLoadError(null);
       } else {
         setLoadError(labels.loadError);
@@ -115,12 +131,18 @@ export default function InvisibleWinsScreen() {
 
   const save = async () => {
     const trimmed = note.trim();
-    if (!userId || !trimmed || saving) return;
+    const savingUserId = userId;
+    if (!savingUserId || !trimmed || saving) return;
     setSaving(true);
     setMessage(null);
-    const result = await saveInvisibleWin(userId, { category, note: trimmed });
+    const result = await saveInvisibleWin(savingUserId, { category, note: trimmed });
+    if (activeUserRef.current !== savingUserId) {
+      setSaving(false);
+      return;
+    }
     if (result.ok) {
-      setItems((current) => [result.value.item, ...current]);
+      setItems((current) => [result.value.item, ...(itemsOwnerId === savingUserId ? current : [])]);
+      setItemsOwnerId(savingUserId);
       setNote('');
       setMessage(result.value.delivery === 'queued' ? labels.queued : labels.saved);
     } else {
@@ -131,15 +153,25 @@ export default function InvisibleWinsScreen() {
 
   return (
     <Screen>
-      <View style={styles.hero}>
-        <MizanText variant="label" muted>{labels.eyebrow}</MizanText>
-        <MizanText variant="display">{labels.title}</MizanText>
-        <MizanText muted>{labels.body}</MizanText>
-        <MizanText variant="caption" muted>{labels.privacy}</MizanText>
+      <View style={[styles.topRow, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
+        <View style={styles.heading}>
+          <MizanText variant="label" muted>{labels.eyebrow}</MizanText>
+          <MizanText variant="display">{labels.title}</MizanText>
+        </View>
+        <SecondaryButton compact label={labels.back} onPress={() => router.replace('/settings')} />
       </View>
 
-      <Card>
-        <MizanText variant="title">{labels.prompt}</MizanText>
+      <Card style={[styles.heroCard, { backgroundColor: palette.accentSoft, borderColor: palette.accent }]}>
+        <MizanText variant="title">{labels.title}</MizanText>
+        <MizanText>{labels.body}</MizanText>
+        <MizanText variant="caption" muted>{labels.privacy}</MizanText>
+      </Card>
+
+      <Card style={styles.composerCard}>
+        <View style={styles.sectionHeader}>
+          <MizanText variant="title">{labels.prompt}</MizanText>
+          <MizanText muted>{labels.promptBody}</MizanText>
+        </View>
         <View style={[styles.chips, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
           {categories.map((item) => (
             <ChoiceChip
@@ -166,40 +198,62 @@ export default function InvisibleWinsScreen() {
           onPress={() => void save()}
           disabled={saving || note.trim().length === 0 || !userId}
         />
-        {message ? <MizanText accessibilityLiveRegion="polite" muted>{message}</MizanText> : null}
+        {message ? (
+          <View style={[styles.messagePanel, { backgroundColor: palette.surfaceMuted }]}>
+            <MizanText accessibilityLiveRegion="polite" muted>{message}</MizanText>
+          </View>
+        ) : null}
       </Card>
 
       <View style={styles.section}>
-        <MizanText variant="title">{labels.recent}</MizanText>
-        {loading ? <MizanText accessibilityLiveRegion="polite" muted>{labels.loading}</MizanText> : null}
-        {!loading && loadError ? (
-          <MizanText accessibilityLiveRegion="polite" muted>{loadError}</MizanText>
-        ) : null}
-        {!loading && !loadError && items.length === 0 ? (
-          <MizanText accessibilityLiveRegion="polite" muted>{labels.empty}</MizanText>
-        ) : null}
-        {items.map((item) => (
-          <Card key={item.id}>
-            <MizanText variant="label">{labels.categories[item.category]}</MizanText>
-            <MizanText>{item.note}</MizanText>
-            <MizanText variant="caption" muted>
-              {new Date(item.occurred_at).toLocaleDateString(locale === 'ar' ? 'ar-QA-u-nu-latn' : 'en-QA-u-nu-latn')}
-            </MizanText>
+        <View style={styles.sectionHeader}>
+          <MizanText variant="title">{labels.recent}</MizanText>
+          <MizanText muted>{labels.recentBody}</MizanText>
+        </View>
+        {loading ? (
+          <Card style={{ backgroundColor: palette.surfaceMuted }}>
+            <MizanText accessibilityLiveRegion="polite" muted>{labels.loading}</MizanText>
           </Card>
-        ))}
+        ) : null}
+        {!loading && loadError ? (
+          <Card style={{ backgroundColor: palette.surfaceMuted }}>
+            <MizanText accessibilityLiveRegion="polite" muted>{loadError}</MizanText>
+          </Card>
+        ) : null}
+        {!loading && !loadError && visibleItems.length === 0 ? (
+          <Card style={{ backgroundColor: palette.surfaceMuted }}>
+            <MizanText accessibilityLiveRegion="polite" muted>{labels.empty}</MizanText>
+          </Card>
+        ) : null}
+        <View style={[styles.reflectionGrid, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
+          {visibleItems.map((item) => (
+            <Card key={item.id} style={styles.reflectionCard}>
+              <View style={[styles.categoryPill, { backgroundColor: palette.accentSoft, alignSelf: isRtl ? 'flex-end' : 'flex-start' }]}>
+                <MizanText variant="caption">{labels.categories[item.category]}</MizanText>
+              </View>
+              <MizanText>{item.note}</MizanText>
+              <MizanText variant="caption" muted>
+                {new Date(item.occurred_at).toLocaleDateString(locale === 'ar' ? 'ar-QA-u-nu-latn' : 'en-QA-u-nu-latn')}
+              </MizanText>
+            </Card>
+          ))}
+        </View>
       </View>
-
-      <SecondaryButton compact label={labels.back} onPress={() => router.replace('/settings')} />
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  hero: { gap: Spacing.md },
+  topRow: { alignItems: 'flex-start', justifyContent: 'space-between', gap: Spacing.lg, flexWrap: 'wrap' },
+  heading: { flex: 1, minWidth: 0, gap: Spacing.xs },
+  heroCard: { gap: Spacing.md },
+  composerCard: { gap: Spacing.xl },
   section: { gap: Spacing.lg },
+  sectionHeader: { gap: Spacing.sm },
   chips: { flexWrap: 'wrap', gap: Spacing.sm },
-  input: {
-    minHeight: 120,
-    textAlignVertical: 'top',
-  },
+  input: { minHeight: 140, textAlignVertical: 'top' },
+  messagePanel: { borderRadius: Radius.md, padding: Spacing.md },
+  reflectionGrid: { flexWrap: 'wrap', alignItems: 'stretch', gap: Spacing.lg },
+  reflectionCard: { flexGrow: 1, flexShrink: 1, flexBasis: 320 },
+  categoryPill: { maxWidth: '100%', borderRadius: Radius.pill, paddingHorizontal: Spacing.md, paddingVertical: Spacing.sm },
 });
