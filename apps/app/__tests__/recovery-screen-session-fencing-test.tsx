@@ -55,11 +55,11 @@ describe('RecoveryScreen session fencing', () => {
       return Promise.resolve({ ok: true, value: recoveryPlan('available') });
     });
 
-    const view = render(<RecoveryScreen />);
+    const view = await render(<RecoveryScreen />);
     await waitFor(() => expect(loadRecoveryPlanMock).toHaveBeenCalledWith('user-a'));
 
     useAppStateMock.mockReturnValue(appState('user-b'));
-    view.rerender(<RecoveryScreen />);
+    await view.rerender(<RecoveryScreen />);
 
     await waitFor(() => {
       expect(view.getByText('This path is available as a gentle reset.')).toBeTruthy();

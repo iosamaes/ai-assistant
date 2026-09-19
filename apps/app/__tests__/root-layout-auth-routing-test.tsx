@@ -16,7 +16,7 @@ jest.mock('expo-router', () => {
   );
 
   return {
-    router: { replace: mockReplace },
+    router: { replace: (...args: unknown[]) => mockReplace(...args) },
     Stack,
     useSegments: () => mockUseSegments(),
   };
@@ -54,11 +54,11 @@ describe('root auth routing', () => {
     mockFlushPendingUserMutations.mockClear();
   });
 
-  test('keeps the password recovery route mounted while signed out so the deep link can establish its recovery session', () => {
+  test('keeps the password recovery route mounted while signed out so the deep link can establish its recovery session', async () => {
     mockUseSegments.mockReturnValue(['update-password']);
     useAppStateMock.mockReturnValue(appState('signed-out', null));
 
-    render(<AppNavigator />);
+    await render(<AppNavigator />);
 
     expect(mockReplace).not.toHaveBeenCalled();
   });
@@ -67,7 +67,7 @@ describe('root auth routing', () => {
     mockUseSegments.mockReturnValue(['today']);
     useAppStateMock.mockReturnValue(appState('signed-out', null));
 
-    render(<AppNavigator />);
+    await render(<AppNavigator />);
 
     await waitFor(() => expect(mockReplace).toHaveBeenCalledWith('/auth'));
   });
@@ -76,7 +76,7 @@ describe('root auth routing', () => {
     mockUseSegments.mockReturnValue(['auth']);
     useAppStateMock.mockReturnValue(appState('signed-in', 'user-a', true));
 
-    render(<AppNavigator />);
+    await render(<AppNavigator />);
 
     await waitFor(() => expect(mockReplace).toHaveBeenCalledWith('/today'));
   });

@@ -133,7 +133,6 @@ export default function LifeSeasonsScreen() {
   const activeUserRef = useRef(userId);
   const loadRequestRef = useRef(0);
   const saveRequestRef = useRef(0);
-  activeUserRef.current = userId;
 
   useEffect(() => {
     let active = true;
@@ -146,8 +145,15 @@ export default function LifeSeasonsScreen() {
   }, [lifeSeason]);
 
   useEffect(() => {
+    activeUserRef.current = userId;
     saveRequestRef.current += 1;
-    setSaveStatus('idle');
+    let active = true;
+    void Promise.resolve().then(() => {
+      if (active) setSaveStatus('idle');
+    });
+    return () => {
+      active = false;
+    };
   }, [userId]);
 
   const reload = useCallback(async () => {
@@ -185,8 +191,13 @@ export default function LifeSeasonsScreen() {
   }, [refreshSession, userId]);
 
   useEffect(() => {
-    void reload();
+    let active = true;
+    void Promise.resolve().then(() => {
+      if (active) return reload();
+      return undefined;
+    });
     return () => {
+      active = false;
       loadRequestRef.current += 1;
     };
   }, [reload]);

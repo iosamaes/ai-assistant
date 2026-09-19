@@ -123,7 +123,6 @@ export default function RecoveryScreen() {
   const [stepIndex, setStepIndex] = useState(0);
   const activeUserRef = useRef(userId);
   const loadRequestRef = useRef(0);
-  activeUserRef.current = userId;
   const scheme = useColorScheme();
   const palette = Palette[scheme === 'dark' ? 'dark' : 'light'];
 
@@ -169,11 +168,17 @@ export default function RecoveryScreen() {
   }, [labels.loadError, refreshSession, userId]);
 
   useEffect(() => {
-    void load();
+    activeUserRef.current = userId;
+    let active = true;
+    void Promise.resolve().then(() => {
+      if (active) return load();
+      return undefined;
+    });
     return () => {
+      active = false;
       loadRequestRef.current += 1;
     };
-  }, [load]);
+  }, [load, userId]);
 
   const visiblePlan = planUserId === userId ? plan : null;
   const currentStep = visiblePlan?.steps[stepIndex] ?? null;

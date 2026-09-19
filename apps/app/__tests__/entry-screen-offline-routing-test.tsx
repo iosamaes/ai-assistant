@@ -3,7 +3,7 @@ import { render } from '@testing-library/react-native';
 import EntryScreen from '@/app/index';
 import { useAppState } from '@/state/app-state';
 
-const mockRedirect = jest.fn(() => null);
+const mockRedirect = jest.fn((_props: { href: string }) => null);
 
 jest.mock('expo-router', () => ({
   Redirect: (props: { href: string }) => mockRedirect(props),
@@ -34,36 +34,36 @@ describe('EntryScreen offline routing', () => {
     mockRedirect.mockClear();
   });
 
-  test('renders a designed loading state without redirecting before session restoration finishes', () => {
+  test('renders a designed loading state without redirecting before session restoration finishes', async () => {
     useAppStateMock.mockReturnValue(appState('loading', null, true));
 
-    const view = render(<EntryScreen />);
+    const view = await render(<EntryScreen />);
 
     expect(mockRedirect).not.toHaveBeenCalled();
     expect(view.getByText('Restoring context before asking you to decide')).toBeTruthy();
     expect(view.getByText('loading')).toBeTruthy();
   });
 
-  test('keeps an offline authenticated user in the product', () => {
+  test('keeps an offline authenticated user in the product', async () => {
     useAppStateMock.mockReturnValue(appState('offline', 'user-a', true));
 
-    render(<EntryScreen />);
+    await render(<EntryScreen />);
 
     expect(mockRedirect).toHaveBeenCalledWith({ href: '/today' });
   });
 
-  test('keeps an offline authenticated user in onboarding when setup is incomplete', () => {
+  test('keeps an offline authenticated user in onboarding when setup is incomplete', async () => {
     useAppStateMock.mockReturnValue(appState('offline', 'user-a', false));
 
-    render(<EntryScreen />);
+    await render(<EntryScreen />);
 
     expect(mockRedirect).toHaveBeenCalledWith({ href: '/onboarding' });
   });
 
-  test('does not treat offline state without an account as an authenticated session', () => {
+  test('does not treat offline state without an account as an authenticated session', async () => {
     useAppStateMock.mockReturnValue(appState('offline', null, true));
 
-    render(<EntryScreen />);
+    await render(<EntryScreen />);
 
     expect(mockRedirect).toHaveBeenCalledWith({ href: '/auth' });
   });

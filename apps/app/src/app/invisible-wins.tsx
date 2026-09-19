@@ -89,7 +89,6 @@ export default function InvisibleWinsScreen() {
   const scheme = useColorScheme();
   const palette = Palette[scheme === 'dark' ? 'dark' : 'light'];
   const activeUserRef = useRef(userId);
-  activeUserRef.current = userId;
   const [category, setCategory] = useState<InvisibleWinCategory>('rest');
   const [note, setNote] = useState('');
   const [items, setItems] = useState<StoredInvisibleWin[]>([]);
@@ -102,28 +101,34 @@ export default function InvisibleWinsScreen() {
 
   useEffect(() => {
     let cancelled = false;
-    setItems([]);
-    setItemsOwnerId(null);
-    setLoadError(null);
-    setMessage(null);
-    setNote('');
-    setCategory('rest');
-    setLoading(Boolean(userId));
+    const requestedUserId = userId;
+    activeUserRef.current = requestedUserId;
 
-    const load = async () => {
-      if (!userId) return;
-      const result = await loadInvisibleWins(userId);
-      if (cancelled || activeUserRef.current !== userId) return;
+    void (async () => {
+      await Promise.resolve();
+      if (cancelled) return;
+
+      setItems([]);
+      setItemsOwnerId(null);
+      setLoadError(null);
+      setMessage(null);
+      setNote('');
+      setCategory('rest');
+      setLoading(Boolean(requestedUserId));
+
+      if (!requestedUserId) return;
+      const result = await loadInvisibleWins(requestedUserId);
+      if (cancelled || activeUserRef.current !== requestedUserId) return;
       if (result.ok) {
         setItems(result.value);
-        setItemsOwnerId(userId);
+        setItemsOwnerId(requestedUserId);
         setLoadError(null);
       } else {
         setLoadError(labels.loadError);
       }
       setLoading(false);
-    };
-    void load();
+    })();
+
     return () => {
       cancelled = true;
     };

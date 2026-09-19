@@ -46,8 +46,15 @@ export default function CheckInScreen() {
 
   useEffect(() => {
     activeUserRef.current = userId;
-    setRatings({});
-    setSubmitState('idle');
+    let active = true;
+    void Promise.resolve().then(() => {
+      if (!active) return;
+      setRatings({});
+      setSubmitState('idle');
+    });
+    return () => {
+      active = false;
+    };
   }, [userId]);
 
   const setRating = (metric: DailyCheckInMetric, rating?: DailyCheckInRating) => {

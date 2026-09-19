@@ -42,21 +42,21 @@ describe('CheckInScreen session fencing', () => {
         }),
     );
 
-    const view = render(<CheckInScreen />);
+    const view = await render(<CheckInScreen />);
 
-    fireEvent.press(view.getByLabelText('checkInEnergy: 5'));
-    expect(view.getByText('1 / 4')).toBeTruthy();
+    await fireEvent.press(view.getByLabelText('checkInEnergy: 5'));
+    await waitFor(() => expect(view.getByText('1 / 4')).toBeTruthy());
 
-    fireEvent.press(view.getByText('checkInSave'));
+    await fireEvent.press(view.getByRole('button', { name: 'checkInSave' }));
     await waitFor(() => expect(submitDailyCheckInMock).toHaveBeenCalledWith('user-a', { energy: 5 }));
 
     useAppStateMock.mockReturnValue(appState('user-b'));
-    view.rerender(<CheckInScreen />);
+    await view.rerender(<CheckInScreen />);
 
     await waitFor(() => expect(view.getByText('0 / 4')).toBeTruthy());
 
     await act(async () => {
-      resolveUserA?.({ ok: true, value: { delivery: 'synced' } });
+      resolveUserA?.({ ok: true, value: { delivery: 'saved', ids: ['obs-1'], mutationId: 'mutation-1' } });
     });
 
     expect(replaceMock).not.toHaveBeenCalled();
