@@ -14,7 +14,7 @@ function AppNavigator() {
   const palette = Palette[scheme === 'dark' ? 'dark' : 'light'];
   const segments = useSegments();
   const { onboardingCompleted, sessionStatus, userId } = useAppState();
-  const [reduceMotionEnabled, setReduceMotionEnabled] = useState(false);
+  const [reduceMotionEnabled, setReduceMotionEnabled] = useState(true);
 
   useEffect(() => {
     let active = true;
