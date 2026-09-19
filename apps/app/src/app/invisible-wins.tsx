@@ -183,7 +183,7 @@ export default function InvisibleWinsScreen() {
             <MizanText variant="label">{labels.categories[item.category]}</MizanText>
             <MizanText>{item.note}</MizanText>
             <MizanText variant="caption" muted>
-              {new Date(item.occurred_at).toLocaleDateString(locale === 'ar' ? 'ar-QA' : 'en-QA')}
+              {new Date(item.occurred_at).toLocaleDateString(locale === 'ar' ? 'ar-QA-u-nu-latn' : 'en-QA-u-nu-latn')}
             </MizanText>
           </Card>
         ))}
