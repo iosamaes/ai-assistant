@@ -34,6 +34,7 @@ The earlier Premium Production Visual Pass remains useful foundation, but the ow
 
 ### Owner-reference implementation now landed
 - `a04dc88e452381051f2377de1bb994e4f55a4954` — adaptive product navigation shell with **Home / Life Map / One Move / Insights / More**, mobile bottom tabs, tablet/wide rail/sidebar behavior, RTL mirroring, accessible selected tab semantics, shared `AppIcon`, and direct `/one-move` routing.
+- `da2de9f60e5e632df84271e1fe1e6ee75821e38c` + `3b3126110a5b733b96dff14fb2c4648c9ac2c53c` — the direct **One Move** destination now matches the owner-reference language with a responsive illustrated focus hero, semantic reason icon, evidence/confidence tiles, designed loading/error/empty/status states, alternative-action surface, preserved accept/defer/decline semantics, and localized confidence labeling.
 - `81f334b0e548c8ee8a9b794056344409e515c7fb` — Life Map application data exposes direction-normalized positive visual signals while preserving raw values and explicit unknowns.
 - `1195dee72b0ff63815e32eb4e8d462da2c93490a` + `c45c8ca496d358bcc9343cf67f10a6c3c01f662f` — shared icon vocabulary and mandatory responsive Life Map radar/spider composition backed by current enabled-domain data, with unknown preservation, accessible descriptions, exact-value detail, and narrow/wide responsive composition.
 - `fbf457d90e4b8b2f9c2fd781586b01f58a0f1a0c` — Life Map visualization-data regression specification for lower-is-better normalization, unknown preservation, and future-observation exclusion; intentionally not worker-run under policy.
@@ -51,19 +52,21 @@ The earlier Premium Production Visual Pass remains useful foundation, but the ow
 - `3574f554aa4392d8573332a6f91991a797c8faf1` — **Capacity / Life Buffer & Life Debt** now visualizes known 0–100 buffer and debt amounts with accessible meters; unknown values still render no invented bar.
 - `4fa3d9beb543fcb3b467232040fa7dd45d450fcf` — **Cost of Yes** now visualizes known margin usage with an accessible meter while preserving the real percentage (including >100% displacement) in text and keeping missing-margin cases unknown.
 - `4d792b40df1867f83268f95c73354ad4178ca9f2` — **Human ROI** now displays benefit and effort as two separate accessible 1–5 meters rather than inventing a single ROI score, preserving the protected-meaning mode and the product rule against false scalar precision.
+- `b5938695a7fac3dd49358900b4da59b60078b67b` + `168628b850aafe2b5db6c2952fd09587a95dafc8` + `144473356aec4368c359eca1d29e9fce9599c14b` — the shared icon vocabulary now covers values, reflections, experiments, seasons, integrations, privacy, and personalization; Settings and Integrations consume those shared semantics with RTL-aware icon-led composition instead of local glyph systems.
+- `9ce78fe21550dbb62fc6ecc18abd823b11eff459` — **Personal Learning** now visualizes each explicit user-reported usefulness outcome on its real 1–5 bounded scale with an accessible progress meter while retaining the exact `x/5` value, note, date, and rule that completion alone is not benefit evidence.
 - Existing navigation/auth/localization/account-switch hardening remains in place, including offline authenticated entry, password-recovery routing, Check-in fencing, Today RTL ordering, Western-digit normalization, and corrected neutral Life Debt Arabic wording.
 
 ### CP9 remaining
 - Run the residual **static** owner-reference sweep over shipped routes and fix only demonstrated gaps: untranslated production literals, Western-digit regressions, semantic RTL, accessibility/live announcements, dynamic-type/truncation, keyboard/focus, technical-id fallbacks, and duplicated global presentation decisions.
-- Inspect remaining secondary quantitative surfaces for a truthful visualization only where the underlying data has a meaningful bounded scale. Do **not** invent meters for categorical confidence, evidence counts, or incomparable values merely for visual density.
-- Confirm shared icon semantics remain consistent on secondary screens without building another icon/design abstraction layer.
+- Inspect any still-unreviewed secondary quantitative surface for a truthful visualization only where the underlying data has a meaningful bounded scale. Do **not** invent meters for categorical confidence, evidence counts, or incomparable values merely for visual density.
+- Confirm shared icon semantics remain consistent on remaining secondary screens without building another icon/design abstraction layer.
 - Owner/runtime evidence remains required across representative phone/tablet/Web widths, Arabic/English, and shipped light/dark modes. All owner-reference commits above remain static implementation evidence until that validation occurs.
 - TASK-required runtime design-swap proof is not yet claimed and still requires Today, Life Map, WHY, and an interaction-heavy flow without edits outside the presentation boundary.
 
 ## CP10 current implementation
 Detailed ledger/threat model: `docs/CP10_SECURITY_PRIVACY.md`.
 
-Implemented security/privacy work includes live RLS/ownership review of the ten current user-owned client-visible tables, cross-user policy specifications, function-execute hardening migration `0009`, portable authenticated data export migration `0010`, deployed JWT-protected `delete-account` Edge Function, client export/two-step deletion UI with local cache purge attempts, safer error-boundary logging, targeted sensitive-log review, stronger auth password creation minimums, consent rechecks around health sync, and account-switch/session fencing across integrations, app-state hydration, Invisible Wins, Recovery, and Check-in.
+Implemented security/privacy work includes live RLS/ownership review of the ten current user-owned client-visible tables, cross-user policy specifications, function-execute hardening migration `0009`, portable authenticated data export migration `0010`, deployed JWT-protected `delete-account` Edge Function, client export/two-step deletion UI with local cache purge attempts, safer error-boundary logging, targeted sensitive-log review, stronger auth password creation minimums, consent rechecks around health sync, and account-switch/session fencing across integrations, app-state hydration, Invisible Wins, Recovery, and Check-in. The source-level sensitive-error review has now also covered baseline-target, experiment, reflection, Life Season, onboarding-context, One Move decision/history, pending-feedback, plugin-setting, What If trial-data, and app-owned integration adapter/contract/registry paths without finding a new raw-sensitive logging sink in those inspected boundaries.
 
 ### CP10 remaining
 - Complete repository-wide sensitive logging/error-reporting review beyond the targeted boundaries already inspected; fix only concrete leakage paths.
@@ -71,9 +74,9 @@ Implemented security/privacy work includes live RLS/ownership review of the ten 
 - Supabase leaked-password protection remains an owner action in `automation/HUMAN_REQUIRED.md`.
 
 ## Exact next executable action
-1. Perform the final CP9 static owner-reference sweep across remaining shipped/secondary routes for concrete RTL/localization/accessibility/dynamic-type/focus/technical-id issues and presentation inconsistencies.
-2. Inspect any remaining quantitative surface and add a meter/chart only when the domain contract provides a real bounded quantitative meaning; preserve unknown states and avoid false precision.
-3. If the static CP9 surface is clean, continue the independent CP10 repository-wide sensitive logging/error-reporting audit while runtime evidence remains owner-side.
+1. Continue the final CP9 static owner-reference sweep across remaining shipped/secondary routes for concrete RTL/localization/accessibility/dynamic-type/focus/technical-id issues and presentation inconsistencies.
+2. Inspect only still-unreviewed quantitative surfaces and add a meter/chart when the domain contract provides a real bounded quantitative meaning; preserve unknown states and avoid false precision.
+3. Continue the independent CP10 repository-wide sensitive logging/error-reporting audit across application/presentation boundaries not yet explicitly inspected.
 4. Leave representative-width runtime checks, tests/builds/typechecks/database validation suites, premium screenshot comparison, and final design-swap proof to owner validation under the active execution policy.
 
 ## Verification record
@@ -91,11 +94,12 @@ Post-baseline:
 - **No worker-run app tests, builds, typechecks, validation database scripts, cloud CI, or GitHub Actions are claimed for CP2–CP10 changes.**
 - Authorized migrations `function_execute_hardening` and `account_data_export` were applied and live function ACLs were read; this is implementation/state evidence, not a test-suite PASS.
 - `delete-account` deployment reports ACTIVE with JWT verification enabled; no destructive end-to-end deletion validation is claimed.
-- Adaptive navigation/iconography/One Move batch `a04dc88e452381051f2377de1bb994e4f55a4954` is static implementation evidence only until owner typecheck/runtime/responsive validation.
+- Adaptive navigation/iconography/One Move batch `a04dc88e452381051f2377de1bb994e4f55a4954` plus the direct One Move refinements `da2de9f60e5e632df84271e1fe1e6ee75821e38c` and `3b3126110a5b733b96dff14fb2c4648c9ac2c53c` are static implementation evidence only until owner typecheck/runtime/responsive validation.
 - Life Map radar/iconography/data-honesty commits `81f334b0e548c8ee8a9b794056344409e515c7fb`, `1195dee72b0ff63815e32eb4e8d462da2c93490a`, and `c45c8ca496d358bcc9343cf67f10a6c3c01f662f` are static implementation evidence only; the specification in `fbf457d90e4b8b2f9c2fd781586b01f58a0f1a0c` was added but not executed.
 - Today/Home owner-reference commits `9370d59476d26ff642506b9f32029eabddc8ce1a` and `137fd2fe9facda65aba2691f38a08d6afdbc848a` are static implementation evidence only.
 - WHY/Insights/What If owner-reference commits `2fbd4f17fc736faf039c6d357dcd8f28625f6b20`, `18747ebf8401bae4f596630554aab30fc4c52254`, `6c6fafed833e79c5ef5a60352f54199c09e7ce2c`, and `c80a4119f3e7c3c090751d4faec96b2e8615ce33` are static implementation evidence only.
-- Experiments/Recovery/Onboarding/Invisible Wins/Personalization/quantitative-visual commits `60193f0f4a1948d96f4512adfdc07114494dd293`, `7dd7e5f4b570ae012864297d1887e2e39e04fbe5`, `c9bfa4e7342fa01e09f9cc2a8159ad0fa21dfbbe`, `41656f61d234248683855f468b22943310299d4b`, `a3db6f54b5c6031ece29117f21bcdac7e6fdc1f2`, `3574f554aa4392d8573332a6f91991a797c8faf1`, `4fa3d9beb543fcb3b467232040fa7dd45d450fcf`, and `4d792b40df1867f83268f95c73354ad4178ca9f2` are **static implementation evidence only**. Workers did not run typecheck, tests, builds, screenshot capture, or representative device validation under the active policy.
+- Experiments/Recovery/Onboarding/Invisible Wins/Personalization/quantitative-visual commits `60193f0f4a1948d96f4512adfdc07114494dd293`, `7dd7e5f4b570ae012864297d1887e2e39e04fbe5`, `c9bfa4e7342fa01e09f9cc2a8159ad0fa21dfbbe`, `41656f61d234248683855f468b22943310299d4b`, `a3db6f54b5c6031ece29117f21bcdac7e6fdc1f2`, `3574f554aa4392d8573332a6f91991a797c8faf1`, `4fa3d9beb543fcb3b467232040fa7dd45d450fcf`, `4d792b40df1867f83268f95c73354ad4178ca9f2`, and `9ce78fe21550dbb62fc6ecc18abd823b11eff459` are **static implementation evidence only**.
+- Shared secondary-screen iconography commits `b5938695a7fac3dd49358900b4da59b60078b67b`, `168628b850aafe2b5db6c2952fd09587a95dafc8`, and `144473356aec4368c359eca1d29e9fce9599c14b` are static implementation evidence only. Workers did not run typecheck, tests, builds, screenshot capture, or representative device validation under the active policy.
 
 ## Known blockers / risks
 - CP1: Windows session must be unlocked normally for true narrow-phone Arabic/English interaction evidence; see `automation/HUMAN_REQUIRED.md`.
@@ -129,6 +133,9 @@ Post-baseline:
 - `apps/app/src/app/onboarding.tsx`
 - `apps/app/src/app/invisible-wins.tsx`
 - `apps/app/src/app/personalization.tsx`
+- `apps/app/src/app/personal-learning.tsx`
+- `apps/app/src/app/settings.tsx`
+- `apps/app/src/app/integrations.tsx`
 - `apps/app/src/app/capacity.tsx`
 - `apps/app/src/app/cost-of-yes.tsx`
 - `apps/app/src/app/human-roi.tsx`
