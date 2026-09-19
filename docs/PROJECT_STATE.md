@@ -42,10 +42,11 @@ Navigation/state hardening currently includes:
 - `7d8d3310e33843170afdc33065738bca76cbe882` — focused root-layout routing specification covers the recovery-route exception, normal signed-out protection, and post-restoration Auth redirect; specification added but not worker-run under the active policy.
 - `f4e38742c587150bfe87489bf0fd3b831dcad69b` — Check-in local answers and submit state are now scoped to the active account; switching users clears prior-user ratings immediately and stale submit/session-refresh completions cannot redirect or repaint the new account.
 - `a318a7152902159998d9f5ae87ab811502074da6` — focused Check-in account-switch regression specification covers stale User A submit completion after User B becomes active; added but not worker-run under the active policy.
+- `150294d7fc81c0a503893c44f32ca2be46dc9882` — Today dashboard and priorities wrapped grids now mirror their row direction from `isRtl`, so Arabic cards begin from the right instead of retaining LTR card ordering. This is a presentation-only semantic RTL correction; runtime visual confirmation remains part of owner validation rather than a separate worker-run unit test.
 
 ### CP9 remaining
 - Finish static inspection only for concrete residual scaffold-level or navigation-state defects; avoid reworking already-premium screens without evidence.
-- Continue targeted checks for untranslated literals, Western-digit regressions, semantic RTL in wrapped grids, accessibility/live announcements, truncation/dynamic type, keyboard/focus, technical-id fallbacks, and duplicated global visual decisions.
+- Continue targeted checks for untranslated literals, Western-digit regressions, semantic RTL in remaining wrapped grids, accessibility/live announcements, truncation/dynamic type, keyboard/focus, technical-id fallbacks, and duplicated global visual decisions.
 - Owner/runtime evidence is still required across representative phone/tablet/Web widths, Arabic/English, and shipped light/dark modes.
 - TASK-required design-swap proof is not yet claimed and still requires representative runtime evidence on Today, Life Map, WHY, and an interaction-heavy flow without edits outside the presentation boundary.
 
@@ -71,7 +72,7 @@ Implemented security/privacy work includes:
 - Supabase leaked-password protection remains an owner action in `automation/HUMAN_REQUIRED.md`.
 
 ## Exact next executable action
-1. Continue CP9 static inspection of residual navigation/state and responsive RTL/accessibility/localization defects; only mutate when a concrete defect is demonstrated.
+1. Continue CP9 static inspection of residual navigation/state and remaining responsive RTL/accessibility/localization defects; only mutate when a concrete defect is demonstrated.
 2. Continue CP10 repository-wide sensitive logging/error-reporting review for uninspected sinks.
 3. Leave representative-width runtime checks, post-baseline tests/builds/typechecks/database validation suites, export/delete/local-purge proof, consent/account-switch runtime races, premium screenshot evidence, and final design-swap proof to owner validation under the active policy.
 
@@ -93,6 +94,7 @@ Post-baseline:
 - CP9 Premium Production Visual Pass and later navigation/auth hardening are static source/specification evidence only until owner runtime review.
 - Root recovery-route regression specification `apps/app/__tests__/root-layout-auth-routing-test.tsx` was added but not run under the active worker policy.
 - Check-in account-switch regression specification `apps/app/__tests__/check-in-session-fencing-test.tsx` was added but not run under the active worker policy.
+- Today semantic RTL grid correction is static source evidence only; representative Arabic runtime widths remain an owner-validation gate.
 
 ## Known blockers / risks
 - CP1: Windows session must be unlocked normally for true narrow-phone Arabic/English interaction evidence; see `automation/HUMAN_REQUIRED.md`.
