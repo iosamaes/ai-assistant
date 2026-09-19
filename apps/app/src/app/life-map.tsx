@@ -12,6 +12,7 @@ import {
 import { Card, MizanText, PrimaryButton, SecondaryButton } from '@/components/mizan-ui';
 import { Screen } from '@/components/screen';
 import { Controls, Palette, Spacing } from '@/constants/theme';
+import { formatLocalizedNumber } from '@/i18n/number-input';
 import { useAppState } from '@/state/app-state';
 
 type LoadStatus = 'loading' | 'ready' | 'error';
@@ -27,8 +28,8 @@ const copy = {
     allEmpty: 'لا توجد ملاحظات رقمية كافية بعد. ابدأ بتسجيل فحص سريع، وستظهر الخريطة تدريجيًا مع الأدلة.',
     domainEmpty: 'لا توجد أدلة لهذا المجال حتى الآن. سيبقى مجهولًا إلى أن تسجل بيانات مرتبطة به.',
     latest: 'أحدث قراءة',
-    median: 'الوسيط خلال 28 يومًا',
-    evidence: 'دليل خلال 28 يومًا',
+    median: 'الوسيط خلال ٢٨ يومًا',
+    evidence: 'دليل خلال ٢٨ يومًا',
     updated: 'آخر تحديث',
     trend: 'الاتجاه',
     trendUnknown: 'لا يوجد تاريخ كافٍ لوصف اتجاه التغير.',
@@ -134,13 +135,14 @@ function DomainCard({ domain, locale, isRtl }: { domain: LifeMapDomainHistory; l
   const scheme = useColorScheme();
   const palette = Palette[scheme === 'dark' ? 'dark' : 'light'];
   const local = copy[locale];
+  const hundred = formatLocalizedNumber(100, locale, 0);
 
   return (
     <Card>
       <View style={[styles.domainHeader, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
         <MizanText variant="title" style={styles.flexibleRowText}>{local.domains[domain.domainId]}</MizanText>
         {domain.evidenceCount > 0 ? (
-          <MizanText variant="caption" muted>{domain.evidenceCount} {local.observations}</MizanText>
+          <MizanText variant="caption" muted>{formatLocalizedNumber(domain.evidenceCount, locale, 0)} {local.observations}</MizanText>
         ) : null}
       </View>
 
@@ -152,16 +154,16 @@ function DomainCard({ domain, locale, isRtl }: { domain: LifeMapDomainHistory; l
           <View key={metric.metric} style={[styles.metric, { borderTopColor: palette.border }]}>
             <View style={[styles.metricTitleRow, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
               <MizanText variant="label" style={styles.flexibleRowText}>{metricLabel(metric.metric, locale)}</MizanText>
-              <MizanText variant="title">{Math.round(metric.latestValue)} / 100</MizanText>
+              <MizanText variant="title">{formatLocalizedNumber(Math.round(metric.latestValue), locale, 0)} / {hundred}</MizanText>
             </View>
 
             <View style={styles.detailGroup}>
               <MizanText variant="caption" muted>{local.updated}: {formatDate(metric.latestObservedAt, locale)}</MizanText>
               <MizanText variant="caption" muted>
-                {local.median}: {metric.monthMedian === null ? '—' : `${Math.round(metric.monthMedian)} / 100`}
+                {local.median}: {metric.monthMedian === null ? '—' : `${formatLocalizedNumber(Math.round(metric.monthMedian), locale, 0)} / ${hundred}`}
               </MizanText>
               <MizanText variant="caption" muted>
-                {local.evidence}: {metric.monthEvidenceCount} · {local.confidence}: {confidenceLabel(metric.monthConfidence.level, locale)}
+                {local.evidence}: {formatLocalizedNumber(metric.monthEvidenceCount, locale, 0)} · {local.confidence}: {confidenceLabel(metric.monthConfidence.level, locale)}
               </MizanText>
               <MizanText variant="caption" muted>
                 {local.trend}: {momentumIsUsable ? momentumLabel(metric.momentum, locale) : local.trendUnknown}
