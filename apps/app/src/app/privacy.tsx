@@ -1,6 +1,6 @@
 import { router } from 'expo-router';
 import { useRef, useState } from 'react';
-import { Platform, Share, StyleSheet, View } from 'react-native';
+import { Alert, Platform, Share, StyleSheet, View } from 'react-native';
 
 import { Card, MizanText, PrimaryButton, SecondaryButton } from '@/components/mizan-ui';
 import { Screen } from '@/components/screen';
@@ -27,6 +27,8 @@ const privacyCopy = {
     deleteWorking: 'جارٍ حذف الحساب…',
     deleteCancel: 'إلغاء',
     deleteError: 'تعذر حذف الحساب الآن. لم يتم تأكيد نجاح الحذف؛ حاول مرة أخرى لاحقًا.',
+    cleanupWarningTitle: 'تم حذف الحساب — يلزم تنظيف محلي',
+    cleanupWarningBody: 'تم تأكيد حذف حساب ميزان من الخادم، لكن تعذر التأكد من إزالة كل البيانات المؤقتة من هذا الجهاز أو المتصفح. قبل مشاركة الجهاز، امسح بيانات التطبيق أو بيانات الموقع المحلية.',
     backSettings: 'العودة للإعدادات',
   },
   en: {
@@ -47,6 +49,8 @@ const privacyCopy = {
     deleteWorking: 'Deleting account…',
     deleteCancel: 'Cancel',
     deleteError: 'The account could not be deleted right now. Deletion was not confirmed; try again later.',
+    cleanupWarningTitle: 'Account deleted — local cleanup needed',
+    cleanupWarningBody: 'Your MIZAN account was confirmed deleted on the server, but this device or browser could not confirm removal of every local cached item. Before sharing this device, clear the app or site local data.',
     backSettings: 'Back to Settings',
   },
 } as const;
@@ -71,6 +75,14 @@ async function deliverJsonExport(payload: Record<string, unknown>) {
   }
 
   await Share.share({ message: json, title: filename });
+}
+
+function showLocalCleanupWarning(title: string, body: string) {
+  if (Platform.OS === 'web' && typeof globalThis.alert === 'function') {
+    globalThis.alert(`${title}\n\n${body}`);
+    return;
+  }
+  Alert.alert(title, body);
 }
 
 export default function PrivacyScreen() {
@@ -113,14 +125,27 @@ export default function PrivacyScreen() {
     setBusy('delete');
     setMessage(null);
     const result = await deleteMyAccount(targetUserId);
-    if (activeUserRef.current !== targetUserId) {
-      setBusy(null);
-      return;
-    }
+
     if (!result.ok) {
+      if (activeUserRef.current !== targetUserId) {
+        setBusy(null);
+        return;
+      }
       setMessage(copy.deleteError);
       setBusy(null);
       return;
+    }
+
+    // A null active user is expected after deleting/signing out the target.
+    // A different non-null user means an account switch happened in flight;
+    // never refresh or redirect that newly active account.
+    if (activeUserRef.current && activeUserRef.current !== targetUserId) {
+      setBusy(null);
+      return;
+    }
+
+    if (!result.value.localDataCleared) {
+      showLocalCleanupWarning(copy.cleanupWarningTitle, copy.cleanupWarningBody);
     }
 
     await refreshSession();
