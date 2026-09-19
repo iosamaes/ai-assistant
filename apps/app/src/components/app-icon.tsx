@@ -19,7 +19,14 @@ export type AppIconName =
   | 'evidence'
   | 'pattern'
   | 'hypothesis'
-  | 'confidence';
+  | 'confidence'
+  | 'values'
+  | 'reflection'
+  | 'experiment'
+  | 'season'
+  | 'integration'
+  | 'privacy'
+  | 'personalization';
 
 const symbols = {
   home: { ios: 'house.fill', android: 'home', web: 'home' },
@@ -41,6 +48,13 @@ const symbols = {
   pattern: { ios: 'chart.line.uptrend.xyaxis', android: 'timeline', web: 'timeline' },
   hypothesis: { ios: 'lightbulb.fill', android: 'lightbulb', web: 'lightbulb' },
   confidence: { ios: 'checkmark.shield.fill', android: 'verified', web: 'verified' },
+  values: { ios: 'heart.fill', android: 'favorite', web: 'favorite' },
+  reflection: { ios: 'sparkles', android: 'auto_awesome', web: 'auto_awesome' },
+  experiment: { ios: 'flask.fill', android: 'science', web: 'science' },
+  season: { ios: 'calendar', android: 'calendar_month', web: 'calendar_month' },
+  integration: { ios: 'link', android: 'link', web: 'link' },
+  privacy: { ios: 'lock.shield.fill', android: 'privacy_tip', web: 'privacy_tip' },
+  personalization: { ios: 'slider.horizontal.3', android: 'tune', web: 'tune' },
 } as const;
 
 interface AppIconProps {
