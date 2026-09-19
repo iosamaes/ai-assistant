@@ -145,6 +145,11 @@ export default function LifeSeasonsScreen() {
     };
   }, [lifeSeason]);
 
+  useEffect(() => {
+    saveRequestRef.current += 1;
+    setSaveStatus('idle');
+  }, [userId]);
+
   const reload = useCallback(async () => {
     const requestedUserId = userId;
     const requestId = ++loadRequestRef.current;
@@ -308,7 +313,7 @@ export default function LifeSeasonsScreen() {
         />
 
         {saveStatus === 'saved' || saveStatus === 'error' || loadStatus === 'error' ? (
-          <View style={[styles.statusPanel, { backgroundColor: palette.surfaceMuted }]}> 
+          <View style={[styles.statusPanel, { backgroundColor: palette.surfaceMuted }]}>
             {saveStatus === 'saved' ? (
               <MizanText accessibilityLiveRegion="polite" muted>{labels.saved}</MizanText>
             ) : null}
@@ -353,7 +358,7 @@ export default function LifeSeasonsScreen() {
                 <MizanText muted>
                   {formatDate(entry.started_at, locale)}{entry.ended_at ? ` ${rangeArrow} ${formatDate(entry.ended_at, locale)}` : ''}
                 </MizanText>
-                <View style={[styles.recordedTargets, { borderTopColor: palette.border }]}> 
+                <View style={[styles.recordedTargets, { borderTopColor: palette.border }]}>
                   <MizanText variant="caption" muted>{labels.targets}</MizanText>
                   <MizanText>{recordedTargets || labels.none}</MizanText>
                 </View>
