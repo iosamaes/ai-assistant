@@ -3,7 +3,7 @@ jest.mock('@/state/app-state', () => ({ useAppState: jest.fn() }));
 import { fireEvent, render } from '@testing-library/react-native';
 import { StyleSheet } from 'react-native';
 
-import { ChoiceChip, MizanText, PrimaryButton } from '@/components/mizan-ui';
+import { ChoiceChip, MizanText, MizanTextInput, PrimaryButton } from '@/components/mizan-ui';
 import { useAppState } from '@/state/app-state';
 
 const useAppStateMock = jest.mocked(useAppState);
@@ -19,6 +19,25 @@ describe('shared presentation primitives', () => {
     const style = StyleSheet.flatten(text.props.style);
 
     expect(style.textAlign).toBe('right');
+  });
+
+  test('numeric text input keeps Latin digit direction and normalizes Arabic digits', async () => {
+    const onChangeText = jest.fn();
+    const view = await render(
+      <MizanTextInput
+        accessibilityLabel="رقم"
+        keyboardType="decimal-pad"
+        onChangeText={onChangeText}
+        value=""
+      />,
+    );
+    const input = view.getByLabelText('رقم');
+    const style = StyleSheet.flatten(input.props.style);
+
+    expect(style.textAlign).toBe('right');
+    expect(style.writingDirection).toBe('ltr');
+    await fireEvent.changeText(input, '١٢٫٥');
+    expect(onChangeText).toHaveBeenCalledWith('12.5');
   });
 
   test('PrimaryButton exposes accessible disabled state and blocks presses', async () => {
