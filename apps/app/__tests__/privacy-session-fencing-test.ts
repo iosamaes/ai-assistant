@@ -138,7 +138,7 @@ describe('privacy session fencing', () => {
     expect(mockSignOut).not.toHaveBeenCalled();
   });
 
-  test('purges the deleted user local cache even if another user becomes active in flight', async () => {
+  test('binds deletion to the expected user and purges only that user local cache', async () => {
     mockGetSession
       .mockResolvedValueOnce(sessionResult('user-a'))
       .mockResolvedValueOnce(sessionResult('user-b'));
@@ -149,7 +149,10 @@ describe('privacy session fencing', () => {
       value: { localDataCleared: true },
     });
     expect(mockInvoke).toHaveBeenCalledWith('delete-account', {
-      body: { confirmation: 'DELETE' },
+      body: {
+        confirmation: 'DELETE',
+        expected_user_id: 'user-a',
+      },
     });
     expect(mockClearPendingUserMutations).toHaveBeenCalledWith('user-a');
     expect(mockClearRecentDailySnapshot).toHaveBeenCalledWith('user-a');
