@@ -270,7 +270,7 @@ export default function ExperimentsScreen() {
         <MizanText muted>{labels.metric}: {(labels.metrics as Record<string, string>)[experiment.metric] ?? experiment.metric}</MizanText>
         <MizanText muted>{labels.status}: {labels.statuses[experiment.status]}</MizanText>
         <MizanText variant="caption" muted>
-          {labels.started}: {new Date(experiment.started_at ?? experiment.created_at).toLocaleDateString(locale === 'ar' ? 'ar-QA' : 'en-QA')}
+          {labels.started}: {new Date(experiment.started_at ?? experiment.created_at).toLocaleDateString(locale === 'ar' ? 'ar-QA-u-nu-latn' : 'en-QA-u-nu-latn')}
         </MizanText>
 
         {experiment.status === 'active' ? (
