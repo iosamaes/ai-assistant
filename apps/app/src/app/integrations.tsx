@@ -158,6 +158,7 @@ export default function IntegrationsScreen() {
     const result = await loadIntegrationSettings(userId);
     if (!result.ok) {
       if (result.error.kind === 'session-expired') await refreshSession();
+      setConnections([]);
       setStatus('error');
       return;
     }
@@ -186,8 +187,8 @@ export default function IntegrationsScreen() {
       setBusyId(null);
       return;
     }
-    setBusyId(null);
     await reload();
+    setBusyId(null);
   };
 
   return (
@@ -208,7 +209,7 @@ export default function IntegrationsScreen() {
         </Card>
       ) : null}
 
-      {connections.map((connection) => {
+      {status === 'ready' ? connections.map((connection) => {
         const statusLabel =
           connection.status === 'connected'
             ? labels.connected
@@ -239,7 +240,7 @@ export default function IntegrationsScreen() {
             ) : null}
           </Card>
         );
-      })}
+      }) : null}
 
       {message ? <MizanText accessibilityLiveRegion="polite" muted>{message}</MizanText> : null}
       <MizanText variant="caption" muted>{labels.privacy}</MizanText>
