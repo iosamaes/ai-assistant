@@ -46,11 +46,14 @@ Presentation authority remains the compact app-local theme and shared primitives
 - `2bc252e1fd73775d22f0fc059e67820a951632b3` — Recovery premium composition: calm recovery hero, structured confidence/evidence reading, reason signals, accessible step progress, stronger current-step/action hierarchy, and non-medical limitation treatment without changing recovery-plan behavior.
 - `37560ba39e0f766846cc5752e79abaf701765c8c` — Experiments premium composition: accent-led voluntary-experiment framing, structured planner with responsive duration/outcome tiles, clearer consent hierarchy, premium active/history cards, personal-comparison result surfaces, evidence/confidence presentation, and designed loading/error/empty/limitations states while preserving the existing experiment lifecycle and conservative causal language.
 - `20b392e9a5cd9488a55907979cbcb1247afd0f4e` — Integrations premium composition: user-control/privacy framing, structured loading/error/empty states, capability/status/provider hierarchy, responsive sync/consent detail blocks, permission pills, and a calmer secondary disconnect action while preserving existing account-switch/load-request fencing and provider lifecycle behavior.
+- `1002a24b375fcd435617066cd8d07ef7659d7be7` — Settings premium composition: replaces the long undifferentiated route list with grouped preferences, responsive decision-tool cards, explicit data/connection controls, calm status messaging, and separated account actions while keeping shared primitives as visual authority.
+- `344ef43ef58e653fbd4bd5e6a85b1a6073f0d612` — Privacy premium composition: trust-focused hero, separate export and permanent-deletion surfaces, explicit non-destructive pre-confirmation messaging, responsive action layout, danger-semantic borders, and preserved initiating-user/session fencing.
+- `1b0da78cebdae408703dbbb7ab17784033c3f5a1` + `6f831b51e7930d1e4ae476d684b85961efe382af` — Auth premium composition: trust-focused hero, grouped language/access-mode controls, structured account form, designed live-message surface, and semantic radius-token cleanup without changing auth/session behavior.
 
-Additional static CP9 evidence includes Western/ASCII digit enforcement for Arabic and English formatted output, Arabic localized-number parsing, Arabic integration timestamps using `ar-QA-u-nu-latn`, Today cross-user async fencing, and targeted RTL/localization/dynamic-type/accessibility hardening across Personal Learning, Personalization, Spiritual Grounding, Invisible Wins, Integrations, Insights, onboarding/auth/password recovery, What If, Experiments, Life Seasons, Settings, and Check-in.
+Additional static CP9 evidence includes Western/ASCII digit enforcement for Arabic and English formatted output, Arabic localized-number parsing, Arabic integration timestamps using `ar-QA-u-nu-latn`, Today cross-user async fencing, and targeted RTL/localization/dynamic-type/accessibility hardening across Personal Learning, Personalization, Spiritual Grounding, Invisible Wins, Integrations, Insights, onboarding/auth/password recovery, What If, Experiments, Life Seasons, Settings, Privacy, and Check-in.
 
 ### CP9 remaining
-- Continue feature-composition premium passes across **Settings/Privacy** next, then onboarding/auth and remaining primary routes.
+- Continue the Premium Production Visual Pass with **Onboarding next**, then remaining primary routes that still retain scaffold-level composition.
 - Refine navigation shell/state/data presentation only where current code demonstrates a real need; avoid page-local design systems or wrapper-only abstraction.
 - Continue static defect review for untranslated production literals, Western-digit regressions, semantic RTL, accessibility/live announcements, truncation/dynamic-type, keyboard/focus, and duplicated global visual decisions.
 - Owner/runtime evidence is still required across representative phone/tablet/Web widths, Arabic/English, and shipped light/dark modes.
@@ -79,8 +82,8 @@ Implemented security/privacy work includes:
 - Supabase leaked-password protection remains an owner action in `automation/HUMAN_REQUIRED.md`.
 
 ## Exact next executable action
-1. Continue CP9 Premium Production Visual Pass at feature-composition level with **Settings/Privacy** next, preserving shared semantic tokens/primitives as the visual authority.
-2. Then continue onboarding/auth and remaining primary routes.
+1. Continue CP9 Premium Production Visual Pass at feature-composition level with **Onboarding** next, preserving shared semantic tokens/primitives as the visual authority.
+2. Then continue remaining primary routes and navigation/state presentation only where static inspection shows scaffold-level composition or a concrete accessibility/localization defect.
 3. In parallel, continue CP10 repository-wide sensitive logging/error-reporting review for concrete uninspected sinks.
 4. Leave representative-width runtime checks, post-baseline tests/builds/typechecks/database validation suites, export/delete/local-purge proof, consent/account-switch runtime races, premium screenshot evidence, and final design-swap proof to owner validation under the active policy.
 
@@ -99,7 +102,7 @@ Post-baseline:
 - **No worker-run app tests, builds, typechecks, validation database scripts, cloud CI, or GitHub Actions are claimed for CP2–CP10 changes.**
 - Authorized product migrations `function_execute_hardening` and `account_data_export` were applied and resulting live function ACLs were read; this is implementation/state evidence, not a test-suite PASS.
 - `delete-account` deployment reports ACTIVE with JWT verification enabled; no destructive end-to-end deletion validation is claimed.
-- CP9 premium-pass commits through `20b392e9a5cd9488a55907979cbcb1247afd0f4e` are static implementation evidence only until owner runtime review.
+- CP9 premium-pass commits through `6f831b51e7930d1e4ae476d684b85961efe382af` are static implementation evidence only until owner runtime review.
 
 ## Known blockers / risks
 - CP1: Windows session must be unlocked normally for true narrow-phone Arabic/English interaction evidence; see `automation/HUMAN_REQUIRED.md`.
@@ -107,7 +110,7 @@ Post-baseline:
 - CP10: Supabase leaked-password protection remains disabled pending the recorded owner Auth-setting action.
 - Cross-user/database specifications and all post-baseline runtime/type/build gates still require owner execution evidence.
 - Recent Today snapshot native SecureStore behavior/capacity still needs owner runtime validation.
-- CP9 Premium Production Visual Pass remains incomplete across several primary routes/navigation/state presentation, with representative runtime screenshot evidence still outstanding.
+- CP9 Premium Production Visual Pass remains incomplete across onboarding and several remaining primary routes/navigation/state presentation, with representative runtime screenshot evidence still outstanding.
 - Privacy export/delete UI, local cache purge/warning behavior, and Edge deletion need owner Web/native end-to-end validation before CP10 can close.
 - Repository-wide sensitive logging/error reporting review remains incomplete beyond the targeted boundaries already hardened.
 - Health consent revocation and account-switch fencing are statically implemented but still need runtime proof; future time/location collectors must adopt the same authoritative consent pattern.
@@ -134,7 +137,10 @@ Post-baseline:
 - `apps/app/src/app/what-if.tsx`
 - `apps/app/src/app/recovery.tsx`
 - `apps/app/src/app/experiments.tsx`
+- `apps/app/src/app/settings.tsx`
 - `apps/app/src/app/privacy.tsx`
+- `apps/app/src/app/auth.tsx`
+- `apps/app/src/app/onboarding.tsx`
 - `apps/app/src/app/integrations.tsx`
 - `apps/app/src/infrastructure/supabase/privacy.ts`
 - `apps/app/src/infrastructure/supabase/integrations.ts`
