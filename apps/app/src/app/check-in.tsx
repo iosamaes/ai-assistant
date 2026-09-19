@@ -1,5 +1,5 @@
 import { router } from 'expo-router';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { StyleSheet, useColorScheme, View } from 'react-native';
 
 import {
@@ -39,9 +39,16 @@ export default function CheckInScreen() {
   const palette = Palette[scheme === 'dark' ? 'dark' : 'light'];
   const [ratings, setRatings] = useState<DailyCheckInRatings>({});
   const [submitState, setSubmitState] = useState<SubmitState>('idle');
+  const activeUserRef = useRef(userId);
   const answeredCount = useMemo(() => Object.keys(ratings).length, [ratings]);
   const interactionsLocked = submitState === 'saving' || submitState === 'queued';
   const progressLabel = `${formatLocalizedNumber(answeredCount, locale, 0)} / ${formatLocalizedNumber(metricItems.length, locale, 0)}`;
+
+  useEffect(() => {
+    activeUserRef.current = userId;
+    setRatings({});
+    setSubmitState('idle');
+  }, [userId]);
 
   const setRating = (metric: DailyCheckInMetric, rating?: DailyCheckInRating) => {
     if (interactionsLocked) return;
@@ -56,8 +63,10 @@ export default function CheckInScreen() {
 
   const handleSubmit = async () => {
     if (!userId || answeredCount === 0 || submitState === 'saving') return;
+    const submittingUserId = userId;
     setSubmitState('saving');
-    const result = await submitDailyCheckIn(userId, ratings);
+    const result = await submitDailyCheckIn(submittingUserId, ratings);
+    if (activeUserRef.current !== submittingUserId) return;
 
     if (result.ok) {
       if (result.value.delivery === 'queued') {
@@ -71,6 +80,7 @@ export default function CheckInScreen() {
 
     if (result.error.kind === 'session-expired') {
       await refreshSession();
+      if (activeUserRef.current !== submittingUserId) return;
       setSubmitState('error');
       return;
     }
