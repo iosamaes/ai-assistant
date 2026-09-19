@@ -53,16 +53,21 @@ test.describe('live completed-account product journeys', () => {
     expect(pageErrors).toEqual([]);
   });
 
-  test('recovery, scenario, settings, and privacy surfaces remain reachable and bounded', async ({ page }) => {
+  test('recovery and scenario interactions remain usable while privacy export stays non-destructive', async ({ page }) => {
     const pageErrors = collectPageErrors(page);
     await signInCompletedAccount(page);
 
     await page.goto('/recovery');
     await expect(page.getByText(/Save My Day|أنقذ يومي/, { exact: true })).toBeVisible();
+    const nextRecoveryStep = page.getByRole('button', { name: /Next tiny step|الخطوة التالية/, exact: true });
+    await expect(nextRecoveryStep).toBeVisible();
+    await nextRecoveryStep.click();
     await expectNoHorizontalOverflow(page);
 
     await page.goto('/what-if');
     await expect(page.getByText(/Explore a choice without treating it as a prediction|جرّب قرارًا قبل أن تتعامل معه كتوقع/, { exact: true })).toBeVisible();
+    await page.getByRole('button', { name: /Short calm walk|مشي هادئ قصير/, exact: true }).click();
+    await expect(page.getByText(/Take an easy walk for about 20 minutes|مشي مريح لمدة نحو 20 دقيقة/, { exact: true })).toBeVisible();
     await expectNoHorizontalOverflow(page);
 
     await page.goto('/settings');
@@ -71,6 +76,11 @@ test.describe('live completed-account product journeys', () => {
 
     await page.goto('/privacy');
     await expect(page.getByText(/Privacy & data|الخصوصية والبيانات/, { exact: true })).toBeVisible();
+    const downloadPromise = page.waitForEvent('download');
+    await page.getByRole('button', { name: /Create JSON file|إنشاء ملف JSON/, exact: true }).click();
+    const download = await downloadPromise;
+    expect(download.suggestedFilename()).toMatch(/^mizan-data-\d{4}-\d{2}-\d{2}\.json$/);
+    await expect(page.getByText(/Your data copy is ready\.|تم إعداد نسخة بياناتك\./, { exact: true })).toBeVisible();
     await expectNoHorizontalOverflow(page);
     expect(pageErrors).toEqual([]);
   });
