@@ -164,8 +164,10 @@ export default function LifeSeasonsScreen() {
   const enabledSet = useMemo(() => new Set(enabledDomains), [enabledDomains]);
   const history = state?.history ?? [];
   const rangeArrow = isRtl ? '←' : '→';
+  const controlsDisabled = loadStatus === 'loading' || saveStatus === 'saving';
 
   const setTarget = (domainId: DomainId, rating: Rating | null) => {
+    if (controlsDisabled) return;
     setTargets((current) => {
       const next = { ...current };
       if (rating === null) delete next[domainId];
@@ -213,7 +215,9 @@ export default function LifeSeasonsScreen() {
               key={season}
               label={labels.seasons[season]}
               selected={selectedSeason === season}
+              disabled={controlsDisabled}
               onPress={() => {
+                if (controlsDisabled) return;
                 setSelectedSeason(season);
                 if (saveStatus !== 'idle') setSaveStatus('idle');
               }}
@@ -232,6 +236,7 @@ export default function LifeSeasonsScreen() {
               <ChoiceChip
                 label={labels.unset}
                 selected={targets[domainId] === undefined}
+                disabled={controlsDisabled}
                 onPress={() => setTarget(domainId, null)}
               />
               {RATINGS.map((rating) => (
@@ -239,6 +244,7 @@ export default function LifeSeasonsScreen() {
                   key={`${domainId}-${rating}`}
                   label={String(rating)}
                   selected={targets[domainId] === rating}
+                  disabled={controlsDisabled}
                   onPress={() => setTarget(domainId, rating)}
                 />
               ))}
@@ -248,7 +254,7 @@ export default function LifeSeasonsScreen() {
 
         <PrimaryButton
           label={saveStatus === 'saving' ? labels.saving : labels.save}
-          disabled={saveStatus === 'saving' || loadStatus === 'loading'}
+          disabled={controlsDisabled}
           onPress={() => void handleSave()}
         />
         {saveStatus === 'saved' ? (
