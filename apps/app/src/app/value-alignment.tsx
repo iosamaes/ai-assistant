@@ -6,7 +6,7 @@ import {
   loadPersonalValueAlignments,
   type PersonalValueAlignment,
 } from '@/application/value-alignment';
-import { AppIcon } from '@/components/app-icon';
+import { AppIcon, type AppIconName } from '@/components/app-icon';
 import { Card, MizanText, SecondaryButton } from '@/components/mizan-ui';
 import { Screen } from '@/components/screen';
 import { Controls, Palette, Radius, Spacing } from '@/constants/theme';
@@ -19,7 +19,7 @@ const copy = {
   ar: {
     eyebrow: 'القيم والهوية',
     title: 'هل أنماطك الحالية تعطي قيمك المساحة التي اخترتها؟',
-    body: 'هذه قراءة محايدة للأدلة المتاحة فقط، وليست حكمًا على هويتك أو أخلاقك. إذا كانت الأدلة قليلة يبقي ميزان النتيجة مجهولة.',
+    body: 'هذه قراءة محايدة للأدلة المتاحة فقط، وليست حكمًا على هويتك أو أخلاقك. إذا كانت الأدلة قليلة يُبقي ميزان النتيجة مجهولة.',
     loading: 'جارٍ قراءة إشارات القيم…',
     error: 'تعذر قراءة إشارات القيم الآن.',
     empty: 'لم تختر قيمًا شخصية بعد. يمكنك تعديلها من إعدادات الأولويات.',
@@ -99,6 +99,19 @@ const copy = {
 function signalLabel(signal: string, locale: 'ar' | 'en'): string {
   const labels = copy[locale];
   return (labels.signals as Record<string, string>)[signal] ?? labels.unknownSignal;
+}
+
+function valueIconName(valueId: PersonalValue): AppIconName {
+  if (valueId === 'stability') return 'margin';
+  if (valueId === 'family') return 'connection';
+  if (valueId === 'growth') return 'trendUp';
+  return 'values';
+}
+
+function statusIconName(status: PersonalValueAlignment['status']): AppIconName {
+  if (status === 'watch') return 'trendDown';
+  if (status === 'supported') return 'trendUp';
+  return 'evidence';
 }
 
 export default function ValueAlignmentScreen() {
@@ -184,17 +197,36 @@ export default function ValueAlignmentScreen() {
         <View style={[styles.valueGrid, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
           {summaries.map((summary) => {
             const valueId = summary.valueId as PersonalValue;
+            const statusColor =
+              summary.status === 'watch'
+                ? palette.danger
+                : summary.status === 'supported'
+                  ? palette.accent
+                  : palette.textMuted;
+            const statusBackground = summary.status === 'supported' ? palette.accentSoft : palette.surfaceMuted;
+            const statusBorder = summary.status === 'insufficient' ? palette.border : statusColor;
+            const watchSignalColor = summary.watchSignals.length > 0 ? palette.danger : palette.textMuted;
+            const supportingSignalColor = summary.supportingSignals.length > 0 ? palette.accent : palette.textMuted;
             return (
               <Card key={summary.valueId} style={styles.valueCard}>
                 <View style={[styles.cardHeader, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
                   <View style={[styles.titleGroup, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
                     <View style={[styles.iconWell, { backgroundColor: palette.accentSoft }]}>
-                      <AppIcon name="values" color={palette.accent} size={22} />
+                      <AppIcon name={valueIconName(valueId)} color={palette.accent} size={22} />
                     </View>
                     <MizanText variant="title" style={styles.flexibleText}>{labels.values[valueId]}</MizanText>
                   </View>
-                  <View style={[styles.statusPill, { backgroundColor: palette.accentSoft }]}>
-                    <MizanText variant="caption">{statusLabel(summary)}</MizanText>
+                  <View
+                    style={[
+                      styles.statusPill,
+                      {
+                        backgroundColor: statusBackground,
+                        borderColor: statusBorder,
+                        flexDirection: isRtl ? 'row-reverse' : 'row',
+                      },
+                    ]}>
+                    <AppIcon name={statusIconName(summary.status)} color={statusColor} size={16} />
+                    <MizanText variant="caption" style={{ color: statusColor }}>{statusLabel(summary)}</MizanText>
                   </View>
                 </View>
 
@@ -217,8 +249,8 @@ export default function ValueAlignmentScreen() {
 
                 <View style={[styles.signalSection, { borderTopColor: palette.border }]}>
                   <View style={[styles.signalHeading, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
-                    <AppIcon name="trendDown" color={palette.accent} size={18} />
-                    <MizanText variant="label">{labels.watchSignals}</MizanText>
+                    <AppIcon name="trendDown" color={watchSignalColor} size={18} />
+                    <MizanText variant="label" style={{ color: watchSignalColor }}>{labels.watchSignals}</MizanText>
                   </View>
                   <MizanText muted>
                     {summary.watchSignals.length > 0
@@ -229,8 +261,8 @@ export default function ValueAlignmentScreen() {
 
                 <View style={[styles.signalSection, { borderTopColor: palette.border }]}>
                   <View style={[styles.signalHeading, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
-                    <AppIcon name="trendUp" color={palette.accent} size={18} />
-                    <MizanText variant="label">{labels.supportingSignals}</MizanText>
+                    <AppIcon name="trendUp" color={supportingSignalColor} size={18} />
+                    <MizanText variant="label" style={{ color: supportingSignalColor }}>{labels.supportingSignals}</MizanText>
                   </View>
                   <MizanText muted>
                     {summary.supportingSignals.length > 0
@@ -269,7 +301,16 @@ const styles = StyleSheet.create({
   cardHeader: { alignItems: 'flex-start', justifyContent: 'space-between', gap: Spacing.md, flexWrap: 'wrap' },
   titleGroup: { flexGrow: 1, flexShrink: 1, flexBasis: 220, minWidth: 0, alignItems: 'center', gap: Spacing.md },
   flexibleText: { flexShrink: 1, minWidth: 0 },
-  statusPill: { minHeight: Controls.minimumTouchHeight, justifyContent: 'center', borderRadius: Radius.pill, paddingHorizontal: Spacing.md, maxWidth: '100%' },
+  statusPill: {
+    alignItems: 'center',
+    borderRadius: Radius.pill,
+    borderWidth: Controls.borderWidth,
+    gap: Spacing.xs,
+    justifyContent: 'center',
+    minHeight: Controls.minimumTouchHeight,
+    paddingHorizontal: Spacing.md,
+    maxWidth: '100%',
+  },
   metrics: { flexWrap: 'wrap', gap: Spacing.md },
   metricTile: { flexGrow: 1, flexBasis: 150, minWidth: 0, borderRadius: Radius.md, padding: Spacing.md, gap: Spacing.xs },
   metricHeading: { alignItems: 'center', gap: Spacing.xs },
