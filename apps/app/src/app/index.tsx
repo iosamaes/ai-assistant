@@ -1,9 +1,10 @@
 import { Redirect } from 'expo-router';
 import { StyleSheet, useColorScheme, View } from 'react-native';
 
+import { BrandedIllustration } from '@/components/branded-illustration';
 import { Card, MizanText } from '@/components/mizan-ui';
 import { Screen } from '@/components/screen';
-import { Palette, Spacing } from '@/constants/theme';
+import { Palette, Radius, Spacing } from '@/constants/theme';
 import { useAppState } from '@/state/app-state';
 
 const entryCopy = {
@@ -20,7 +21,7 @@ const entryCopy = {
 } as const;
 
 export default function EntryScreen() {
-  const { locale, onboardingCompleted, sessionStatus, t, userId } = useAppState();
+  const { isRtl, locale, onboardingCompleted, sessionStatus, t, userId } = useAppState();
   const scheme = useColorScheme();
   const palette = Palette[scheme === 'dark' ? 'dark' : 'light'];
   const copy = entryCopy[locale];
@@ -30,10 +31,19 @@ export default function EntryScreen() {
       <Screen>
         <View style={styles.stage}>
           <Card style={[styles.heroCard, { backgroundColor: palette.accentSoft, borderColor: palette.accent }]}>
-            <MizanText variant="label" muted>{copy.eyebrow}</MizanText>
-            <MizanText variant="display">{copy.title}</MizanText>
-            <MizanText>{copy.body}</MizanText>
-            <View style={styles.statusBlock} accessibilityLiveRegion="polite">
+            <View style={[styles.heroLayout, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
+              <View style={styles.heroCopy}>
+                <MizanText variant="label" style={{ color: palette.accent }}>{copy.eyebrow}</MizanText>
+                <MizanText variant="display">{copy.title}</MizanText>
+                <MizanText>{copy.body}</MizanText>
+              </View>
+              <View style={styles.heroVisual}>
+                <BrandedIllustration variant="welcome" size={156} />
+              </View>
+            </View>
+            <View
+              style={[styles.statusBlock, { backgroundColor: palette.surface }]}
+              accessibilityLiveRegion="polite">
               <MizanText variant="label">{t('loading')}</MizanText>
             </View>
           </Card>
@@ -59,9 +69,31 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.xxl,
   },
   heroCard: {
-    gap: Spacing.lg,
+    gap: Spacing.xl,
+  },
+  heroLayout: {
+    alignItems: 'center',
+    flexWrap: 'wrap',
+    gap: Spacing.xl,
+    justifyContent: 'space-between',
+  },
+  heroCopy: {
+    flexBasis: 360,
+    flexGrow: 1,
+    flexShrink: 1,
+    minWidth: 0,
+    gap: Spacing.md,
+  },
+  heroVisual: {
+    alignItems: 'center',
+    flexGrow: 0,
+    flexShrink: 0,
+    justifyContent: 'center',
   },
   statusBlock: {
-    paddingTop: Spacing.sm,
+    borderRadius: Radius.pill,
+    alignSelf: 'flex-start',
+    paddingHorizontal: Spacing.lg,
+    paddingVertical: Spacing.sm,
   },
 });
