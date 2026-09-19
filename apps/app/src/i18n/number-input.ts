@@ -12,3 +12,21 @@ export function parseLocalizedDecimalInput(value: string): number | null {
   const parsed = Number(normalized);
   return Number.isFinite(parsed) ? parsed : null;
 }
+
+export function formatLocalizedNumber(
+  value: number,
+  locale: 'ar' | 'en',
+  maximumFractionDigits = 1,
+): string {
+  if (!Number.isFinite(value)) return '—';
+  try {
+    return new Intl.NumberFormat(locale === 'ar' ? 'ar-QA' : 'en', {
+      maximumFractionDigits,
+      minimumFractionDigits: 0,
+      useGrouping: false,
+    }).format(value);
+  } catch {
+    const factor = 10 ** maximumFractionDigits;
+    return String(Math.round(value * factor) / factor);
+  }
+}
