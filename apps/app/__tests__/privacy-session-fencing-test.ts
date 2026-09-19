@@ -2,6 +2,16 @@ const mockGetSession = jest.fn();
 const mockRpc = jest.fn();
 const mockInvoke = jest.fn();
 const mockSignOut = jest.fn();
+const mockClearPendingUserMutations = jest.fn();
+const mockClearRecentDailySnapshot = jest.fn();
+
+jest.mock('@/infrastructure/offline/pending-mutations', () => ({
+  clearPendingUserMutations: mockClearPendingUserMutations,
+}));
+
+jest.mock('@/infrastructure/offline/recent-daily-snapshot', () => ({
+  clearRecentDailySnapshot: mockClearRecentDailySnapshot,
+}));
 
 jest.mock('@/infrastructure/supabase/client', () => ({
   supabase: {
@@ -36,6 +46,10 @@ beforeEach(() => {
   mockRpc.mockReset();
   mockInvoke.mockReset();
   mockSignOut.mockReset();
+  mockClearPendingUserMutations.mockReset();
+  mockClearRecentDailySnapshot.mockReset();
+  mockClearPendingUserMutations.mockResolvedValue({ ok: true, value: null });
+  mockClearRecentDailySnapshot.mockResolvedValue({ ok: true, value: null });
 });
 
 describe('privacy session fencing', () => {
@@ -103,10 +117,12 @@ describe('privacy session fencing', () => {
       error: { kind: 'delete-failed' },
     });
     expect(mockInvoke).not.toHaveBeenCalled();
+    expect(mockClearPendingUserMutations).not.toHaveBeenCalled();
+    expect(mockClearRecentDailySnapshot).not.toHaveBeenCalled();
     expect(mockSignOut).not.toHaveBeenCalled();
   });
 
-  test('returns a coarse deletion error and leaves the local session untouched on function failure', async () => {
+  test('returns a coarse deletion error and leaves local account data untouched on function failure', async () => {
     mockGetSession.mockResolvedValueOnce(sessionResult('user-a'));
     mockInvoke.mockResolvedValue({
       data: null,
@@ -117,10 +133,12 @@ describe('privacy session fencing', () => {
       ok: false,
       error: { kind: 'delete-failed' },
     });
+    expect(mockClearPendingUserMutations).not.toHaveBeenCalled();
+    expect(mockClearRecentDailySnapshot).not.toHaveBeenCalled();
     expect(mockSignOut).not.toHaveBeenCalled();
   });
 
-  test('does not clear a different user session after deleting the original account', async () => {
+  test('purges the deleted user local cache even if another user becomes active in flight', async () => {
     mockGetSession
       .mockResolvedValueOnce(sessionResult('user-a'))
       .mockResolvedValueOnce(sessionResult('user-b'));
@@ -130,10 +148,12 @@ describe('privacy session fencing', () => {
     expect(mockInvoke).toHaveBeenCalledWith('delete-account', {
       body: { confirmation: 'DELETE' },
     });
+    expect(mockClearPendingUserMutations).toHaveBeenCalledWith('user-a');
+    expect(mockClearRecentDailySnapshot).toHaveBeenCalledWith('user-a');
     expect(mockSignOut).not.toHaveBeenCalled();
   });
 
-  test('clears the local session when the deleted user is still active', async () => {
+  test('clears local user caches and session when the deleted user is still active', async () => {
     mockGetSession
       .mockResolvedValueOnce(sessionResult('user-a'))
       .mockResolvedValueOnce(sessionResult('user-a'));
@@ -141,6 +161,8 @@ describe('privacy session fencing', () => {
     mockSignOut.mockResolvedValue({ error: null });
 
     await expect(deleteMyAccount('user-a')).resolves.toEqual({ ok: true, value: null });
+    expect(mockClearPendingUserMutations).toHaveBeenCalledWith('user-a');
+    expect(mockClearRecentDailySnapshot).toHaveBeenCalledWith('user-a');
     expect(mockSignOut).toHaveBeenCalledWith({ scope: 'local' });
   });
 });
