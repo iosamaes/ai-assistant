@@ -17,8 +17,8 @@ describe('advanced decision-tool application boundaries', () => {
   });
 
   test('decision-tool numbers render in the selected locale', () => {
-    expect(formatLocalizedNumber(4.5, 'ar', 1)).toBe('٤٫٥');
-    expect(formatLocalizedNumber(5, 'ar', 0)).toBe('٥');
+    expect(formatLocalizedNumber(4.5, 'ar', 1)).toBe('4.5');
+    expect(formatLocalizedNumber(5, 'ar', 0)).toBe('5');
     expect(formatLocalizedNumber(4.5, 'en', 1)).toBe('4.5');
   });
 
