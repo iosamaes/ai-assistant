@@ -1,10 +1,10 @@
 {
   "schema_version": 1,
-  "generation": 127,
+  "generation": 128,
   "stale_after_seconds": 900,
   "owner_worker": "auto1",
-  "owner_run_id": "f8e0a6c7-8d68-4214-b3e7-24216ab17fdf",
-  "heartbeat_at": "2026-09-19T17:41:00.000000Z",
+  "owner_run_id": "d718d33f-dba2-4b23-b32c-bf07906bbeee",
+  "heartbeat_at": "2026-09-19T18:04:39.728917Z",
   "lease_task_digest": "f2786fbae29a0ee1fa7bf77eb1504fc8fb80c208",
   "candidate_worker": null,
   "candidate_task_digest": null,
