@@ -4,7 +4,7 @@ import { StyleSheet, useColorScheme, View } from 'react-native';
 
 import { Card, ChoiceChip, MizanText, MizanTextInput, PrimaryButton } from '@/components/mizan-ui';
 import { Screen } from '@/components/screen';
-import { Palette, Spacing } from '@/constants/theme';
+import { Palette, Radius, Spacing } from '@/constants/theme';
 import {
   requestPasswordReset,
   signInWithPassword,
@@ -199,5 +199,5 @@ const styles = StyleSheet.create({
   form: { gap: Spacing.lg },
   field: { gap: Spacing.sm },
   ltrInput: { textAlign: 'left', writingDirection: 'ltr' },
-  messagePanel: { borderRadius: 18, padding: Spacing.md },
+  messagePanel: { borderRadius: Radius.md, padding: Spacing.md },
 });
