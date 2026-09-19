@@ -70,7 +70,10 @@ export async function deleteMyAccount(
   if (!sessionBefore) return { ok: false, error: { kind: 'delete-failed' } };
 
   const { error } = await supabase.functions.invoke('delete-account', {
-    body: { confirmation: 'DELETE' },
+    body: {
+      confirmation: 'DELETE',
+      expected_user_id: expectedUserId,
+    },
   });
   if (error) {
     return { ok: false, error: { kind: 'delete-failed' } };
