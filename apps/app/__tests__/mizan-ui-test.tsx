@@ -40,6 +40,22 @@ describe('shared presentation primitives', () => {
     expect(onChangeText).toHaveBeenCalledWith('12.5');
   });
 
+  test('LTR identity fields stay left-aligned even when the app locale is RTL', async () => {
+    const emailView = await render(
+      <MizanTextInput accessibilityLabel="البريد" keyboardType="email-address" value="user@example.com" />,
+    );
+    const emailStyle = StyleSheet.flatten(emailView.getByLabelText('البريد').props.style);
+    expect(emailStyle.textAlign).toBe('left');
+    expect(emailStyle.writingDirection).toBe('ltr');
+
+    const passwordView = await render(
+      <MizanTextInput accessibilityLabel="كلمة المرور" secureTextEntry value="password123" />,
+    );
+    const passwordStyle = StyleSheet.flatten(passwordView.getByLabelText('كلمة المرور').props.style);
+    expect(passwordStyle.textAlign).toBe('left');
+    expect(passwordStyle.writingDirection).toBe('ltr');
+  });
+
   test('PrimaryButton exposes accessible disabled state and blocks presses', async () => {
     const onPress = jest.fn();
     const view = await render(<PrimaryButton label="حفظ" onPress={onPress} disabled />);
