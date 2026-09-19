@@ -11,6 +11,7 @@ import {
 import { Card, ChoiceChip, MizanText, SecondaryButton } from '@/components/mizan-ui';
 import { Screen } from '@/components/screen';
 import { Spacing } from '@/constants/theme';
+import { formatLocalizedNumber } from '@/i18n/number-input';
 import { useAppState } from '@/state/app-state';
 
 type LoadStatus = 'loading' | 'ready' | 'error';
@@ -50,15 +51,15 @@ const copy = {
     scenarios: {
       'earlier-bedtime': {
         label: 'تقديم موعد النوم',
-        assumptions: ['تقديم النوم بنحو 30 دقيقة لمدة عدة أيام', 'لا يوجد تغيير كبير آخر متزامن في روتين التعافي'],
+        assumptions: ['تقديم النوم بنحو ٣٠ دقيقة لمدة عدة أيام', 'لا يوجد تغيير كبير آخر متزامن في روتين التعافي'],
       },
       'quiet-focus': {
         label: 'فترة تركيز بلا إشعارات',
-        assumptions: ['إيقاف الإشعارات لمدة 45 دقيقة خلال مهمة مهمة', 'السيناريو لا يفترض زيادة ساعات العمل'],
+        assumptions: ['إيقاف الإشعارات لمدة ٤٥ دقيقة خلال مهمة مهمة', 'السيناريو لا يفترض زيادة ساعات العمل'],
       },
       'short-walk': {
         label: 'مشي هادئ قصير',
-        assumptions: ['مشي مريح لمدة نحو 20 دقيقة', 'لا يفترض شدة رياضية أو فائدة صحية علاجية'],
+        assumptions: ['مشي مريح لمدة نحو ٢٠ دقيقة', 'لا يفترض شدة رياضية أو فائدة صحية علاجية'],
       },
     },
     components: {
@@ -147,8 +148,8 @@ function scenarioDefinitions(locale: 'ar' | 'en'): Record<ScenarioId, ScenarioDe
   };
 }
 
-function formatRange(min: number, max: number): string {
-  return `${Math.round(min)}–${Math.round(max)}`;
+function formatRange(min: number, max: number, locale: 'ar' | 'en'): string {
+  return `${formatLocalizedNumber(Math.round(min), locale, 0)}–${formatLocalizedNumber(Math.round(max), locale, 0)}`;
 }
 
 export default function WhatIfScreen() {
@@ -263,15 +264,17 @@ export default function WhatIfScreen() {
                 <Card key={effect.componentKey}>
                   <MizanText variant="title">{componentLabel}</MizanText>
                   <MizanText muted>
-                    {labels.current}: {effect.currentValue === null ? labels.unknown : Math.round(effect.currentValue)}
+                    {labels.current}: {effect.currentValue === null
+                      ? labels.unknown
+                      : formatLocalizedNumber(Math.round(effect.currentValue), locale, 0)}
                   </MizanText>
                   <MizanText muted>
                     {labels.projected}: {effect.projectedMin === null || effect.projectedMax === null
                       ? labels.unknown
-                      : formatRange(effect.projectedMin, effect.projectedMax)}
+                      : formatRange(effect.projectedMin, effect.projectedMax, locale)}
                   </MizanText>
                   <MizanText variant="caption" muted>
-                    {sourceLabel} · {labels.evidence}: {effect.evidenceCount}
+                    {sourceLabel} · {labels.evidence}: {formatLocalizedNumber(effect.evidenceCount, locale, 0)}
                   </MizanText>
                 </Card>
               );
