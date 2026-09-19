@@ -177,3 +177,18 @@ export async function removePendingUserMutation(
     return { ok: false, error: 'storage-unavailable' };
   }
 }
+
+export async function clearPendingUserMutations(
+  userId: string,
+): Promise<PendingMutationStorageResult<null>> {
+  try {
+    await Promise.all(
+      Array.from({ length: MAX_PENDING_MUTATIONS }, (_, index) =>
+        writeRaw(storageKey(userId, index), null),
+      ),
+    );
+    return { ok: true, value: null };
+  } catch {
+    return { ok: false, error: 'storage-unavailable' };
+  }
+}
