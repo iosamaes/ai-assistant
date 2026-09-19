@@ -28,6 +28,7 @@ import {
 import { Screen } from '@/components/screen';
 import { Controls, Interaction, Palette, Radius, Spacing } from '@/constants/theme';
 import type { TranslationKey } from '@/i18n';
+import { formatLocalizedNumber } from '@/i18n/number-input';
 import { DomainId, useAppState } from '@/state/app-state';
 
 type DailyLoadStatus = 'loading' | 'ready' | 'error';
@@ -150,6 +151,7 @@ export default function TodayScreen() {
   const palette = Palette[scheme === 'dark' ? 'dark' : 'light'];
   const syncMessage = syncStatus === 'offline' ? t('syncOffline') : syncStatus === 'error' ? t('syncError') : null;
   const dailyCopy = overviewCopy[locale];
+  const formatWhole = (value: number) => formatLocalizedNumber(value, locale, 0);
   const humanState = dailySnapshot?.humanState ?? null;
   const dailyOverview = dailySnapshot?.overview ?? null;
   const snapshotMessage = cachedSnapshotMessage(dailySnapshot, locale);
@@ -399,10 +401,10 @@ export default function TodayScreen() {
           <View key={component.key} style={[styles.stateItem, { borderTopColor: palette.border }]}>
             <View style={[styles.stateRow, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
               <MizanText variant="label">{t(labelKey)}</MizanText>
-              <MizanText variant="title">{Math.round(component.value ?? 0)} / 100</MizanText>
+              <MizanText variant="title">{formatWhole(Math.round(component.value ?? 0))} / {formatWhole(100)}</MizanText>
             </View>
             <MizanText variant="caption" muted>
-              {t(confidenceLabelKey(component.confidence.level))} · {t('evidenceLabel')}: {component.evidence.length}
+              {t(confidenceLabelKey(component.confidence.level))} · {t('evidenceLabel')}: {formatWhole(component.evidence.length)}
             </MizanText>
           </View>
         ))}
@@ -419,12 +421,12 @@ export default function TodayScreen() {
               <View style={[styles.stateRow, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
                 <MizanText variant="label">{dailyCopy.balance}</MizanText>
                 {dailyOverview?.balance?.score !== null && dailyOverview?.balance?.score !== undefined ? (
-                  <MizanText variant="title">{Math.round(dailyOverview.balance.score)} / 100</MizanText>
+                  <MizanText variant="title">{formatWhole(Math.round(dailyOverview.balance.score))} / {formatWhole(100)}</MizanText>
                 ) : null}
               </View>
               {dailyOverview?.balance?.score !== null && dailyOverview?.balance?.score !== undefined ? (
                 <MizanText variant="caption" muted>
-                  {t(confidenceLabelKey(dailyOverview.balance.confidence.level))} · {t('evidenceLabel')}: {dailyOverview.balance.evidence.length}
+                  {t(confidenceLabelKey(dailyOverview.balance.confidence.level))} · {t('evidenceLabel')}: {formatWhole(dailyOverview.balance.evidence.length)}
                 </MizanText>
               ) : (
                 <MizanText muted>{dailyCopy.balanceEmpty}</MizanText>
@@ -446,7 +448,7 @@ export default function TodayScreen() {
                       <MizanText variant="label">{momentumLabel(momentum.direction, locale)}</MizanText>
                     </View>
                     <MizanText variant="caption" muted>
-                      {t(confidenceLabelKey(momentum.confidence.level))} · {t('evidenceLabel')}: {momentum.evidence.length}
+                      {t(confidenceLabelKey(momentum.confidence.level))} · {t('evidenceLabel')}: {formatWhole(momentum.evidence.length)}
                     </MizanText>
                   </View>
                 );
@@ -470,7 +472,7 @@ export default function TodayScreen() {
             <MizanText variant="title">{t(activeActionLabel)}</MizanText>
             <MizanText muted>{t(reasonLabelKey(activeRecommendation.reasonSignal))}</MizanText>
             <MizanText variant="caption" muted>
-              {t(confidenceLabelKey(activeRecommendation.confidence.level))} · {t('evidenceLabel')}: {activeRecommendation.evidence.length}
+              {t(confidenceLabelKey(activeRecommendation.confidence.level))} · {t('evidenceLabel')}: {formatWhole(activeRecommendation.evidence.length)}
             </MizanText>
 
             {alternative && alternativeLabel && !decisionFinished ? (
@@ -524,10 +526,12 @@ export default function TodayScreen() {
               {OUTCOME_RATINGS.map((value) => {
                 const selected = feedbackUsefulness === value;
                 const disabled = feedbackStatus === 'saving' || feedbackStatus === 'saved';
+                const formattedValue = formatWhole(value);
+                const formattedTotal = formatWhole(OUTCOME_RATINGS.length);
                 return (
                   <Pressable
                     key={value}
-                    accessibilityLabel={`${t('feedbackUsefulness')}: ${value} / ${OUTCOME_RATINGS.length}`}
+                    accessibilityLabel={`${t('feedbackUsefulness')}: ${formattedValue} / ${formattedTotal}`}
                     accessibilityRole="button"
                     accessibilityState={{ selected, disabled }}
                     disabled={disabled}
@@ -546,7 +550,7 @@ export default function TodayScreen() {
                     <MizanText
                       variant="label"
                       style={selected ? [styles.primaryActionText, { color: palette.onAccent }] : undefined}>
-                      {value}
+                      {formattedValue}
                     </MizanText>
                   </Pressable>
                 );
