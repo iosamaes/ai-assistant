@@ -11,7 +11,7 @@ import {
 } from '@/application/why';
 import { Card, MizanText, PrimaryButton, SecondaryButton } from '@/components/mizan-ui';
 import { Screen } from '@/components/screen';
-import { Controls, Palette, Spacing } from '@/constants/theme';
+import { Controls, Palette, Radius, Spacing } from '@/constants/theme';
 import { formatLocalizedNumber } from '@/i18n/number-input';
 import { useAppState } from '@/state/app-state';
 
@@ -100,7 +100,7 @@ function formatDate(value: string, locale: 'ar' | 'en') {
   const timestamp = Date.parse(value);
   if (!Number.isFinite(timestamp)) return '—';
   try {
-    return new Intl.DateTimeFormat(locale === 'ar' ? 'ar-QA' : 'en', {
+    return new Intl.DateTimeFormat(locale === 'ar' ? 'ar-QA-u-nu-latn' : 'en-QA-u-nu-latn', {
       day: 'numeric',
       month: 'short',
     }).format(new Date(timestamp));
@@ -124,24 +124,35 @@ function FactorCard({ factor, locale, isRtl }: { factor: WhyCandidateFactor; loc
   const hundred = formatLocalizedNumber(100, locale, 0);
 
   return (
-    <Card>
-      <MizanText variant="title">{local.factors[key]}</MizanText>
-      <MizanText muted>{local.descriptions[key]}</MizanText>
+    <Card style={styles.factorCard}>
+      <View style={[styles.factorHeader, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
+        <View style={styles.factorCopy}>
+          <MizanText variant="title">{local.factors[key]}</MizanText>
+          <MizanText muted>{local.descriptions[key]}</MizanText>
+        </View>
+        <View style={[styles.signalPill, { backgroundColor: palette.accentSoft }]}>
+          <MizanText variant="label">{formatLocalizedNumber(Math.round(factor.value), locale, 0)} / {hundred}</MizanText>
+        </View>
+      </View>
+
+      <View style={styles.detailGrid}>
+        <View style={[styles.detailTile, { backgroundColor: palette.surfaceMuted }]}>
+          <MizanText variant="caption" muted>{local.confidence}</MizanText>
+          <MizanText variant="label">{confidenceLabel(factor.confidence.level, locale)}</MizanText>
+        </View>
+        <View style={[styles.detailTile, { backgroundColor: palette.surfaceMuted }]}>
+          <MizanText variant="caption" muted>{local.evidence}</MizanText>
+          <MizanText variant="label">{formatLocalizedNumber(factor.evidence.length, locale, 0)}</MizanText>
+        </View>
+        <View style={[styles.detailTile, styles.windowTile, { backgroundColor: palette.surfaceMuted }]}>
+          <MizanText variant="caption" muted>{local.window}</MizanText>
+          <MizanText variant="label" style={styles.detailText}>{evidenceWindowLabel(factor, locale)}</MizanText>
+        </View>
+      </View>
+
       <View style={[styles.detailRow, { flexDirection: isRtl ? 'row-reverse' : 'row', borderTopColor: palette.border }]}>
         <MizanText variant="caption" muted style={styles.detailText}>{local.value}</MizanText>
         <MizanText variant="label" style={styles.detailText}>{formatLocalizedNumber(Math.round(factor.value), locale, 0)} / {hundred}</MizanText>
-      </View>
-      <View style={[styles.detailRow, { flexDirection: isRtl ? 'row-reverse' : 'row', borderTopColor: palette.border }]}>
-        <MizanText variant="caption" muted style={styles.detailText}>{local.confidence}</MizanText>
-        <MizanText variant="label" style={styles.detailText}>{confidenceLabel(factor.confidence.level, locale)}</MizanText>
-      </View>
-      <View style={[styles.detailRow, { flexDirection: isRtl ? 'row-reverse' : 'row', borderTopColor: palette.border }]}>
-        <MizanText variant="caption" muted style={styles.detailText}>{local.evidence}</MizanText>
-        <MizanText variant="label" style={styles.detailText}>{formatLocalizedNumber(factor.evidence.length, locale, 0)}</MizanText>
-      </View>
-      <View style={[styles.detailRow, { flexDirection: isRtl ? 'row-reverse' : 'row', borderTopColor: palette.border }]}>
-        <MizanText variant="caption" muted style={styles.detailText}>{local.window}</MizanText>
-        <MizanText variant="label" style={styles.detailText}>{evidenceWindowLabel(factor, locale)}</MizanText>
       </View>
     </Card>
   );
@@ -152,6 +163,8 @@ export default function WhyScreen() {
   const [explanation, setExplanation] = useState<WhyExplanation | null>(null);
   const [status, setStatus] = useState<LoadStatus>('loading');
   const local = copy[locale];
+  const scheme = useColorScheme();
+  const palette = Palette[scheme === 'dark' ? 'dark' : 'light'];
 
   useEffect(() => {
     let active = true;
@@ -191,23 +204,30 @@ export default function WhyScreen() {
         <SecondaryButton compact label={local.back} onPress={() => router.replace('/today')} />
       </View>
 
-      <Card>
-        <MizanText muted>{local.body}</MizanText>
-        <MizanText variant="caption" muted>{local.caveat}</MizanText>
+      <Card style={[styles.heroCard, { backgroundColor: palette.accentSoft, borderColor: palette.accent }]}>
+        <View style={styles.heroCopy}>
+          <MizanText variant="title">{local.title}</MizanText>
+          <MizanText muted>{local.body}</MizanText>
+          <MizanText variant="caption" muted>{local.caveat}</MizanText>
+        </View>
         <PrimaryButton label={local.checkIn} onPress={() => router.push('/check-in')} />
       </Card>
 
       {status === 'loading' ? <MizanText accessibilityLiveRegion="polite" muted>{local.loading}</MizanText> : null}
-      {status === 'error' ? <Card><MizanText accessibilityLiveRegion="polite" muted>{local.error}</MizanText></Card> : null}
+      {status === 'error' ? (
+        <Card style={{ backgroundColor: palette.surfaceMuted }}><MizanText accessibilityLiveRegion="polite" muted>{local.error}</MizanText></Card>
+      ) : null}
       {status === 'ready' && (explanation?.factors.length ?? 0) === 0 ? (
-        <Card><MizanText accessibilityLiveRegion="polite" muted>{local.empty}</MizanText></Card>
+        <Card style={{ backgroundColor: palette.surfaceMuted }}><MizanText accessibilityLiveRegion="polite" muted>{local.empty}</MizanText></Card>
       ) : null}
 
-      {status === 'ready'
-        ? explanation?.factors.map((factor) => (
+      {status === 'ready' ? (
+        <View style={styles.factorGrid}>
+          {explanation?.factors.map((factor) => (
             <FactorCard key={factor.key} factor={factor} locale={locale} isRtl={isRtl} />
-          ))
-        : null}
+          ))}
+        </View>
+      ) : null}
     </Screen>
   );
 }
@@ -215,6 +235,16 @@ export default function WhyScreen() {
 const styles = StyleSheet.create({
   topRow: { alignItems: 'flex-start', justifyContent: 'space-between', gap: Spacing.lg, flexWrap: 'wrap' },
   heading: { flex: 1, minWidth: 0, gap: Spacing.xs },
+  heroCard: { gap: Spacing.xl },
+  heroCopy: { gap: Spacing.sm },
+  factorGrid: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'stretch', gap: Spacing.lg },
+  factorCard: { flexGrow: 1, flexShrink: 1, flexBasis: 360 },
+  factorHeader: { alignItems: 'flex-start', justifyContent: 'space-between', gap: Spacing.lg, flexWrap: 'wrap' },
+  factorCopy: { flexGrow: 1, flexShrink: 1, flexBasis: 220, gap: Spacing.sm },
+  signalPill: { minHeight: Controls.minimumTouchHeight, justifyContent: 'center', paddingHorizontal: Spacing.md, borderRadius: Radius.pill },
+  detailGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.sm },
+  detailTile: { flexGrow: 1, flexShrink: 1, flexBasis: 140, gap: Spacing.xs, paddingHorizontal: Spacing.md, paddingVertical: Spacing.md, borderRadius: Radius.md },
+  windowTile: { flexBasis: 220 },
   detailRow: {
     alignItems: 'flex-start',
     justifyContent: 'space-between',
