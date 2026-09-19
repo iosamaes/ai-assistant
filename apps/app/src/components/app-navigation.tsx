@@ -70,6 +70,8 @@ export function AppNavigation({ activeSegment }: AppNavigationProps) {
         {
           backgroundColor: palette.surface,
           borderColor: palette.border,
+          borderLeftWidth: wide && isRtl ? Controls.borderWidth : 0,
+          borderRightWidth: wide && !isRtl ? Controls.borderWidth : 0,
           paddingBottom: wide ? Spacing.lg : Math.max(insets.bottom, Spacing.sm),
           paddingTop: wide ? Math.max(insets.top, Spacing.xl) : Spacing.sm,
         },
@@ -145,7 +147,6 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.xs,
   },
   rail: {
-    borderEndWidth: Controls.borderWidth,
     gap: Spacing.xl,
     minWidth: 188,
     paddingBottom: Spacing.lg,
