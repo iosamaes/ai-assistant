@@ -40,6 +40,7 @@ Presentation boundary already in place:
 - async accessibility live announcements cover loading/error/empty/status transitions across reviewed product surfaces.
 
 Latest static CP9 work:
+- **Disabled text-input semantics:** shared `MizanTextInput` now derives and exposes `accessibilityState.disabled` whenever a field is non-editable (or explicitly marked disabled), so auth/password and other submission-fenced inputs communicate their disabled state to assistive technology instead of only blocking edits. Commit `1ddb09879baebe0b296f74a7e1090f519bdfcb0e`.
 - **Reduced-motion startup safety:** navigation now starts with motion disabled until React Native resolves the platform reduced-motion preference, preventing an initial fade from slipping through for users who have Reduced Motion enabled. Runtime preference changes still update through the existing accessibility listener. Commit `b5530e0a5e55abd549db949daef53ca2be2af9e5`.
 - **Unknown-data presentation honesty:** Capacity no longer coerces a missing fragility estimate to `0 / 100` when the surrounding buffer summary is otherwise available; it now renders the localized unknown label and preserves the mission rule that missing evidence never becomes a zero score. Commit `d5143d3b094893cc6352eea415ae914097c3fc1a`.
 - **Auth submission fencing:** language and auth-mode chips are now disabled while sign-in/sign-up/reset is in flight, and email/password fields become non-editable until the request finishes. This prevents the visible form or mode from drifting away from the credentials/action actually submitted and exposes the disabled choice state to assistive technology through the shared `ChoiceChip` semantics. Commit `b32714eb8b53dc43a9389e6f0c2ee2cbf3302294`.
@@ -56,7 +57,7 @@ The TASK-required final design-swap proof is **not claimed**. It still requires 
 - Commit `d32636ddd253e3ec688376a4a42596e2844704df` added broad CP2–CP9 app/runtime validation coverage scaffolding.
 - Commit `ec9a016cee5649cccaeb4af966d3037624f94fce` added focused localized-number parsing coverage.
 - These suites have **not** been executed by workers under the current policy; no PASS is claimed from their presence alone.
-- No new automated test was added for the latest declarative auth/password interaction fencing; meaningful verification depends on pending runtime interaction/accessibility checks rather than duplicating React Native prop assertions.
+- No new automated test was added for the latest declarative auth/password/input interaction fencing; meaningful verification depends on pending runtime interaction/accessibility checks rather than duplicating React Native prop assertions.
 
 ## Exact next executable action
 1. Continue repository-wide CP9 static review for untranslated production literals, semantic RTL issues, missing accessibility labels/states/live announcements, truncation/dynamic-type risks, duplicated global visual values, and unjustified local control treatments; prioritize the remaining Today-local settings/check-in/rating controls only where shared primitives can remove demonstrated duplication without changing behavior.
