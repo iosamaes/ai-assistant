@@ -37,8 +37,10 @@ Presentation boundary:
 - broad static pass over RTL, dynamic type, accessibility states/live regions, async interaction fencing, localization, and repeated visual semantics across primary routes.
 
 Latest static CP9 work:
-- **Arabic-first numeric presentation:** `apps/app/src/i18n/number-input.ts` now provides shared locale-aware numeric formatting in addition to localized decimal parsing. Cost of Yes and Human ROI now render Arabic-Indic digits for Arabic placeholders, rating controls/accessibility labels, calculated hours, evidence counts, and percentage/rating values while retaining Western-digit output for English. Commits `f38750f1848a73e38cfbbdad8de85b598439632a`, `93bae4e5dee36a9d2310b7d8fae1d6eceb443a23`, `8075d87d80b52a78c3601edf5f1570bc020e4a39`.
-- **Numeric localization specification:** `apps/app/__tests__/advanced-tools-test.ts` now covers Arabic and English formatted-number output in addition to localized decimal parsing. Commit `4cd50a79e013ba78cd25ced4e6a6d99600a236fb`; not worker-run under current policy.
+- **Arabic-first numeric presentation:** `apps/app/src/i18n/number-input.ts` provides shared locale-aware numeric formatting in addition to localized decimal parsing. Cost of Yes and Human ROI render Arabic-Indic digits for Arabic placeholders, rating controls/accessibility labels, calculated hours, evidence counts, and percentage/rating values while retaining Western-digit output for English. Earlier commits: `f38750f1848a73e38cfbbdad8de85b598439632a`, `93bae4e5dee36a9d2310b7d8fae1d6eceb443a23`, `8075d87d80b52a78c3601edf5f1570bc020e4a39`.
+- **Numeric localization extended across evidence surfaces:** Insights, WHY, Capacity, and Life Map now use the shared formatter for user-facing sample/evidence counts, score denominators, effect/window values, and other dynamic numbers; Arabic static window copy on these audited surfaces uses Arabic-Indic digits where applicable. Capacity also preserves a genuinely unknown evidence count as `—` instead of manufacturing `0` when no snapshot exists. Commits `a7737820279ef87ffff7c6aebba67994682b121b`, `1b707719be16b339bf02e1ccaf151592b5a9fb14`, `cf667c6b8ce513292260c25bf97ef2630c5feae4`, `be50e86ca8f12f2bf735ca507b83c0a8bca5afc3`.
+- **Insights dynamic-type hardening:** header/detail rows now wrap and allow text shrinkage consistently with the already-hardened WHY/Life Map patterns, reducing narrow-width and large-text collision risk. Commit `a7737820279ef87ffff7c6aebba67994682b121b`.
+- **Numeric localization specification:** `apps/app/__tests__/advanced-tools-test.ts` covers Arabic and English formatted-number output in addition to localized decimal parsing. Commit `4cd50a79e013ba78cd25ced4e6a6d99600a236fb`; not worker-run under current policy.
 - **Recent accessibility/interaction hardening already on main:** async state fencing across onboarding, auth, password recovery, What If, Invisible Wins, Experiments, Life Seasons, Settings and Check-in; disabled semantics in shared fields/chips; keyboard-safe shared scrolling; startup-safe reduced motion; root fallback bidi parity; unknown-data honesty in Capacity; localized integration metadata; live-region/RTL/dynamic-type fixes across primary surfaces.
 
 The TASK-required final design-swap proof is **not claimed**. It still requires owner visual/runtime validation using a substantially different visual direction and representative device widths.
@@ -49,7 +51,7 @@ The TASK-required final design-swap proof is **not claimed**. It still requires 
 - These suites have **not** been executed by workers under the current policy; no PASS is claimed from their presence alone.
 
 ## Exact next executable action
-1. Continue repository-wide CP9 static review for untranslated production literals, semantic RTL issues, missing accessibility labels/states/live announcements, truncation/dynamic-type risks, duplicated global visual values, unjustified local control treatments, and keyboard/focus usability gaps; prioritize concrete defects over abstraction-only cleanup.
+1. Continue repository-wide CP9 static review for remaining untranslated production literals and locale-inconsistent numeric/date presentation, then semantic RTL issues, missing accessibility labels/states/live announcements, truncation/dynamic-type risks, duplicated global visual values, unjustified local control treatments, and keyboard/focus usability gaps; prioritize concrete defects over abstraction-only cleanup.
 2. Revisit an already-audited surface only when static inspection finds a concrete remaining defect.
 3. Leave representative-width runtime checks, post-baseline tests/builds/typechecks, CP1–CP8 execution-dependent evidence, and final design-swap proof to owner validation under the active policy.
 
@@ -85,5 +87,9 @@ Post-baseline:
 - `apps/app/src/i18n/number-input.ts`
 - `apps/app/src/app/cost-of-yes.tsx`
 - `apps/app/src/app/human-roi.tsx`
+- `apps/app/src/app/insights.tsx`
+- `apps/app/src/app/why.tsx`
+- `apps/app/src/app/capacity.tsx`
+- `apps/app/src/app/life-map.tsx`
 - `apps/app/__tests__/advanced-tools-test.ts`
 - `automation/HUMAN_REQUIRED.md`
