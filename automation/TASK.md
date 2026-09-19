@@ -287,6 +287,7 @@ Do not push optimization into every moment; support untracked time and explicit 
 ## 11. Core user experience
 
 The product is Arabic-first with correct RTL behavior and an English locale available from the beginning.
+**Numeric glyph policy — non-negotiable owner requirement:** all user-facing numeric output must use Western/ASCII digits `0-9` in every locale, including Arabic. Never render Arabic-Indic (`٠١٢٣٤٥٦٧٨٩`) or Eastern Arabic/Persian (`۰۱۲۳۴۵۶۷۸۹`) digits in labels, values, placeholders, percentages, counters, dates/times, ranges, accessibility labels, or generated product copy. Where user input or a platform keyboard supplies Arabic-Indic/Eastern digits, parsing may accept and normalize them, but formatted output must return Western digits; preserve Arabic language/RTL text independently from digit glyph choice.
 Use a calm, premium, modern visual system: high readability, restrained motion, generous spacing, meaningful hierarchy, and no visual noise.
 Support light and dark appearance if it can be implemented cleanly without delaying core correctness.
 Every primary flow must work with touch, keyboard where relevant, screen readers, dynamic text scaling, and accessible contrast.
@@ -555,6 +556,7 @@ Required:
 - Audit every primary screen at narrow phone, common phone, tablet portrait/landscape, and wide Web layouts.
 - Fix RTL mirroring, text alignment, icon direction where semantic, truncation, dynamic type, keyboard navigation, focus, and screen-reader labels.
 - Complete Arabic and English strings for all shipped user-facing text; no untranslated production literals.
+- Enforce the global numeric glyph policy across every shipped surface: Arabic and English must both display Western digits `0-9`; audit dynamic formatting and static copy (including dates/times, percentages, ranges, counters, placeholders, and accessibility labels) for Arabic-Indic/Eastern digits. Input parsing may remain tolerant of localized digits but must normalize them before calculation/storage.
 - Verify light/dark modes if shipped.
 - Reduce unnecessary motion and honor platform accessibility preferences where available.
 - Tune perceived performance: avoid large rerender storms, oversized lists, and blocking startup work.
