@@ -314,7 +314,7 @@ export default function IntegrationsScreen() {
                 </View>
 
                 <MizanText variant="label">{labels.sourceDetails}</MizanText>
-                <View style={styles.detailsGrid}>
+                <View style={[styles.detailsGrid, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
                   <View style={styles.detailBlock}>
                     <MizanText variant="caption" muted>{labels.lastSync}</MizanText>
                     <MizanText variant="label">
@@ -402,7 +402,6 @@ const styles = StyleSheet.create({
     gap: Spacing.xs,
   },
   detailsGrid: {
-    flexDirection: 'row',
     flexWrap: 'wrap',
     gap: Spacing.lg,
   },
