@@ -84,6 +84,8 @@ The service-role key is not present in client source or client environment names
 
 The UI uses a two-step destructive flow. It also states the provider boundary clearly: deletion removes the MIZAN account, MIZAN-owned data, MIZAN connection metadata, and the currently known app-owned local caches for that user, but cannot erase original records held independently in a user's account with an external provider.
 
+The destructive confirmation is now scoped to the active account rather than only to screen-local state. When the active `userId` changes, any open delete confirmation and prior status message are cleared, and the final destructive action remains disabled unless the confirmation belongs to the currently active account. This prevents a confirmation opened under one account from authorizing deletion after a switch to another account. Implementation: `92c7f06ad33534b905e38252bfa4758bf950c907`; focused screen regression specification: `apps/app/__tests__/privacy-screen-session-fencing-test.tsx` in `6c84bb8915103f16af68d4c630dc7373aece431a`. The specification was added but not executed under the active worker policy.
+
 ## Optional-data consent
 
 Optional spiritual-grounding preference and external integration lifecycle/consent state remain user-controlled. Integration connection rows contain no provider credentials.
@@ -101,6 +103,8 @@ The integration settings presentation is also fenced to the initiating session. 
 `supabase/tests/account_data_export_security.sql` now specifies the database-side export boundary with rollback-only fixtures. It asserts that `anon` lacks execute privilege, `authenticated` retains execute privilege, the export payload is scoped to the active caller, another user's observation marker cannot leak into the JSON, and nested records do not re-emit `user_id`. Commit: `db58d7c6ab58be4e1260ea85bdeaa50fffedb741`.
 
 `apps/app/__tests__/privacy-session-fencing-test.ts` specifies that the client calls only the intended export RPC and deletion function, refuses to start either operation for a different active session, returns coarse error kinds rather than backend/Edge error bodies, leaves local account data untouched when server deletion fails, purges the deleted user's local caches after confirmed server deletion even if another account becomes active, and distinguishes confirmed server deletion from incomplete local storage cleanup. Latest commit: `bc38ccba6ed4d549c6dd087716022fb21a5aa573`.
+
+`apps/app/__tests__/privacy-screen-session-fencing-test.tsx` additionally specifies the presentation-level consent boundary: a delete confirmation opened by user A is invalidated when user B becomes active, and user B must begin a fresh two-step confirmation before any destructive call is allowed. Commit: `6c84bb8915103f16af68d4c630dc7373aece431a`.
 
 These are implementation/specification evidence only. They were not executed by the worker under the current policy, and the deployed Edge Function plus Web/native local-purge behavior still need owner-side end-to-end validation.
 
@@ -126,6 +130,6 @@ The live Supabase Security Advisor currently reports `auth_leaked_password_prote
 - Execute the expanded privacy client specifications and validate the deployed delete-account authentication/deletion boundary end to end without exposing service credentials.
 - Verify export, account deletion, local cache purge, and the local-cleanup warning path end to end from Web and at least one native target.
 - Complete the repository-wide logging/error-reporting sensitive-data audit beyond the targeted boundaries already reviewed.
-- Owner-validate the health consent-revocation races and the new integration-screen account-switch fencing; apply the same lifecycle fencing if future time/location collectors are wired.
+- Owner-validate the health consent-revocation races and the new integration-screen/account-switch/privacy-confirmation fencing; apply the same lifecycle fencing if future time/location collectors are wired.
 - Re-run the live Supabase Security Advisor after the owner enables leaked-password protection.
 - Re-review the export/delete/local-cache inventory whenever new user-owned tables, storage buckets, local persistence stores, providers, or provider-side credentials are introduced.
