@@ -105,7 +105,7 @@ function formatDate(value: string, locale: 'ar' | 'en'): string {
   const parsed = new Date(value);
   if (Number.isNaN(parsed.getTime())) return value;
   try {
-    return new Intl.DateTimeFormat(locale === 'ar' ? 'ar-QA' : 'en', { dateStyle: 'medium' }).format(parsed);
+    return new Intl.DateTimeFormat(locale === 'ar' ? 'ar-QA-u-nu-latn' : 'en', { dateStyle: 'medium' }).format(parsed);
   } catch {
     return parsed.toISOString().slice(0, 10);
   }
@@ -130,6 +130,7 @@ export default function PersonalLearningScreen() {
         return;
       }
 
+      setActions([]);
       setStatus('loading');
       const result = await loadPersonalLearning(userId);
       if (!active) return;
@@ -166,7 +167,7 @@ export default function PersonalLearningScreen() {
         </Card>
       ) : null}
 
-      {visible.map((action) => {
+      {status === 'ready' ? visible.map((action) => {
         const estimateLabel = responseLabel(action.estimate.usefulness, locale);
         const freshness = action.estimate.confidence.freshnessDays;
         return (
@@ -220,7 +221,7 @@ export default function PersonalLearningScreen() {
             <MizanText variant="caption" muted>{labels.adherenceRule}</MizanText>
           </Card>
         );
-      })}
+      }) : null}
 
       <SecondaryButton compact label={labels.back} onPress={() => router.replace('/settings')} />
     </Screen>
