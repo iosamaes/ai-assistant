@@ -61,6 +61,11 @@ Presentation authority remains the compact app-local theme and shared primitives
 
 Additional static CP9 evidence includes Western/ASCII digit enforcement for Arabic and English formatted output, Arabic localized-number parsing, Arabic timestamps using `nu-latn`, Today cross-user async fencing, and targeted RTL/localization/dynamic-type/accessibility hardening across primary routes.
 
+Navigation/state hardening added in the latest static pass:
+- `de9ddb608498d4440874a831585ae19bb4a70b52` — root entry routing now treats an authenticated offline session (`offline` + active `userId`) as usable, matching the root navigator and preventing an offline cold entry from bouncing back to Auth.
+- `e3a817f552a8036974efef449d36a98718acef84` — focused entry-route regression specification covers offline authenticated Today/onboarding routing and rejects offline-without-user as authenticated. The specification was added but not run under the active worker policy.
+- `b6d0878574de785c63cf0cfac5f1aae20ace813f` — shared `Screen` ambient layers moved `pointerEvents` from the deprecated React Native Web prop to the style property, preserving non-interactive decoration while removing a concrete Web console deprecation path.
+
 ### CP9 remaining
 - Continue the Premium Production Visual Pass only on any remaining shipped route that static inspection still shows at scaffold-level composition; password recovery/update now matches the premium auth direction, so prioritize only concrete remaining secondary/state surfaces before touching already-premium screens again.
 - Refine navigation shell/state/data presentation only where current code demonstrates a concrete need; avoid page-local design systems or wrapper-only abstraction.
@@ -113,6 +118,7 @@ Post-baseline:
 - Authorized product migrations `function_execute_hardening` and `account_data_export` were applied and resulting live function ACLs were read; this is implementation/state evidence, not a test-suite PASS.
 - `delete-account` deployment reports ACTIVE with JWT verification enabled; no destructive end-to-end deletion validation is claimed.
 - CP9 Premium Production Visual Pass commits through `b88fb3a4d70994251300b52c8458e3409659aa17` are static implementation evidence only until owner runtime review.
+- Offline entry routing and shared Web `pointerEvents` warning fixes above are static source evidence only; the focused regression specification remains owner-run under the active worker policy.
 
 ## Known blockers / risks
 - CP1: Windows session must be unlocked normally for true narrow-phone Arabic/English interaction evidence; see `automation/HUMAN_REQUIRED.md`.
@@ -138,6 +144,7 @@ Post-baseline:
 - `apps/app/src/constants/theme.ts`
 - `apps/app/src/components/mizan-ui.tsx`
 - `apps/app/src/components/screen.tsx`
+- `apps/app/src/app/index.tsx`
 - `apps/app/src/app/today.tsx`
 - `apps/app/src/app/life-map.tsx`
 - `apps/app/src/app/why.tsx`
@@ -167,6 +174,7 @@ Post-baseline:
 - `apps/app/src/application/integrations.ts`
 - `apps/app/src/state/app-state.tsx`
 - `apps/app/src/components/app-error-boundary.tsx`
+- `apps/app/__tests__/entry-screen-offline-routing-test.tsx`
 - `apps/app/__tests__/privacy-session-fencing-test.ts`
 - `apps/app/__tests__/integration-consent-revocation-test.ts`
 - `apps/app/__tests__/integrations-screen-session-fencing-test.tsx`
