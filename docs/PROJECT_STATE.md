@@ -40,6 +40,8 @@ Presentation boundary already in place:
 - async accessibility live announcements cover loading/error/empty/status transitions across reviewed product surfaces.
 
 Latest static CP9 work:
+- **Bootstrap error bidi parity:** the root `AppErrorBoundary` fallback now applies explicit RTL/LTR `writingDirection` to its title, body, and retry label in addition to alignment, so the provider-independent recovery surface handles Arabic/English punctuation and mixed-direction text consistently with the shared text primitives. Commit `db099d989b3c1c2a943175652c50e82ad7678fb5`.
+- **Keyboard-safe shared scrolling:** shared `Screen` now enables React Native automatic keyboard inset adjustment for scrollable screens, reducing the risk that auth, recovery, feedback, experiment, and other input flows have lower content obscured by the on-screen keyboard on supported native targets. Commit `e15b3b5f7c01798f32248702f0d03089020c76ee`.
 - **Disabled text-input semantics:** shared `MizanTextInput` now derives and exposes `accessibilityState.disabled` whenever a field is non-editable (or explicitly marked disabled), so auth/password and other submission-fenced inputs communicate their disabled state to assistive technology instead of only blocking edits. Commit `1ddb09879baebe0b296f74a7e1090f519bdfcb0e`.
 - **Reduced-motion startup safety:** navigation now starts with motion disabled until React Native resolves the platform reduced-motion preference, preventing an initial fade from slipping through for users who have Reduced Motion enabled. Runtime preference changes still update through the existing accessibility listener. Commit `b5530e0a5e55abd549db949daef53ca2be2af9e5`.
 - **Unknown-data presentation honesty:** Capacity no longer coerces a missing fragility estimate to `0 / 100` when the surrounding buffer summary is otherwise available; it now renders the localized unknown label and preserves the mission rule that missing evidence never becomes a zero score. Commit `d5143d3b094893cc6352eea415ae914097c3fc1a`.
@@ -60,7 +62,7 @@ The TASK-required final design-swap proof is **not claimed**. It still requires 
 - No new automated test was added for the latest declarative auth/password/input interaction fencing; meaningful verification depends on pending runtime interaction/accessibility checks rather than duplicating React Native prop assertions.
 
 ## Exact next executable action
-1. Continue repository-wide CP9 static review for untranslated production literals, semantic RTL issues, missing accessibility labels/states/live announcements, truncation/dynamic-type risks, duplicated global visual values, and unjustified local control treatments; prioritize the remaining Today-local settings/check-in/rating controls only where shared primitives can remove demonstrated duplication without changing behavior.
+1. Continue repository-wide CP9 static review for untranslated production literals, semantic RTL issues, missing accessibility labels/states/live announcements, truncation/dynamic-type risks, duplicated global visual values, unjustified local control treatments, and keyboard/focus usability gaps; prioritize concrete defects over abstraction-only cleanup.
 2. Revisit an already-audited surface only when static inspection finds a concrete remaining defect; avoid abstraction-only cleanup.
 3. Leave representative-width runtime checks, post-baseline tests/builds/typechecks, CP1–CP8 execution-dependent evidence, and the final design-swap proof to owner validation under the active policy.
 
