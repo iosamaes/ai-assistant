@@ -54,6 +54,10 @@ The earlier Premium Production Visual Pass remains useful foundation, but the ow
 - `4d792b40df1867f83268f95c73354ad4178ca9f2` — **Human ROI** now displays benefit and effort as two separate accessible 1–5 meters rather than inventing a single ROI score, preserving the protected-meaning mode and the product rule against false scalar precision.
 - `b5938695a7fac3dd49358900b4da59b60078b67b` + `168628b850aafe2b5db6c2952fd09587a95dafc8` + `144473356aec4368c359eca1d29e9fce9599c14b` — the shared icon vocabulary now covers values, reflections, experiments, seasons, integrations, privacy, and personalization; Settings and Integrations consume those shared semantics with RTL-aware icon-led composition instead of local glyph systems.
 - `9ce78fe21550dbb62fc6ecc18abd823b11eff459` — **Personal Learning** now visualizes each explicit user-reported usefulness outcome on its real 1–5 bounded scale with an accessible progress meter while retaining the exact `x/5` value, note, date, and rule that completion alone is not benefit evidence.
+- `a8a4ef8b3e4ea56fc70ccaac14a302e729f16742` — **Auth** now uses the same owner-reference premium language instead of a functional form-only surface: responsive narrow/wide composition, shared welcome illustration, explicit MIZAN hierarchy, a privacy/trust panel with shared semantics, and clearer access/language controls while preserving authentication behavior and localized live feedback.
+- `c5c1bd79aced8e82b709960d150343d4ed362d30` — the initial session/restoration entry surface now uses the shared branded illustration, responsive RTL-aware hierarchy, and a designed restoration status treatment while leaving redirect/session behavior unchanged.
+- `92c7f06ad33534b905e38252bfa4758bf950c907` — **Privacy & data** now has stronger owner-control visual hierarchy with shared semantic icons; the same change also scopes destructive delete confirmation to the active account so a confirmation opened before an account switch cannot authorize deletion for the newly active user.
+- `6c84bb8915103f16af68d4c630dc7373aece431a` — focused Privacy-screen regression specification requires a fresh two-step deletion confirmation after an account switch; intentionally not worker-run under the active policy.
 - Existing navigation/auth/localization/account-switch hardening remains in place, including offline authenticated entry, password-recovery routing, Check-in fencing, Today RTL ordering, Western-digit normalization, and corrected neutral Life Debt Arabic wording.
 
 ### CP9 remaining
@@ -66,11 +70,11 @@ The earlier Premium Production Visual Pass remains useful foundation, but the ow
 ## CP10 current implementation
 Detailed ledger/threat model: `docs/CP10_SECURITY_PRIVACY.md`.
 
-Implemented security/privacy work includes live RLS/ownership review of the ten current user-owned client-visible tables, cross-user policy specifications, function-execute hardening migration `0009`, portable authenticated data export migration `0010`, deployed JWT-protected `delete-account` Edge Function, client export/two-step deletion UI with local cache purge attempts, safer error-boundary logging, targeted sensitive-log review, stronger auth password creation minimums, consent rechecks around health sync, and account-switch/session fencing across integrations, app-state hydration, Invisible Wins, Recovery, and Check-in. The source-level sensitive-error review has now also covered baseline-target, experiment, reflection, Life Season, onboarding-context, One Move decision/history, pending-feedback, plugin-setting, What If trial-data, and app-owned integration adapter/contract/registry paths without finding a new raw-sensitive logging sink in those inspected boundaries.
+Implemented security/privacy work includes live RLS/ownership review of the ten current user-owned client-visible tables, cross-user policy specifications, function-execute hardening migration `0009`, portable authenticated data export migration `0010`, deployed JWT-protected `delete-account` Edge Function, client export/two-step deletion UI with local cache purge attempts, safer error-boundary logging, targeted sensitive-log review, stronger auth password creation minimums, consent rechecks around health sync, and account-switch/session fencing across integrations, app-state hydration, Invisible Wins, Recovery, Check-in, and the Privacy destructive-confirmation flow. A confirmation opened under one user is now invalidated on account switch before any newly active user can execute deletion. The source-level sensitive-error review has now also covered baseline-target, experiment, reflection, Life Season, onboarding-context, One Move decision/history, pending-feedback, plugin-setting, What If trial-data, and app-owned integration adapter/contract/registry paths without finding a new raw-sensitive logging sink in those inspected boundaries.
 
 ### CP10 remaining
 - Complete repository-wide sensitive logging/error-reporting review beyond the targeted boundaries already inspected; fix only concrete leakage paths.
-- Owner/runtime validation remains required for cross-user/database tests, export/delete/local purge, destructive Edge deletion, consent revocation races, and account-switch races.
+- Owner/runtime validation remains required for cross-user/database tests, export/delete/local purge, destructive Edge deletion, consent revocation races, account-switch races, and the new account-scoped deletion-confirmation specification.
 - Supabase leaked-password protection remains an owner action in `automation/HUMAN_REQUIRED.md`.
 
 ## Exact next executable action
@@ -100,6 +104,7 @@ Post-baseline:
 - WHY/Insights/What If owner-reference commits `2fbd4f17fc736faf039c6d357dcd8f28625f6b20`, `18747ebf8401bae4f596630554aab30fc4c52254`, `6c6fafed833e79c5ef5a60352f54199c09e7ce2c`, and `c80a4119f3e7c3c090751d4faec96b2e8615ce33` are static implementation evidence only.
 - Experiments/Recovery/Onboarding/Invisible Wins/Personalization/quantitative-visual commits `60193f0f4a1948d96f4512adfdc07114494dd293`, `7dd7e5f4b570ae012864297d1887e2e39e04fbe5`, `c9bfa4e7342fa01e09f9cc2a8159ad0fa21dfbbe`, `41656f61d234248683855f468b22943310299d4b`, `a3db6f54b5c6031ece29117f21bcdac7e6fdc1f2`, `3574f554aa4392d8573332a6f91991a797c8faf1`, `4fa3d9beb543fcb3b467232040fa7dd45d450fcf`, `4d792b40df1867f83268f95c73354ad4178ca9f2`, and `9ce78fe21550dbb62fc6ecc18abd823b11eff459` are **static implementation evidence only**.
 - Shared secondary-screen iconography commits `b5938695a7fac3dd49358900b4da59b60078b67b`, `168628b850aafe2b5db6c2952fd09587a95dafc8`, and `144473356aec4368c359eca1d29e9fce9599c14b` are static implementation evidence only. Workers did not run typecheck, tests, builds, screenshot capture, or representative device validation under the active policy.
+- Auth/entry/privacy owner-reference and privacy-fencing commits `a8a4ef8b3e4ea56fc70ccaac14a302e729f16742`, `c5c1bd79aced8e82b709960d150343d4ed362d30`, `92c7f06ad33534b905e38252bfa4758bf950c907`, and `6c84bb8915103f16af68d4c630dc7373aece431a` are static implementation/specification evidence only; the new Privacy-screen regression specification was not executed.
 
 ## Known blockers / risks
 - CP1: Windows session must be unlocked normally for true narrow-phone Arabic/English interaction evidence; see `automation/HUMAN_REQUIRED.md`.
@@ -108,7 +113,7 @@ Post-baseline:
 - Cross-user/database specifications and all post-baseline runtime/type/build gates still require owner execution evidence.
 - Recent Today snapshot native SecureStore behavior/capacity still needs owner runtime validation.
 - CP9 major owner-reference structural slices are statically present, but representative runtime screenshot evidence, interaction validation, and the design-swap proof are still outstanding; residual static defects may still surface in the final sweep.
-- Privacy export/delete UI, local cache purge/warning behavior, and Edge deletion need owner Web/native end-to-end validation before CP10 can close.
+- Privacy export/delete UI, local cache purge/warning behavior, account-scoped confirmation behavior, and Edge deletion need owner Web/native end-to-end validation before CP10 can close.
 - Repository-wide sensitive logging/error reporting review remains incomplete beyond the targeted boundaries already hardened.
 - No real AI, wearable, calendar, or location credentials are configured; deterministic/unavailable adapters remain the supported fallback path.
 
@@ -117,6 +122,8 @@ Post-baseline:
 - `docs/CP9_PRESENTATION_ARCHITECTURE.md`
 - `docs/CP10_SECURITY_PRIVACY.md`
 - `apps/app/src/app/_layout.tsx`
+- `apps/app/src/app/index.tsx`
+- `apps/app/src/app/auth.tsx`
 - `apps/app/src/app/one-move.tsx`
 - `apps/app/src/components/app-navigation.tsx`
 - `apps/app/src/components/app-icon.tsx`
@@ -136,6 +143,8 @@ Post-baseline:
 - `apps/app/src/app/personal-learning.tsx`
 - `apps/app/src/app/settings.tsx`
 - `apps/app/src/app/integrations.tsx`
+- `apps/app/src/app/privacy.tsx`
+- `apps/app/__tests__/privacy-screen-session-fencing-test.tsx`
 - `apps/app/src/app/capacity.tsx`
 - `apps/app/src/app/cost-of-yes.tsx`
 - `apps/app/src/app/human-roi.tsx`
