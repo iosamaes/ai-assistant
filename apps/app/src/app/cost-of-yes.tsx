@@ -1,11 +1,11 @@
 import { router } from 'expo-router';
 import { useMemo, useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet, useColorScheme, View } from 'react-native';
 
 import { assessExplicitCostOfYes } from '@/application/cost-of-yes';
 import { Card, MizanText, MizanTextInput, SecondaryButton } from '@/components/mizan-ui';
 import { Screen } from '@/components/screen';
-import { Spacing } from '@/constants/theme';
+import { Palette, Radius, Spacing } from '@/constants/theme';
 import { formatLocalizedNumber, parseLocalizedDecimalInput } from '@/i18n/number-input';
 import { useAppState } from '@/state/app-state';
 
@@ -14,6 +14,8 @@ const copy = {
     eyebrow: 'أداة قرار',
     title: 'تكلفة قول نعم',
     body: 'قارن الوقت الأسبوعي الذي يحتاجه الالتزام بهامش الوقت الذي تعرف أنك تملكه. إذا كانت بيانات الوقت ناقصة فلن يخمّن ميزان ما الذي سيتزاحم.',
+    inputTitle: 'ضع الأرقام التي تعرفها فقط',
+    inputBody: 'كل رقم هنا يظل افتراضًا منك أنت. الأداة لا تسحب وقتًا مخفيًا ولا تفترض أن كل دقيقة قابلة لإعادة التوزيع.',
     commitmentLabel: 'وقت الالتزام المتوقع أسبوعيًا',
     commitmentPlaceholder: 'مثال: 4',
     marginLabel: 'هامش الوقت المتاح الذي تعرفه أسبوعيًا',
@@ -21,6 +23,7 @@ const copy = {
     hoursPerWeek: 'ساعة / أسبوع',
     contextNote: 'استخدم فقط تقديرًا تعرفه فعلًا. ربط التقويم أو مصادر الوقت مستقبلًا يمكنه توفير سياق أدق، لكن هذه الأداة لا تفترضه الآن.',
     assessment: 'القراءة الحالية',
+    assessmentBody: 'النتيجة تتغير مباشرة مع الأرقام التي تدخلها، وتظل مقارنة تخطيطية لا توصية تلقائية.',
     insufficient: 'الأدلة غير كافية',
     missingCommitment: 'أدخل الوقت المتوقع للالتزام حتى يمكن إجراء المقارنة.',
     missingMargin: 'لا نعرف هامش وقتك المتاح. أدخل تقديرًا تعرفه، وإلا سيظل الأثر غير معروف بدل اختراع وقت مزاح.',
@@ -50,6 +53,8 @@ const copy = {
     eyebrow: 'Decision tool',
     title: 'Cost of Yes',
     body: 'Compare the weekly time a commitment needs with time margin you actually know you have. When time context is missing, MIZAN will not guess what gets displaced.',
+    inputTitle: 'Use only the numbers you actually know',
+    inputBody: 'Every number here remains your explicit assumption. The tool does not infer hidden free time or assume every minute is available to reallocate.',
     commitmentLabel: 'Expected commitment time each week',
     commitmentPlaceholder: 'Example: 4',
     marginLabel: 'Available time margin you know you have each week',
@@ -57,6 +62,7 @@ const copy = {
     hoursPerWeek: 'hours / week',
     contextNote: 'Use only a margin estimate you genuinely know. A future calendar or time source can provide stronger context, but this tool does not assume one now.',
     assessment: 'Current assessment',
+    assessmentBody: 'The reading updates directly from your inputs and remains a planning comparison, not an automatic recommendation.',
     insufficient: 'Insufficient evidence',
     missingCommitment: 'Enter the expected commitment time before MIZAN can compare it with your margin.',
     missingMargin: 'Your available time margin is unknown. Enter an estimate you actually know, otherwise displacement stays unknown instead of being invented.',
@@ -97,6 +103,8 @@ function formatHours(minutes: number | null, locale: 'ar' | 'en'): string {
 export default function CostOfYesScreen() {
   const { isRtl, locale } = useAppState();
   const labels = copy[locale];
+  const scheme = useColorScheme();
+  const palette = Palette[scheme === 'dark' ? 'dark' : 'light'];
   const [commitmentText, setCommitmentText] = useState('');
   const [marginText, setMarginText] = useState('');
   const observedAt = useMemo(() => new Date().toISOString(), []);
@@ -133,68 +141,87 @@ export default function CostOfYesScreen() {
 
   return (
     <Screen>
-      <View style={styles.hero}>
-        <MizanText variant="label" muted>{labels.eyebrow}</MizanText>
-        <MizanText variant="display">{labels.title}</MizanText>
-        <MizanText muted>{labels.body}</MizanText>
+      <View style={[styles.topRow, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
+        <View style={styles.heading}>
+          <MizanText variant="label" muted>{labels.eyebrow}</MizanText>
+          <MizanText variant="display">{labels.title}</MizanText>
+        </View>
+        <SecondaryButton compact label={labels.back} onPress={() => router.replace('/settings')} />
       </View>
 
-      <Card>
-        <View style={styles.field}>
-          <MizanText variant="label">{labels.commitmentLabel}</MizanText>
-          <MizanTextInput
-            accessibilityLabel={labels.commitmentLabel}
-            keyboardType="decimal-pad"
-            onChangeText={setCommitmentText}
-            placeholder={labels.commitmentPlaceholder}
-            selectTextOnFocus
-            value={commitmentText}
-          />
-          <MizanText variant="caption" muted>{labels.hoursPerWeek}</MizanText>
-        </View>
-
-        <View style={styles.field}>
-          <MizanText variant="label">{labels.marginLabel}</MizanText>
-          <MizanTextInput
-            accessibilityLabel={labels.marginLabel}
-            keyboardType="decimal-pad"
-            onChangeText={setMarginText}
-            placeholder={labels.marginPlaceholder}
-            selectTextOnFocus
-            value={marginText}
-          />
-          <MizanText variant="caption" muted>{labels.hoursPerWeek}</MizanText>
-        </View>
-
+      <Card style={[styles.heroCard, { backgroundColor: palette.accentSoft, borderColor: palette.accent }]}>
+        <MizanText variant="title">{labels.title}</MizanText>
+        <MizanText>{labels.body}</MizanText>
         <MizanText variant="caption" muted>{labels.contextNote}</MizanText>
       </Card>
 
-      <Card>
-        <MizanText variant="label" muted>{labels.assessment}</MizanText>
-        <View accessibilityLiveRegion="polite" style={styles.assessmentStatus}>
+      <Card style={styles.inputCard}>
+        <View style={styles.sectionHeader}>
+          <MizanText variant="title">{labels.inputTitle}</MizanText>
+          <MizanText muted>{labels.inputBody}</MizanText>
+        </View>
+
+        <View style={[styles.fieldGrid, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
+          <View style={styles.field}>
+            <MizanText variant="label">{labels.commitmentLabel}</MizanText>
+            <MizanTextInput
+              accessibilityLabel={labels.commitmentLabel}
+              keyboardType="decimal-pad"
+              onChangeText={setCommitmentText}
+              placeholder={labels.commitmentPlaceholder}
+              selectTextOnFocus
+              value={commitmentText}
+            />
+            <MizanText variant="caption" muted>{labels.hoursPerWeek}</MizanText>
+          </View>
+
+          <View style={styles.field}>
+            <MizanText variant="label">{labels.marginLabel}</MizanText>
+            <MizanTextInput
+              accessibilityLabel={labels.marginLabel}
+              keyboardType="decimal-pad"
+              onChangeText={setMarginText}
+              placeholder={labels.marginPlaceholder}
+              selectTextOnFocus
+              value={marginText}
+            />
+            <MizanText variant="caption" muted>{labels.hoursPerWeek}</MizanText>
+          </View>
+        </View>
+      </Card>
+
+      <Card style={styles.assessmentCard}>
+        <View style={styles.sectionHeader}>
+          <MizanText variant="label" muted>{labels.assessment}</MizanText>
+          <MizanText variant="caption" muted>{labels.assessmentBody}</MizanText>
+        </View>
+
+        <View
+          accessibilityLiveRegion="polite"
+          style={[styles.assessmentStatus, { backgroundColor: palette.surfaceMuted }]}>
           <MizanText variant="title">{statusTitle}</MizanText>
           <MizanText>{statusBody}</MizanText>
         </View>
 
         {assessment.status !== 'insufficient' ? (
           <View style={[styles.metrics, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
-            <View style={styles.metric}>
+            <View style={[styles.metric, { backgroundColor: palette.surfaceMuted }]}>
               <MizanText variant="caption" muted>{labels.commitment}</MizanText>
               <MizanText variant="title">{formatHours(assessment.commitmentMinutesPerWeek, locale)}</MizanText>
               <MizanText variant="caption" muted>{labels.hoursPerWeek}</MizanText>
             </View>
-            <View style={styles.metric}>
+            <View style={[styles.metric, { backgroundColor: palette.surfaceMuted }]}>
               <MizanText variant="caption" muted>{labels.knownMargin}</MizanText>
               <MizanText variant="title">{formatHours(assessment.availableMarginMinutesPerWeek, locale)}</MizanText>
               <MizanText variant="caption" muted>{labels.hoursPerWeek}</MizanText>
             </View>
-            <View style={styles.metric}>
+            <View style={[styles.metric, { backgroundColor: palette.surfaceMuted }]}>
               <MizanText variant="caption" muted>{labels.remaining}</MizanText>
               <MizanText variant="title">{formatHours(assessment.remainingMarginMinutesPerWeek, locale)}</MizanText>
               <MizanText variant="caption" muted>{labels.hoursPerWeek}</MizanText>
             </View>
             {assessment.displacedMinutesPerWeek !== null && assessment.displacedMinutesPerWeek > 0 ? (
-              <View style={styles.metric}>
+              <View style={[styles.metric, { backgroundColor: palette.surfaceMuted }]}>
                 <MizanText variant="caption" muted>{labels.displaced}</MizanText>
                 <MizanText variant="title">{formatHours(assessment.displacedMinutesPerWeek, locale)}</MizanText>
                 <MizanText variant="caption" muted>{labels.hoursPerWeek}</MizanText>
@@ -203,26 +230,40 @@ export default function CostOfYesScreen() {
           </View>
         ) : null}
 
-        {assessment.marginUsedPercent !== null ? (
-          <MizanText variant="label">
-            {formatLocalizedNumber(assessment.marginUsedPercent, locale, 0)}% {labels.marginUsed}
+        <View style={[styles.evidenceRow, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
+          {assessment.marginUsedPercent !== null ? (
+            <View style={[styles.marginPill, { backgroundColor: palette.accentSoft }]}>
+              <MizanText variant="label">
+                {formatLocalizedNumber(assessment.marginUsedPercent, locale, 0)}% {labels.marginUsed}
+              </MizanText>
+            </View>
+          ) : null}
+          <MizanText variant="caption" muted style={styles.flexibleEvidence}>
+            {labels.confidence}: {labels.confidenceLevels[assessment.confidence.level]} · {labels.evidence}: {formatLocalizedNumber(assessment.confidence.evidenceCount, locale, 0)}
           </MizanText>
-        ) : null}
-        <MizanText variant="caption" muted>
-          {labels.confidence}: {labels.confidenceLevels[assessment.confidence.level]} · {labels.evidence}: {formatLocalizedNumber(assessment.confidence.evidenceCount, locale, 0)}
-        </MizanText>
+        </View>
       </Card>
 
-      <MizanText variant="caption" muted>{labels.caveat}</MizanText>
-      <SecondaryButton label={labels.back} onPress={() => router.replace('/settings')} />
+      <Card style={{ backgroundColor: palette.surfaceMuted }}>
+        <MizanText variant="caption" muted>{labels.caveat}</MizanText>
+      </Card>
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  hero: { gap: Spacing.md, paddingTop: Spacing.xl },
-  field: { gap: Spacing.sm },
-  assessmentStatus: { gap: Spacing.md },
+  topRow: { alignItems: 'flex-start', justifyContent: 'space-between', gap: Spacing.lg, flexWrap: 'wrap' },
+  heading: { flex: 1, minWidth: 0, gap: Spacing.xs },
+  heroCard: { gap: Spacing.md },
+  inputCard: { gap: Spacing.xl },
+  sectionHeader: { gap: Spacing.sm },
+  fieldGrid: { flexWrap: 'wrap', gap: Spacing.lg },
+  field: { flexGrow: 1, flexBasis: 300, minWidth: 0, gap: Spacing.sm },
+  assessmentCard: { gap: Spacing.xl },
+  assessmentStatus: { gap: Spacing.md, borderRadius: Radius.md, padding: Spacing.lg },
   metrics: { flexWrap: 'wrap', gap: Spacing.md },
-  metric: { flexGrow: 1, flexBasis: 140, minWidth: 120, gap: Spacing.xs },
+  metric: { flexGrow: 1, flexBasis: 160, minWidth: 0, gap: Spacing.xs, borderRadius: Radius.md, padding: Spacing.md },
+  evidenceRow: { alignItems: 'center', flexWrap: 'wrap', gap: Spacing.md },
+  marginPill: { borderRadius: Radius.pill, paddingHorizontal: Spacing.md, paddingVertical: Spacing.sm },
+  flexibleEvidence: { flexGrow: 1, flexShrink: 1, minWidth: 0 },
 });
