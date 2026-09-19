@@ -59,6 +59,7 @@ Security/privacy work completed so far:
 - **Consent-revocation specifications:** `apps/app/__tests__/integration-consent-revocation-test.ts` covers already-disabled consent, revocation during provider read, revocation before retry, and final state-update race; added in `44d7124f03d2686fa54ae5677e989599c016f527` and not worker-run under current policy.
 - **Current optional-module consent audit:** Spiritual Grounding is currently only an app-owned plugin preference; disabling it writes `enabled=false` and clears consent, and its manifest has no provider-backed data requirement. Time/location capabilities currently expose deterministic/unavailable contracts and registration only; there is no application collector/persistence path for them. A future collector must reuse authoritative lifecycle/consent fencing before provider reads and persistence.
 - **Integration settings session fencing:** async integration-connection loads now bind to both the initiating user and a request generation, and disconnect completions are discarded after an account switch. This prevents a previous account's provider metadata from painting into a newly active account (`374ddcb24e43c62b103ff0037c889d2b24931c7f`). A focused regression specification was added in `apps/app/__tests__/integrations-screen-session-fencing-test.tsx` (`b732b58cfed218e42555c110cc6f80ff5e8f52df`) and was not worker-run.
+- **Global app-state session hydration fencing:** profile, domain-preference, and onboarding-context hydration now verifies that the initiating account is still the active account after the parallel load completes and before applying any user-owned state or failure status. This prevents a slow previous-account load from repainting locale, onboarding, life-season, value, privacy-mode, domain, focus, or session/sync state after an account switch (`f4861ce4cc0c8c3c7bce09489c39168807d68d3c`). `apps/app/__tests__/app-state-session-fencing-test.tsx` specifies the stale-user-A / current-user-B race (`6a6877d6aed32b57451e0a45b59608662306f44f`) and was not worker-run under the active policy.
 - **Threat model/documentation:** `docs/CP10_SECURITY_PRIVACY.md` records the trust boundaries, export/delete/local-purge design, function/storage inventory, provider boundary, consent audit, targeted logging audit, and session-fencing posture; latest documentation commit `3e96296754ff01d75277425add20af6199f123de`.
 - **Auth advisor owner action:** Supabase Security Advisor reports leaked-password protection disabled; the exact owner action remains recorded in `automation/HUMAN_REQUIRED.md`.
 
@@ -68,7 +69,7 @@ CP10 is **not complete**. Focused export/client-deletion authorization and local
 - Broad CP2–CP9 app/runtime validation scaffolding exists (`d32636ddd253e3ec688376a4a42596e2844704df`).
 - Localized-number parsing and Western-digit output coverage exists (`5421ecd4c3dc84c52f6e0005774b886109365eb2`).
 - CP10 cross-user RLS coverage and focused account-export authorization coverage exist but have not been executed by workers.
-- CP10 privacy session-fencing/local-purge, integration consent-revocation, and integration-screen account-switch fencing specifications exist but have not been executed by workers.
+- CP10 privacy session-fencing/local-purge, integration consent-revocation, integration-screen account-switch fencing, and global app-state account-switch hydration specifications exist but have not been executed by workers.
 - No worker-run app tests, builds, typechecks, validation database scripts, cloud CI, or GitHub Actions are claimed for CP2–CP10 changes.
 
 ## Exact next executable action
@@ -94,7 +95,7 @@ Post-baseline:
 - `delete-account` Edge Function deployment reports ACTIVE with JWT verification enabled; no end-to-end destructive deletion test was run by the worker.
 - Current CP9 evidence remains static implementation/code-review evidence until owner validation runs representative device/browser/screen-reader checks.
 - The account-export SQL specification and expanded privacy/local-purge client specifications are committed but explicitly unexecuted under the current worker policy.
-- Integration consent-revocation and integration-screen session-fencing changes are static implementation/specification evidence only until owner validation executes the relevant tests and real runtime races.
+- Integration consent-revocation, integration-screen session-fencing, and global app-state session-hydration changes are static implementation/specification evidence only until owner validation executes the relevant tests and real runtime races.
 
 ## Known blockers / risks
 - CP1: Windows session must be unlocked normally for true narrow-phone Arabic/English interaction evidence; see `automation/HUMAN_REQUIRED.md`.
@@ -105,7 +106,7 @@ Post-baseline:
 - Static CP9 review is not a substitute for visual/device/screen-reader validation.
 - Privacy export/delete UI, local cache purge/warning behavior, and Edge deletion still need owner Web/native end-to-end validation before the CP10 gate can be credited.
 - Repository-wide sensitive logging/error reporting review remains incomplete beyond the targeted boundaries already hardened.
-- Health consent revocation and integration-screen account-switch fencing are statically implemented but still need runtime proof; future time/location collectors must adopt the same authoritative consent pattern if they are introduced.
+- Health consent revocation and integration/account-switch fencing are statically implemented but still need runtime proof; future time/location collectors must adopt the same authoritative consent pattern if they are introduced.
 - No real AI, wearable, calendar, or location credentials are configured; deterministic/unavailable adapters remain the supported fallback path.
 
 ## Evidence paths
@@ -122,12 +123,14 @@ Post-baseline:
 - `apps/app/src/infrastructure/offline/pending-mutations.ts`
 - `apps/app/src/infrastructure/offline/recent-daily-snapshot.ts`
 - `apps/app/src/application/integrations.ts`
+- `apps/app/src/state/app-state.tsx`
 - `apps/app/src/app/privacy.tsx`
 - `apps/app/src/app/integrations.tsx`
 - `apps/app/src/components/app-error-boundary.tsx`
 - `apps/app/__tests__/privacy-session-fencing-test.ts`
 - `apps/app/__tests__/integration-consent-revocation-test.ts`
 - `apps/app/__tests__/integrations-screen-session-fencing-test.tsx`
+- `apps/app/__tests__/app-state-session-fencing-test.tsx`
 - `apps/app/src/constants/theme.ts`
 - `apps/app/src/components/mizan-ui.tsx`
 - `apps/app/src/components/screen.tsx`
