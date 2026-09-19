@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
 
 import {
   collectPageErrors,
@@ -9,6 +9,15 @@ import {
 } from './live-account';
 
 const liveReason = 'Requires MIZAN_E2E_SUPABASE_URL, MIZAN_E2E_SUPABASE_PUBLISHABLE_KEY, and completed-account credentials.';
+
+async function recordLowEnergyCheckIn(page: Page) {
+  await page.goto('/check-in');
+  await page.getByRole('button', { name: /Energy: 1|الطاقة: 1/, exact: true }).click();
+  const save = page.getByRole('button', { name: /Save check-in|حفظ التسجيل/, exact: true });
+  await expect(save).toBeEnabled();
+  await save.click();
+  await page.waitForURL(/\/today$/);
+}
 
 test.describe('live completed-account product journeys', () => {
   test.skip(!completedAccountConfigured, liveReason);
@@ -71,12 +80,35 @@ test.describe('live completed-account product journeys', () => {
     const pageErrors = collectPageErrors(page);
     await signInCompletedAccount(page);
 
-    await page.goto('/check-in');
-    await page.getByRole('button', { name: /Energy: 1|الطاقة: 1/, exact: true }).click();
-    const save = page.getByRole('button', { name: /Save check-in|حفظ التسجيل/, exact: true });
-    await expect(save).toBeEnabled();
-    await save.click();
-    await page.waitForURL(/\/today$/);
+    await recordLowEnergyCheckIn(page);
+    await expectNoHorizontalOverflow(page);
+    expect(pageErrors).toEqual([]);
+  });
+
+  test('explicit outcome feedback reaches Personal Learning through the live daily loop', async ({ page }) => {
+    test.skip(!mutationsEnabled, 'Set MIZAN_E2E_MUTATIONS=1 only for a disposable or dedicated E2E account.');
+    const pageErrors = collectPageErrors(page);
+    await signInCompletedAccount(page);
+
+    for (let index = 0; index < 3; index += 1) await recordLowEnergyCheckIn(page);
+
+    await page.goto('/one-move');
+    const accept = page.getByRole('button', { name: /I will do this|سأفعلها/, exact: true });
+    await expect(accept).toBeVisible();
+    await accept.click();
+    await expect(page.getByText(/Accepted\. Completion alone will not be treated as evidence that it helped\.|تم تسجيل القبول\. لن نعتبر التنفيذ وحده دليلًا على الفائدة\./)).toBeVisible();
+
+    await page.goto('/today');
+    await expect(page.getByText(/Did the move help\?|هل ساعدتك الخطوة؟/, { exact: true })).toBeVisible();
+    await page.getByRole('button', { name: /Usefulness: 4 \/ 5|درجة الفائدة: 4 \/ 5/, exact: true }).click();
+    const saveFeedback = page.getByRole('button', { name: /Save feedback|حفظ التقييم/, exact: true });
+    await expect(saveFeedback).toBeEnabled();
+    await saveFeedback.click();
+    await expect(page.getByText(/Saved as explicit personal evidence|تم حفظ تقييمك كدليل شخصي صريح/)).toBeVisible();
+
+    await page.goto('/personal-learning');
+    await expect(page.getByText(/What has MIZAN learned from your experience\?|ما الذي تعلّمناه من تجربتك؟/, { exact: true })).toBeVisible();
+    await expect(page.getByText(/Reported usefulness: 4\/5|الفائدة المسجلة: 4\/5/).first()).toBeVisible();
     await expectNoHorizontalOverflow(page);
     expect(pageErrors).toEqual([]);
   });
