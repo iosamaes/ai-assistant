@@ -84,10 +84,12 @@ export function MizanTextInput({ style, ...props }: MizanTextInputProps) {
   const scheme = useColorScheme();
   const palette = Palette[scheme === 'dark' ? 'dark' : 'light'];
   const { isRtl } = useAppState();
+  const disabled = props.editable === false || props.accessibilityState?.disabled === true;
 
   return (
     <TextInput
       {...props}
+      accessibilityState={{ ...props.accessibilityState, disabled }}
       allowFontScaling
       placeholderTextColor={props.placeholderTextColor ?? palette.textMuted}
       style={[
