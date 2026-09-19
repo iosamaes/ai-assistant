@@ -93,11 +93,21 @@ The broader current-code optional-module audit found no second provider-backed c
 
 The integration settings presentation is also fenced to the initiating session. Async connection loads now carry both an active-user check and a monotonically invalidated request id, and disconnect completion is discarded after an account switch. This prevents integration metadata loaded for one account from being rendered into a subsequently active account. Implementation commit: `374ddcb24e43c62b103ff0037c889d2b24931c7f`; regression specification: `apps/app/__tests__/integrations-screen-session-fencing-test.tsx` in `b732b58cfed218e42555c110cc6f80ff5e8f52df`. The specification was added but not run by the worker under the active policy.
 
+## Focused export/deletion security specifications
+
+`supabase/tests/account_data_export_security.sql` now specifies the database-side export boundary with rollback-only fixtures. It asserts that `anon` lacks execute privilege, `authenticated` retains execute privilege, the export payload is scoped to the active caller, another user's observation marker cannot leak into the JSON, and nested records do not re-emit `user_id`. Commit: `db58d7c6ab58be4e1260ea85bdeaa50fffedb741`.
+
+`apps/app/__tests__/privacy-session-fencing-test.ts` now also specifies that the client calls only the intended export RPC and deletion function, refuses to start either operation for a different active session, returns coarse error kinds rather than backend/Edge error bodies, and leaves the local session untouched when deletion fails. Commit: `38321e68279ef571d691dcce842252bb6a6667db`.
+
+These are implementation/specification evidence only. They were not executed by the worker under the current policy, and the deployed Edge Function still needs owner-side end-to-end authentication and destructive-deletion validation.
+
 ## Logging and error-reporting boundary
 
-The new export/deletion code returns coarse error states to the UI and does not expose raw database, Auth, service-role, bearer-token, or provider error bodies. The root render error boundary logs an error and component stack only under `__DEV__`; production rendering does not use that debug log path.
+The export/deletion and Auth boundaries return coarse application error kinds and do not expose raw database, Auth, service-role, bearer-token, or provider error bodies to user-facing code. The deletion Edge Function itself returns stable error codes and contains no request/token/user-data logging.
 
-A broader source-level log/error-reporting review is still required before CP10 can be considered complete, especially as provider adapters or telemetry are added.
+The root render error boundary previously passed the complete `Error` object to `console.error` during development. That could unnecessarily serialize a backend or user-derived message into local development logs, so it now logs only the stable error name plus React component stack under `__DEV__`; the arbitrary error object/message is excluded. Production rendering does not use that debug path. Commit: `7e78c5ff94bd6331098ff436d892b76a968749e8`.
+
+A broader repository-wide source-level log/error-reporting review is still required before CP10 can be considered complete. The current targeted review covered the Auth client/UI, privacy client boundary, deletion Edge Function, and root render boundary; it must not be treated as proof that every future adapter/telemetry path is clean.
 
 ## Auth hardening still requiring owner action
 
@@ -105,10 +115,10 @@ The live Supabase Security Advisor currently reports `auth_leaked_password_prote
 
 ## Remaining CP10 work
 
-- Execute the expanded cross-user authorization suite in the owner validation environment and record evidence.
-- Add focused tests for authenticated-only export/function ACL behavior and the delete-account boundary without exposing service credentials.
+- Execute the expanded cross-user authorization suite and `account_data_export_security.sql` in the owner validation environment and record evidence.
+- Execute the expanded privacy client specifications and validate the deployed delete-account authentication/deletion boundary end to end without exposing service credentials.
 - Verify export and account deletion end to end from Web and at least one native target.
-- Complete the repository-wide logging/error-reporting sensitive-data audit.
+- Complete the repository-wide logging/error-reporting sensitive-data audit beyond the targeted boundaries already reviewed.
 - Owner-validate the health consent-revocation races and the new integration-screen account-switch fencing; apply the same lifecycle fencing if future time/location collectors are wired.
 - Re-run the live Supabase Security Advisor after the owner enables leaked-password protection.
 - Re-review the export/delete inventory whenever new user-owned tables, storage buckets, providers, or provider-side credentials are introduced.
