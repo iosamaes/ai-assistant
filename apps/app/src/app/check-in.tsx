@@ -37,8 +37,10 @@ export default function CheckInScreen() {
   const [ratings, setRatings] = useState<DailyCheckInRatings>({});
   const [submitState, setSubmitState] = useState<SubmitState>('idle');
   const answeredCount = useMemo(() => Object.keys(ratings).length, [ratings]);
+  const interactionsLocked = submitState === 'saving' || submitState === 'queued';
 
   const setRating = (metric: DailyCheckInMetric, rating?: DailyCheckInRating) => {
+    if (interactionsLocked) return;
     setSubmitState('idle');
     setRatings((current) => {
       const next = { ...current };
@@ -96,6 +98,7 @@ export default function CheckInScreen() {
                 label={String(rating)}
                 selected={ratings[metric] === rating}
                 onPress={() => setRating(metric, rating)}
+                disabled={interactionsLocked}
               />
             ))}
           </View>
@@ -107,6 +110,7 @@ export default function CheckInScreen() {
             label={t('checkInSkip')}
             selected={ratings[metric] === undefined}
             onPress={() => setRating(metric)}
+            disabled={interactionsLocked}
           />
         </Card>
       ))}
