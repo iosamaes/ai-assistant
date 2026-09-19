@@ -8,6 +8,7 @@ import {
   loadPersonalScenarioEffects,
   type LearnableScenarioId,
 } from '@/application/scenario-learning';
+import { AppIcon, type AppIconName } from '@/components/app-icon';
 import { Card, ChoiceChip, MizanText, SecondaryButton } from '@/components/mizan-ui';
 import { Screen } from '@/components/screen';
 import { Controls, Palette, Radius, Spacing } from '@/constants/theme';
@@ -43,6 +44,7 @@ const copy = {
     effects: 'النطاقات المحتملة',
     current: 'الحالي',
     projected: 'النطاق المحتمل',
+    visualScale: 'مقياس بصري من 0 إلى 100؛ الشريط يوضح النطاق المحتمل والمؤشر يوضح القيمة الحالية.',
     unknown: 'غير معروف — يحتاج بيانات فعلية',
     source: 'مصدر التقدير',
     sourcePrior: 'تقدير محافظ عام',
@@ -91,6 +93,7 @@ const copy = {
     effects: 'Plausible ranges',
     current: 'Current',
     projected: 'Plausible range',
+    visualScale: 'Visual 0–100 scale; the band shows the plausible range and the marker shows the current value.',
     unknown: 'Unknown — needs real evidence',
     source: 'Estimate source',
     sourcePrior: 'Conservative general estimate',
@@ -158,6 +161,68 @@ function scenarioDefinitions(locale: 'ar' | 'en'): Record<ScenarioId, ScenarioDe
 
 function formatRange(min: number, max: number, locale: 'ar' | 'en'): string {
   return `${formatLocalizedNumber(Math.round(min), locale, 0)}–${formatLocalizedNumber(Math.round(max), locale, 0)}`;
+}
+
+function clampScale(value: number): number {
+  return Math.max(0, Math.min(100, value));
+}
+
+function percent(value: number): `${number}%` {
+  return `${clampScale(value)}%` as `${number}%`;
+}
+
+function componentIcon(componentKey: string): AppIconName {
+  if (componentKey === 'recovery') return 'recovery';
+  if (componentKey === 'energy') return 'energy';
+  if (componentKey === 'mental_load') return 'mentalLoad';
+  return 'insights';
+}
+
+function RangeMeter({
+  currentValue,
+  projectedMin,
+  projectedMax,
+  locale,
+}: {
+  currentValue: number | null;
+  projectedMin: number | null;
+  projectedMax: number | null;
+  locale: 'ar' | 'en';
+}) {
+  const scheme = useColorScheme();
+  const palette = Palette[scheme === 'dark' ? 'dark' : 'light'];
+  const labels = copy[locale];
+  if (currentValue === null || projectedMin === null || projectedMax === null) return null;
+
+  const bandStart = Math.min(clampScale(projectedMin), clampScale(projectedMax));
+  const bandEnd = Math.max(clampScale(projectedMin), clampScale(projectedMax));
+  const bandWidth = Math.max(2, bandEnd - bandStart);
+  const current = clampScale(currentValue);
+  const accessibilityLabel = `${labels.current}: ${formatLocalizedNumber(Math.round(currentValue), locale, 0)}. ${labels.projected}: ${formatRange(projectedMin, projectedMax, locale)}. ${labels.visualScale}`;
+
+  return (
+    <View style={styles.rangeMeter} accessible accessibilityLabel={accessibilityLabel}>
+      <View style={[styles.rangeTrack, { backgroundColor: palette.surfaceMuted }]}>
+        <View
+          style={[
+            styles.rangeBand,
+            {
+              backgroundColor: palette.accentSoft,
+              borderColor: palette.accent,
+              left: percent(bandStart),
+              width: percent(bandWidth),
+            },
+          ]}
+        />
+        <View style={[styles.currentMarker, { backgroundColor: palette.accent, left: percent(current) }]} />
+      </View>
+      <View style={styles.scaleRow}>
+        <MizanText variant="caption" muted>{formatLocalizedNumber(0, locale, 0)}</MizanText>
+        <MizanText variant="caption" muted>{formatLocalizedNumber(100, locale, 0)}</MizanText>
+      </View>
+      <MizanText variant="caption" muted>{labels.visualScale}</MizanText>
+    </View>
+  );
 }
 
 export default function WhatIfScreen() {
@@ -231,8 +296,15 @@ export default function WhatIfScreen() {
       </View>
 
       <Card style={[styles.heroCard, { backgroundColor: palette.accentSoft, borderColor: palette.accent }]}>
-        <MizanText variant="title">{labels.eyebrow}</MizanText>
-        <MizanText muted>{labels.body}</MizanText>
+        <View style={[styles.heroTitleRow, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
+          <View style={[styles.heroIcon, { backgroundColor: palette.surface }]}>
+            <AppIcon name="hypothesis" color={palette.accent} size={28} />
+          </View>
+          <View style={styles.flexibleText}>
+            <MizanText variant="title">{labels.eyebrow}</MizanText>
+            <MizanText muted>{labels.body}</MizanText>
+          </View>
+        </View>
       </Card>
 
       <Card style={styles.scenarioCard}>
@@ -272,7 +344,8 @@ export default function WhatIfScreen() {
                 <MizanText variant="label" muted>{labels.eyebrow}</MizanText>
                 <MizanText variant="title">{labels.scenarios[selected].label}</MizanText>
               </View>
-              <View style={[styles.uncertaintyPill, { backgroundColor: palette.accentSoft }]}>
+              <View style={[styles.uncertaintyPill, { backgroundColor: palette.accentSoft, flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
+                <AppIcon name="hypothesis" color={palette.accent} size={16} />
                 <MizanText variant="caption">
                   {labels.uncertainty}: {labels.uncertaintyLevels[projection.uncertainty]}
                 </MizanText>
@@ -289,14 +362,19 @@ export default function WhatIfScreen() {
 
           <View style={styles.section}>
             <MizanText variant="title">{labels.effects}</MizanText>
-            <View style={styles.effectsGrid}>
+            <View style={[styles.effectsGrid, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
               {projection.effects.map((effect) => {
                 const componentLabel = (labels.components as Record<string, string>)[effect.componentKey] ?? labels.componentOther;
                 const sourceLabel = effect.source === 'personal' ? labels.sourcePersonal : labels.sourcePrior;
                 return (
                   <Card key={effect.componentKey} style={styles.effectCard}>
                     <View style={[styles.effectHeader, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
-                      <MizanText variant="title" style={styles.flexibleText}>{componentLabel}</MizanText>
+                      <View style={[styles.effectIdentity, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
+                        <View style={[styles.effectIcon, { backgroundColor: palette.accentSoft }]}>
+                          <AppIcon name={componentIcon(effect.componentKey)} color={palette.accent} size={22} />
+                        </View>
+                        <MizanText variant="title" style={styles.flexibleText}>{componentLabel}</MizanText>
+                      </View>
                       <View style={[styles.sourcePill, { backgroundColor: palette.surfaceMuted }]}>
                         <MizanText variant="caption">{sourceLabel}</MizanText>
                       </View>
@@ -321,9 +399,19 @@ export default function WhatIfScreen() {
                       </View>
                     </View>
 
-                    <MizanText variant="caption" muted>
-                      {labels.source}: {sourceLabel} · {labels.evidence}: {formatLocalizedNumber(effect.evidenceCount, locale, 0)}
-                    </MizanText>
+                    <RangeMeter
+                      currentValue={effect.currentValue}
+                      projectedMin={effect.projectedMin}
+                      projectedMax={effect.projectedMax}
+                      locale={locale}
+                    />
+
+                    <View style={[styles.evidenceRow, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
+                      <AppIcon name="evidence" color={palette.accent} size={16} />
+                      <MizanText variant="caption" muted style={styles.flexibleText}>
+                        {labels.source}: {sourceLabel} · {labels.evidence}: {formatLocalizedNumber(effect.evidenceCount, locale, 0)}
+                      </MizanText>
+                    </View>
                   </Card>
                 );
               })}
@@ -333,7 +421,10 @@ export default function WhatIfScreen() {
       ) : null}
 
       <Card style={[styles.caveatCard, { backgroundColor: palette.surfaceMuted }]}>
-        <MizanText variant="label">{labels.caveatTitle}</MizanText>
+        <View style={[styles.caveatTitleRow, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
+          <AppIcon name="evidence" color={palette.accent} size={18} />
+          <MizanText variant="label">{labels.caveatTitle}</MizanText>
+        </View>
         <MizanText variant="caption" muted>{labels.caveat}</MizanText>
       </Card>
     </Screen>
@@ -349,6 +440,8 @@ const styles = StyleSheet.create({
   },
   heading: { flex: 1, minWidth: 0, gap: Spacing.xs },
   heroCard: { gap: Spacing.md },
+  heroTitleRow: { alignItems: 'flex-start', gap: Spacing.lg },
+  heroIcon: { width: 52, height: 52, borderRadius: Radius.md, alignItems: 'center', justifyContent: 'center', flexShrink: 0 },
   scenarioCard: { gap: Spacing.lg },
   sectionHeading: { gap: Spacing.xs },
   section: { gap: Spacing.lg },
@@ -362,6 +455,8 @@ const styles = StyleSheet.create({
   },
   flexibleText: { flex: 1, minWidth: 0 },
   uncertaintyPill: {
+    alignItems: 'center',
+    gap: Spacing.xs,
     borderRadius: Radius.pill,
     paddingHorizontal: Spacing.md,
     paddingVertical: Spacing.sm,
@@ -372,7 +467,6 @@ const styles = StyleSheet.create({
     gap: Spacing.sm,
   },
   effectsGrid: {
-    flexDirection: 'row',
     flexWrap: 'wrap',
     gap: Spacing.lg,
   },
@@ -387,6 +481,8 @@ const styles = StyleSheet.create({
     gap: Spacing.md,
     flexWrap: 'wrap',
   },
+  effectIdentity: { flexGrow: 1, flexShrink: 1, flexBasis: 190, alignItems: 'center', gap: Spacing.sm },
+  effectIcon: { width: 42, height: 42, borderRadius: Radius.md, alignItems: 'center', justifyContent: 'center', flexShrink: 0 },
   sourcePill: {
     borderRadius: Radius.pill,
     paddingHorizontal: Spacing.md,
@@ -399,5 +495,12 @@ const styles = StyleSheet.create({
     gap: Spacing.lg,
   },
   valueBlock: { gap: Spacing.xs },
+  rangeMeter: { gap: Spacing.xs },
+  rangeTrack: { height: 20, borderRadius: Radius.pill, position: 'relative', overflow: 'hidden' },
+  rangeBand: { position: 'absolute', top: 4, bottom: 4, borderWidth: Controls.borderWidth, borderRadius: Radius.pill },
+  currentMarker: { position: 'absolute', top: 1, bottom: 1, width: 3, borderRadius: Radius.pill, marginLeft: -1.5 },
+  scaleRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  evidenceRow: { alignItems: 'center', gap: Spacing.xs },
   caveatCard: { gap: Spacing.sm },
+  caveatTitleRow: { alignItems: 'center', gap: Spacing.sm },
 });
