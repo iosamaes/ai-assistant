@@ -44,6 +44,7 @@ interface ChoiceChipProps {
   accessibilityLabel?: string;
   selected: boolean;
   onPress: () => void;
+  disabled?: boolean;
 }
 
 export function MizanText({ children, variant = 'body', muted = false, style, ...props }: MizanTextProps) {
@@ -163,21 +164,22 @@ export function SecondaryButton({
   );
 }
 
-export function ChoiceChip({ label, accessibilityLabel, selected, onPress }: ChoiceChipProps) {
+export function ChoiceChip({ label, accessibilityLabel, selected, onPress, disabled = false }: ChoiceChipProps) {
   const scheme = useColorScheme();
   const palette = Palette[scheme === 'dark' ? 'dark' : 'light'];
   return (
     <Pressable
       accessibilityLabel={accessibilityLabel ?? label}
       accessibilityRole="button"
-      accessibilityState={{ selected }}
+      accessibilityState={{ selected, disabled }}
+      disabled={disabled}
       onPress={onPress}
       style={({ pressed }) => [
         styles.chip,
         {
           backgroundColor: selected ? palette.accentSoft : palette.surface,
           borderColor: selected ? palette.accent : palette.border,
-          opacity: pressed ? Interaction.chipPressed : 1,
+          opacity: disabled ? Interaction.disabled : pressed ? Interaction.chipPressed : 1,
         },
       ]}>
       <MizanText variant="label" style={styles.centeredText}>{label}</MizanText>
