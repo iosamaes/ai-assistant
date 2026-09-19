@@ -1,5 +1,5 @@
 import { router } from 'expo-router';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { StyleSheet, useColorScheme, View } from 'react-native';
 
 import { loadRecoveryPlan } from '@/application/recovery';
@@ -117,56 +117,79 @@ export default function RecoveryScreen() {
   const { isRtl, locale, refreshSession, userId } = useAppState();
   const labels = copy[locale];
   const [plan, setPlan] = useState<RecoveryPlan | null>(null);
+  const [planUserId, setPlanUserId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState<string | null>(null);
   const [stepIndex, setStepIndex] = useState(0);
+  const activeUserRef = useRef(userId);
+  const loadRequestRef = useRef(0);
+  activeUserRef.current = userId;
   const scheme = useColorScheme();
   const palette = Palette[scheme === 'dark' ? 'dark' : 'light'];
 
   const load = useCallback(async () => {
-    if (!userId) {
+    const requestedUserId = userId;
+    const requestId = ++loadRequestRef.current;
+    const requestIsCurrent = () =>
+      loadRequestRef.current === requestId && activeUserRef.current === requestedUserId;
+
+    if (!requestedUserId) {
+      if (!requestIsCurrent()) return;
+      setPlan(null);
+      setPlanUserId(null);
+      setMessage(null);
+      setStepIndex(0);
       setLoading(false);
       return;
     }
+
     setLoading(true);
     setMessage(null);
-    const result = await loadRecoveryPlan(userId);
+    setPlan(null);
+    setPlanUserId(null);
+    setStepIndex(0);
+
+    const result = await loadRecoveryPlan(requestedUserId);
+    if (!requestIsCurrent()) return;
+
     if (!result.ok) {
-      if (result.error.kind === 'session-expired') await refreshSession();
+      if (result.error.kind === 'session-expired') {
+        await refreshSession();
+        if (!requestIsCurrent()) return;
+      }
       setMessage(labels.loadError);
       setPlan(null);
+      setPlanUserId(null);
     } else {
       setPlan(result.value);
+      setPlanUserId(requestedUserId);
       setStepIndex(0);
     }
     setLoading(false);
   }, [labels.loadError, refreshSession, userId]);
 
   useEffect(() => {
-    let active = true;
-    void Promise.resolve().then(() => {
-      if (active) return load();
-      return undefined;
-    });
+    void load();
     return () => {
-      active = false;
+      loadRequestRef.current += 1;
     };
   }, [load]);
 
-  const currentStep = plan?.steps[stepIndex] ?? null;
-  const needText = plan
-    ? plan.need === 'insufficient_evidence'
+  const visiblePlan = planUserId === userId ? plan : null;
+  const currentStep = visiblePlan?.steps[stepIndex] ?? null;
+  const needText = visiblePlan
+    ? visiblePlan.need === 'insufficient_evidence'
       ? labels.insufficient
-      : labels[plan.need]
+      : labels[visiblePlan.need]
     : null;
   const reasonLabels = useMemo(
-    () => plan?.reasons.map((reason) => labels.reason[reason.key as RecoveryReasonKey]) ?? [],
-    [labels.reason, plan],
+    () => visiblePlan?.reasons.map((reason) => labels.reason[reason.key as RecoveryReasonKey]) ?? [],
+    [labels.reason, visiblePlan],
   );
 
   const advance = () => {
-    if (!plan) return;
-    if (stepIndex >= plan.steps.length - 1) {
+    if (!visiblePlan) return;
+    if (stepIndex >= visiblePlan.steps.length - 1) {
       router.replace('/today');
       return;
     }
@@ -199,7 +222,7 @@ export default function RecoveryScreen() {
         </Card>
       ) : null}
 
-      {plan ? (
+      {visiblePlan ? (
         <>
           <Card style={styles.planCard}>
             <View style={[styles.planHeader, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
@@ -209,7 +232,7 @@ export default function RecoveryScreen() {
               </View>
               <View style={[styles.confidencePill, { backgroundColor: palette.accentSoft }]}>
                 <MizanText variant="caption">
-                  {labels.confidence}: {labels.confidenceLevels[plan.confidence.level]}
+                  {labels.confidence}: {labels.confidenceLevels[visiblePlan.confidence.level]}
                 </MizanText>
               </View>
             </View>
@@ -217,11 +240,11 @@ export default function RecoveryScreen() {
             <View style={[styles.planStats, { borderTopColor: palette.border }]}>
               <View style={styles.statBlock}>
                 <MizanText variant="caption" muted>{labels.evidence}</MizanText>
-                <MizanText variant="title">{formatLocalizedNumber(plan.confidence.evidenceCount, locale, 0)}</MizanText>
+                <MizanText variant="title">{formatLocalizedNumber(visiblePlan.confidence.evidenceCount, locale, 0)}</MizanText>
               </View>
               <View style={styles.statBlock}>
                 <MizanText variant="caption" muted>{labels.confidence}</MizanText>
-                <MizanText variant="label">{labels.confidenceLevels[plan.confidence.level]}</MizanText>
+                <MizanText variant="label">{labels.confidenceLevels[visiblePlan.confidence.level]}</MizanText>
               </View>
             </View>
 
@@ -243,12 +266,12 @@ export default function RecoveryScreen() {
               <View style={styles.progressGroup}>
                 <View style={[styles.stepMetaRow, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
                   <MizanText accessibilityLiveRegion="polite" variant="label" muted>
-                    {labels.step} {formatLocalizedNumber(stepIndex + 1, locale, 0)} {labels.of} {formatLocalizedNumber(plan.steps.length, locale, 0)}
+                    {labels.step} {formatLocalizedNumber(stepIndex + 1, locale, 0)} {labels.of} {formatLocalizedNumber(visiblePlan.steps.length, locale, 0)}
                   </MizanText>
                   <MizanText variant="caption" muted>{labels.resetLabel}</MizanText>
                 </View>
                 <View style={styles.progressTrack} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
-                  {plan.steps.map((step, index) => (
+                  {visiblePlan.steps.map((step, index) => (
                     <View
                       key={step.id}
                       style={[
@@ -267,7 +290,7 @@ export default function RecoveryScreen() {
 
               <View style={styles.actions}>
                 <PrimaryButton
-                  label={stepIndex >= plan.steps.length - 1 ? labels.done : labels.next}
+                  label={stepIndex >= visiblePlan.steps.length - 1 ? labels.done : labels.next}
                   onPress={advance}
                 />
                 <SecondaryButton label={labels.skip} onPress={advance} />
