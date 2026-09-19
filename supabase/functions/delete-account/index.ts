@@ -27,7 +27,7 @@ Deno.serve(async (request: Request) => {
     return jsonResponse(401, { error: 'authentication_required' });
   }
 
-  let body: { confirmation?: unknown };
+  let body: { confirmation?: unknown; expected_user_id?: unknown };
   try {
     body = await request.json();
   } catch {
@@ -36,6 +36,9 @@ Deno.serve(async (request: Request) => {
 
   if (body.confirmation !== 'DELETE') {
     return jsonResponse(400, { error: 'confirmation_required' });
+  }
+  if (typeof body.expected_user_id !== 'string' || body.expected_user_id.length === 0) {
+    return jsonResponse(400, { error: 'expected_user_required' });
   }
 
   const supabaseUrl = Deno.env.get('SUPABASE_URL');
@@ -51,6 +54,10 @@ Deno.serve(async (request: Request) => {
   const { data: userData, error: userError } = await admin.auth.getUser(accessToken);
   if (userError || !userData.user) {
     return jsonResponse(401, { error: 'authentication_required' });
+  }
+
+  if (userData.user.id !== body.expected_user_id) {
+    return jsonResponse(409, { error: 'account_changed' });
   }
 
   const { error: deleteError } = await admin.auth.admin.deleteUser(userData.user.id);
