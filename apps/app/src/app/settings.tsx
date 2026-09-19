@@ -73,6 +73,9 @@ const insightCopy = {
     integrationsTitle: 'التكاملات الخارجية',
     integrationsBody: 'راجع حالة أي مزود متصل وصلاحياته وآخر مزامنة، وأوقف الاتصال من مكان واحد بدون ربط الواجهة بمزود بعينه.',
     integrationsOpen: 'فتح التكاملات',
+    privacyTitle: 'الخصوصية والبيانات',
+    privacyBody: 'صدّر نسخة مقروءة من بياناتك أو احذف حساب ميزان وبياناته المملوكة للتطبيق بتحكم واضح ومباشر.',
+    privacyOpen: 'فتح أدوات الخصوصية',
   },
   en: {
     lifeMapTitle: 'Life map',
@@ -120,6 +123,9 @@ const insightCopy = {
     integrationsTitle: 'External integrations',
     integrationsBody: 'Review connected-provider lifecycle, permissions, and last sync in one place, and disable a connection without coupling the UI to a vendor.',
     integrationsOpen: 'Open integrations',
+    privacyTitle: 'Privacy & data',
+    privacyBody: 'Export a readable copy of your data or delete your MIZAN account and app-owned data through explicit user controls.',
+    privacyOpen: 'Open privacy controls',
   },
 } as const;
 
@@ -286,6 +292,12 @@ export default function SettingsScreen() {
         <MizanText variant="title">{insightLabels.integrationsTitle}</MizanText>
         <MizanText muted>{insightLabels.integrationsBody}</MizanText>
         <PrimaryButton label={insightLabels.integrationsOpen} onPress={() => router.push('/integrations')} />
+      </View>
+
+      <View style={styles.section}>
+        <MizanText variant="title">{insightLabels.privacyTitle}</MizanText>
+        <MizanText muted>{insightLabels.privacyBody}</MizanText>
+        <PrimaryButton label={insightLabels.privacyOpen} onPress={() => router.push('/privacy')} />
       </View>
 
       <View style={styles.section}>
