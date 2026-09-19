@@ -86,6 +86,7 @@ export default function InvisibleWinsScreen() {
   const [note, setNote] = useState('');
   const [items, setItems] = useState<StoredInvisibleWin[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
 
@@ -98,8 +99,12 @@ export default function InvisibleWinsScreen() {
       }
       const result = await loadInvisibleWins(userId);
       if (cancelled) return;
-      if (result.ok) setItems(result.value);
-      else setMessage(labels.loadError);
+      if (result.ok) {
+        setItems(result.value);
+        setLoadError(null);
+      } else {
+        setLoadError(labels.loadError);
+      }
       setLoading(false);
     };
     void load();
@@ -167,7 +172,10 @@ export default function InvisibleWinsScreen() {
       <View style={styles.section}>
         <MizanText variant="title">{labels.recent}</MizanText>
         {loading ? <MizanText accessibilityLiveRegion="polite" muted>{labels.loading}</MizanText> : null}
-        {!loading && items.length === 0 ? (
+        {!loading && loadError ? (
+          <MizanText accessibilityLiveRegion="polite" muted>{loadError}</MizanText>
+        ) : null}
+        {!loading && !loadError && items.length === 0 ? (
           <MizanText accessibilityLiveRegion="polite" muted>{labels.empty}</MizanText>
         ) : null}
         {items.map((item) => (
