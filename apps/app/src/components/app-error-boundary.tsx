@@ -1,6 +1,5 @@
 import { Component, ErrorInfo, PropsWithChildren } from 'react';
 import {
-  I18nManager,
   Pressable,
   StyleSheet,
   Text,
@@ -16,6 +15,7 @@ import {
   Spacing,
   Typography,
 } from '@/constants/theme';
+import { useAppState } from '@/state/app-state';
 
 interface State {
   hasError: boolean;
@@ -37,8 +37,8 @@ const fallbackCopy = {
 function ErrorFallback({ onRetry }: { onRetry: () => void }) {
   const scheme = useColorScheme();
   const palette = Palette[scheme === 'dark' ? 'dark' : 'light'];
-  const isRtl = I18nManager.isRTL;
-  const copy = fallbackCopy[isRtl ? 'ar' : 'en'];
+  const { isRtl, locale } = useAppState();
+  const copy = fallbackCopy[locale];
   const textAlign = isRtl ? 'right' : 'left';
   const writingDirection = isRtl ? 'rtl' : 'ltr';
 
