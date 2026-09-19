@@ -1,6 +1,6 @@
 import { router } from 'expo-router';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet, useColorScheme, View } from 'react-native';
 
 import {
   loadLifeSeasonsState,
@@ -9,7 +9,7 @@ import {
 } from '@/application/life-seasons';
 import { Card, ChoiceChip, MizanText, PrimaryButton, SecondaryButton } from '@/components/mizan-ui';
 import { Screen } from '@/components/screen';
-import { Spacing } from '@/constants/theme';
+import { Controls, Palette, Radius, Spacing } from '@/constants/theme';
 import { formatLocalizedNumber } from '@/i18n/number-input';
 import type { DomainId, LifeSeason } from '@/state/app-state';
 import { useAppState } from '@/state/app-state';
@@ -29,6 +29,7 @@ const copy = {
     title: 'مواسم الحياة',
     body: 'غيّر الموسم عندما تتغيّر أولوياتك المؤقتة، وعدّل المستوى المستدام الذي تريد حمايته لكل مجال. التوازن يُعاد حسابه مقابل هذه الأهداف التي اخترتها أنت، وليس مقابل توزيع مثالي ثابت.',
     seasonTitle: 'الموسم الحالي',
+    seasonBody: 'الموسم يغيّر ما يعتبره ميزان توازنًا مناسبًا لك الآن، ولا يغيّر قيمة أي مجال أو يحكم على اختياراتك.',
     targetTitle: 'أهداف هذا الموسم',
     targetBody: 'اختياري. استخدم 1–5 للمستوى الذي تعتبره كافيًا ومستدامًا في هذا الموسم. ترك المجال بلا هدف يبقيه مجهول الهدف.',
     unset: 'غير محدد',
@@ -39,11 +40,13 @@ const copy = {
     loadError: 'تعذر تحميل مواسمك الآن.',
     saveError: 'تعذر حفظ الموسم الآن. لم يتم اعتبار التغيير مكتملًا.',
     historyTitle: 'سجل المواسم',
+    historyBody: 'السجل يحفظ السياق الذي كنت تستخدمه وقتها حتى تظل المقارنات اللاحقة قابلة للفهم.',
     historyEmpty: 'لا يوجد سجل سابق بعد. يبدأ السجل من أول موسم محفوظ بعد تفعيل هذه الميزة.',
     current: 'الحالي',
     ended: 'انتهى',
     targets: 'الأهداف المسجلة',
     none: 'لا أهداف رقمية مسجلة',
+    unknownDomain: 'مجال آخر',
     back: 'العودة للإعدادات',
     seasons: {
       balanced: 'مرحلة متوازنة',
@@ -59,6 +62,7 @@ const copy = {
     title: 'Life Seasons',
     body: 'Change season when temporary priorities change, and adjust the sustainable level you want to protect in each area. Balance is recalculated against targets you chose, not a fixed ideal allocation.',
     seasonTitle: 'Current season',
+    seasonBody: 'Your season changes what balance means for you right now; it does not change the value of any area or judge your choices.',
     targetTitle: 'Targets for this season',
     targetBody: 'Optional. Use 1–5 for the level you consider sustainably good enough in this season. Leaving an area unset keeps its target unknown.',
     unset: 'Not set',
@@ -69,11 +73,13 @@ const copy = {
     loadError: 'MIZAN could not load your Life Seasons right now.',
     saveError: 'MIZAN could not save the season. The change was not treated as complete.',
     historyTitle: 'Season history',
+    historyBody: 'History preserves the context you were using at the time so later comparisons remain understandable.',
     historyEmpty: 'No prior history yet. History starts with the first season saved after this feature is enabled.',
     current: 'Current',
     ended: 'Ended',
     targets: 'Recorded targets',
     none: 'No numeric targets recorded',
+    unknownDomain: 'Another area',
     back: 'Back to settings',
     seasons: {
       balanced: 'Balanced season',
@@ -90,7 +96,7 @@ function formatDate(value: string, locale: 'ar' | 'en'): string {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return value;
   try {
-    return new Intl.DateTimeFormat(locale === 'ar' ? 'ar-QA' : 'en', {
+    return new Intl.DateTimeFormat(locale === 'ar' ? 'ar-QA-u-nu-latn' : 'en', {
       year: 'numeric',
       month: 'short',
       day: 'numeric',
@@ -116,6 +122,8 @@ export default function LifeSeasonsScreen() {
     userId,
   } = useAppState();
   const labels = copy[locale];
+  const scheme = useColorScheme();
+  const palette = Palette[scheme === 'dark' ? 'dark' : 'light'];
   const [selectedSeason, setSelectedSeason] = useState<LifeSeason>(lifeSeason ?? 'balanced');
   const [targets, setTargets] = useState<TargetDraft>({});
   const [state, setState] = useState<LifeSeasonsState | null>(null);
@@ -202,14 +210,18 @@ export default function LifeSeasonsScreen() {
 
   return (
     <Screen>
-      <View style={styles.hero}>
-        <MizanText variant="label" muted>{labels.eyebrow}</MizanText>
-        <MizanText variant="display">{labels.title}</MizanText>
-        <MizanText muted>{labels.body}</MizanText>
+      <View style={[styles.topRow, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
+        <View style={styles.heading}>
+          <MizanText variant="label" muted>{labels.eyebrow}</MizanText>
+          <MizanText variant="display">{labels.title}</MizanText>
+        </View>
+        <SecondaryButton compact label={labels.back} onPress={() => router.replace('/settings')} />
       </View>
 
-      <Card>
+      <Card style={[styles.heroCard, { backgroundColor: palette.accentSoft, borderColor: palette.accent }]}>
         <MizanText variant="title">{labels.seasonTitle}</MizanText>
+        <MizanText>{labels.body}</MizanText>
+        <MizanText variant="caption" muted>{labels.seasonBody}</MizanText>
         <View style={[styles.wrap, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
           {SEASONS.map((season) => (
             <ChoiceChip
@@ -227,85 +239,126 @@ export default function LifeSeasonsScreen() {
         </View>
       </Card>
 
-      <Card>
-        <MizanText variant="title">{labels.targetTitle}</MizanText>
-        <MizanText muted>{labels.targetBody}</MizanText>
-        {enabledDomains.map((domainId) => (
-          <View key={domainId} style={styles.targetRow}>
-            <MizanText variant="label">{t(domainId)}</MizanText>
-            <View style={[styles.wrap, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
-              <ChoiceChip
-                label={labels.unset}
-                selected={targets[domainId] === undefined}
-                disabled={controlsDisabled}
-                onPress={() => setTarget(domainId, null)}
-              />
-              {RATINGS.map((rating) => (
+      <Card style={styles.targetCard}>
+        <View style={styles.sectionHeader}>
+          <MizanText variant="title">{labels.targetTitle}</MizanText>
+          <MizanText muted>{labels.targetBody}</MizanText>
+        </View>
+        <View style={[styles.targetGrid, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
+          {enabledDomains.map((domainId) => (
+            <View
+              key={domainId}
+              style={[styles.targetPanel, { backgroundColor: palette.surfaceMuted, borderColor: palette.border }]}>
+              <MizanText variant="label">{t(domainId)}</MizanText>
+              <View style={[styles.wrap, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
                 <ChoiceChip
-                  key={`${domainId}-${rating}`}
-                  label={formatLocalizedNumber(rating, locale, 0)}
-                  selected={targets[domainId] === rating}
+                  label={labels.unset}
+                  selected={targets[domainId] === undefined}
                   disabled={controlsDisabled}
-                  onPress={() => setTarget(domainId, rating)}
+                  onPress={() => setTarget(domainId, null)}
                 />
-              ))}
+                {RATINGS.map((rating) => (
+                  <ChoiceChip
+                    key={`${domainId}-${rating}`}
+                    label={formatLocalizedNumber(rating, locale, 0)}
+                    selected={targets[domainId] === rating}
+                    disabled={controlsDisabled}
+                    onPress={() => setTarget(domainId, rating)}
+                  />
+                ))}
+              </View>
             </View>
-          </View>
-        ))}
+          ))}
+        </View>
 
         <PrimaryButton
           label={saveStatus === 'saving' ? labels.saving : labels.save}
           disabled={controlsDisabled}
           onPress={() => void handleSave()}
         />
-        {saveStatus === 'saved' ? (
-          <MizanText accessibilityLiveRegion="polite" muted>{labels.saved}</MizanText>
-        ) : null}
-        {saveStatus === 'error' ? (
-          <MizanText accessibilityLiveRegion="polite" muted>{labels.saveError}</MizanText>
-        ) : null}
-        {loadStatus === 'error' ? (
-          <MizanText accessibilityLiveRegion="polite" muted>{labels.loadError}</MizanText>
+
+        {saveStatus === 'saved' || saveStatus === 'error' || loadStatus === 'error' ? (
+          <View style={[styles.statusPanel, { backgroundColor: palette.surfaceMuted }]}>
+            {saveStatus === 'saved' ? (
+              <MizanText accessibilityLiveRegion="polite" muted>{labels.saved}</MizanText>
+            ) : null}
+            {saveStatus === 'error' ? (
+              <MizanText accessibilityLiveRegion="polite" muted>{labels.saveError}</MizanText>
+            ) : null}
+            {loadStatus === 'error' ? (
+              <MizanText accessibilityLiveRegion="polite" muted>{labels.loadError}</MizanText>
+            ) : null}
+          </View>
         ) : null}
       </Card>
 
       <View style={styles.section}>
-        <MizanText variant="title">{labels.historyTitle}</MizanText>
+        <View style={styles.sectionHeader}>
+          <MizanText variant="title">{labels.historyTitle}</MizanText>
+          <MizanText muted>{labels.historyBody}</MizanText>
+        </View>
         {loadStatus === 'loading' ? (
-          <MizanText accessibilityLiveRegion="polite" muted>{labels.loading}</MizanText>
+          <Card style={{ backgroundColor: palette.surfaceMuted }}>
+            <MizanText accessibilityLiveRegion="polite" muted>{labels.loading}</MizanText>
+          </Card>
         ) : null}
         {loadStatus === 'ready' && history.length === 0 ? (
-          <MizanText accessibilityLiveRegion="polite" muted>{labels.historyEmpty}</MizanText>
+          <Card style={{ backgroundColor: palette.surfaceMuted }}>
+            <MizanText accessibilityLiveRegion="polite" muted>{labels.historyEmpty}</MizanText>
+          </Card>
         ) : null}
-        {history.map((entry) => {
-          const recordedTargets = Object.entries(entry.target_snapshot)
-            .map(([domainId, rating]) => `${isDomainId(domainId) ? t(domainId) : domainId}: ${formatLocalizedNumber(Number(rating), locale, 0)}`)
-            .join(' · ');
-          return (
-            <Card key={entry.id}>
-              <View style={[styles.historyHeader, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
-                <MizanText variant="title">{labels.seasons[entry.season]}</MizanText>
-                <MizanText variant="label" muted>{entry.ended_at ? labels.ended : labels.current}</MizanText>
-              </View>
-              <MizanText muted>
-                {formatDate(entry.started_at, locale)}{entry.ended_at ? ` ${rangeArrow} ${formatDate(entry.ended_at, locale)}` : ''}
-              </MizanText>
-              <MizanText variant="caption" muted>{labels.targets}</MizanText>
-              <MizanText>{recordedTargets || labels.none}</MizanText>
-            </Card>
-          );
-        })}
+        <View style={[styles.historyGrid, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
+          {history.map((entry) => {
+            const recordedTargets = Object.entries(entry.target_snapshot)
+              .map(([domainId, rating]) => `${isDomainId(domainId) ? t(domainId) : labels.unknownDomain}: ${formatLocalizedNumber(Number(rating), locale, 0)}`)
+              .join(' · ');
+            return (
+              <Card key={entry.id} style={styles.historyCard}>
+                <View style={[styles.historyHeader, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
+                  <MizanText variant="title" style={styles.flexibleText}>{labels.seasons[entry.season]}</MizanText>
+                  <View style={[styles.historyPill, { backgroundColor: palette.accentSoft }]}>
+                    <MizanText variant="caption">{entry.ended_at ? labels.ended : labels.current}</MizanText>
+                  </View>
+                </View>
+                <MizanText muted>
+                  {formatDate(entry.started_at, locale)}{entry.ended_at ? ` ${rangeArrow} ${formatDate(entry.ended_at, locale)}` : ''}
+                </MizanText>
+                <View style={[styles.recordedTargets, { borderTopColor: palette.border }]}>
+                  <MizanText variant="caption" muted>{labels.targets}</MizanText>
+                  <MizanText>{recordedTargets || labels.none}</MizanText>
+                </View>
+              </Card>
+            );
+          })}
+        </View>
       </View>
-
-      <SecondaryButton compact label={labels.back} onPress={() => router.replace('/settings')} />
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  hero: { gap: Spacing.md, paddingTop: Spacing.xl },
+  topRow: { alignItems: 'flex-start', justifyContent: 'space-between', gap: Spacing.lg, flexWrap: 'wrap' },
+  heading: { flex: 1, minWidth: 0, gap: Spacing.xs },
+  heroCard: { gap: Spacing.lg },
+  targetCard: { gap: Spacing.xl },
   section: { gap: Spacing.lg },
+  sectionHeader: { gap: Spacing.sm },
   wrap: { flexWrap: 'wrap', gap: Spacing.sm },
-  targetRow: { gap: Spacing.sm },
-  historyHeader: { alignItems: 'center', justifyContent: 'space-between', gap: Spacing.md },
+  targetGrid: { flexWrap: 'wrap', gap: Spacing.md },
+  targetPanel: {
+    flexGrow: 1,
+    flexBasis: 280,
+    minWidth: 0,
+    borderWidth: Controls.borderWidth,
+    borderRadius: Radius.md,
+    padding: Spacing.lg,
+    gap: Spacing.md,
+  },
+  statusPanel: { borderRadius: Radius.md, padding: Spacing.md, gap: Spacing.sm },
+  historyGrid: { flexWrap: 'wrap', alignItems: 'stretch', gap: Spacing.lg },
+  historyCard: { flexGrow: 1, flexShrink: 1, flexBasis: 360 },
+  historyHeader: { alignItems: 'flex-start', justifyContent: 'space-between', gap: Spacing.md, flexWrap: 'wrap' },
+  flexibleText: { flexShrink: 1 },
+  historyPill: { minHeight: Controls.minimumTouchHeight, justifyContent: 'center', borderRadius: Radius.pill, paddingHorizontal: Spacing.md },
+  recordedTargets: { borderTopWidth: Controls.borderWidth, paddingTop: Spacing.md, gap: Spacing.sm },
 });
