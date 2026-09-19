@@ -40,6 +40,7 @@ Presentation boundary already in place:
 - async accessibility live announcements cover loading/error/empty/status transitions across the reviewed product surfaces.
 
 Latest static CP9 work:
+- **Localized decimal input:** Cost of Yes and Human ROI now normalize Western digits, Arabic-Indic digits, Eastern-Arabic/Persian digits, Arabic decimal separators, and comma decimals through the small shared `parseLocalizedDecimalInput` helper before applying each screen's existing `0..168` weekly-hours bound. This fixes a concrete Arabic-first input failure without moving decision math into presentation or introducing a generic locale framework.
 - **Shared semantic text direction:** `MizanText`, `MizanTextInput`, and primary-action labels now apply locale-aware `writingDirection` in addition to text alignment, so Arabic/English mixed punctuation and inline content follow the intended bidi paragraph direction across shared surfaces. Screen-specific semantic LTR overrides such as email remain possible because local styles are applied last.
 - **Recovery interaction flow:** advancing or skipping to a new recovery step now updates a polite accessibility live region on the step position, so screen-reader users receive an explicit transition cue instead of a silent in-place content replacement; recovery guidance and navigation behavior are unchanged.
 - **Life Map responsive/dynamic type:** the top navigation row, domain headers, and metric title/value rows now wrap instead of assuming a single horizontal line; long Arabic/English labels can shrink/wrap while values and navigation remain usable at narrow widths and larger text settings.
@@ -57,6 +58,10 @@ Latest static CP9 work:
 - **Async-state coverage:** Today, Life Map, WHY, Insights, Capacity, Life Seasons, Entry, Personalization, Onboarding, Personal Learning, Experiments, Recovery, What If, Settings, Auth/recovery, Check-in, Value Alignment, Invisible Wins, and Integrations have received static accessibility-state review and targeted live-region fixes where concrete gaps were identified.
 
 Latest static product commits from this pass (not runtime-verified):
+- `f6750f42a739d1680578549961f52b6cdca88118` — add conservative localized decimal-input normalization for Arabic-first numeric entry.
+- `192642abc2ab1bc13feb5f8c052375bbc7cff329` — use localized decimal parsing in Cost of Yes weekly-hour fields.
+- `7a93fab1f4f12f3cdbb1d23b73efc91d7cb3cb0f` — use localized decimal parsing in Human ROI weekly-hour field.
+- `ec9a016cee5649cccaeb4af966d3037624f94fce` — add focused Jest specification for supported localized decimal forms and malformed input rejection.
 - `3df3ca5dd8625fc21eca86296e2bf0b5a384477e` — enforce locale-aware writing direction in shared text, input, and primary-action primitives.
 - `c56f0427239dfbe1a07f7592a0a17fd9420d58ed` — announce Recovery step progression to assistive technology.
 - `de80dac980b0715716ab0b926376f3d18abb40f3` — make Check-in low/high scale labels wrap safely under narrow width and dynamic type.
@@ -87,6 +92,7 @@ The TASK-required final design-swap proof is **not claimed**. It still requires 
 
 ## Test matrix progress
 - Commit `d32636ddd253e3ec688376a4a42596e2844704df` added a broad CP2–CP9 app/runtime validation matrix, including component/application specifications and critical-flow coverage scaffolding.
+- Commit `ec9a016cee5649cccaeb4af966d3037624f94fce` adds focused coverage for Arabic-Indic/Eastern-Arabic decimal normalization and malformed localized numeric input; it has not been executed by workers under the current policy.
 - Those suites have **not** been executed by workers under the current task policy; no PASS is claimed from their presence alone.
 
 ## Exact next executable action
@@ -108,6 +114,7 @@ Previously recorded owner-side baseline evidence:
 Post-baseline status:
 - No worker-run app tests, builds, typechecks, database scripts, cloud CI, or GitHub Actions are claimed for CP2–CP9 changes.
 - Current CP9 evidence is static implementation/code-review evidence only until owner validation runs the validation matrix and representative device/browser/screen-reader checks.
+- The localized-number parser has a focused Jest specification in `apps/app/__tests__/advanced-tools-test.ts`, but it was not executed by workers; no PASS is claimed.
 - No new automated test was added for the latest declarative `accessibilityLiveRegion` substitutions or shared text-alignment/responsive wrapping adjustments; meaningful verification depends on pending runtime/dynamic-type/screen-reader validation rather than duplicating React Native prop/style assertions.
 
 ## Known blockers / risks
@@ -125,6 +132,7 @@ Post-baseline status:
 - `apps/app/src/components/mizan-ui.tsx`
 - `apps/app/src/components/screen.tsx`
 - `apps/app/src/components/app-error-boundary.tsx`
+- `apps/app/src/i18n/number-input.ts`
 - `apps/app/src/app/_layout.tsx`
 - `apps/app/src/app/auth.tsx`
 - `apps/app/src/app/update-password.tsx`
@@ -146,4 +154,5 @@ Post-baseline status:
 - `apps/app/src/app/integrations.tsx`
 - `apps/app/src/app/settings.tsx`
 - `apps/app/src/app/what-if.tsx`
+- `apps/app/__tests__/advanced-tools-test.ts`
 - `automation/HUMAN_REQUIRED.md`
