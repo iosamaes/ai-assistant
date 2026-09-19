@@ -11,7 +11,7 @@ import {
 } from '@/application/life-map';
 import { Card, MizanText, PrimaryButton, SecondaryButton } from '@/components/mizan-ui';
 import { Screen } from '@/components/screen';
-import { Controls, Palette, Spacing } from '@/constants/theme';
+import { Controls, Palette, Radius, Spacing } from '@/constants/theme';
 import { formatLocalizedNumber } from '@/i18n/number-input';
 import { useAppState } from '@/state/app-state';
 
@@ -118,7 +118,7 @@ function formatDate(value: string, locale: 'ar' | 'en') {
   const timestamp = Date.parse(value);
   if (!Number.isFinite(timestamp)) return '—';
   try {
-    return new Intl.DateTimeFormat(locale === 'ar' ? 'ar-QA' : 'en', {
+    return new Intl.DateTimeFormat(locale === 'ar' ? 'ar-QA-u-nu-latn' : 'en-QA-u-nu-latn', {
       day: 'numeric',
       month: 'short',
     }).format(new Date(timestamp));
@@ -138,11 +138,13 @@ function DomainCard({ domain, locale, isRtl }: { domain: LifeMapDomainHistory; l
   const hundred = formatLocalizedNumber(100, locale, 0);
 
   return (
-    <Card>
+    <Card style={styles.domainCard}>
       <View style={[styles.domainHeader, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
         <MizanText variant="title" style={styles.flexibleRowText}>{local.domains[domain.domainId]}</MizanText>
         {domain.evidenceCount > 0 ? (
-          <MizanText variant="caption" muted>{formatLocalizedNumber(domain.evidenceCount, locale, 0)} {local.observations}</MizanText>
+          <View style={[styles.evidencePill, { backgroundColor: palette.accentSoft }]}>
+            <MizanText variant="caption">{formatLocalizedNumber(domain.evidenceCount, locale, 0)} {local.observations}</MizanText>
+          </View>
         ) : null}
       </View>
 
@@ -154,7 +156,9 @@ function DomainCard({ domain, locale, isRtl }: { domain: LifeMapDomainHistory; l
           <View key={metric.metric} style={[styles.metric, { borderTopColor: palette.border }]}>
             <View style={[styles.metricTitleRow, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
               <MizanText variant="label" style={styles.flexibleRowText}>{metricLabel(metric.metric, locale)}</MizanText>
-              <MizanText variant="title">{formatLocalizedNumber(Math.round(metric.latestValue), locale, 0)} / {hundred}</MizanText>
+              <View style={[styles.scorePill, { backgroundColor: palette.surfaceMuted }]}>
+                <MizanText variant="label">{formatLocalizedNumber(Math.round(metric.latestValue), locale, 0)} / {hundred}</MizanText>
+              </View>
             </View>
 
             <View style={styles.detailGroup}>
@@ -165,9 +169,9 @@ function DomainCard({ domain, locale, isRtl }: { domain: LifeMapDomainHistory; l
               <MizanText variant="caption" muted>
                 {local.evidence}: {formatLocalizedNumber(metric.monthEvidenceCount, locale, 0)} · {local.confidence}: {confidenceLabel(metric.monthConfidence.level, locale)}
               </MizanText>
-              <MizanText variant="caption" muted>
-                {local.trend}: {momentumIsUsable ? momentumLabel(metric.momentum, locale) : local.trendUnknown}
-              </MizanText>
+              <View style={[styles.trendPill, { backgroundColor: palette.surfaceMuted, alignSelf: isRtl ? 'flex-end' : 'flex-start' }]}>
+                <MizanText variant="caption">{local.trend}: {momentumIsUsable ? momentumLabel(metric.momentum, locale) : local.trendUnknown}</MizanText>
+              </View>
             </View>
           </View>
         );
@@ -181,6 +185,8 @@ export default function LifeMapScreen() {
   const [snapshot, setSnapshot] = useState<LifeMapSnapshot | null>(null);
   const [status, setStatus] = useState<LoadStatus>('loading');
   const local = copy[locale];
+  const scheme = useColorScheme();
+  const palette = Palette[scheme === 'dark' ? 'dark' : 'light'];
 
   useEffect(() => {
     let active = true;
@@ -222,20 +228,29 @@ export default function LifeMapScreen() {
         <SecondaryButton compact label={local.back} onPress={() => router.replace('/today')} />
       </View>
 
-      <Card>
-        <MizanText muted>{local.body}</MizanText>
+      <Card style={[styles.heroCard, { backgroundColor: palette.accentSoft, borderColor: palette.accent }]}>
+        <View style={styles.heroCopy}>
+          <MizanText variant="title">{local.title}</MizanText>
+          <MizanText muted>{local.body}</MizanText>
+        </View>
         <PrimaryButton label={local.startCheckIn} onPress={() => router.push('/check-in')} />
       </Card>
 
       {status === 'loading' ? <MizanText accessibilityLiveRegion="polite" muted>{local.loading}</MizanText> : null}
-      {status === 'error' ? <Card><MizanText accessibilityLiveRegion="polite" muted>{local.error}</MizanText></Card> : null}
-      {status === 'ready' && evidenceCount === 0 ? <Card><MizanText accessibilityLiveRegion="polite" muted>{local.allEmpty}</MizanText></Card> : null}
+      {status === 'error' ? (
+        <Card style={{ backgroundColor: palette.surfaceMuted }}><MizanText accessibilityLiveRegion="polite" muted>{local.error}</MizanText></Card>
+      ) : null}
+      {status === 'ready' && evidenceCount === 0 ? (
+        <Card style={{ backgroundColor: palette.surfaceMuted }}><MizanText accessibilityLiveRegion="polite" muted>{local.allEmpty}</MizanText></Card>
+      ) : null}
 
-      {status === 'ready'
-        ? snapshot?.domains.map((domain) => (
+      {status === 'ready' ? (
+        <View style={styles.domainGrid}>
+          {snapshot?.domains.map((domain) => (
             <DomainCard key={domain.domainId} domain={domain} locale={locale} isRtl={isRtl} />
-          ))
-        : null}
+          ))}
+        </View>
+      ) : null}
     </Screen>
   );
 }
@@ -243,9 +258,16 @@ export default function LifeMapScreen() {
 const styles = StyleSheet.create({
   topRow: { alignItems: 'flex-start', justifyContent: 'space-between', gap: Spacing.lg, flexWrap: 'wrap' },
   heading: { flex: 1, minWidth: 0, gap: Spacing.xs },
+  heroCard: { gap: Spacing.xl },
+  heroCopy: { gap: Spacing.sm },
+  domainGrid: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'stretch', gap: Spacing.lg },
+  domainCard: { flexGrow: 1, flexShrink: 1, flexBasis: 360 },
   domainHeader: { alignItems: 'flex-start', justifyContent: 'space-between', gap: Spacing.md, flexWrap: 'wrap' },
+  evidencePill: { minHeight: Controls.minimumTouchHeight, justifyContent: 'center', paddingHorizontal: Spacing.md, borderRadius: Radius.pill },
   metric: { gap: Spacing.sm, borderTopWidth: Controls.borderWidth, paddingTop: Spacing.md },
-  metricTitleRow: { alignItems: 'flex-start', justifyContent: 'space-between', gap: Spacing.md, flexWrap: 'wrap' },
+  metricTitleRow: { alignItems: 'center', justifyContent: 'space-between', gap: Spacing.md, flexWrap: 'wrap' },
+  scorePill: { minHeight: Controls.minimumTouchHeight, justifyContent: 'center', paddingHorizontal: Spacing.md, borderRadius: Radius.pill },
   flexibleRowText: { flexShrink: 1 },
   detailGroup: { gap: Spacing.xs },
+  trendPill: { paddingHorizontal: Spacing.md, paddingVertical: Spacing.sm, borderRadius: Radius.pill, maxWidth: '100%' },
 });
