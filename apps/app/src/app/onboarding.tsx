@@ -6,6 +6,7 @@ import { useSpiritualGroundingPreference } from '@/application/spiritual-groundi
 import { ChoiceChip, MizanText, PrimaryButton } from '@/components/mizan-ui';
 import { Screen } from '@/components/screen';
 import { Spacing } from '@/constants/theme';
+import { formatLocalizedNumber } from '@/i18n/number-input';
 import {
   BaselineTargetRating,
   DomainBaselineTargets,
@@ -35,7 +36,7 @@ const copy = {
     valuesTitle: 'ما القيم التي تريد أن يحميها ميزان؟',
     privacyTitle: 'كيف تريد أن يبدأ التتبع؟',
     baselineTitle: 'ما المستوى الكافي والمستدام لكل مجال؟',
-    baselineBody: 'اختياري. استخدم نفس مقياس التحقق اليومي من 1 إلى 5. أي مجال تتركه غير محدد سيبقى مجهول الهدف ولن يضع ميزان قيمة بدلًا منك.',
+    baselineBody: 'اختياري. استخدم نفس مقياس التحقق اليومي من ١ إلى ٥. أي مجال تتركه غير محدد سيبقى مجهول الهدف ولن يضع ميزان قيمة بدلًا منك.',
     baselineUnset: 'غير محدد',
     baselineError: 'تعذر حفظ مستوياتك المستهدفة الآن. حاول مرة أخرى عند توفر الاتصال.',
     spiritualTitle: 'هل تريد تفعيل مساحة السكينة والمعنى؟',
@@ -284,7 +285,7 @@ export default function OnboardingScreen() {
                 {baselineLevels.map((level) => (
                   <ChoiceChip
                     key={level}
-                    label={String(level)}
+                    label={formatLocalizedNumber(level, locale, 0)}
                     selected={baselineTargets[domainId] === level}
                     onPress={() => setBaselineTarget(domainId, level)}
                     disabled={baselineChoicesLocked}
