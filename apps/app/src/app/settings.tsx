@@ -256,7 +256,7 @@ export default function SettingsScreen() {
         <MizanText variant="title">{labels.preferencesBody}</MizanText>
       </View>
 
-      <View style={styles.cardGrid}>
+      <View style={[styles.cardGrid, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
         <Card style={styles.preferenceCard}>
           <MizanText variant="label" muted>{t('language')}</MizanText>
           <View style={[styles.row, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
@@ -297,7 +297,7 @@ export default function SettingsScreen() {
         <MizanText variant="title">{labels.intelligenceBody}</MizanText>
       </View>
 
-      <View style={styles.cardGrid}>
+      <View style={[styles.cardGrid, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
         <SettingsLinkCard title={insightLabels.lifeMapTitle} body={insightLabels.lifeMapBody} action={insightLabels.lifeMapOpen} onPress={() => router.push('/life-map')} />
         <SettingsLinkCard title={insightLabels.whyTitle} body={insightLabels.whyBody} action={insightLabels.whyOpen} onPress={() => router.push('/why')} />
         <SettingsLinkCard title={insightLabels.insightsTitle} body={insightLabels.insightsBody} action={insightLabels.insightsOpen} onPress={() => router.push('/insights')} />
@@ -319,7 +319,7 @@ export default function SettingsScreen() {
         <MizanText variant="title">{labels.dataBody}</MizanText>
       </View>
 
-      <View style={styles.cardGrid}>
+      <View style={[styles.cardGrid, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
         <SettingsLinkCard title={insightLabels.integrationsTitle} body={insightLabels.integrationsBody} action={insightLabels.integrationsOpen} onPress={() => router.push('/integrations')} />
         <SettingsLinkCard title={insightLabels.privacyTitle} body={insightLabels.privacyBody} action={insightLabels.privacyOpen} onPress={() => router.push('/privacy')} />
       </View>
@@ -356,7 +356,6 @@ const styles = StyleSheet.create({
   heroCard: { gap: Spacing.md },
   sectionHeading: { gap: Spacing.xs, paddingTop: Spacing.sm },
   cardGrid: {
-    flexDirection: 'row',
     flexWrap: 'wrap',
     alignItems: 'stretch',
     gap: Spacing.lg,
