@@ -52,6 +52,7 @@ The earlier Premium Production Visual Pass remains useful foundation, but the ow
 - `3574f554aa4392d8573332a6f91991a797c8faf1` — **Capacity / Life Buffer & Life Debt** now visualizes known 0–100 buffer and debt amounts with accessible meters; unknown values still render no invented bar.
 - `4fa3d9beb543fcb3b467232040fa7dd45d450fcf` — **Cost of Yes** now visualizes known margin usage with an accessible meter while preserving the real percentage (including >100% displacement) in text and keeping missing-margin cases unknown.
 - `4d792b40df1867f83268f95c73354ad4178ca9f2` — **Human ROI** now displays benefit and effort as two separate accessible 1–5 meters rather than inventing a single ROI score, preserving the protected-meaning mode and the product rule against false scalar precision.
+- `e6156a457399e130ef2c8bf0f52a254d97523412` — **Value Alignment** now distinguishes the user's selected values with the existing shared semantic icon vocabulary and differentiates supported/watch/insufficient states through icon, tone, and border treatment. Declining signals only take the danger tone when evidence is actually present, supporting signals only take the accent tone when present, and the Arabic sparse-evidence wording was corrected without introducing an identity/morality score.
 - `b5938695a7fac3dd49358900b4da59b60078b67b` + `168628b850aafe2b5db6c2952fd09587a95dafc8` + `144473356aec4368c359eca1d29e9fce9599c14b` — the shared icon vocabulary now covers values, reflections, experiments, seasons, integrations, privacy, and personalization; Settings and Integrations consume those shared semantics with RTL-aware icon-led composition instead of local glyph systems.
 - `9ce78fe21550dbb62fc6ecc18abd823b11eff459` — **Personal Learning** now visualizes each explicit user-reported usefulness outcome on its real 1–5 bounded scale with an accessible progress meter while retaining the exact `x/5` value, note, date, and rule that completion alone is not benefit evidence.
 - `a8a4ef8b3e4ea56fc70ccaac14a302e729f16742` — **Auth** now uses the same owner-reference premium language instead of a functional form-only surface: responsive narrow/wide composition, shared welcome illustration, explicit MIZAN hierarchy, a privacy/trust panel with shared semantics, and clearer access/language controls while preserving authentication behavior and localized live feedback.
@@ -92,17 +93,16 @@ Account deletion now carries `expected_user_id` to the Edge Function. Function v
 
 Password recovery no longer lets a mutable shared Auth client choose the mutation target after the UI has captured a different account. The infrastructure first verifies the shared session matches `expectedUserId`, captures that session's tokens, creates a non-persistent/auto-refresh-disabled Supabase client, rehydrates only the captured session into that isolated client, verifies the isolated user id again, and calls `updateUser({ password })` there. The presentation separately clears password fields and transient state on account change and ignores a late result from another account. This closes the concrete A→B account-switch target race without introducing an elevated server credential boundary.
 
-The source-level sensitive-error review has covered baseline-target, experiment, reflection, Life Season, onboarding-context, One Move decision/history, pending-feedback, plugin-setting, What If trial-data, app-owned integration adapter/contract/registry paths, the application-layer action-feedback, daily intelligence/recommendation, check-in, capacity, Cost of Yes, spiritual preference, user-target, personal-learning/scenario-learning, Human ROI, Value Alignment, WHY, Recovery, offline pending mutations/recent snapshots, generic data access, privacy/export/deletion, auth/config/session-storage, root app-state, render-boundary, destructive account-deletion boundaries, the first-party plugin manifests/registry, the pure core human-state engine, and the shared presentation boundary (`mizan-ui`, `screen`, navigation, iconography, branded illustration, theme, localized number formatting). No new raw-sensitive logging sink was found in those newly inspected paths; auth and privacy continue to return classified/coarse failure kinds rather than raw backend messages, offline storage paths return coarse storage states without logging payloads, and the render boundary logs only component-stack diagnostics rather than arbitrary Error fields. The expanded shared-presentation audit is recorded in `765b08d196423e841a91cd861b23191c4e077d4a`.
+The production source-level sensitive-error/logging review now covers the complete current production tree: Supabase/application boundaries, offline storage, auth/session/configuration, root app state and render boundary, integrations/provider contracts and adapters, shared presentation primitives, first-party plugins, and the deterministic core modules (`alignment`, `balance`, `capacity`, `cost-of-yes`, `engine`, `experiment`, `human-roi`, `learning`, `leverage`, `recommendation-context`, `recovery`, `scenario`, `scenario-learning`, `temporal`, `types`, fixtures, and the export barrel). No raw-sensitive logging sink or arbitrary backend-error propagation was found in the newly reviewed core modules. Auth/privacy continue to return classified/coarse failure kinds rather than raw backend messages, offline storage paths return coarse storage states without logging payloads, and the render boundary logs only component-stack diagnostics rather than arbitrary Error fields. Re-open this audit only if new production sinks/boundaries are added before release.
 
 ### CP10 remaining
-- Complete repository-wide sensitive logging/error-reporting review beyond the targeted boundaries already inspected; fix only concrete leakage paths.
 - Owner/runtime validation remains required for cross-user/database tests, the Life Season expected-user specification, export/delete/local purge, destructive Edge deletion v2, consent revocation races, account-switch races including Settings, Onboarding, and password-recovery late-completion/session-binding cases, and account-scoped deletion confirmation.
 - Supabase leaked-password protection remains an owner action in `automation/HUMAN_REQUIRED.md`.
 
 ## Exact next executable action
-1. Continue the final CP9 static owner-reference sweep only for concrete RTL/localization/accessibility/dynamic-type/focus/technical-id inconsistencies on still-unreviewed shipped surfaces; the Settings/Onboarding/password-recovery account-switch gaps found in this sweep are now statically closed.
+1. Continue the final CP9 static owner-reference sweep only for concrete RTL/localization/accessibility/dynamic-type/focus/technical-id inconsistencies on still-unreviewed shipped surfaces; Value Alignment's residual semantic-state/icon gap is now statically closed.
 2. Inspect only still-unreviewed quantitative surfaces and add a meter/chart when the domain contract provides a real bounded quantitative meaning; preserve unknown states and avoid false precision.
-3. Continue the independent CP10 repository-wide sensitive logging/error-reporting audit across still-unreviewed application/package boundaries; the shared presentation boundary is now explicitly covered.
+3. The current production source logging/error-reporting audit is complete; do not churn reviewed code. Re-open CP10 source audit only if a new production sink/boundary appears, otherwise leave the remaining CP10 gates to owner/runtime validation.
 4. Leave representative-width runtime checks, tests/builds/typechecks/database validation suites, premium screenshot comparison, destructive account deletion, account-switch runtime races, password-recovery session-binding validation, and final design-swap proof to owner validation under the active execution policy.
 
 ## Verification record
@@ -124,7 +124,7 @@ Post-baseline:
 - Life Map radar/iconography/data-honesty commits `81f334b0e548c8ee8a9b794056344409e515c7fb`, `1195dee72b0ff63815e32eb4e8d462da2c93490a`, and `c45c8ca496d358bcc9343cf67f10a6c3c01f662f` are static implementation evidence only; the specification in `fbf457d90e4b8b2f9c2fd781586b01f58a0f1a0c` was added but not executed.
 - Today/Home owner-reference commits `9370d59476d26ff642506b9f32029eabddc8ce1a` and `137fd2fe9facda65aba2691f38a08d6afdbc848a` are static implementation evidence only.
 - WHY/Insights/What If owner-reference commits `2fbd4f17fc736faf039c6d357dcd8f28625f6b20`, `18747ebf8401bae4f596630554aab30fc4c52254`, `6c6fafed833e79c5ef5a60352f54199c09e7ce2c`, and `c80a4119f3e7c3c090751d4faec96b2e8615ce33` are static implementation evidence only.
-- Experiments/Recovery/Onboarding/Invisible Wins/Personalization/quantitative-visual commits `60193f0f4a1948d96f4512adfdc07114494dd293`, `7dd7e5f4b570ae012864297d1887e2e39e04fbe5`, `c9bfa4e7342fa01e09f9cc2a8159ad0fa21dfbbe`, `41656f61d234248683855f468b22943310299d4b`, `a3db6f54b5c6031ece29117f21bcdac7e6fdc1f2`, `3574f554aa4392d8573332a6f91991a797c8faf1`, `4fa3d9beb543fcb3b467232040fa7dd45d450fcf`, `4d792b40df1867f83268f95c73354ad4178ca9f2`, and `9ce78fe21550dbb62fc6ecc18abd823b11eff459` are **static implementation evidence only**.
+- Experiments/Recovery/Onboarding/Invisible Wins/Personalization/quantitative-visual commits `60193f0f4a1948d96f4512adfdc07114494dd293`, `7dd7e5f4b570ae012864297d1887e2e39e04fbe5`, `c9bfa4e7342fa01e09f9cc2a8159ad0fa21dfbbe`, `41656f61d234248683855f468b22943310299d4b`, `a3db6f54b5c6031ece29117f21bcdac7e6fdc1f2`, `3574f554aa4392d8573332a6f91991a797c8faf1`, `4fa3d9beb543fcb3b467232040fa7dd45d450fcf`, `4d792b40df1867f83268f95c73354ad4178ca9f2`, `9ce78fe21550dbb62fc6ecc18abd823b11eff459`, and Value Alignment `e6156a457399e130ef2c8bf0f52a254d97523412` are **static implementation evidence only**.
 - Shared secondary-screen iconography commits `b5938695a7fac3dd49358900b4da59b60078b67b`, `168628b850aafe2b5db6c2952fd09587a95dafc8`, `144473356aec4368c359eca1d29e9fce9599c14b`, and Life Seasons `27d5b9cdcc1fd158afee7f62145a77a18081f51c` are static implementation evidence only. Workers did not run typecheck, tests, builds, screenshot capture, or representative device validation under the active policy.
 - Auth/entry/privacy owner-reference and privacy-fencing commits `a8a4ef8b3e4ea56fc70ccaac14a302e729f16742`, `4840728f73374ce8ceba88a030e5a04aaff53e30`, `c5c1bd79aced8e82b709960d150343d4ed362d30`, `92c7f06ad33534b905e38252bfa4758bf950c907`, `6c84bb8915103f16af68d4c630dc7373aece431a`, `3ec7793959b43cfd0a48e4210c91cc6acc3a1cc6`, `1edb466025638721aeda9487e2fec34322ddf354`, and `a47b4d337c2c70867e40c9a54b005db4a34c0c11` are static implementation/specification evidence only; the privacy regression specifications were not executed.
 - Life Season account-fencing commits `77c965caacc1015feff66dd681d7532b0c26af39`, `db022a8c38944f653a77ab7997c1b28848cff46d`, `c4258f7317089583a5ce3b9b5fcaa4615c12da5e`, `2620b019108782ed5d8a973407b87f4154505a04`, and specification `25caf304a51bf69e60755a78b7c20e6d2440ec92` are implementation/specification evidence; only migration application and ACL reads were performed, not behavioral validation.
@@ -134,7 +134,7 @@ Post-baseline:
 - App-local RTL hardening commits `2025658adc83666c9c4863e2cefcee61f6617b79` and `5182630018f6c5209981da011ba27cb9ea523f06`, focused navigation specification `b93734d36a594cd86c614003ff02b0c30f26ca67`, and architecture-ledger update `db4a6b26881361886f51178ba98193bb7ed3b29f` are static implementation/specification evidence only; the new regression specification was not executed.
 - Settings/Onboarding account-switch hardening commits `20ac0fa640e7dc743b5b74136b8cda470e22a44a` and `13d6d0a347d40caaa75631103211b8974965d1d9`, with focused specifications `7f818820e192183bef63d3028e4b8ec265283188` and `2d48707e7118f5797ff9a9f35b3f1bb5849d93f0`, are static implementation/specification evidence only; the specifications were intentionally not executed under worker policy.
 - Password-recovery account fencing commits `99daf4007a80eeedc5f5c224bd071dbb138b8667` and `e6bb047101a120ea1a1fe2b2b0b7163b61c696b1`, plus infrastructure/screen specifications `33dfd36ab474f5b94f3c30108fa583e093b47773` and `c06cf8c1af45f099e55c052217e9a4500437c9df`, are static implementation/specification evidence only. No worker-run test, typecheck, build, or recovery-session runtime claim is made.
-- CP10 application-layer logging-audit expansion recorded in `75998a428c791893fdfa37a9c27f26ff09e66fa6`, plus subsequent direct source review of auth/config/session-storage, offline storage, generic data access, root app-state, render-boundary, Life Season, privacy, delete-account, first-party plugin registry/manifests, the core human-state engine, and the shared presentation boundary recorded in `765b08d196423e841a91cd861b23191c4e077d4a`, is static source-review evidence only, not runtime or test evidence.
+- CP10 application-layer logging-audit expansion recorded in `75998a428c791893fdfa37a9c27f26ff09e66fa6`, plus subsequent direct source review of auth/config/session-storage, offline storage, generic data access, root app-state, render-boundary, Life Season, privacy, delete-account, first-party plugin registry/manifests, the shared presentation boundary, and the remaining deterministic core source modules is static source-review evidence only, not runtime or test evidence. The current production source tree has no newly discovered raw-sensitive logging/error sink from this audit.
 
 ## Known blockers / risks
 - CP1: Windows session must be unlocked normally for true narrow-phone Arabic/English interaction evidence; see `automation/HUMAN_REQUIRED.md`.
@@ -144,7 +144,7 @@ Post-baseline:
 - Recent Today snapshot native SecureStore behavior/capacity still needs owner runtime validation.
 - CP9 major owner-reference structural slices are statically present, but representative runtime screenshot evidence, interaction validation, and the design-swap proof are still outstanding; residual static defects may still surface in the final sweep.
 - Privacy export/delete UI, local cache purge/warning behavior, account-scoped confirmation behavior, Edge v2 expected-user deletion fencing, Life Season expected-user fencing, Settings/Onboarding account-switch races, and password-recovery session-binding/account-switch behavior need owner Web/native/end-to-end validation before CP10 can close.
-- Repository-wide sensitive logging/error reporting review remains incomplete beyond the targeted boundaries already hardened.
+- Production source-level sensitive logging/error reporting review is complete for the current tree; re-open it only if new production sinks/boundaries are added before release.
 - No real AI, wearable, calendar, or location credentials are configured; deterministic/unavailable adapters remain the supported fallback path.
 
 ## Evidence paths
@@ -159,6 +159,7 @@ Post-baseline:
 - `apps/app/__tests__/auth-password-session-fencing-test.ts`
 - `apps/app/src/app/one-move.tsx`
 - `apps/app/src/app/life-seasons.tsx`
+- `apps/app/src/app/value-alignment.tsx`
 - `apps/app/src/components/app-navigation.tsx`
 - `apps/app/__tests__/app-navigation-rtl-test.tsx`
 - `apps/app/src/components/app-icon.tsx`
@@ -198,6 +199,22 @@ Post-baseline:
 - `apps/app/src/infrastructure/supabase/config.ts`
 - `apps/app/src/infrastructure/supabase/session-storage.ts`
 - `apps/app/src/infrastructure/supabase/life-seasons.ts`
+- `packages/core/src/index.ts`
+- `packages/core/src/types.ts`
+- `packages/core/src/engine.ts`
+- `packages/core/src/learning.ts`
+- `packages/core/src/leverage.ts`
+- `packages/core/src/balance.ts`
+- `packages/core/src/capacity.ts`
+- `packages/core/src/cost-of-yes.ts`
+- `packages/core/src/human-roi.ts`
+- `packages/core/src/alignment.ts`
+- `packages/core/src/scenario.ts`
+- `packages/core/src/scenario-learning.ts`
+- `packages/core/src/experiment.ts`
+- `packages/core/src/recovery.ts`
+- `packages/core/src/temporal.ts`
+- `packages/core/src/recommendation-context.ts`
 - `supabase/tests/rls_cross_user.sql`
 - `supabase/tests/life_season_history.sql`
 - `supabase/tests/account_data_export_security.sql`
