@@ -40,6 +40,7 @@ Presentation boundary already in place:
 - async accessibility live announcements cover loading/error/empty/status transitions across reviewed product surfaces.
 
 Latest static CP9 work:
+- **Life Seasons async choice fencing:** season and target chips are now disabled during initial/reload loading and while a save is in flight, and their handlers reject mutations during that window. This prevents the visible season/target draft from drifting away from the snapshot being loaded or persisted, while exposing the shared disabled semantics to assistive technology. Commit `eb220dd038d6379bdbe29a075bd2dceb3a3beb97`.
 - **Settings optional-module choice fencing:** Spiritual Grounding enable/disable chips now expose the shared disabled interaction/accessibility state while the preference is loading/saving or a Settings-level destructive flow is busy, matching the handler's existing no-op guard instead of leaving controls visually and semantically enabled when they cannot act. Commit `1902023c893a340471e72f472d48881e018a32b5`.
 - **Bootstrap error bidi parity:** the root `AppErrorBoundary` fallback now applies explicit RTL/LTR `writingDirection` to its title, body, and retry label in addition to alignment, so the provider-independent recovery surface handles Arabic/English punctuation and mixed-direction text consistently with the shared text primitives. Commit `db099d989b3c1c2a943175652c50e82ad7678fb5`.
 - **Keyboard-safe shared scrolling:** shared `Screen` now enables React Native automatic keyboard inset adjustment for scrollable screens, reducing the risk that auth, recovery, feedback, experiment, and other input flows have lower content obscured by the on-screen keyboard on supported native targets. Commit `e15b3b5f7c01798f32248702f0d03089020c76ee`.
@@ -103,6 +104,7 @@ Post-baseline status:
 - `apps/app/src/app/onboarding.tsx`
 - `apps/app/src/app/today.tsx`
 - `apps/app/src/app/life-map.tsx`
+- `apps/app/src/app/life-seasons.tsx`
 - `apps/app/src/app/why.tsx`
 - `apps/app/src/app/insights.tsx`
 - `apps/app/src/app/experiments.tsx`
