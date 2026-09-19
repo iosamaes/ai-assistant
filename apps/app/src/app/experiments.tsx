@@ -183,6 +183,17 @@ function formatValue(value: number | null, locale: 'ar' | 'en'): string {
   return value === null ? '—' : formatLocalizedNumber(value, locale, 1);
 }
 
+function formatExperimentDate(value: string, locale: 'ar' | 'en'): string {
+  const timestamp = Date.parse(value);
+  if (!Number.isFinite(timestamp)) return '—';
+  const date = new Date(timestamp);
+  try {
+    return date.toLocaleDateString(locale === 'ar' ? 'ar-QA-u-nu-latn' : 'en-QA-u-nu-latn');
+  } catch {
+    return date.toISOString().slice(0, 10);
+  }
+}
+
 function templateIcon(templateId: ExperimentTemplateId | null): AppIconName {
   if (templateId === 'earlier-bedtime') return 'recovery';
   if (templateId === 'quiet-focus') return 'mentalLoad';
@@ -314,9 +325,7 @@ export default function ExperimentsScreen() {
       ? labels.templates[templateId].label
       : labels.unknownExperiment;
     const selectedRating = ratingById[experiment.id] ?? 0;
-    const startedAt = new Date(experiment.started_at ?? experiment.created_at).toLocaleDateString(
-      locale === 'ar' ? 'ar-QA-u-nu-latn' : 'en-QA-u-nu-latn',
-    );
+    const startedAt = formatExperimentDate(experiment.started_at ?? experiment.created_at, locale);
     const isActive = experiment.status === 'active';
     const progress = activeTimeProgress(item);
     const progressPercent = progress === null ? null : Math.round(progress * 100);
