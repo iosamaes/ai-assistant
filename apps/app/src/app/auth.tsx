@@ -92,16 +92,16 @@ export default function AuthScreen() {
 
       <View style={styles.section}>
         <View style={[styles.row, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
-          <ChoiceChip label={t('arabic')} selected={locale === 'ar'} onPress={() => setLocale('ar')} />
-          <ChoiceChip label={t('english')} selected={locale === 'en'} onPress={() => setLocale('en')} />
+          <ChoiceChip label={t('arabic')} selected={locale === 'ar'} onPress={() => setLocale('ar')} disabled={busy} />
+          <ChoiceChip label={t('english')} selected={locale === 'en'} onPress={() => setLocale('en')} disabled={busy} />
         </View>
       </View>
 
       <View style={styles.section}>
         <View style={[styles.row, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
-          <ChoiceChip label={t('signIn')} selected={mode === 'sign-in'} onPress={() => setMode('sign-in')} />
-          <ChoiceChip label={t('signUp')} selected={mode === 'sign-up'} onPress={() => setMode('sign-up')} />
-          <ChoiceChip label={t('resetPassword')} selected={mode === 'reset'} onPress={() => setMode('reset')} />
+          <ChoiceChip label={t('signIn')} selected={mode === 'sign-in'} onPress={() => setMode('sign-in')} disabled={busy} />
+          <ChoiceChip label={t('signUp')} selected={mode === 'sign-up'} onPress={() => setMode('sign-up')} disabled={busy} />
+          <ChoiceChip label={t('resetPassword')} selected={mode === 'reset'} onPress={() => setMode('reset')} disabled={busy} />
         </View>
       </View>
 
@@ -111,6 +111,7 @@ export default function AuthScreen() {
           accessibilityLabel={t('email')}
           autoCapitalize="none"
           autoCorrect={false}
+          editable={!busy}
           keyboardType="email-address"
           placeholder="name@example.com"
           style={styles.ltrInput}
@@ -125,6 +126,7 @@ export default function AuthScreen() {
               accessibilityLabel={t('password')}
               autoCapitalize="none"
               autoCorrect={false}
+              editable={!busy}
               secureTextEntry
               value={password}
               onChangeText={setPassword}
