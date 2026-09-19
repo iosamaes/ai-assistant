@@ -10,7 +10,7 @@ import {
   disconnectIntegration,
   loadIntegrationConnections,
   markIntegrationSyncError,
-  upsertIntegrationConnection,
+  markIntegrationSyncSuccess,
   upsertNormalizedExternalObservations,
   type StoredIntegrationConnection,
 } from '@/infrastructure/supabase/integrations';
@@ -42,13 +42,46 @@ async function recordHealthSyncFailure(
   );
 }
 
-async function readHealthObservationsWithRetry(
+async function verifyHealthSyncAuthorization(
+  userId: string,
   provider: HealthDataProvider,
-  window: ObservationWindow,
-) {
-  const first = await provider.readObservations(window);
-  if (first.ok || first.error.kind !== 'unavailable') return first;
-  return provider.readObservations(window);
+  grantedScopes: readonly string[],
+  consentedAt: string,
+): Promise<IntegrationResult<null>> {
+  const stateResult = await loadIntegrationConnections(userId);
+  if (!stateResult.ok) {
+    const mappedKind = mapDataFailure(stateResult.error.kind);
+    return {
+      ok: false,
+      error: {
+        kind: mappedKind,
+        ...(stateResult.error.code ? { code: stateResult.error.code } : {}),
+      },
+    };
+  }
+
+  const connection = stateResult.value.find(
+    (item) => item.capability === 'health_data' && item.providerId === provider.providerId,
+  );
+  if (
+    !connection ||
+    connection.status !== 'connected' ||
+    connection.disconnectedAt !== null ||
+    !connection.consentedAt ||
+    connection.consentedAt !== consentedAt
+  ) {
+    return { ok: false, error: { kind: 'permission-denied', code: 'consent-inactive' } };
+  }
+
+  const activeScopes = new Set(connection.scopes);
+  if (
+    provider.requiredScopes.some((scope) => !activeScopes.has(scope)) ||
+    grantedScopes.some((scope) => !activeScopes.has(scope))
+  ) {
+    return { ok: false, error: { kind: 'permission-denied', code: 'scope-inactive' } };
+  }
+
+  return { ok: true, value: null };
 }
 
 export interface HealthSyncSummary {
@@ -76,7 +109,25 @@ export async function syncHealthData(
     return { ok: false, error: { kind: 'permission-denied' } };
   }
 
-  const readResult = await readHealthObservationsWithRetry(provider, window);
+  const initialAuthorization = await verifyHealthSyncAuthorization(
+    userId,
+    provider,
+    grantedScopes,
+    consentedAt,
+  );
+  if (!initialAuthorization.ok) return initialAuthorization;
+
+  let readResult = await provider.readObservations(window);
+  if (!readResult.ok && readResult.error.kind === 'unavailable') {
+    const retryAuthorization = await verifyHealthSyncAuthorization(
+      userId,
+      provider,
+      grantedScopes,
+      consentedAt,
+    );
+    if (!retryAuthorization.ok) return retryAuthorization;
+    readResult = await provider.readObservations(window);
+  }
   if (!readResult.ok) {
     await recordHealthSyncFailure(userId, provider.providerId, 'provider', readResult.error.kind);
     return readResult;
@@ -85,6 +136,14 @@ export async function syncHealthData(
     await recordHealthSyncFailure(userId, provider.providerId, 'provider', 'provider-mismatch');
     return { ok: false, error: { kind: 'invalid', code: 'provider-mismatch' } };
   }
+
+  const postReadAuthorization = await verifyHealthSyncAuthorization(
+    userId,
+    provider,
+    grantedScopes,
+    consentedAt,
+  );
+  if (!postReadAuthorization.ok) return postReadAuthorization;
 
   const persistResult = await upsertNormalizedExternalObservations(userId, readResult.value);
   if (!persistResult.ok) {
@@ -100,17 +159,13 @@ export async function syncHealthData(
   }
 
   const syncedAt = new Date().toISOString();
-  const stateResult = await upsertIntegrationConnection(userId, {
-    capability: 'health_data',
-    providerId: provider.providerId,
-    status: 'connected',
-    scopes: [...grantedScopes],
+  const stateResult = await markIntegrationSyncSuccess(
+    userId,
+    'health_data',
+    provider.providerId,
     consentedAt,
-    lastSyncedAt: syncedAt,
-    lastErrorCode: null,
-    disconnectedAt: null,
-    metadata: {},
-  });
+    syncedAt,
+  );
   if (!stateResult.ok) {
     const mappedKind = mapDataFailure(stateResult.error.kind);
     await recordHealthSyncFailure(userId, provider.providerId, 'state', mappedKind);
@@ -121,6 +176,9 @@ export async function syncHealthData(
         ...(stateResult.error.code ? { code: stateResult.error.code } : {}),
       },
     };
+  }
+  if (!stateResult.value) {
+    return { ok: false, error: { kind: 'permission-denied', code: 'consent-revoked' } };
   }
 
   return {
