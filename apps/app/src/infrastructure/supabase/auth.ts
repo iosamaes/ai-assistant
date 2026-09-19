@@ -1,7 +1,7 @@
-import type { AuthChangeEvent, AuthError, Session } from '@supabase/supabase-js';
+import { createClient, type AuthChangeEvent, type AuthError, type Session } from '@supabase/supabase-js';
 import * as Linking from 'expo-linking';
 
-import { supabase } from './client';
+import { supabase, supabaseConfig } from './client';
 
 export type AuthFailureKind =
   | 'not-configured'
@@ -103,24 +103,43 @@ export async function requestPasswordReset(email: string, redirectTo = authRedir
 }
 
 export async function updatePassword(password: string, expectedUserId: string): Promise<AuthResult<null>> {
-  if (!supabase) return unavailable();
+  if (!supabase || !supabaseConfig.ok) return unavailable();
   if (password.length < 8 || !expectedUserId) {
     return { ok: false, error: { kind: 'unknown', code: 'invalid_password_request' } };
   }
 
   const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
   if (sessionError) return authFailure(sessionError);
-  if (sessionData.session?.user.id !== expectedUserId) {
+  const capturedSession = sessionData.session;
+  if (!capturedSession || capturedSession.user.id !== expectedUserId) {
     return { ok: false, error: { kind: 'unknown', code: 'account_changed' } };
   }
 
-  const { error } = await supabase.functions.invoke('update-password', {
-    body: {
-      expected_user_id: expectedUserId,
-      password,
+  // Bind the mutation to the initiating session instead of whichever session
+  // happens to be active on the shared client when the network call executes.
+  // This keeps a concurrent account switch from changing another user's password.
+  const isolatedClient = createClient(
+    supabaseConfig.value.url,
+    supabaseConfig.value.publishableKey,
+    {
+      auth: {
+        persistSession: false,
+        autoRefreshToken: false,
+        detectSessionInUrl: false,
+      },
     },
+  );
+  const { data: isolatedSessionData, error: isolatedSessionError } = await isolatedClient.auth.setSession({
+    access_token: capturedSession.access_token,
+    refresh_token: capturedSession.refresh_token,
   });
-  if (error) return { ok: false, error: { kind: 'unknown', code: 'password_update_failed' } };
+  if (isolatedSessionError) return authFailure(isolatedSessionError);
+  if (isolatedSessionData.session?.user.id !== expectedUserId) {
+    return { ok: false, error: { kind: 'unknown', code: 'account_changed' } };
+  }
+
+  const { error } = await isolatedClient.auth.updateUser({ password });
+  if (error) return authFailure(error);
   return { ok: true, value: null };
 }
 
