@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { StyleSheet, useColorScheme, View } from 'react-native';
 
 import { loadRecoveryPlan } from '@/application/recovery';
+import { BrandedIllustration } from '@/components/branded-illustration';
 import { Card, MizanText, PrimaryButton, SecondaryButton } from '@/components/mizan-ui';
 import { Screen } from '@/components/screen';
 import { Controls, Palette, Radius, Spacing } from '@/constants/theme';
@@ -212,8 +213,15 @@ export default function RecoveryScreen() {
       </View>
 
       <Card style={[styles.heroCard, { backgroundColor: palette.accentSoft, borderColor: palette.accent }]}>
-        <MizanText variant="title">{labels.resetLabel}</MizanText>
-        <MizanText muted>{labels.body}</MizanText>
+        <View style={[styles.heroLayout, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
+          <View style={styles.heroCopy}>
+            <MizanText variant="title">{labels.resetLabel}</MizanText>
+            <MizanText muted>{labels.body}</MizanText>
+          </View>
+          <View style={styles.heroVisual}>
+            <BrandedIllustration variant="recovery" size={150} />
+          </View>
+        </View>
       </Card>
 
       {loading ? (
@@ -323,6 +331,25 @@ const styles = StyleSheet.create({
   heading: { flex: 1, minWidth: 0, gap: Spacing.xs },
   flexibleText: { flex: 1, minWidth: 0 },
   heroCard: { gap: Spacing.md },
+  heroLayout: {
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    flexWrap: 'wrap',
+    gap: Spacing.lg,
+  },
+  heroCopy: {
+    flexGrow: 1,
+    flexShrink: 1,
+    flexBasis: 300,
+    minWidth: 0,
+    gap: Spacing.md,
+  },
+  heroVisual: {
+    flexGrow: 0,
+    flexShrink: 0,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   planCard: { gap: Spacing.lg },
   planHeader: {
     alignItems: 'flex-start',
