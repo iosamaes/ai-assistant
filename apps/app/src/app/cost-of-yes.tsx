@@ -6,7 +6,7 @@ import { assessExplicitCostOfYes } from '@/application/cost-of-yes';
 import { Card, MizanText, MizanTextInput, SecondaryButton } from '@/components/mizan-ui';
 import { Screen } from '@/components/screen';
 import { Spacing } from '@/constants/theme';
-import { parseLocalizedDecimalInput } from '@/i18n/number-input';
+import { formatLocalizedNumber, parseLocalizedDecimalInput } from '@/i18n/number-input';
 import { useAppState } from '@/state/app-state';
 
 const copy = {
@@ -15,9 +15,9 @@ const copy = {
     title: 'تكلفة قول نعم',
     body: 'قارن الوقت الأسبوعي الذي يحتاجه الالتزام بهامش الوقت الذي تعرف أنك تملكه. إذا كانت بيانات الوقت ناقصة فلن يخمّن ميزان ما الذي سيتزاحم.',
     commitmentLabel: 'وقت الالتزام المتوقع أسبوعيًا',
-    commitmentPlaceholder: 'مثال: 4',
+    commitmentPlaceholder: 'مثال: ٤',
     marginLabel: 'هامش الوقت المتاح الذي تعرفه أسبوعيًا',
-    marginPlaceholder: 'مثال: 7',
+    marginPlaceholder: 'مثال: ٧',
     hoursPerWeek: 'ساعة / أسبوع',
     contextNote: 'استخدم فقط تقديرًا تعرفه فعلًا. ربط التقويم أو مصادر الوقت مستقبلًا يمكنه توفير سياق أدق، لكن هذه الأداة لا تفترضه الآن.',
     assessment: 'القراءة الحالية',
@@ -89,10 +89,9 @@ function parseHours(value: string): number | null {
   return parsed !== null && parsed >= 0 && parsed <= 168 ? parsed : null;
 }
 
-function formatHours(minutes: number | null): string {
+function formatHours(minutes: number | null, locale: 'ar' | 'en'): string {
   if (minutes === null) return '—';
-  const hours = Math.round((minutes / 60) * 10) / 10;
-  return Number.isInteger(hours) ? String(hours) : hours.toFixed(1);
+  return formatLocalizedNumber(minutes / 60, locale, 1);
 }
 
 export default function CostOfYesScreen() {
@@ -181,23 +180,23 @@ export default function CostOfYesScreen() {
           <View style={[styles.metrics, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
             <View style={styles.metric}>
               <MizanText variant="caption" muted>{labels.commitment}</MizanText>
-              <MizanText variant="title">{formatHours(assessment.commitmentMinutesPerWeek)}</MizanText>
+              <MizanText variant="title">{formatHours(assessment.commitmentMinutesPerWeek, locale)}</MizanText>
               <MizanText variant="caption" muted>{labels.hoursPerWeek}</MizanText>
             </View>
             <View style={styles.metric}>
               <MizanText variant="caption" muted>{labels.knownMargin}</MizanText>
-              <MizanText variant="title">{formatHours(assessment.availableMarginMinutesPerWeek)}</MizanText>
+              <MizanText variant="title">{formatHours(assessment.availableMarginMinutesPerWeek, locale)}</MizanText>
               <MizanText variant="caption" muted>{labels.hoursPerWeek}</MizanText>
             </View>
             <View style={styles.metric}>
               <MizanText variant="caption" muted>{labels.remaining}</MizanText>
-              <MizanText variant="title">{formatHours(assessment.remainingMarginMinutesPerWeek)}</MizanText>
+              <MizanText variant="title">{formatHours(assessment.remainingMarginMinutesPerWeek, locale)}</MizanText>
               <MizanText variant="caption" muted>{labels.hoursPerWeek}</MizanText>
             </View>
             {assessment.displacedMinutesPerWeek !== null && assessment.displacedMinutesPerWeek > 0 ? (
               <View style={styles.metric}>
                 <MizanText variant="caption" muted>{labels.displaced}</MizanText>
-                <MizanText variant="title">{formatHours(assessment.displacedMinutesPerWeek)}</MizanText>
+                <MizanText variant="title">{formatHours(assessment.displacedMinutesPerWeek, locale)}</MizanText>
                 <MizanText variant="caption" muted>{labels.hoursPerWeek}</MizanText>
               </View>
             ) : null}
@@ -206,11 +205,11 @@ export default function CostOfYesScreen() {
 
         {assessment.marginUsedPercent !== null ? (
           <MizanText variant="label">
-            {assessment.marginUsedPercent}% {labels.marginUsed}
+            {formatLocalizedNumber(assessment.marginUsedPercent, locale, 0)}% {labels.marginUsed}
           </MizanText>
         ) : null}
         <MizanText variant="caption" muted>
-          {labels.confidence}: {labels.confidenceLevels[assessment.confidence.level]} · {labels.evidence}: {assessment.confidence.evidenceCount}
+          {labels.confidence}: {labels.confidenceLevels[assessment.confidence.level]} · {labels.evidence}: {formatLocalizedNumber(assessment.confidence.evidenceCount, locale, 0)}
         </MizanText>
       </Card>
 
