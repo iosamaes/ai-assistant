@@ -30,7 +30,7 @@ Static reliability work includes durable per-user retry for check-ins and Invisi
 CP8 is not credited `DONE` until owner/runtime evidence confirms restart/reload and offline/reconnect behavior.
 
 ## CP9 current implementation
-The earlier Premium Production Visual Pass remains useful foundation, but the owner-approved showcase in `automation/TASK.md` is now the blocking visual/product contract. CP9 is not complete until the remaining structural reference requirements are implemented and runtime evidence is recorded.
+The earlier Premium Production Visual Pass remains useful foundation, but the owner-approved showcase in `automation/TASK.md` is now the blocking visual/product contract. The major structural reference slices are now statically implemented; CP9 still requires residual static review plus owner runtime evidence before it can close.
 
 ### Owner-reference implementation now landed
 - `a04dc88e452381051f2377de1bb994e4f55a4954` — adaptive product navigation shell with **Home / Life Map / One Move / Insights / More**, mobile bottom tabs, tablet/wide rail/sidebar behavior, RTL mirroring, accessible selected tab semantics, shared `AppIcon`, and direct `/one-move` routing.
@@ -40,34 +40,24 @@ The earlier Premium Production Visual Pass remains useful foundation, but the ow
 - `9370d59476d26ff642506b9f32029eabddc8ce1a` — repository-owned theme-aware `BrandedIllustration` language with focus/recovery/welcome variants.
 - `137fd2fe9facda65aba2691f38a08d6afdbc848a` — owner-reference Today/Home composition: premium greeting/day context, illustrated Today Focus / One Move hero, semantic state tiles, known-only 0–100 meters, balance/momentum treatment, domain icons, preserved alternatives and outcome feedback, and no fabricated unknown values.
 - `2fbd4f17fc736faf039c6d357dcd8f28625f6b20` — shared icon vocabulary extended for pattern, hypothesis, and confidence semantics so WHY/Insights/decision surfaces do not invent local icon systems.
-- `18747ebf8401bae4f596630554aab30fc4c52254` — owner-reference **Insights** visual language:
-  - semantic relationship icons and pattern/hypothesis status icons;
-  - visually differentiated association vs personal-hypothesis cards;
-  - evidence and confidence tiles with shared icon semantics;
-  - Arabic/English filter chips for All / Observed association / Personal hypothesis;
-  - preserved sample size, evidence window, effect indicator, direction language, and explicit non-causal caveat;
-  - RTL mirrors wrapped filters/cards and card identity rows.
-- `6c6fafed833e79c5ef5a60352f54199c09e7ce2c` — owner-reference **WHY** visual language:
-  - ranked candidate-factor cards with explicit Western-digit rank;
-  - factor-specific shared icons for recovery, energy, mental load, connection, and overload;
-  - confidence/evidence cues and evidence-window details;
-  - separated interpretation-not-diagnosis caveat panel;
-  - semantic RTL wrapped-card ordering while preserving the existing evidence-ranked application output.
-- `c80a4119f3e7c3c090751d4faec96b2e8615ce33` — owner-reference **What If** range visualization:
-  - real 0–100 current-marker plus plausible-range band for projections only when all required values are known;
-  - unknown values still remain unknown and render no fake bar;
-  - accessible range summary includes current value, plausible range, and visual-scale explanation;
-  - shared component/status/evidence icons, uncertainty icon treatment, and RTL effect-grid ordering;
-  - estimate source/evidence and the explicit no-causality simulation caveat remain visible.
+- `18747ebf8401bae4f596630554aab30fc4c52254` — owner-reference **Insights** visual language: semantic relationship/pattern/hypothesis icons, differentiated association vs personal-hypothesis cards, evidence/confidence tiles, Arabic/English filters, preserved sample size/evidence windows/effect direction, non-causal caveat, and RTL wrapping.
+- `6c6fafed833e79c5ef5a60352f54199c09e7ce2c` — owner-reference **WHY** visual language: ranked candidate-factor cards, factor-specific icons, confidence/evidence/window details, separated interpretation-not-diagnosis caveat, and semantic RTL ordering.
+- `c80a4119f3e7c3c090751d4faec96b2e8615ce33` — owner-reference **What If** range visualization: real 0–100 current marker plus plausible-range band only when values are known, accessible range summaries, shared status/evidence icons, uncertainty treatment, and no fake bars for unknowns.
+- `60193f0f4a1948d96f4512adfdc07114494dd293` — owner-reference **Experiments** upgrade: recognizable category icons, icon-led new-experiment cards, explicit active/completed/stopped status treatment, duration/metric/start metadata, accessible time-window progress bar, evidence/confidence icons, safe unknown fallbacks, and preserved voluntary N-of-1/non-causal language.
+- `7dd7e5f4b570ae012864297d1887e2e39e04fbe5` — **Recovery / Save My Day** now uses the shared calm recovery illustration in the hero while preserving the low-cognitive step sequence, primary progression action, skip-without-penalty path, evidence reading, and non-medical caveat.
+- `c9bfa4e7342fa01e09f9cc2a8159ad0fa21dfbbe` — **Onboarding** now uses the shared welcome/botanical illustration, explicit MIZAN wordmark, responsive welcoming hero hierarchy, existing personalized setup summaries, and the dominant final continue action without changing persistence semantics.
+- `41656f61d234248683855f468b22943310299d4b` — **Invisible Wins** now has category filtering, category-specific shared icons, a stronger capture affordance, visually differentiated reflection cards, filtered-empty handling, and preserved no-points/no-streaks/account-fencing behavior.
+- `a3db6f54b5c6031ece29117f21bcdac7e6fdc1f2` — **Personalization** now includes icon-led domain enable/disable rows with switch semantics, explicit enabled/disabled state, and last-domain protection while retaining evidence-maturity stages and using the existing persisted domain-preference path.
+- `3574f554aa4392d8573332a6f91991a797c8faf1` — **Capacity / Life Buffer & Life Debt** now visualizes known 0–100 buffer and debt amounts with accessible meters; unknown values still render no invented bar.
+- `4fa3d9beb543fcb3b467232040fa7dd45d450fcf` — **Cost of Yes** now visualizes known margin usage with an accessible meter while preserving the real percentage (including >100% displacement) in text and keeping missing-margin cases unknown.
+- `4d792b40df1867f83268f95c73354ad4178ca9f2` — **Human ROI** now displays benefit and effort as two separate accessible 1–5 meters rather than inventing a single ROI score, preserving the protected-meaning mode and the product rule against false scalar precision.
 - Existing navigation/auth/localization/account-switch hardening remains in place, including offline authenticated entry, password-recovery routing, Check-in fencing, Today RTL ordering, Western-digit normalization, and corrected neutral Life Debt Arabic wording.
 
 ### CP9 remaining
-- Continue the owner-approved implementation order rather than returning to micro-polish:
-  1. upgrade **Experiments** with category icons, status/duration/progress treatment, and obvious create-new-experiment composition while preserving voluntary N-of-1 evidence caveats;
-  2. complete Personalization / Invisible Wins / Recovery / Onboarding composition requirements, reusing `BrandedIllustration` rather than creating another artwork system;
-  3. complete remaining quantitative gauges/meters and extend shared domain/action/status icon semantics through repeated product surfaces where justified;
-  4. only after those structural gaps, finish residual static sweeps for untranslated literals, Western-digit regressions, semantic RTL, accessibility/live announcements, truncation/dynamic type, keyboard/focus, technical-id fallbacks, and duplicated global visual decisions.
-- Owner/runtime evidence remains required across representative phone/tablet/Web widths, Arabic/English, and shipped light/dark modes. Today/Home, Life Map, WHY, Insights, and What If are static implementation evidence until that validation occurs.
+- Run the residual **static** owner-reference sweep over shipped routes and fix only demonstrated gaps: untranslated production literals, Western-digit regressions, semantic RTL, accessibility/live announcements, dynamic-type/truncation, keyboard/focus, technical-id fallbacks, and duplicated global presentation decisions.
+- Inspect remaining secondary quantitative surfaces for a truthful visualization only where the underlying data has a meaningful bounded scale. Do **not** invent meters for categorical confidence, evidence counts, or incomparable values merely for visual density.
+- Confirm shared icon semantics remain consistent on secondary screens without building another icon/design abstraction layer.
+- Owner/runtime evidence remains required across representative phone/tablet/Web widths, Arabic/English, and shipped light/dark modes. All owner-reference commits above remain static implementation evidence until that validation occurs.
 - TASK-required runtime design-swap proof is not yet claimed and still requires Today, Life Map, WHY, and an interaction-heavy flow without edits outside the presentation boundary.
 
 ## CP10 current implementation
@@ -81,11 +71,10 @@ Implemented security/privacy work includes live RLS/ownership review of the ten 
 - Supabase leaked-password protection remains an owner action in `automation/HUMAN_REQUIRED.md`.
 
 ## Exact next executable action
-1. Continue CP9 reference fidelity with **Experiments**: category icons, active/completed/stopped status visuals, duration/progress treatment, clearer new-experiment creation composition, and evidence/confidence presentation without gamification.
-2. Then complete Recovery/Onboarding illustration composition and the remaining Personalization/Invisible Wins requirements, reusing the current branded illustration language rather than inventing a second artwork system.
-3. Follow with remaining quantitative gauges/meters and cross-surface icon consistency only where the underlying evidence supports the visualization.
-4. Keep CP10 parallel only when a safe independent security batch is clearly higher value or CP9 work is temporarily blocked.
-5. Leave representative-width runtime checks, tests/builds/typechecks/database validation suites, premium screenshot evidence, and final design-swap proof to owner validation under the active execution policy.
+1. Perform the final CP9 static owner-reference sweep across remaining shipped/secondary routes for concrete RTL/localization/accessibility/dynamic-type/focus/technical-id issues and presentation inconsistencies.
+2. Inspect any remaining quantitative surface and add a meter/chart only when the domain contract provides a real bounded quantitative meaning; preserve unknown states and avoid false precision.
+3. If the static CP9 surface is clean, continue the independent CP10 repository-wide sensitive logging/error-reporting audit while runtime evidence remains owner-side.
+4. Leave representative-width runtime checks, tests/builds/typechecks/database validation suites, premium screenshot comparison, and final design-swap proof to owner validation under the active execution policy.
 
 ## Verification record
 Previously recorded owner-side baseline evidence:
@@ -105,7 +94,8 @@ Post-baseline:
 - Adaptive navigation/iconography/One Move batch `a04dc88e452381051f2377de1bb994e4f55a4954` is static implementation evidence only until owner typecheck/runtime/responsive validation.
 - Life Map radar/iconography/data-honesty commits `81f334b0e548c8ee8a9b794056344409e515c7fb`, `1195dee72b0ff63815e32eb4e8d462da2c93490a`, and `c45c8ca496d358bcc9343cf67f10a6c3c01f662f` are static implementation evidence only; the specification in `fbf457d90e4b8b2f9c2fd781586b01f58a0f1a0c` was added but not executed.
 - Today/Home owner-reference commits `9370d59476d26ff642506b9f32029eabddc8ce1a` and `137fd2fe9facda65aba2691f38a08d6afdbc848a` are static implementation evidence only.
-- WHY/Insights/What If owner-reference commits `2fbd4f17fc736faf039c6d357dcd8f28625f6b20`, `18747ebf8401bae4f596630554aab30fc4c52254`, `6c6fafed833e79c5ef5a60352f54199c09e7ce2c`, and `c80a4119f3e7c3c090751d4faec96b2e8615ce33` are **static implementation evidence only**. Workers did not run typecheck, tests, build, screenshot capture, or representative device validation under the active policy.
+- WHY/Insights/What If owner-reference commits `2fbd4f17fc736faf039c6d357dcd8f28625f6b20`, `18747ebf8401bae4f596630554aab30fc4c52254`, `6c6fafed833e79c5ef5a60352f54199c09e7ce2c`, and `c80a4119f3e7c3c090751d4faec96b2e8615ce33` are static implementation evidence only.
+- Experiments/Recovery/Onboarding/Invisible Wins/Personalization/quantitative-visual commits `60193f0f4a1948d96f4512adfdc07114494dd293`, `7dd7e5f4b570ae012864297d1887e2e39e04fbe5`, `c9bfa4e7342fa01e09f9cc2a8159ad0fa21dfbbe`, `41656f61d234248683855f468b22943310299d4b`, `a3db6f54b5c6031ece29117f21bcdac7e6fdc1f2`, `3574f554aa4392d8573332a6f91991a797c8faf1`, `4fa3d9beb543fcb3b467232040fa7dd45d450fcf`, and `4d792b40df1867f83268f95c73354ad4178ca9f2` are **static implementation evidence only**. Workers did not run typecheck, tests, builds, screenshot capture, or representative device validation under the active policy.
 
 ## Known blockers / risks
 - CP1: Windows session must be unlocked normally for true narrow-phone Arabic/English interaction evidence; see `automation/HUMAN_REQUIRED.md`.
@@ -113,7 +103,7 @@ Post-baseline:
 - CP10: Supabase leaked-password protection remains disabled pending the recorded owner Auth-setting action.
 - Cross-user/database specifications and all post-baseline runtime/type/build gates still require owner execution evidence.
 - Recent Today snapshot native SecureStore behavior/capacity still needs owner runtime validation.
-- CP9 still needs Experiments and remaining Personalization/Invisible Wins/Recovery/Onboarding composition work, residual quantitative visual alignment, representative runtime screenshot evidence, and the design-swap proof.
+- CP9 major owner-reference structural slices are statically present, but representative runtime screenshot evidence, interaction validation, and the design-swap proof are still outstanding; residual static defects may still surface in the final sweep.
 - Privacy export/delete UI, local cache purge/warning behavior, and Edge deletion need owner Web/native end-to-end validation before CP10 can close.
 - Repository-wide sensitive logging/error reporting review remains incomplete beyond the targeted boundaries already hardened.
 - No real AI, wearable, calendar, or location credentials are configured; deterministic/unavailable adapters remain the supported fallback path.
@@ -135,6 +125,13 @@ Post-baseline:
 - `apps/app/src/app/insights.tsx`
 - `apps/app/src/app/what-if.tsx`
 - `apps/app/src/app/experiments.tsx`
+- `apps/app/src/app/recovery.tsx`
+- `apps/app/src/app/onboarding.tsx`
+- `apps/app/src/app/invisible-wins.tsx`
+- `apps/app/src/app/personalization.tsx`
+- `apps/app/src/app/capacity.tsx`
+- `apps/app/src/app/cost-of-yes.tsx`
+- `apps/app/src/app/human-roi.tsx`
 - `apps/app/src/state/app-state.tsx`
 - `supabase/tests/rls_cross_user.sql`
 - `supabase/tests/account_data_export_security.sql`
