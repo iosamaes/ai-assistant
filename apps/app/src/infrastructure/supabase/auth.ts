@@ -102,10 +102,25 @@ export async function requestPasswordReset(email: string, redirectTo = authRedir
   return { ok: true, value: null };
 }
 
-export async function updatePassword(password: string): Promise<AuthResult<null>> {
+export async function updatePassword(password: string, expectedUserId: string): Promise<AuthResult<null>> {
   if (!supabase) return unavailable();
-  const { error } = await supabase.auth.updateUser({ password });
-  if (error) return authFailure(error);
+  if (password.length < 8 || !expectedUserId) {
+    return { ok: false, error: { kind: 'unknown', code: 'invalid_password_request' } };
+  }
+
+  const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+  if (sessionError) return authFailure(sessionError);
+  if (sessionData.session?.user.id !== expectedUserId) {
+    return { ok: false, error: { kind: 'unknown', code: 'account_changed' } };
+  }
+
+  const { error } = await supabase.functions.invoke('update-password', {
+    body: {
+      expected_user_id: expectedUserId,
+      password,
+    },
+  });
+  if (error) return { ok: false, error: { kind: 'unknown', code: 'password_update_failed' } };
   return { ok: true, value: null };
 }
 
