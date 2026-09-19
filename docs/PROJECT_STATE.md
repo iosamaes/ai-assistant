@@ -40,6 +40,8 @@ Presentation boundary already in place:
 - async accessibility live announcements cover loading/error/empty/status transitions across the reviewed product surfaces.
 
 Latest static CP9 work:
+- **Choice-control disabled semantics:** shared `ChoiceChip` now supports a real disabled state with native interaction blocking, `accessibilityState.disabled`, and the shared disabled-opacity token instead of forcing async screens to rely on silent handler guards.
+- **Check-in submission fencing:** rating and skip chips are disabled while a check-in is saving and after it has been queued, and the rating setter defensively rejects those transitions. This prevents users or assistive technology from changing the visible draft while an earlier payload is in flight and prevents a queued terminal state from being silently reopened through a rating tap.
 - **Localized decimal input:** Cost of Yes and Human ROI now normalize Western digits, Arabic-Indic digits, Eastern-Arabic/Persian digits, Arabic decimal separators, and comma decimals through the small shared `parseLocalizedDecimalInput` helper before applying each screen's existing `0..168` weekly-hours bound. This fixes a concrete Arabic-first input failure without moving decision math into presentation or introducing a generic locale framework.
 - **Shared semantic text direction:** `MizanText`, `MizanTextInput`, and primary-action labels now apply locale-aware `writingDirection` in addition to text alignment, so Arabic/English mixed punctuation and inline content follow the intended bidi paragraph direction across shared surfaces. Screen-specific semantic LTR overrides such as email remain possible because local styles are applied last.
 - **Recovery interaction flow:** advancing or skipping to a new recovery step now updates a polite accessibility live region on the step position, so screen-reader users receive an explicit transition cue instead of a silent in-place content replacement; recovery guidance and navigation behavior are unchanged.
@@ -58,6 +60,8 @@ Latest static CP9 work:
 - **Async-state coverage:** Today, Life Map, WHY, Insights, Capacity, Life Seasons, Entry, Personalization, Onboarding, Personal Learning, Experiments, Recovery, What If, Settings, Auth/recovery, Check-in, Value Alignment, Invisible Wins, and Integrations have received static accessibility-state review and targeted live-region fixes where concrete gaps were identified.
 
 Latest static product commits from this pass (not runtime-verified):
+- `71064ae6f183724685c67a543ad0650aa1c9c5d1` — add disabled interaction/accessibility semantics to shared `ChoiceChip`.
+- `52b0065ebc7014fedd701a26a6033c24b9ab86a7` — fence Check-in choice editing during saving and queued terminal state.
 - `f6750f42a739d1680578549961f52b6cdca88118` — add conservative localized decimal-input normalization for Arabic-first numeric entry.
 - `192642abc2ab1bc13feb5f8c052375bbc7cff329` — use localized decimal parsing in Cost of Yes weekly-hour fields.
 - `7a93fab1f4f12f3cdbb1d23b73efc91d7cb3cb0f` — use localized decimal parsing in Human ROI weekly-hour field.
