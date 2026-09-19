@@ -83,6 +83,16 @@ describe('root auth routing', () => {
     expect(screen.queryByTestId('app-navigation')).toBeNull();
   });
 
+  test('also keeps password recovery mounted for a signed-in account that has not completed onboarding', async () => {
+    mockUseSegments.mockReturnValue(['update-password']);
+    useAppStateMock.mockReturnValue(appState('signed-in', 'user-a', false));
+
+    const screen = await render(<AppNavigator />);
+
+    expect(mockReplace).not.toHaveBeenCalled();
+    expect(screen.queryByTestId('app-navigation')).toBeNull();
+  });
+
   test('still sends other signed-out product routes to auth', async () => {
     mockUseSegments.mockReturnValue(['today']);
     useAppStateMock.mockReturnValue(appState('signed-out', null));
@@ -95,6 +105,26 @@ describe('root auth routing', () => {
 
   test('sends an authenticated user away from auth without painting product navigation first', async () => {
     mockUseSegments.mockReturnValue(['auth']);
+    useAppStateMock.mockReturnValue(appState('signed-in', 'user-a', true));
+
+    const screen = await render(<AppNavigator />);
+
+    expect(screen.queryByTestId('app-navigation')).toBeNull();
+    await waitFor(() => expect(mockReplace).toHaveBeenCalledWith('/today'));
+  });
+
+  test('fences an incomplete signed-in account from deep-linking directly into product routes', async () => {
+    mockUseSegments.mockReturnValue(['today']);
+    useAppStateMock.mockReturnValue(appState('signed-in', 'user-a', false));
+
+    const screen = await render(<AppNavigator />);
+
+    expect(screen.queryByTestId('app-navigation')).toBeNull();
+    await waitFor(() => expect(mockReplace).toHaveBeenCalledWith('/onboarding'));
+  });
+
+  test('sends a completed account away from onboarding unless Settings first resets onboarding state', async () => {
+    mockUseSegments.mockReturnValue(['onboarding']);
     useAppStateMock.mockReturnValue(appState('signed-in', 'user-a', true));
 
     const screen = await render(<AppNavigator />);
