@@ -33,6 +33,8 @@ const copy = {
     hoursPerWeek: 'ساعة / أسبوع',
     assessment: 'القراءة الحالية',
     assessmentBody: 'هذه القراءة وصفية وقابلة للفحص؛ لا تحوّل تجربتك إلى رقم موحد أو قرار تلقائي.',
+    scalesTitle: 'المقياسان كما أدخلتهما',
+    scalesBody: 'يظلان منفصلين عمدًا؛ لا يتم دمجهما في رقم عائد واحد.',
     insufficient: 'الأدلة غير مكتملة',
     missingBenefit: 'اختر تقييم الفائدة الذي عبّرت عنه أنت.',
     missingEffort: 'اختر تقييم الجهد الذي عبّرت عنه أنت.',
@@ -78,6 +80,8 @@ const copy = {
     hoursPerWeek: 'hours / week',
     assessment: 'Current assessment',
     assessmentBody: 'This reading stays descriptive and inspectable; it does not collapse your experience into one score or an automatic decision.',
+    scalesTitle: 'The two scales you entered',
+    scalesBody: 'They stay intentionally separate and are never merged into one return score.',
     insufficient: 'Incomplete evidence',
     missingBenefit: 'Choose the benefit rating you explicitly report.',
     missingEffort: 'Choose the effort rating you explicitly report.',
@@ -264,21 +268,63 @@ export default function HumanROIScreen() {
         </View>
 
         {assessment.status !== 'protected' && assessment.status !== 'insufficient' ? (
-          <View style={[styles.metrics, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
-            <View style={[styles.metric, { backgroundColor: palette.surfaceMuted }]}>
-              <MizanText variant="caption" muted>{labels.benefitMetric}</MizanText>
-              <MizanText variant="title">{assessment.benefitRating === null ? '—' : formatLocalizedNumber(assessment.benefitRating, locale, 0)} / {ratingDenominator}</MizanText>
+          <>
+            <View style={[styles.metrics, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
+              <View style={[styles.metric, { backgroundColor: palette.surfaceMuted }]}>
+                <MizanText variant="caption" muted>{labels.benefitMetric}</MizanText>
+                <MizanText variant="title">{assessment.benefitRating === null ? '—' : formatLocalizedNumber(assessment.benefitRating, locale, 0)} / {ratingDenominator}</MizanText>
+              </View>
+              <View style={[styles.metric, { backgroundColor: palette.surfaceMuted }]}>
+                <MizanText variant="caption" muted>{labels.effortMetric}</MizanText>
+                <MizanText variant="title">{assessment.effortRating === null ? '—' : formatLocalizedNumber(assessment.effortRating, locale, 0)} / {ratingDenominator}</MizanText>
+              </View>
+              <View style={[styles.metric, { backgroundColor: palette.surfaceMuted }]}>
+                <MizanText variant="caption" muted>{labels.timeMetric}</MizanText>
+                <MizanText variant="title">{formatHours(assessment.timeMinutesPerWeek, locale)}</MizanText>
+                <MizanText variant="caption" muted>{labels.hoursPerWeek}</MizanText>
+              </View>
             </View>
-            <View style={[styles.metric, { backgroundColor: palette.surfaceMuted }]}>
-              <MizanText variant="caption" muted>{labels.effortMetric}</MizanText>
-              <MizanText variant="title">{assessment.effortRating === null ? '—' : formatLocalizedNumber(assessment.effortRating, locale, 0)} / {ratingDenominator}</MizanText>
-            </View>
-            <View style={[styles.metric, { backgroundColor: palette.surfaceMuted }]}>
-              <MizanText variant="caption" muted>{labels.timeMetric}</MizanText>
-              <MizanText variant="title">{formatHours(assessment.timeMinutesPerWeek, locale)}</MizanText>
-              <MizanText variant="caption" muted>{labels.hoursPerWeek}</MizanText>
-            </View>
-          </View>
+
+            {assessment.benefitRating !== null && assessment.effortRating !== null ? (
+              <View style={styles.scaleGroup}>
+                <View style={styles.sectionHeader}>
+                  <MizanText variant="label">{labels.scalesTitle}</MizanText>
+                  <MizanText variant="caption" muted>{labels.scalesBody}</MizanText>
+                </View>
+                {[
+                  { key: 'benefit', label: labels.benefitMetric, value: assessment.benefitRating },
+                  { key: 'effort', label: labels.effortMetric, value: assessment.effortRating },
+                ].map((scale) => {
+                  const text = `${formatLocalizedNumber(scale.value, locale, 0)} / ${ratingDenominator}`;
+                  return (
+                    <View key={scale.key} style={styles.scaleRow}>
+                      <View style={[styles.scaleHeader, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
+                        <MizanText variant="label">{scale.label}</MizanText>
+                        <MizanText variant="label">{text}</MizanText>
+                      </View>
+                      <View
+                        accessibilityRole="progressbar"
+                        accessibilityLabel={scale.label}
+                        accessibilityValue={{ min: 1, max: 5, now: scale.value, text }}
+                        style={[styles.scaleTrack, { backgroundColor: palette.surfaceMuted }]}
+                      >
+                        <View
+                          style={[
+                            styles.scaleFill,
+                            {
+                              alignSelf: isRtl ? 'flex-end' : 'flex-start',
+                              backgroundColor: palette.accent,
+                              width: `${scale.value * 20}%`,
+                            },
+                          ]}
+                        />
+                      </View>
+                    </View>
+                  );
+                })}
+              </View>
+            ) : null}
+          </>
         ) : null}
 
         <View style={[styles.evidencePill, { backgroundColor: palette.accentSoft, alignSelf: isRtl ? 'flex-end' : 'flex-start' }]}>
@@ -306,5 +352,10 @@ const styles = StyleSheet.create({
   assessmentStatus: { gap: Spacing.md, borderRadius: Radius.md, padding: Spacing.lg },
   metrics: { flexWrap: 'wrap', gap: Spacing.md },
   metric: { flexGrow: 1, flexBasis: 160, minWidth: 0, gap: Spacing.xs, borderRadius: Radius.md, padding: Spacing.md },
+  scaleGroup: { gap: Spacing.lg },
+  scaleRow: { gap: Spacing.sm },
+  scaleHeader: { alignItems: 'center', justifyContent: 'space-between', gap: Spacing.md },
+  scaleTrack: { height: 10, borderRadius: Radius.pill, overflow: 'hidden' },
+  scaleFill: { height: '100%', borderRadius: Radius.pill },
   evidencePill: { maxWidth: '100%', borderRadius: Radius.pill, paddingHorizontal: Spacing.md, paddingVertical: Spacing.sm },
 });
