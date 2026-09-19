@@ -101,7 +101,7 @@ const copy = {
 
 function formatDate(value: string, locale: 'ar' | 'en'): string {
   const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return value;
+  if (Number.isNaN(date.getTime())) return '—';
   try {
     return new Intl.DateTimeFormat(locale === 'ar' ? 'ar-QA-u-nu-latn' : 'en', {
       year: 'numeric',
@@ -396,7 +396,7 @@ export default function LifeSeasonsScreen() {
                 <MizanText muted>
                   {formatDate(entry.started_at, locale)}{entry.ended_at ? ` ${rangeArrow} ${formatDate(entry.ended_at, locale)}` : ''}
                 </MizanText>
-                <View style={[styles.recordedTargets, { borderTopColor: palette.border }]}>
+                <View style={[styles.recordedTargets, { borderTopColor: palette.border }]}> 
                   <MizanText variant="caption" muted>{labels.targets}</MizanText>
                   <MizanText>{recordedTargets || labels.none}</MizanText>
                 </View>
