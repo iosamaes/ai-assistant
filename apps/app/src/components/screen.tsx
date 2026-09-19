@@ -38,6 +38,8 @@ export function Screen({ children, header, scroll = true }: ScreenProps) {
 
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: palette.background }]}>
+      <View pointerEvents="none" style={[styles.ambientTop, { backgroundColor: palette.accentSoft }]} />
+      <View pointerEvents="none" style={[styles.ambientBottom, { backgroundColor: palette.surfaceMuted }]} />
       {scroll ? (
         <ScrollView
           automaticallyAdjustKeyboardInsets
@@ -55,12 +57,30 @@ export function Screen({ children, header, scroll = true }: ScreenProps) {
 }
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1 },
+  safeArea: { flex: 1, overflow: 'hidden' },
+  ambientTop: {
+    position: 'absolute',
+    width: 420,
+    height: 420,
+    borderRadius: 210,
+    top: -250,
+    right: -170,
+    opacity: 0.55,
+  },
+  ambientBottom: {
+    position: 'absolute',
+    width: 320,
+    height: 320,
+    borderRadius: 160,
+    bottom: -210,
+    left: -140,
+    opacity: 0.4,
+  },
   scroll: { flex: 1 },
   scrollContent: { flexGrow: 1 },
   content: {
     flexGrow: 1,
-    paddingTop: Spacing.xl,
+    paddingTop: Spacing.xxl,
     paddingBottom: Spacing.xxxl,
     gap: Spacing.xl,
   },
