@@ -79,7 +79,9 @@ export default function CheckInScreen() {
       delete next[metric];
       return next;
     });
-    setSkippedMetrics((current) => (current.includes(metric) ? current : [...current, metric]));
+    setSkippedMetrics((current) =>
+      current.includes(metric) ? current.filter((item) => item !== metric) : [...current, metric],
+    );
   };
 
   const handleSubmit = async () => {
@@ -205,6 +207,7 @@ export default function CheckInScreen() {
               </View>
 
               <ChoiceChip
+                accessibilityLabel={`${t(label)}: ${t('checkInSkip')}`}
                 label={t('checkInSkip')}
                 selected={isSkipped}
                 onPress={() => skipMetric(metric)}
