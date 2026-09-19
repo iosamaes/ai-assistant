@@ -1,10 +1,10 @@
 import { router } from 'expo-router';
 import { useMemo, useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet, useColorScheme, View } from 'react-native';
 
-import { ChoiceChip, MizanText, MizanTextInput, PrimaryButton } from '@/components/mizan-ui';
+import { Card, ChoiceChip, MizanText, MizanTextInput, PrimaryButton } from '@/components/mizan-ui';
 import { Screen } from '@/components/screen';
-import { Spacing } from '@/constants/theme';
+import { Palette, Spacing } from '@/constants/theme';
 import {
   requestPasswordReset,
   signInWithPassword,
@@ -15,8 +15,30 @@ import { useAppState } from '@/state/app-state';
 
 type AuthMode = 'sign-in' | 'sign-up' | 'reset';
 
+const authVisualCopy = {
+  ar: {
+    heroTitle: 'مساحتك تبدأ من حسابك',
+    heroBody: 'سجّل الدخول أو أنشئ حسابًا جديدًا للوصول إلى بياناتك وتعلّمك الشخصي عبر أجهزتك. استعادة كلمة المرور تبقى خطوة منفصلة وواضحة.',
+    accessTitle: 'طريقة الدخول',
+    languageTitle: 'لغة الواجهة',
+    formTitle: 'بيانات الحساب',
+    secureNote: 'لن يعرض ميزان أخطاء تقنية خامًا، ولن يستخدم كلمة مرورك خارج مسار المصادقة.',
+  },
+  en: {
+    heroTitle: 'Your space starts with your account',
+    heroBody: 'Sign in or create an account to reach your data and personal learning across devices. Password recovery stays a separate, explicit flow.',
+    accessTitle: 'Access mode',
+    languageTitle: 'Interface language',
+    formTitle: 'Account details',
+    secureNote: 'MIZAN does not expose raw technical errors and does not use your password outside the authentication flow.',
+  },
+} as const;
+
 export default function AuthScreen() {
   const { isRtl, locale, refreshSession, sessionStatus, setLocale, t } = useAppState();
+  const scheme = useColorScheme();
+  const palette = Palette[scheme === 'dark' ? 'dark' : 'light'];
+  const labels = authVisualCopy[locale];
   const [mode, setMode] = useState<AuthMode>('sign-in');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -81,82 +103,101 @@ export default function AuthScreen() {
 
   return (
     <Screen>
-      <View style={styles.hero}>
+      <View style={styles.heading}>
         <MizanText variant="label" muted>{t('appName')}</MizanText>
         <MizanText variant="display">{t('authTitle')}</MizanText>
-        <MizanText muted>{t('authBody')}</MizanText>
+      </View>
+
+      <Card style={[styles.heroCard, { backgroundColor: palette.accentSoft, borderColor: palette.accent }]}>
+        <MizanText variant="title">{labels.heroTitle}</MizanText>
+        <MizanText>{t('authBody')}</MizanText>
+        <MizanText variant="caption" muted>{labels.heroBody}</MizanText>
         {sessionStatus === 'expired' ? (
-          <MizanText accessibilityLiveRegion="polite" muted>{t('authSessionExpired')}</MizanText>
+          <MizanText accessibilityLiveRegion="polite" variant="label">{t('authSessionExpired')}</MizanText>
         ) : null}
-      </View>
+      </Card>
 
-      <View style={styles.section}>
-        <View style={[styles.row, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
-          <ChoiceChip label={t('arabic')} selected={locale === 'ar'} onPress={() => setLocale('ar')} disabled={busy} />
-          <ChoiceChip label={t('english')} selected={locale === 'en'} onPress={() => setLocale('en')} disabled={busy} />
+      <Card style={styles.authCard}>
+        <View style={styles.controlGroup}>
+          <MizanText variant="label" muted>{labels.languageTitle}</MizanText>
+          <View style={[styles.row, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
+            <ChoiceChip label={t('arabic')} selected={locale === 'ar'} onPress={() => setLocale('ar')} disabled={busy} />
+            <ChoiceChip label={t('english')} selected={locale === 'en'} onPress={() => setLocale('en')} disabled={busy} />
+          </View>
         </View>
-      </View>
 
-      <View style={styles.section}>
-        <View style={[styles.row, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
-          <ChoiceChip label={t('signIn')} selected={mode === 'sign-in'} onPress={() => setMode('sign-in')} disabled={busy} />
-          <ChoiceChip label={t('signUp')} selected={mode === 'sign-up'} onPress={() => setMode('sign-up')} disabled={busy} />
-          <ChoiceChip label={t('resetPassword')} selected={mode === 'reset'} onPress={() => setMode('reset')} disabled={busy} />
+        <View style={styles.controlGroup}>
+          <MizanText variant="label" muted>{labels.accessTitle}</MizanText>
+          <View style={[styles.row, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
+            <ChoiceChip label={t('signIn')} selected={mode === 'sign-in'} onPress={() => setMode('sign-in')} disabled={busy} />
+            <ChoiceChip label={t('signUp')} selected={mode === 'sign-up'} onPress={() => setMode('sign-up')} disabled={busy} />
+            <ChoiceChip label={t('resetPassword')} selected={mode === 'reset'} onPress={() => setMode('reset')} disabled={busy} />
+          </View>
         </View>
-      </View>
 
-      <View style={styles.form}>
-        <MizanText variant="label">{t('email')}</MizanText>
-        <MizanTextInput
-          accessibilityLabel={t('email')}
-          autoCapitalize="none"
-          autoComplete="email"
-          autoCorrect={false}
-          editable={!busy}
-          keyboardType="email-address"
-          placeholder="name@example.com"
-          style={styles.ltrInput}
-          textContentType="emailAddress"
-          value={email}
-          onChangeText={setEmail}
-        />
-
-        {mode !== 'reset' ? (
-          <>
-            <MizanText variant="label">{t('password')}</MizanText>
+        <View style={styles.form}>
+          <MizanText variant="label" muted>{labels.formTitle}</MizanText>
+          <View style={styles.field}>
+            <MizanText variant="label">{t('email')}</MizanText>
             <MizanTextInput
-              accessibilityLabel={t('password')}
+              accessibilityLabel={t('email')}
               autoCapitalize="none"
-              autoComplete={mode === 'sign-up' ? 'new-password' : 'current-password'}
+              autoComplete="email"
               autoCorrect={false}
               editable={!busy}
-              secureTextEntry
-              textContentType={mode === 'sign-up' ? 'newPassword' : 'password'}
-              value={password}
-              onChangeText={setPassword}
+              keyboardType="email-address"
+              placeholder="name@example.com"
+              style={styles.ltrInput}
+              textContentType="emailAddress"
+              value={email}
+              onChangeText={setEmail}
             />
-          </>
-        ) : null}
+          </View>
 
-        {message ? <MizanText accessibilityLiveRegion="polite" muted>{message}</MizanText> : null}
-      </View>
+          {mode !== 'reset' ? (
+            <View style={styles.field}>
+              <MizanText variant="label">{t('password')}</MizanText>
+              <MizanTextInput
+                accessibilityLabel={t('password')}
+                autoCapitalize="none"
+                autoComplete={mode === 'sign-up' ? 'new-password' : 'current-password'}
+                autoCorrect={false}
+                editable={!busy}
+                secureTextEntry
+                textContentType={mode === 'sign-up' ? 'newPassword' : 'password'}
+                value={password}
+                onChangeText={setPassword}
+              />
+            </View>
+          ) : null}
 
-      <View style={styles.footer}>
+          <MizanText variant="caption" muted>{labels.secureNote}</MizanText>
+
+          {message ? (
+            <View style={[styles.messagePanel, { backgroundColor: palette.surfaceMuted }]}>
+              <MizanText accessibilityLiveRegion="polite">{message}</MizanText>
+            </View>
+          ) : null}
+        </View>
+
         <PrimaryButton
           label={busy ? t('authWorking') : mode === 'reset' ? t('sendReset') : mode === 'sign-in' ? t('signIn') : t('signUp')}
           onPress={() => void submit()}
           disabled={!canSubmit}
         />
-      </View>
+      </Card>
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  hero: { gap: Spacing.md, paddingTop: Spacing.xl },
-  section: { gap: Spacing.md },
+  heading: { gap: Spacing.xs },
+  heroCard: { gap: Spacing.md },
+  authCard: { gap: Spacing.xl },
+  controlGroup: { gap: Spacing.sm },
   row: { flexWrap: 'wrap', gap: Spacing.sm },
-  form: { gap: Spacing.sm },
+  form: { gap: Spacing.lg },
+  field: { gap: Spacing.sm },
   ltrInput: { textAlign: 'left', writingDirection: 'ltr' },
-  footer: { marginTop: 'auto', paddingTop: Spacing.xl },
+  messagePanel: { borderRadius: 18, padding: Spacing.md },
 });
