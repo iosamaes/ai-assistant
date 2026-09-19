@@ -1,14 +1,14 @@
 import { router } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet, useColorScheme, View } from 'react-native';
 
 import {
   disableIntegrationConnection,
   loadIntegrationSettings,
 } from '@/application/integrations';
-import { Card, MizanText, PrimaryButton, SecondaryButton } from '@/components/mizan-ui';
+import { Card, MizanText, SecondaryButton } from '@/components/mizan-ui';
 import { Screen } from '@/components/screen';
-import { Spacing } from '@/constants/theme';
+import { Controls, Palette, Radius, Spacing } from '@/constants/theme';
 import type { StoredIntegrationConnection } from '@/infrastructure/supabase/integrations';
 import { useAppState } from '@/state/app-state';
 
@@ -19,14 +19,18 @@ const copy = {
     eyebrow: 'التكاملات',
     title: 'المصادر الخارجية',
     body: 'يعرض ميزان هنا فقط التكاملات التي تم ربطها فعليًا. غياب أي مزود لا يمنع المحرك الأساسي من العمل، ولا يتم تخزين مفاتيح أو أسرار المزود في هذه الحالة.',
+    heroTitle: 'مصادرك تحت سيطرتك',
+    heroBody: 'كل اتصال اختياري، ويمكن إيقافه دون تعطيل وظائف ميزان الأساسية.',
     loading: 'جارٍ تحميل التكاملات…',
     loadError: 'تعذر تحميل حالة التكاملات الآن.',
     emptyTitle: 'لا توجد تكاملات متصلة',
     emptyBody: 'لا يوجد مزود خارجي مفعّل لهذا الحساب حاليًا. سيظل ميزان يعمل بالبيانات المباشرة التي تختار تسجيلها.',
+    sourceDetails: 'تفاصيل المصدر',
     provider: 'المزود',
     capability: 'القدرة',
     status: 'الحالة',
     scopes: 'الصلاحيات',
+    permissions: 'الصلاحيات الممنوحة',
     lastSync: 'آخر مزامنة',
     consent: 'الموافقة',
     disconnect: 'إيقاف هذا التكامل',
@@ -45,6 +49,7 @@ const copy = {
       time_context: 'سياق الوقت والتقويم',
       location_context: 'سياق الموقع التقريبي',
     },
+    privacyTitle: 'الخصوصية أولًا',
     privacy: 'عند إيقاف التكامل تتوقف حالة الاتصال المستقبلية من داخل ميزان. حذف البيانات المستوردة وضوابط التصدير/الحذف الشاملة تُراجع ضمن طبقة الخصوصية الخاصة بالحساب.',
     back: 'العودة للإعدادات',
   },
@@ -52,14 +57,18 @@ const copy = {
     eyebrow: 'Integrations',
     title: 'External sources',
     body: 'MIZAN shows only integrations that were actually connected. The deterministic core keeps working without any provider, and provider secrets are never stored in this lifecycle state.',
+    heroTitle: 'Your sources stay under your control',
+    heroBody: 'Every connection is optional and can be disabled without breaking MIZAN’s deterministic core.',
     loading: 'Loading integrations…',
     loadError: 'Integration state could not be loaded right now.',
     emptyTitle: 'No integrations connected',
     emptyBody: 'No external provider is enabled for this account. MIZAN continues to work from the direct evidence you choose to record.',
+    sourceDetails: 'Source details',
     provider: 'Provider',
     capability: 'Capability',
     status: 'Status',
     scopes: 'Permissions',
+    permissions: 'Granted permissions',
     lastSync: 'Last sync',
     consent: 'Consent',
     disconnect: 'Disable this integration',
@@ -78,6 +87,7 @@ const copy = {
       time_context: 'Time & calendar context',
       location_context: 'Approximate location context',
     },
+    privacyTitle: 'Privacy first',
     privacy: 'Disabling an integration stops its connected lifecycle state inside MIZAN. Imported-data deletion and full export/delete controls are handled by the account privacy layer.',
     back: 'Back to settings',
   },
@@ -147,8 +157,10 @@ function formatDate(value: string | null, locale: 'ar' | 'en'): string {
 }
 
 export default function IntegrationsScreen() {
-  const { locale, refreshSession, userId } = useAppState();
+  const { isRtl, locale, refreshSession, userId } = useAppState();
   const labels = copy[locale];
+  const scheme = useColorScheme();
+  const palette = Palette[scheme === 'dark' ? 'dark' : 'light'];
   const [connections, setConnections] = useState<StoredIntegrationConnection[]>([]);
   const [status, setStatus] = useState<LoadStatus>('loading');
   const [busyId, setBusyId] = useState<string | null>(null);
@@ -221,63 +233,192 @@ export default function IntegrationsScreen() {
 
   return (
     <Screen>
-      <View style={styles.hero}>
-        <MizanText variant="label" muted>{labels.eyebrow}</MizanText>
-        <MizanText variant="display">{labels.title}</MizanText>
-        <MizanText muted>{labels.body}</MizanText>
+      <View style={[styles.topRow, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
+        <View style={styles.heading}>
+          <MizanText variant="label" muted>{labels.eyebrow}</MizanText>
+          <MizanText variant="display">{labels.title}</MizanText>
+        </View>
+        <SecondaryButton compact label={labels.back} onPress={() => router.replace('/settings')} />
       </View>
 
-      {status === 'loading' ? <MizanText accessibilityLiveRegion="polite" muted>{labels.loading}</MizanText> : null}
-      {status === 'error' ? <Card><MizanText accessibilityLiveRegion="polite" muted>{labels.loadError}</MizanText></Card> : null}
+      <Card style={[styles.heroCard, { backgroundColor: palette.accentSoft, borderColor: palette.accent }]}>
+        <MizanText variant="title">{labels.heroTitle}</MizanText>
+        <MizanText>{labels.body}</MizanText>
+        <MizanText variant="caption" muted>{labels.heroBody}</MizanText>
+      </Card>
+
+      {status === 'loading' ? (
+        <Card style={{ backgroundColor: palette.surfaceMuted }}>
+          <MizanText accessibilityLiveRegion="polite" muted>{labels.loading}</MizanText>
+        </Card>
+      ) : null}
+
+      {status === 'error' ? (
+        <Card style={{ backgroundColor: palette.surfaceMuted }}>
+          <MizanText accessibilityLiveRegion="polite" variant="title">{labels.loadError}</MizanText>
+        </Card>
+      ) : null}
 
       {status === 'ready' && connections.length === 0 ? (
-        <Card>
+        <Card style={{ backgroundColor: palette.surfaceMuted }}>
           <MizanText accessibilityLiveRegion="polite" variant="title">{labels.emptyTitle}</MizanText>
           <MizanText muted>{labels.emptyBody}</MizanText>
         </Card>
       ) : null}
 
-      {status === 'ready' ? connections.map((connection) => {
-        const statusLabel =
-          connection.status === 'connected'
-            ? labels.connected
-            : connection.status === 'configured'
-              ? labels.configured
-              : connection.status === 'disabled'
-                ? labels.disabled
-                : labels.error;
-        const permissionLabels = connection.scopes.map((scope) => scopeLabel(scope, locale));
-        return (
-          <Card key={connection.id}>
-            <MizanText variant="title">
-              {labels.capabilityLabels[connection.capability] ?? labels.unknownCapability}
-            </MizanText>
-            <View style={styles.details}>
-              <MizanText>{labels.provider}: {providerLabel(connection.providerId, locale)}</MizanText>
-              <MizanText>{labels.status}: {statusLabel}</MizanText>
-              <MizanText>{labels.scopes}: {permissionLabels.join(' · ') || labels.never}</MizanText>
-              <MizanText>{labels.lastSync}: {connection.lastSyncedAt ? formatDate(connection.lastSyncedAt, locale) : labels.never}</MizanText>
-              <MizanText>{labels.consent}: {connection.consentedAt ? formatDate(connection.consentedAt, locale) : labels.never}</MizanText>
-            </View>
-            {connection.status !== 'disabled' ? (
-              <PrimaryButton
-                label={busyId === connection.id ? labels.disconnecting : labels.disconnect}
-                disabled={Boolean(busyId)}
-                onPress={() => void disable(connection)}
-              />
-            ) : null}
-          </Card>
-        );
-      }) : null}
+      {status === 'ready'
+        ? connections.map((connection) => {
+            const statusLabel =
+              connection.status === 'connected'
+                ? labels.connected
+                : connection.status === 'configured'
+                  ? labels.configured
+                  : connection.status === 'disabled'
+                    ? labels.disabled
+                    : labels.error;
+            const permissionLabels = connection.scopes.map((scope) => scopeLabel(scope, locale));
+            const capabilityLabel =
+              labels.capabilityLabels[connection.capability] ?? labels.unknownCapability;
+            const isConnected =
+              connection.status === 'connected' || connection.status === 'configured';
 
-      {message ? <MizanText accessibilityLiveRegion="polite" muted>{message}</MizanText> : null}
-      <MizanText variant="caption" muted>{labels.privacy}</MizanText>
-      <SecondaryButton compact label={labels.back} onPress={() => router.replace('/settings')} />
+            return (
+              <Card
+                key={connection.id}
+                style={isConnected ? { borderColor: palette.accent } : undefined}>
+                <View style={[styles.connectionHeader, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
+                  <View style={styles.flexibleText}>
+                    <MizanText variant="label" muted>{labels.capability}</MizanText>
+                    <MizanText variant="title">{capabilityLabel}</MizanText>
+                  </View>
+                  <View
+                    style={[
+                      styles.statusPill,
+                      { backgroundColor: isConnected ? palette.accentSoft : palette.surfaceMuted },
+                    ]}>
+                    <MizanText variant="caption">{statusLabel}</MizanText>
+                  </View>
+                </View>
+
+                <View style={[styles.providerPanel, { backgroundColor: palette.surfaceMuted }]}>
+                  <MizanText variant="caption" muted>{labels.provider}</MizanText>
+                  <MizanText variant="title">{providerLabel(connection.providerId, locale)}</MizanText>
+                </View>
+
+                <MizanText variant="label">{labels.sourceDetails}</MizanText>
+                <View style={styles.detailsGrid}>
+                  <View style={styles.detailBlock}>
+                    <MizanText variant="caption" muted>{labels.lastSync}</MizanText>
+                    <MizanText variant="label">
+                      {connection.lastSyncedAt ? formatDate(connection.lastSyncedAt, locale) : labels.never}
+                    </MizanText>
+                  </View>
+                  <View style={styles.detailBlock}>
+                    <MizanText variant="caption" muted>{labels.consent}</MizanText>
+                    <MizanText variant="label">
+                      {connection.consentedAt ? formatDate(connection.consentedAt, locale) : labels.never}
+                    </MizanText>
+                  </View>
+                </View>
+
+                <View style={[styles.permissionsGroup, { borderTopColor: palette.border }]}>
+                  <MizanText variant="label">{labels.permissions}</MizanText>
+                  {permissionLabels.length > 0 ? (
+                    <View style={[styles.permissionPills, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
+                      {permissionLabels.map((permission, index) => (
+                        <View
+                          key={`${connection.id}-${connection.scopes[index] ?? index}`}
+                          style={[
+                            styles.permissionPill,
+                            { backgroundColor: palette.surfaceMuted, borderColor: palette.border },
+                          ]}>
+                          <MizanText variant="caption">{permission}</MizanText>
+                        </View>
+                      ))}
+                    </View>
+                  ) : (
+                    <MizanText variant="caption" muted>{labels.never}</MizanText>
+                  )}
+                </View>
+
+                {connection.status !== 'disabled' ? (
+                  <SecondaryButton
+                    label={busyId === connection.id ? labels.disconnecting : labels.disconnect}
+                    disabled={Boolean(busyId)}
+                    onPress={() => void disable(connection)}
+                  />
+                ) : null}
+              </Card>
+            );
+          })
+        : null}
+
+      {message ? (
+        <Card style={{ backgroundColor: palette.surfaceMuted }}>
+          <MizanText accessibilityLiveRegion="polite" muted>{message}</MizanText>
+        </Card>
+      ) : null}
+
+      <Card style={[styles.privacyCard, { backgroundColor: palette.surfaceMuted }]}>
+        <MizanText variant="label">{labels.privacyTitle}</MizanText>
+        <MizanText variant="caption" muted>{labels.privacy}</MizanText>
+      </Card>
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  hero: { gap: Spacing.md, paddingTop: Spacing.xl },
-  details: { gap: Spacing.sm },
+  topRow: {
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+    gap: Spacing.lg,
+    flexWrap: 'wrap',
+  },
+  heading: { flex: 1, minWidth: 0, gap: Spacing.xs },
+  flexibleText: { flex: 1, minWidth: 0 },
+  heroCard: { gap: Spacing.md },
+  connectionHeader: {
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+    gap: Spacing.md,
+    flexWrap: 'wrap',
+  },
+  statusPill: {
+    borderRadius: Radius.pill,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm,
+  },
+  providerPanel: {
+    borderRadius: Radius.md,
+    padding: Spacing.lg,
+    gap: Spacing.xs,
+  },
+  detailsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: Spacing.lg,
+  },
+  detailBlock: {
+    flexGrow: 1,
+    flexBasis: 220,
+    gap: Spacing.xs,
+  },
+  permissionsGroup: {
+    borderTopWidth: Controls.borderWidth,
+    paddingTop: Spacing.lg,
+    gap: Spacing.md,
+  },
+  permissionPills: {
+    flexWrap: 'wrap',
+    gap: Spacing.sm,
+  },
+  permissionPill: {
+    minHeight: 36,
+    borderWidth: Controls.borderWidth,
+    borderRadius: Radius.pill,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm,
+    justifyContent: 'center',
+  },
+  privacyCard: { gap: Spacing.sm },
 });
