@@ -63,6 +63,7 @@ export default function UpdatePasswordScreen() {
           accessibilityLabel={t('newPassword')}
           autoCapitalize="none"
           autoCorrect={false}
+          editable={!busy}
           secureTextEntry
           value={password}
           onChangeText={setPassword}
@@ -73,6 +74,7 @@ export default function UpdatePasswordScreen() {
           accessibilityLabel={t('confirmPassword')}
           autoCapitalize="none"
           autoCorrect={false}
+          editable={!busy}
           secureTextEntry
           value={confirmPassword}
           onChangeText={setConfirmPassword}
