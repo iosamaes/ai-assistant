@@ -1,6 +1,6 @@
 import { router } from 'expo-router';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { StyleSheet, useColorScheme, View } from 'react-native';
+import { Pressable, StyleSheet, useColorScheme, View } from 'react-native';
 
 import {
   cancelExperiment,
@@ -11,6 +11,7 @@ import {
   type ExperimentTemplateId,
   type ExperimentWithEvaluation,
 } from '@/application/experiments';
+import { AppIcon, type AppIconName } from '@/components/app-icon';
 import {
   Card,
   ChoiceChip,
@@ -20,11 +21,12 @@ import {
   SecondaryButton,
 } from '@/components/mizan-ui';
 import { Screen } from '@/components/screen';
-import { Controls, Palette, Radius, Spacing } from '@/constants/theme';
+import { Controls, Interaction, Palette, Radius, Spacing } from '@/constants/theme';
 import { formatLocalizedNumber } from '@/i18n/number-input';
 import { useAppState } from '@/state/app-state';
 
 const templateIds = Object.keys(experimentTemplates) as ExperimentTemplateId[];
+const DAY_MS = 86_400_000;
 
 const copy = {
   ar: {
@@ -33,6 +35,8 @@ const copy = {
     body: 'تجارب ميزان اختيارية ومحدودة المدة. الهدف هو جمع دليل شخصي متواضع، لا إثبات سبب علمي أو اتخاذ قرار طبي.',
     choose: 'اختر تجربة',
     chooseBody: 'ابدأ بتغيير واحد صغير وحدد ما الذي تريد ملاحظته خلال فترة قصيرة وواضحة.',
+    newExperiment: 'تجربة جديدة',
+    newExperimentBody: 'اختر فئة، راجع المدة والمؤشر، ثم عدّل الفرضية بما يناسبك.',
     hypothesis: 'الفرضية',
     consent: 'أوافق على تشغيل هذه التجربة الشخصية طوعًا',
     consentTitle: 'المشاركة اختيارية',
@@ -52,6 +56,7 @@ const copy = {
     metric: 'المؤشر المتابع',
     started: 'بدأت',
     status: 'الحالة',
+    progress: 'التقدم الزمني',
     resultReading: 'قراءة النتيجة',
     comparison: 'المقارنة الشخصية',
     statuses: { active: 'نشطة', completed: 'مكتملة', cancelled: 'متوقفة', planned: 'مخططة' },
@@ -80,6 +85,8 @@ const copy = {
     limitations: 'هذه مقارنة شخصية فقط؛ قد تكون عوامل أخرى تغيرت في نفس الوقت، ولا تثبت السببية.',
     noScore: 'لا توجد نقاط أو سلاسل استمرار، ويمكنك الإيقاف في أي وقت.',
     back: 'العودة إلى الإعدادات',
+    unknownExperiment: 'تجربة شخصية',
+    unknownMetric: 'مؤشر متابع',
     templates: {
       'earlier-bedtime': {
         label: 'نوم أبكر',
@@ -102,6 +109,8 @@ const copy = {
     body: 'MIZAN experiments are voluntary and time-bounded. They collect modest personal evidence, not scientific causal proof or medical guidance.',
     choose: 'Choose an experiment',
     chooseBody: 'Start with one small change and define what you want to observe over a short, clear window.',
+    newExperiment: 'New experiment',
+    newExperimentBody: 'Choose a category, review the window and outcome, then make the hypothesis your own.',
     hypothesis: 'Hypothesis',
     consent: 'I voluntarily consent to run this personal experiment',
     consentTitle: 'Participation is voluntary',
@@ -121,6 +130,7 @@ const copy = {
     metric: 'Observed outcome',
     started: 'Started',
     status: 'Status',
+    progress: 'Time progress',
     resultReading: 'Result reading',
     comparison: 'Personal comparison',
     statuses: { active: 'Active', completed: 'Completed', cancelled: 'Stopped', planned: 'Planned' },
@@ -149,6 +159,8 @@ const copy = {
     limitations: 'This is personal comparison evidence only. Other factors may have changed at the same time, so it does not prove causation.',
     noScore: 'There are no points or streaks, and you can stop at any time.',
     back: 'Back to settings',
+    unknownExperiment: 'Personal experiment',
+    unknownMetric: 'Observed measure',
     templates: {
       'earlier-bedtime': {
         label: 'Earlier bedtime',
@@ -169,6 +181,28 @@ const copy = {
 
 function formatValue(value: number | null, locale: 'ar' | 'en'): string {
   return value === null ? '—' : formatLocalizedNumber(value, locale, 1);
+}
+
+function templateIcon(templateId: ExperimentTemplateId | null): AppIconName {
+  if (templateId === 'earlier-bedtime') return 'recovery';
+  if (templateId === 'quiet-focus') return 'mentalLoad';
+  if (templateId === 'short-walk') return 'energy';
+  return 'hypothesis';
+}
+
+function statusIcon(status: string): AppIconName {
+  if (status === 'active') return 'oneMove';
+  if (status === 'completed') return 'evidence';
+  if (status === 'cancelled') return 'trendFlat';
+  return 'pattern';
+}
+
+function activeTimeProgress(item: ExperimentWithEvaluation): number | null {
+  if (item.experiment.status !== 'active' || item.experiment.duration_days <= 0) return null;
+  const startedAt = Date.parse(item.experiment.started_at ?? item.experiment.created_at);
+  if (!Number.isFinite(startedAt)) return null;
+  const elapsed = Date.now() - startedAt;
+  return Math.max(0, Math.min(1, elapsed / (item.experiment.duration_days * DAY_MS)));
 }
 
 export default function ExperimentsScreen() {
@@ -275,24 +309,43 @@ export default function ExperimentsScreen() {
     const experiment = item.experiment;
     const evaluation = item.evaluation;
     const templateId = experiment.template_id as ExperimentTemplateId | null;
+    const metricLabel = (labels.metrics as Record<string, string>)[experiment.metric] ?? labels.unknownMetric;
     const templateLabel = templateId && templateId in labels.templates
       ? labels.templates[templateId].label
-      : experiment.metric;
-    const metricLabel = (labels.metrics as Record<string, string>)[experiment.metric] ?? experiment.metric;
+      : labels.unknownExperiment;
     const selectedRating = ratingById[experiment.id] ?? 0;
     const startedAt = new Date(experiment.started_at ?? experiment.created_at).toLocaleDateString(
       locale === 'ar' ? 'ar-QA-u-nu-latn' : 'en-QA-u-nu-latn',
     );
     const isActive = experiment.status === 'active';
+    const progress = activeTimeProgress(item);
+    const progressPercent = progress === null ? null : Math.round(progress * 100);
+    const progressLabel = progressPercent === null
+      ? null
+      : `${formatLocalizedNumber(progressPercent, locale, 0)}%`;
 
     return (
       <Card key={experiment.id} style={isActive ? { borderColor: palette.accent } : undefined}>
         <View style={[styles.experimentHeader, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
-          <View style={styles.flexibleText}>
-            <MizanText variant="label" muted>{isActive ? labels.active : labels.resultReading}</MizanText>
-            <MizanText variant="title">{templateLabel}</MizanText>
+          <View style={[styles.experimentIdentity, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
+            <View style={[styles.iconBadge, { backgroundColor: palette.accentSoft }]}>
+              <AppIcon name={templateIcon(templateId)} color={palette.accent} size={22} />
+            </View>
+            <View style={styles.flexibleText}>
+              <MizanText variant="label" muted>{isActive ? labels.active : labels.resultReading}</MizanText>
+              <MizanText variant="title">{templateLabel}</MizanText>
+            </View>
           </View>
-          <View style={[styles.statusPill, { backgroundColor: isActive ? palette.accentSoft : palette.surfaceMuted }]}>
+          <View
+            style={[
+              styles.statusPill,
+              {
+                backgroundColor: isActive ? palette.accentSoft : palette.surfaceMuted,
+                flexDirection: isRtl ? 'row-reverse' : 'row',
+              },
+            ]}
+          >
+            <AppIcon name={statusIcon(experiment.status)} color={isActive ? palette.accent : palette.textMuted} size={16} />
             <MizanText variant="caption">{labels.statuses[experiment.status]}</MizanText>
           </View>
         </View>
@@ -301,20 +354,57 @@ export default function ExperimentsScreen() {
 
         <View style={styles.metadataGrid}>
           <View style={[styles.metadataTile, { backgroundColor: palette.surfaceMuted }]}>
-            <MizanText variant="caption" muted>{labels.duration}</MizanText>
+            <View style={[styles.metadataLabelRow, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
+              <AppIcon name="margin" color={palette.textMuted} size={16} />
+              <MizanText variant="caption" muted>{labels.duration}</MizanText>
+            </View>
             <MizanText variant="label">
               {formatLocalizedNumber(experiment.duration_days, locale, 0)} {labels.days}
             </MizanText>
           </View>
           <View style={[styles.metadataTile, { backgroundColor: palette.surfaceMuted }]}>
-            <MizanText variant="caption" muted>{labels.metric}</MizanText>
+            <View style={[styles.metadataLabelRow, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
+              <AppIcon name={templateIcon(templateId)} color={palette.textMuted} size={16} />
+              <MizanText variant="caption" muted>{labels.metric}</MizanText>
+            </View>
             <MizanText variant="label">{metricLabel}</MizanText>
           </View>
           <View style={[styles.metadataTile, { backgroundColor: palette.surfaceMuted }]}>
-            <MizanText variant="caption" muted>{labels.started}</MizanText>
+            <View style={[styles.metadataLabelRow, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
+              <AppIcon name="pattern" color={palette.textMuted} size={16} />
+              <MizanText variant="caption" muted>{labels.started}</MizanText>
+            </View>
             <MizanText variant="label">{startedAt}</MizanText>
           </View>
         </View>
+
+        {isActive && progress !== null && progressLabel ? (
+          <View style={styles.progressGroup}>
+            <View style={[styles.progressHeading, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
+              <View style={[styles.metadataLabelRow, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
+                <AppIcon name="margin" color={palette.accent} size={16} />
+                <MizanText variant="label">{labels.progress}</MizanText>
+              </View>
+              <MizanText variant="label">{progressLabel}</MizanText>
+            </View>
+            <View
+              accessibilityRole="progressbar"
+              accessibilityValue={{ min: 0, max: 100, now: progressPercent ?? 0, text: progressLabel }}
+              style={[styles.progressTrack, { backgroundColor: palette.surfaceMuted }]}
+            >
+              <View
+                style={[
+                  styles.progressFill,
+                  {
+                    alignSelf: isRtl ? 'flex-end' : 'flex-start',
+                    backgroundColor: palette.accent,
+                    width: `${progressPercent ?? 0}%`,
+                  },
+                ]}
+              />
+            </View>
+          </View>
+        ) : null}
 
         {isActive ? (
           <View style={[styles.actionGroup, { borderTopColor: palette.border }]}>
@@ -349,7 +439,10 @@ export default function ExperimentsScreen() {
         ) : (
           <View style={[styles.resultGroup, { borderTopColor: palette.border }]}>
             <View style={[styles.outcomeCallout, { backgroundColor: palette.accentSoft }]}>
-              <MizanText variant="caption" muted>{labels.outcome}</MizanText>
+              <View style={[styles.metadataLabelRow, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
+                <AppIcon name="pattern" color={palette.accent} size={16} />
+                <MizanText variant="caption" muted>{labels.outcome}</MizanText>
+              </View>
               <MizanText variant="title">{labels.outcomes[evaluation.outcome]}</MizanText>
             </View>
 
@@ -367,7 +460,10 @@ export default function ExperimentsScreen() {
 
             <View style={[styles.evidenceRow, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
               <View style={styles.evidenceBlock}>
-                <MizanText variant="caption" muted>{labels.evidence}</MizanText>
+                <View style={[styles.metadataLabelRow, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
+                  <AppIcon name="evidence" color={palette.accent} size={16} />
+                  <MizanText variant="caption" muted>{labels.evidence}</MizanText>
+                </View>
                 <MizanText variant="label">
                   {formatLocalizedNumber(
                     evaluation.baselineEvidenceCount + evaluation.followupEvidenceCount,
@@ -377,7 +473,10 @@ export default function ExperimentsScreen() {
                 </MizanText>
               </View>
               <View style={styles.evidenceBlock}>
-                <MizanText variant="caption" muted>{labels.confidence}</MizanText>
+                <View style={[styles.metadataLabelRow, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
+                  <AppIcon name="confidence" color={palette.accent} size={16} />
+                  <MizanText variant="caption" muted>{labels.confidence}</MizanText>
+                </View>
                 <MizanText variant="label">{labels.confidenceLevels[evaluation.confidence.level]}</MizanText>
               </View>
             </View>
@@ -398,43 +497,95 @@ export default function ExperimentsScreen() {
       </View>
 
       <Card style={[styles.heroCard, { backgroundColor: palette.accentSoft, borderColor: palette.accent }]}>
-        <MizanText variant="title">{labels.eyebrow}</MizanText>
-        <MizanText>{labels.body}</MizanText>
+        <View style={[styles.heroIdentity, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
+          <View style={[styles.heroIcon, { backgroundColor: palette.surface }]}>
+            <AppIcon name="hypothesis" color={palette.accent} size={28} />
+          </View>
+          <View style={styles.flexibleText}>
+            <MizanText variant="title">{labels.eyebrow}</MizanText>
+            <MizanText>{labels.body}</MizanText>
+          </View>
+        </View>
         <MizanText variant="caption" muted>{labels.noScore}</MizanText>
       </Card>
 
       {!activeExperiment ? (
         <Card style={styles.plannerCard}>
-          <View style={styles.sectionIntro}>
-            <MizanText variant="title">{labels.choose}</MizanText>
-            <MizanText muted>{labels.chooseBody}</MizanText>
+          <View style={[styles.plannerHeader, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
+            <View style={[styles.iconBadge, { backgroundColor: palette.accentSoft }]}>
+              <AppIcon name="oneMove" color={palette.accent} size={22} />
+            </View>
+            <View style={styles.flexibleText}>
+              <MizanText variant="label" muted>{labels.newExperiment}</MizanText>
+              <MizanText variant="title">{labels.choose}</MizanText>
+              <MizanText muted>{labels.newExperimentBody}</MizanText>
+            </View>
           </View>
 
-          <View style={[styles.chips, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
-            {templateIds.map((id) => (
-              <ChoiceChip
-                key={id}
-                label={labels.templates[id].label}
-                selected={selected === id}
-                onPress={() => {
-                  setSelected(id);
-                  setHypothesis(labels.templates[id].hypothesis);
-                  setConsented(false);
-                }}
-                disabled={loading || busy}
-              />
-            ))}
+          <View style={styles.templateGrid}>
+            {templateIds.map((id) => {
+              const template = experimentTemplates[id];
+              const isSelected = selected === id;
+              return (
+                <Pressable
+                  key={id}
+                  accessibilityRole="radio"
+                  accessibilityState={{ checked: isSelected, disabled: loading || busy }}
+                  accessibilityLabel={labels.templates[id].label}
+                  disabled={loading || busy}
+                  onPress={() => {
+                    setSelected(id);
+                    setHypothesis(labels.templates[id].hypothesis);
+                    setConsented(false);
+                  }}
+                  style={({ pressed }) => [
+                    styles.templateOption,
+                    {
+                      backgroundColor: isSelected ? palette.accentSoft : palette.surfaceMuted,
+                      borderColor: isSelected ? palette.accent : palette.border,
+                      opacity: pressed ? Interaction.subtlePressed : 1,
+                    },
+                  ]}
+                >
+                  <View style={[styles.templateIdentity, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
+                    <View style={[styles.iconBadge, { backgroundColor: palette.surface }]}>
+                      <AppIcon name={templateIcon(id)} color={isSelected ? palette.accent : palette.textMuted} size={22} />
+                    </View>
+                    <View style={styles.flexibleText}>
+                      <MizanText variant="label">{labels.templates[id].label}</MizanText>
+                      <MizanText variant="caption" muted>{labels.metrics[template.metric]}</MizanText>
+                    </View>
+                  </View>
+                  <View style={[styles.metadataLabelRow, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
+                    <AppIcon name="margin" color={palette.textMuted} size={15} />
+                    <MizanText variant="caption" muted>
+                      {formatLocalizedNumber(template.durationDays, locale, 0)} {labels.days}
+                    </MizanText>
+                  </View>
+                </Pressable>
+              );
+            })}
+          </View>
+
+          <View style={styles.sectionIntro}>
+            <MizanText variant="label">{labels.chooseBody}</MizanText>
           </View>
 
           <View style={styles.planStats}>
             <View style={[styles.planStat, { backgroundColor: palette.surfaceMuted }]}>
-              <MizanText variant="caption" muted>{labels.duration}</MizanText>
+              <View style={[styles.metadataLabelRow, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
+                <AppIcon name="margin" color={palette.textMuted} size={16} />
+                <MizanText variant="caption" muted>{labels.duration}</MizanText>
+              </View>
               <MizanText variant="title">
                 {formatLocalizedNumber(experimentTemplates[selected].durationDays, locale, 0)} {labels.days}
               </MizanText>
             </View>
             <View style={[styles.planStat, { backgroundColor: palette.surfaceMuted }]}>
-              <MizanText variant="caption" muted>{labels.metric}</MizanText>
+              <View style={[styles.metadataLabelRow, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
+                <AppIcon name={templateIcon(selected)} color={palette.textMuted} size={16} />
+                <MizanText variant="caption" muted>{labels.metric}</MizanText>
+              </View>
               <MizanText variant="title">{labels.metrics[experimentTemplates[selected].metric]}</MizanText>
             </View>
           </View>
@@ -452,7 +603,7 @@ export default function ExperimentsScreen() {
             />
           </View>
 
-          <View style={[styles.consentPanel, { backgroundColor: palette.accentSoft }] }>
+          <View style={[styles.consentPanel, { backgroundColor: palette.accentSoft }]}>
             <MizanText variant="label">{labels.consentTitle}</MizanText>
             <MizanText variant="caption" muted>{labels.consentBody}</MizanText>
             <ChoiceChip
@@ -500,7 +651,10 @@ export default function ExperimentsScreen() {
       </View>
 
       <Card style={[styles.limitationsCard, { backgroundColor: palette.surfaceMuted }]}>
-        <MizanText variant="label">{labels.limitationsTitle}</MizanText>
+        <View style={[styles.metadataLabelRow, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
+          <AppIcon name="hypothesis" color={palette.textMuted} size={16} />
+          <MizanText variant="label">{labels.limitationsTitle}</MizanText>
+        </View>
         <MizanText variant="caption" muted>{labels.limitations}</MizanText>
       </Card>
     </Screen>
@@ -516,11 +670,44 @@ const styles = StyleSheet.create({
   },
   heading: { flex: 1, minWidth: 0, gap: Spacing.xs },
   flexibleText: { flex: 1, minWidth: 0 },
-  heroCard: { gap: Spacing.md },
+  heroCard: { gap: Spacing.lg },
+  heroIdentity: { alignItems: 'flex-start', gap: Spacing.md },
+  heroIcon: {
+    width: 54,
+    height: 54,
+    borderRadius: Radius.md,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   plannerCard: { gap: Spacing.xl },
+  plannerHeader: { alignItems: 'flex-start', gap: Spacing.md },
   section: { gap: Spacing.lg },
   sectionIntro: { gap: Spacing.xs },
   chips: { flexWrap: 'wrap', gap: Spacing.sm },
+  templateGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: Spacing.md,
+  },
+  templateOption: {
+    flexGrow: 1,
+    flexBasis: 210,
+    minHeight: 112,
+    borderWidth: Controls.borderWidth,
+    borderRadius: Radius.md,
+    padding: Spacing.lg,
+    gap: Spacing.md,
+    justifyContent: 'space-between',
+  },
+  templateIdentity: { alignItems: 'center', gap: Spacing.md },
+  iconBadge: {
+    width: 42,
+    height: 42,
+    borderRadius: Radius.sm,
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexShrink: 0,
+  },
   planStats: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -531,7 +718,7 @@ const styles = StyleSheet.create({
     flexBasis: 220,
     borderRadius: Radius.md,
     padding: Spacing.lg,
-    gap: Spacing.xs,
+    gap: Spacing.sm,
   },
   hypothesisGroup: { gap: Spacing.sm },
   consentPanel: {
@@ -545,10 +732,19 @@ const styles = StyleSheet.create({
     gap: Spacing.md,
     flexWrap: 'wrap',
   },
+  experimentIdentity: {
+    flex: 1,
+    minWidth: 220,
+    alignItems: 'center',
+    gap: Spacing.md,
+  },
   statusPill: {
+    minHeight: 36,
     borderRadius: Radius.pill,
     paddingHorizontal: Spacing.md,
     paddingVertical: Spacing.sm,
+    alignItems: 'center',
+    gap: Spacing.xs,
   },
   metadataGrid: {
     flexDirection: 'row',
@@ -561,6 +757,18 @@ const styles = StyleSheet.create({
     borderRadius: Radius.md,
     padding: Spacing.md,
     gap: Spacing.xs,
+  },
+  metadataLabelRow: { alignItems: 'center', gap: Spacing.xs },
+  progressGroup: { gap: Spacing.sm },
+  progressHeading: { alignItems: 'center', justifyContent: 'space-between', gap: Spacing.md },
+  progressTrack: {
+    height: 8,
+    borderRadius: Radius.pill,
+    overflow: 'hidden',
+  },
+  progressFill: {
+    height: '100%',
+    borderRadius: Radius.pill,
   },
   actionGroup: {
     borderTopWidth: Controls.borderWidth,
@@ -576,7 +784,7 @@ const styles = StyleSheet.create({
   outcomeCallout: {
     borderRadius: Radius.md,
     padding: Spacing.lg,
-    gap: Spacing.xs,
+    gap: Spacing.sm,
   },
   comparisonGrid: {
     flexDirection: 'row',
