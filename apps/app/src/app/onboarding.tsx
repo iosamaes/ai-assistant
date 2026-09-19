@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { StyleSheet, useColorScheme, View } from 'react-native';
 
 import { useSpiritualGroundingPreference } from '@/application/spiritual-grounding';
+import { BrandedIllustration } from '@/components/branded-illustration';
 import { Card, ChoiceChip, MizanText, PrimaryButton } from '@/components/mizan-ui';
 import { Screen } from '@/components/screen';
 import { Controls, Palette, Radius, Spacing } from '@/constants/theme';
@@ -31,6 +32,7 @@ type BaselineStatus = 'idle' | 'loading' | 'error';
 
 const copy = {
   ar: {
+    brand: 'MIZAN',
     heroTitle: 'ابنِ ميزانًا يبدأ من أولوياتك أنت',
     heroBody: 'هذه التهيئة القصيرة تعطي ميزان سياقًا شخصيًا قبل أول يوم: ما الذي يهم الآن، وما الذي تريد حمايته، وما البيانات التي تسمح بها.',
     foundationTitle: 'الأساس',
@@ -80,6 +82,7 @@ const copy = {
     },
   },
   en: {
+    brand: 'MIZAN',
     heroTitle: 'Build a MIZAN that starts with your priorities',
     heroBody: 'This short setup gives MIZAN personal context before day one: what matters now, what you want protected, and what data you allow.',
     foundationTitle: 'Foundation',
@@ -249,9 +252,17 @@ export default function OnboardingScreen() {
       </View>
 
       <Card style={[styles.heroCard, { backgroundColor: palette.accentSoft, borderColor: palette.accent }]}>
-        <MizanText variant="title">{labels.heroTitle}</MizanText>
-        <MizanText>{t('onboardingBody')}</MizanText>
-        <MizanText variant="caption" muted>{labels.heroBody}</MizanText>
+        <View style={[styles.heroLayout, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
+          <View style={styles.heroCopy}>
+            <MizanText variant="label" style={{ color: palette.accent }}>{labels.brand}</MizanText>
+            <MizanText variant="title">{labels.heroTitle}</MizanText>
+            <MizanText>{t('onboardingBody')}</MizanText>
+            <MizanText variant="caption" muted>{labels.heroBody}</MizanText>
+          </View>
+          <View style={styles.heroVisual}>
+            <BrandedIllustration variant="welcome" size={174} />
+          </View>
+        </View>
         <View style={[styles.summaryRow, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
           <View style={[styles.summaryTile, { backgroundColor: palette.surface }]}>
             <MizanText variant="title">{formatLocalizedNumber(enabledDomains.length, locale, 0)}</MizanText>
@@ -469,7 +480,26 @@ export default function OnboardingScreen() {
 
 const styles = StyleSheet.create({
   heading: { gap: Spacing.xs },
-  heroCard: { gap: Spacing.md },
+  heroCard: { gap: Spacing.xl },
+  heroLayout: {
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    flexWrap: 'wrap',
+    gap: Spacing.lg,
+  },
+  heroCopy: {
+    flexGrow: 1,
+    flexShrink: 1,
+    flexBasis: 360,
+    minWidth: 0,
+    gap: Spacing.sm,
+  },
+  heroVisual: {
+    flexGrow: 0,
+    flexShrink: 0,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   summaryRow: { flexWrap: 'wrap', gap: Spacing.md },
   summaryTile: {
     flexGrow: 1,
