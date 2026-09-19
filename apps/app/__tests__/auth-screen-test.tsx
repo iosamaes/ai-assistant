@@ -64,6 +64,25 @@ describe('AuthScreen', () => {
     });
   });
 
+  test('requires eight characters for a new account without tightening existing sign-in compatibility', async () => {
+    const view = await render(<AuthScreen />);
+    await fireEvent.press(view.getByRole('button', { name: 'Create account' }));
+    await fireEvent.changeText(view.getByLabelText('Email'), 'new@example.com');
+    await fireEvent.changeText(view.getByLabelText('Password'), '1234567');
+
+    await waitFor(() => {
+      expect(actionButton(view, 'Create account').props.accessibilityState)
+        .toEqual({ disabled: true });
+      expect(view.getByText('Use at least 8 characters.')).toBeTruthy();
+    });
+
+    await fireEvent.changeText(view.getByLabelText('Password'), '12345678');
+    await waitFor(() => {
+      expect(actionButton(view, 'Create account').props.accessibilityState)
+        .toEqual({ disabled: false });
+    });
+  });
+
   test('reset mode removes the password field and uses the recovery action', async () => {
     const view = await render(<AuthScreen />);
     await fireEvent.press(view.getByRole('button', { name: 'Forgot password' }));
