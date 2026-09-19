@@ -33,8 +33,9 @@ export async function loadLifeSeasonsState(userId: string): Promise<DataResult<L
 }
 
 export async function saveLifeSeason(
+  expectedUserId: string,
   season: StoredLifeSeason,
   targets: DomainBaselineTargets,
 ): Promise<DataResult<null>> {
-  return setLifeSeasonWithTargets(season, targets);
+  return setLifeSeasonWithTargets(expectedUserId, season, targets);
 }
