@@ -25,7 +25,6 @@ export function BrandedIllustration({ variant = 'focus', size = 160 }: BrandedIl
       accessible={false}
       accessibilityElementsHidden
       importantForAccessibility="no-hide-descendants"
-      pointerEvents="none"
       style={[styles.frame, { width: size, height: size }]}>
       <View
         style={[
@@ -134,6 +133,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     overflow: 'hidden',
+    pointerEvents: 'none',
   },
   orb: {
     position: 'absolute',
