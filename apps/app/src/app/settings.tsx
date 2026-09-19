@@ -1,11 +1,11 @@
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet, useColorScheme, View } from 'react-native';
 
 import { useSpiritualGroundingPreference } from '@/application/spiritual-grounding';
-import { ChoiceChip, MizanText, PrimaryButton, SecondaryButton } from '@/components/mizan-ui';
+import { Card, ChoiceChip, MizanText, PrimaryButton, SecondaryButton } from '@/components/mizan-ui';
 import { Screen } from '@/components/screen';
-import { Spacing } from '@/constants/theme';
+import { Palette, Spacing } from '@/constants/theme';
 import { signOut } from '@/infrastructure/supabase/auth';
 import { useAppState } from '@/state/app-state';
 
@@ -23,6 +23,35 @@ const spiritualCopy = {
     enable: 'Enabled',
     disable: 'Off',
     error: 'MIZAN could not save this preference right now.',
+  },
+} as const;
+
+const settingsCopy = {
+  ar: {
+    heroTitle: 'اضبط ميزان على حياتك، لا العكس',
+    heroBody: 'لغتك وأولوياتك ومساحاتك الاختيارية تحت تحكمك. أدوات الفهم والقرار مجمّعة هنا بهدوء بدل قائمة إعدادات تقنية طويلة.',
+    preferencesTitle: 'تفضيلاتك الأساسية',
+    preferencesBody: 'اختيارات تؤثر مباشرة في طريقة عرض ميزان وما تعتبره مهمًا الآن.',
+    prioritiesEmpty: 'لم تُحدد أولويات بعد.',
+    intelligenceTitle: 'أدوات الفهم والقرار',
+    intelligenceBody: 'ادخل إلى الأدلة والأنماط والسيناريوهات وأدوات التعافي من مساحة واحدة.',
+    dataTitle: 'البيانات والاتصالات',
+    dataBody: 'راجع التكاملات الخارجية وتحكم في التصدير والحذف من طبقة واضحة منفصلة عن أدوات التحليل.',
+    accountTitle: 'الحساب وإعادة الضبط',
+    accountBody: 'يمكنك إعادة زيارة الإعداد الأولي أو تسجيل الخروج من دون تغيير بياناتك بصمت.',
+  },
+  en: {
+    heroTitle: 'Shape MIZAN around your life',
+    heroBody: 'Your language, priorities, and optional spaces stay under your control. Understanding and decision tools are grouped here instead of buried in a long technical settings list.',
+    preferencesTitle: 'Core preferences',
+    preferencesBody: 'Choices that directly shape how MIZAN presents itself and what matters to you right now.',
+    prioritiesEmpty: 'No priorities selected yet.',
+    intelligenceTitle: 'Understanding & decision tools',
+    intelligenceBody: 'Reach evidence, patterns, scenarios, and recovery tools from one calm workspace.',
+    dataTitle: 'Data & connections',
+    dataBody: 'Review external integrations and control export or deletion from a clear layer separate from analysis tools.',
+    accountTitle: 'Account & reset',
+    accountBody: 'Revisit onboarding or sign out without silently changing your stored data.',
   },
 } as const;
 
@@ -129,6 +158,25 @@ const insightCopy = {
   },
 } as const;
 
+interface SettingsLinkCardProps {
+  title: string;
+  body: string;
+  action: string;
+  onPress: () => void;
+}
+
+function SettingsLinkCard({ title, body, action, onPress }: SettingsLinkCardProps) {
+  return (
+    <Card style={styles.linkCard}>
+      <View style={styles.linkCardCopy}>
+        <MizanText variant="title">{title}</MizanText>
+        <MizanText muted>{body}</MizanText>
+      </View>
+      <SecondaryButton compact label={action} onPress={onPress} />
+    </Card>
+  );
+}
+
 export default function SettingsScreen() {
   const {
     enabledDomains,
@@ -146,12 +194,16 @@ export default function SettingsScreen() {
     persistChoice: persistSpiritualGroundingChoice,
     status: spiritualStatus,
   } = useSpiritualGroundingPreference(userId);
+  const scheme = useColorScheme();
+  const palette = Palette[scheme === 'dark' ? 'dark' : 'light'];
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const syncMessage = syncStatus === 'offline' ? t('syncOffline') : syncStatus === 'error' ? t('syncError') : null;
   const spiritualLabels = spiritualCopy[locale];
+  const labels = settingsCopy[locale];
   const insightLabels = insightCopy[locale];
   const spiritualControlsDisabled = busy || spiritualStatus === 'loading' || spiritualStatus === 'saving';
+  const priorities = enabledDomains.map((domainId) => t(domainId)).join(' · ');
 
   const editPriorities = async () => {
     if (busy) return;
@@ -185,155 +237,134 @@ export default function SettingsScreen() {
 
   return (
     <Screen>
-      <View style={styles.hero}>
-        <MizanText variant="label" muted>{t('appName')}</MizanText>
-        <MizanText variant="display">{t('settingsTitle')}</MizanText>
-        <MizanText muted>{t('settingsBody')}</MizanText>
-      </View>
-
-      <View style={styles.section}>
-        <MizanText variant="title">{t('language')}</MizanText>
-        <View style={[styles.row, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
-          <ChoiceChip label={t('arabic')} selected={locale === 'ar'} onPress={() => setLocale('ar')} />
-          <ChoiceChip label={t('english')} selected={locale === 'en'} onPress={() => setLocale('en')} />
+      <View style={[styles.topRow, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
+        <View style={styles.heading}>
+          <MizanText variant="label" muted>{t('appName')}</MizanText>
+          <MizanText variant="display">{t('settingsTitle')}</MizanText>
         </View>
-      </View>
-
-      <View style={styles.section}>
-        <MizanText variant="title">{t('priorities')}</MizanText>
-        <MizanText muted>{enabledDomains.map((domainId) => t(domainId)).join(' · ')}</MizanText>
-      </View>
-
-      <View style={styles.section}>
-        <MizanText variant="title">{insightLabels.lifeMapTitle}</MizanText>
-        <MizanText muted>{insightLabels.lifeMapBody}</MizanText>
-        <PrimaryButton label={insightLabels.lifeMapOpen} onPress={() => router.push('/life-map')} />
-      </View>
-
-      <View style={styles.section}>
-        <MizanText variant="title">{insightLabels.whyTitle}</MizanText>
-        <MizanText muted>{insightLabels.whyBody}</MizanText>
-        <PrimaryButton label={insightLabels.whyOpen} onPress={() => router.push('/why')} />
-      </View>
-
-      <View style={styles.section}>
-        <MizanText variant="title">{insightLabels.insightsTitle}</MizanText>
-        <MizanText muted>{insightLabels.insightsBody}</MizanText>
-        <PrimaryButton label={insightLabels.insightsOpen} onPress={() => router.push('/insights')} />
-      </View>
-
-      <View style={styles.section}>
-        <MizanText variant="title">{insightLabels.learningTitle}</MizanText>
-        <MizanText muted>{insightLabels.learningBody}</MizanText>
-        <PrimaryButton label={insightLabels.learningOpen} onPress={() => router.push('/personal-learning')} />
-      </View>
-
-      <View style={styles.section}>
-        <MizanText variant="title">{insightLabels.personalizationTitle}</MizanText>
-        <MizanText muted>{insightLabels.personalizationBody}</MizanText>
-        <PrimaryButton label={insightLabels.personalizationOpen} onPress={() => router.push('/personalization')} />
-      </View>
-
-      <View style={styles.section}>
-        <MizanText variant="title">{insightLabels.alignmentTitle}</MizanText>
-        <MizanText muted>{insightLabels.alignmentBody}</MizanText>
-        <PrimaryButton label={insightLabels.alignmentOpen} onPress={() => router.push('/value-alignment')} />
-      </View>
-
-      <View style={styles.section}>
-        <MizanText variant="title">{insightLabels.invisibleWinsTitle}</MizanText>
-        <MizanText muted>{insightLabels.invisibleWinsBody}</MizanText>
-        <PrimaryButton label={insightLabels.invisibleWinsOpen} onPress={() => router.push('/invisible-wins')} />
-      </View>
-
-      <View style={styles.section}>
-        <MizanText variant="title">{insightLabels.whatIfTitle}</MizanText>
-        <MizanText muted>{insightLabels.whatIfBody}</MizanText>
-        <PrimaryButton label={insightLabels.whatIfOpen} onPress={() => router.push('/what-if')} />
-      </View>
-
-      <View style={styles.section}>
-        <MizanText variant="title">{insightLabels.experimentsTitle}</MizanText>
-        <MizanText muted>{insightLabels.experimentsBody}</MizanText>
-        <PrimaryButton label={insightLabels.experimentsOpen} onPress={() => router.push('/experiments')} />
-      </View>
-
-      <View style={styles.section}>
-        <MizanText variant="title">{insightLabels.recoveryTitle}</MizanText>
-        <MizanText muted>{insightLabels.recoveryBody}</MizanText>
-        <PrimaryButton label={insightLabels.recoveryOpen} onPress={() => router.push('/recovery')} />
-      </View>
-
-      <View style={styles.section}>
-        <MizanText variant="title">{insightLabels.costOfYesTitle}</MizanText>
-        <MizanText muted>{insightLabels.costOfYesBody}</MizanText>
-        <PrimaryButton label={insightLabels.costOfYesOpen} onPress={() => router.push('/cost-of-yes')} />
-      </View>
-
-      <View style={styles.section}>
-        <MizanText variant="title">{insightLabels.humanROITitle}</MizanText>
-        <MizanText muted>{insightLabels.humanROIBody}</MizanText>
-        <PrimaryButton label={insightLabels.humanROIOpen} onPress={() => router.push('/human-roi')} />
-      </View>
-
-      <View style={styles.section}>
-        <MizanText variant="title">{insightLabels.lifeSeasonsTitle}</MizanText>
-        <MizanText muted>{insightLabels.lifeSeasonsBody}</MizanText>
-        <PrimaryButton label={insightLabels.lifeSeasonsOpen} onPress={() => router.push('/life-seasons')} />
-      </View>
-
-      <View style={styles.section}>
-        <MizanText variant="title">{insightLabels.capacityTitle}</MizanText>
-        <MizanText muted>{insightLabels.capacityBody}</MizanText>
-        <PrimaryButton label={insightLabels.capacityOpen} onPress={() => router.push('/capacity')} />
-      </View>
-
-      <View style={styles.section}>
-        <MizanText variant="title">{insightLabels.integrationsTitle}</MizanText>
-        <MizanText muted>{insightLabels.integrationsBody}</MizanText>
-        <PrimaryButton label={insightLabels.integrationsOpen} onPress={() => router.push('/integrations')} />
-      </View>
-
-      <View style={styles.section}>
-        <MizanText variant="title">{insightLabels.privacyTitle}</MizanText>
-        <MizanText muted>{insightLabels.privacyBody}</MizanText>
-        <PrimaryButton label={insightLabels.privacyOpen} onPress={() => router.push('/privacy')} />
-      </View>
-
-      <View style={styles.section}>
-        <MizanText variant="title">{spiritualLabels.title}</MizanText>
-        <MizanText muted>{spiritualLabels.body}</MizanText>
-        <View style={[styles.row, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
-          <ChoiceChip
-            label={spiritualLabels.enable}
-            selected={spiritualGroundingEnabled === true}
-            onPress={() => void changeSpiritualGrounding(true)}
-            disabled={spiritualControlsDisabled}
-          />
-          <ChoiceChip
-            label={spiritualLabels.disable}
-            selected={spiritualGroundingEnabled === false}
-            onPress={() => void changeSpiritualGrounding(false)}
-            disabled={spiritualControlsDisabled}
-          />
-        </View>
-      </View>
-
-      {syncMessage ? <MizanText accessibilityLiveRegion="polite" muted>{syncMessage}</MizanText> : null}
-      {message ? <MizanText accessibilityLiveRegion="polite" muted>{message}</MizanText> : null}
-
-      <View style={styles.actions}>
-        <PrimaryButton label={busy ? t('saving') : t('resetOnboarding')} onPress={() => void editPriorities()} disabled={busy} />
-        <PrimaryButton label={t('signOut')} onPress={() => void logout()} disabled={busy} />
         <SecondaryButton compact label={t('backToday')} onPress={() => router.replace('/today')} />
       </View>
+
+      <Card style={[styles.heroCard, { backgroundColor: palette.accentSoft, borderColor: palette.accent }]}>
+        <MizanText variant="title">{labels.heroTitle}</MizanText>
+        <MizanText>{t('settingsBody')}</MizanText>
+        <MizanText variant="caption" muted>{labels.heroBody}</MizanText>
+      </Card>
+
+      <View style={styles.sectionHeading}>
+        <MizanText variant="label" muted>{labels.preferencesTitle}</MizanText>
+        <MizanText variant="title">{labels.preferencesBody}</MizanText>
+      </View>
+
+      <View style={styles.cardGrid}>
+        <Card style={styles.preferenceCard}>
+          <MizanText variant="label" muted>{t('language')}</MizanText>
+          <View style={[styles.row, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
+            <ChoiceChip label={t('arabic')} selected={locale === 'ar'} onPress={() => setLocale('ar')} />
+            <ChoiceChip label={t('english')} selected={locale === 'en'} onPress={() => setLocale('en')} />
+          </View>
+        </Card>
+
+        <Card style={styles.preferenceCard}>
+          <MizanText variant="label" muted>{t('priorities')}</MizanText>
+          <MizanText variant="title">{priorities || labels.prioritiesEmpty}</MizanText>
+        </Card>
+
+        <Card style={styles.preferenceCard}>
+          <View style={styles.linkCardCopy}>
+            <MizanText variant="title">{spiritualLabels.title}</MizanText>
+            <MizanText muted>{spiritualLabels.body}</MizanText>
+          </View>
+          <View style={[styles.row, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
+            <ChoiceChip
+              label={spiritualLabels.enable}
+              selected={spiritualGroundingEnabled === true}
+              onPress={() => void changeSpiritualGrounding(true)}
+              disabled={spiritualControlsDisabled}
+            />
+            <ChoiceChip
+              label={spiritualLabels.disable}
+              selected={spiritualGroundingEnabled === false}
+              onPress={() => void changeSpiritualGrounding(false)}
+              disabled={spiritualControlsDisabled}
+            />
+          </View>
+        </Card>
+      </View>
+
+      <View style={styles.sectionHeading}>
+        <MizanText variant="label" muted>{labels.intelligenceTitle}</MizanText>
+        <MizanText variant="title">{labels.intelligenceBody}</MizanText>
+      </View>
+
+      <View style={styles.cardGrid}>
+        <SettingsLinkCard title={insightLabels.lifeMapTitle} body={insightLabels.lifeMapBody} action={insightLabels.lifeMapOpen} onPress={() => router.push('/life-map')} />
+        <SettingsLinkCard title={insightLabels.whyTitle} body={insightLabels.whyBody} action={insightLabels.whyOpen} onPress={() => router.push('/why')} />
+        <SettingsLinkCard title={insightLabels.insightsTitle} body={insightLabels.insightsBody} action={insightLabels.insightsOpen} onPress={() => router.push('/insights')} />
+        <SettingsLinkCard title={insightLabels.learningTitle} body={insightLabels.learningBody} action={insightLabels.learningOpen} onPress={() => router.push('/personal-learning')} />
+        <SettingsLinkCard title={insightLabels.personalizationTitle} body={insightLabels.personalizationBody} action={insightLabels.personalizationOpen} onPress={() => router.push('/personalization')} />
+        <SettingsLinkCard title={insightLabels.alignmentTitle} body={insightLabels.alignmentBody} action={insightLabels.alignmentOpen} onPress={() => router.push('/value-alignment')} />
+        <SettingsLinkCard title={insightLabels.invisibleWinsTitle} body={insightLabels.invisibleWinsBody} action={insightLabels.invisibleWinsOpen} onPress={() => router.push('/invisible-wins')} />
+        <SettingsLinkCard title={insightLabels.whatIfTitle} body={insightLabels.whatIfBody} action={insightLabels.whatIfOpen} onPress={() => router.push('/what-if')} />
+        <SettingsLinkCard title={insightLabels.experimentsTitle} body={insightLabels.experimentsBody} action={insightLabels.experimentsOpen} onPress={() => router.push('/experiments')} />
+        <SettingsLinkCard title={insightLabels.recoveryTitle} body={insightLabels.recoveryBody} action={insightLabels.recoveryOpen} onPress={() => router.push('/recovery')} />
+        <SettingsLinkCard title={insightLabels.costOfYesTitle} body={insightLabels.costOfYesBody} action={insightLabels.costOfYesOpen} onPress={() => router.push('/cost-of-yes')} />
+        <SettingsLinkCard title={insightLabels.humanROITitle} body={insightLabels.humanROIBody} action={insightLabels.humanROIOpen} onPress={() => router.push('/human-roi')} />
+        <SettingsLinkCard title={insightLabels.lifeSeasonsTitle} body={insightLabels.lifeSeasonsBody} action={insightLabels.lifeSeasonsOpen} onPress={() => router.push('/life-seasons')} />
+        <SettingsLinkCard title={insightLabels.capacityTitle} body={insightLabels.capacityBody} action={insightLabels.capacityOpen} onPress={() => router.push('/capacity')} />
+      </View>
+
+      <View style={styles.sectionHeading}>
+        <MizanText variant="label" muted>{labels.dataTitle}</MizanText>
+        <MizanText variant="title">{labels.dataBody}</MizanText>
+      </View>
+
+      <View style={styles.cardGrid}>
+        <SettingsLinkCard title={insightLabels.integrationsTitle} body={insightLabels.integrationsBody} action={insightLabels.integrationsOpen} onPress={() => router.push('/integrations')} />
+        <SettingsLinkCard title={insightLabels.privacyTitle} body={insightLabels.privacyBody} action={insightLabels.privacyOpen} onPress={() => router.push('/privacy')} />
+      </View>
+
+      {syncMessage || message ? (
+        <Card style={{ backgroundColor: palette.surfaceMuted }}>
+          {syncMessage ? <MizanText accessibilityLiveRegion="polite">{syncMessage}</MizanText> : null}
+          {message ? <MizanText accessibilityLiveRegion="polite">{message}</MizanText> : null}
+        </Card>
+      ) : null}
+
+      <Card style={styles.accountCard}>
+        <View style={styles.linkCardCopy}>
+          <MizanText variant="label" muted>{labels.accountTitle}</MizanText>
+          <MizanText variant="title">{labels.accountBody}</MizanText>
+        </View>
+        <View style={styles.accountActions}>
+          <PrimaryButton label={busy ? t('saving') : t('resetOnboarding')} onPress={() => void editPriorities()} disabled={busy} />
+          <SecondaryButton label={t('signOut')} onPress={() => void logout()} disabled={busy} />
+        </View>
+      </Card>
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  hero: { gap: Spacing.md, paddingTop: Spacing.xl },
-  section: { gap: Spacing.lg },
+  topRow: {
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+    flexWrap: 'wrap',
+    gap: Spacing.lg,
+  },
+  heading: { flexGrow: 1, flexShrink: 1, minWidth: 0, gap: Spacing.xs },
+  heroCard: { gap: Spacing.md },
+  sectionHeading: { gap: Spacing.xs, paddingTop: Spacing.sm },
+  cardGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    alignItems: 'stretch',
+    gap: Spacing.lg,
+  },
+  preferenceCard: { flexGrow: 1, flexBasis: 260, minWidth: 0 },
+  linkCard: { flexGrow: 1, flexBasis: 300, minWidth: 0, justifyContent: 'space-between' },
+  linkCardCopy: { gap: Spacing.sm },
   row: { flexWrap: 'wrap', gap: Spacing.sm },
-  actions: { marginTop: 'auto', gap: Spacing.lg, paddingTop: Spacing.xl },
+  accountCard: { marginTop: Spacing.sm },
+  accountActions: { gap: Spacing.md },
 });
