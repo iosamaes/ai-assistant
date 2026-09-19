@@ -88,6 +88,7 @@ export async function loadLifeSeasonHistory(
 }
 
 export async function setLifeSeasonWithTargets(
+  expectedUserId: string,
   season: StoredLifeSeason,
   targets: DomainBaselineTargets,
 ): Promise<DataResult<null>> {
@@ -96,6 +97,7 @@ export async function setLifeSeasonWithTargets(
     Object.entries(targets).filter((entry): entry is [string, BaselineTargetRating] => isRating(entry[1])),
   );
   const { error } = await supabase.rpc('set_life_season', {
+    p_expected_user_id: expectedUserId,
     p_season: season,
     p_target_snapshot: targetSnapshot,
   });
