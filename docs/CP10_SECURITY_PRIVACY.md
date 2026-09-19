@@ -83,7 +83,13 @@ The UI uses a two-step destructive flow. It also states the provider boundary cl
 
 ## Optional-data consent
 
-Optional spiritual-grounding preference and external integration lifecycle/consent state remain user-controlled. Integration connection rows contain no provider credentials. CP10 still needs an explicit repository-wide consent-revocation verification pass proving that each optional source stops future collection after revocation, not merely that its UI state changes.
+Optional spiritual-grounding preference and external integration lifecycle/consent state remain user-controlled. Integration connection rows contain no provider credentials.
+
+The health-integration sync path now re-reads authoritative connection state before the first provider read, before any retry, and again after the provider read before persistence. A sync is rejected when the matching connection is not currently `connected`, has been disconnected, has a different consent timestamp, or no longer carries the requested/required scopes. Successful sync bookkeeping is also conditional on the same connection still being connected with the same consent timestamp; it no longer upserts a `connected` state that could overwrite a concurrent revocation. Sync-error bookkeeping only mutates rows that are still connected, so a stale provider failure cannot change a disabled connection back into another active lifecycle state.
+
+`apps/app/__tests__/integration-consent-revocation-test.ts` specifies four revocation races: already-disabled consent prevents any provider call, revocation during a provider read discards the result before persistence, revocation between a temporary provider failure and retry prevents the retry, and a final state race cannot reactivate the connection. These specifications were added but not executed by workers under the current policy.
+
+This closes the concrete health-sync collection/reconnect gap statically. CP10 still needs the broader optional-module pass, including spiritual-grounding and any future provider-backed collectors, plus owner runtime validation of the integration revocation behavior.
 
 ## Logging and error-reporting boundary
 
@@ -101,6 +107,6 @@ The live Supabase Security Advisor currently reports `auth_leaked_password_prote
 - Add focused tests for authenticated-only export/function ACL behavior and the delete-account boundary without exposing service credentials.
 - Verify export and account deletion end to end from Web and at least one native target.
 - Complete the repository-wide logging/error-reporting sensitive-data audit.
-- Verify optional-module/integration consent revocation stops future data collection.
+- Complete the broader optional-module consent-revocation audit beyond the now-fenced health-integration sync path, and owner-validate the revocation races.
 - Re-run the live Supabase Security Advisor after the owner enables leaked-password protection.
 - Re-review the export/delete inventory whenever new user-owned tables, storage buckets, providers, or provider-side credentials are introduced.
