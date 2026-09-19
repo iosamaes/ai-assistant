@@ -1,10 +1,12 @@
 import { router } from 'expo-router';
 import { useMemo, useState } from 'react';
-import { StyleSheet, useColorScheme, View } from 'react-native';
+import { StyleSheet, useColorScheme, useWindowDimensions, View } from 'react-native';
 
+import { AppIcon } from '@/components/app-icon';
+import { BrandedIllustration } from '@/components/branded-illustration';
 import { Card, MizanText, MizanTextInput, PrimaryButton } from '@/components/mizan-ui';
 import { Screen } from '@/components/screen';
-import { Palette, Radius, Spacing } from '@/constants/theme';
+import { Layout, Palette, Radius, Spacing } from '@/constants/theme';
 import { updatePassword, type AuthFailureKind } from '@/infrastructure/supabase/auth';
 import { useAppState } from '@/state/app-state';
 
@@ -17,6 +19,8 @@ const updatePasswordVisualCopy = {
     ready: 'كلمة المرور تستوفي المتطلبات والحقلان متطابقان.',
     sessionMissing: 'جلسة الاستعادة غير متاحة الآن. افتح رابط الاستعادة من بريدك الإلكتروني مرة أخرى للمتابعة بأمان.',
     nextStep: 'بعد الحفظ ستعود مباشرة إلى مساحتك في ميزان.',
+    trustTitle: 'جلسة استعادة محدودة',
+    trustBody: 'ميزان يستخدم جلسة الاستعادة فقط لتعيين كلمة المرور الجديدة، ولا يعرض تفاصيل تقنية خامًا داخل هذه الشاشة.',
   },
   en: {
     heroTitle: 'A calm, secure recovery step',
@@ -26,13 +30,17 @@ const updatePasswordVisualCopy = {
     ready: 'The password meets the requirements and both fields match.',
     sessionMissing: 'Your recovery session is not available right now. Open the recovery link from your email again to continue securely.',
     nextStep: 'After saving, you will return directly to your MIZAN space.',
+    trustTitle: 'A limited recovery session',
+    trustBody: 'MIZAN uses the recovery session only to set your new password and does not expose raw technical details on this screen.',
   },
 } as const;
 
 export default function UpdatePasswordScreen() {
-  const { locale, onboardingCompleted, sessionStatus, t } = useAppState();
+  const { isRtl, locale, onboardingCompleted, sessionStatus, t } = useAppState();
   const scheme = useColorScheme();
   const palette = Palette[scheme === 'dark' ? 'dark' : 'light'];
+  const { width } = useWindowDimensions();
+  const isWide = width >= Layout.wideBreakpoint;
   const labels = updatePasswordVisualCopy[locale];
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -83,98 +91,137 @@ export default function UpdatePasswordScreen() {
         <MizanText variant="display">{t('updatePasswordTitle')}</MizanText>
       </View>
 
-      <Card style={[styles.heroCard, { backgroundColor: palette.accentSoft, borderColor: palette.accent }]}>
-        <MizanText variant="title">{labels.heroTitle}</MizanText>
-        <MizanText>{t('updatePasswordBody')}</MizanText>
-        <MizanText variant="caption" muted>{labels.heroNote}</MizanText>
-      </Card>
-
-      <Card style={styles.formCard}>
-        <View style={styles.sectionHeading}>
-          <MizanText variant="title">{labels.formTitle}</MizanText>
-          <MizanText muted>{labels.formBody}</MizanText>
-        </View>
-
-        {sessionStatus !== 'signed-in' ? (
-          <View style={[styles.messagePanel, styles.messagePanelBorder, { backgroundColor: palette.surfaceMuted, borderColor: palette.border }]}>
-            <MizanText accessibilityLiveRegion="polite">{labels.sessionMissing}</MizanText>
+      <View
+        style={[
+          styles.pageLayout,
+          { flexDirection: isWide ? (isRtl ? 'row-reverse' : 'row') : 'column' },
+        ]}>
+        <Card style={[styles.heroCard, { backgroundColor: palette.accentSoft, borderColor: palette.accent }]}>
+          <View style={styles.heroCopy}>
+            <MizanText variant="label" style={{ color: palette.accent }}>MIZAN</MizanText>
+            <MizanText variant="title">{labels.heroTitle}</MizanText>
+            <MizanText>{t('updatePasswordBody')}</MizanText>
+            <MizanText variant="caption" muted>{labels.heroNote}</MizanText>
           </View>
-        ) : null}
 
-        <View style={styles.field}>
-          <MizanText variant="label">{t('newPassword')}</MizanText>
-          <MizanTextInput
-            accessibilityLabel={t('newPassword')}
-            autoCapitalize="none"
-            autoComplete="new-password"
-            autoCorrect={false}
-            editable={canEdit}
-            secureTextEntry
-            style={styles.ltrInput}
-            textContentType="newPassword"
-            value={password}
-            onChangeText={setPassword}
-          />
-        </View>
+          <View style={styles.heroVisual}>
+            <BrandedIllustration variant="welcome" size={isWide ? 184 : 150} />
+          </View>
 
-        <View style={styles.field}>
-          <MizanText variant="label">{t('confirmPassword')}</MizanText>
-          <MizanTextInput
-            accessibilityLabel={t('confirmPassword')}
-            autoCapitalize="none"
-            autoComplete="new-password"
-            autoCorrect={false}
-            editable={canEdit}
-            secureTextEntry
-            style={styles.ltrInput}
-            textContentType="newPassword"
-            value={confirmPassword}
-            onChangeText={setConfirmPassword}
-          />
-        </View>
+          <View
+            style={[
+              styles.trustPanel,
+              { backgroundColor: palette.surface, flexDirection: isRtl ? 'row-reverse' : 'row' },
+            ]}>
+            <View style={[styles.iconBadge, { backgroundColor: palette.accentSoft }]}>
+              <AppIcon name="privacy" color={palette.accent} size={20} />
+            </View>
+            <View style={styles.trustCopy}>
+              <MizanText variant="label">{labels.trustTitle}</MizanText>
+              <MizanText variant="caption" muted>{labels.trustBody}</MizanText>
+            </View>
+          </View>
+        </Card>
 
-        {password.length > 0 && !passwordLongEnough ? (
-          <View style={[styles.messagePanel, { backgroundColor: palette.surfaceMuted }]}>
-            <MizanText accessibilityLiveRegion="polite" variant="caption" muted>{t('passwordMinimum')}</MizanText>
+        <Card style={styles.formCard}>
+          <View style={styles.sectionHeading}>
+            <MizanText variant="title">{labels.formTitle}</MizanText>
+            <MizanText muted>{labels.formBody}</MizanText>
           </View>
-        ) : null}
-        {confirmPassword.length > 0 && !passwordsMatch ? (
-          <View style={[styles.messagePanel, { backgroundColor: palette.surfaceMuted }]}>
-            <MizanText accessibilityLiveRegion="polite" variant="caption" muted>{t('passwordMismatch')}</MizanText>
-          </View>
-        ) : null}
-        {passwordLongEnough && passwordsMatch ? (
-          <View style={[styles.messagePanel, styles.messagePanelBorder, { backgroundColor: palette.accentSoft, borderColor: palette.accent }]}>
-            <MizanText accessibilityLiveRegion="polite" variant="caption">{labels.ready}</MizanText>
-          </View>
-        ) : null}
-        {message ? (
-          <View style={[styles.messagePanel, { backgroundColor: palette.surfaceMuted }]}>
-            <MizanText accessibilityLiveRegion="polite">{message}</MizanText>
-          </View>
-        ) : null}
 
-        <View style={styles.actionGroup}>
-          <PrimaryButton
-            label={busy ? t('authWorking') : t('savePassword')}
-            onPress={() => void submit()}
-            disabled={!canSubmit}
-          />
-          <MizanText variant="caption" muted>{labels.nextStep}</MizanText>
-        </View>
-      </Card>
+          {sessionStatus !== 'signed-in' ? (
+            <View style={[styles.messagePanel, styles.messagePanelBorder, { backgroundColor: palette.surfaceMuted, borderColor: palette.border }]}>
+              <MizanText accessibilityLiveRegion="polite">{labels.sessionMissing}</MizanText>
+            </View>
+          ) : null}
+
+          <View style={styles.field}>
+            <MizanText variant="label">{t('newPassword')}</MizanText>
+            <MizanTextInput
+              accessibilityLabel={t('newPassword')}
+              autoCapitalize="none"
+              autoComplete="new-password"
+              autoCorrect={false}
+              editable={canEdit}
+              secureTextEntry
+              style={styles.ltrInput}
+              textContentType="newPassword"
+              value={password}
+              onChangeText={setPassword}
+            />
+          </View>
+
+          <View style={styles.field}>
+            <MizanText variant="label">{t('confirmPassword')}</MizanText>
+            <MizanTextInput
+              accessibilityLabel={t('confirmPassword')}
+              autoCapitalize="none"
+              autoComplete="new-password"
+              autoCorrect={false}
+              editable={canEdit}
+              secureTextEntry
+              style={styles.ltrInput}
+              textContentType="newPassword"
+              value={confirmPassword}
+              onChangeText={setConfirmPassword}
+            />
+          </View>
+
+          {password.length > 0 && !passwordLongEnough ? (
+            <View style={[styles.messagePanel, { backgroundColor: palette.surfaceMuted }]}>
+              <MizanText accessibilityLiveRegion="polite" variant="caption" muted>{t('passwordMinimum')}</MizanText>
+            </View>
+          ) : null}
+          {confirmPassword.length > 0 && !passwordsMatch ? (
+            <View style={[styles.messagePanel, { backgroundColor: palette.surfaceMuted }]}>
+              <MizanText accessibilityLiveRegion="polite" variant="caption" muted>{t('passwordMismatch')}</MizanText>
+            </View>
+          ) : null}
+          {passwordLongEnough && passwordsMatch ? (
+            <View style={[styles.messagePanel, styles.messagePanelBorder, { backgroundColor: palette.accentSoft, borderColor: palette.accent }]}>
+              <MizanText accessibilityLiveRegion="polite" variant="caption">{labels.ready}</MizanText>
+            </View>
+          ) : null}
+          {message ? (
+            <View style={[styles.messagePanel, { backgroundColor: palette.surfaceMuted }]}>
+              <MizanText accessibilityLiveRegion="polite">{message}</MizanText>
+            </View>
+          ) : null}
+
+          <View style={styles.actionGroup}>
+            <PrimaryButton
+              label={busy ? t('authWorking') : t('savePassword')}
+              onPress={() => void submit()}
+              disabled={!canSubmit}
+            />
+            <MizanText variant="caption" muted>{labels.nextStep}</MizanText>
+          </View>
+        </Card>
+      </View>
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
   heading: { gap: Spacing.xs },
-  heroCard: { gap: Spacing.md },
-  formCard: { gap: Spacing.xl },
+  pageLayout: { gap: Spacing.xl, alignItems: 'stretch' },
+  heroCard: { flex: 1, minWidth: 0, gap: Spacing.lg },
+  heroCopy: { gap: Spacing.sm },
+  heroVisual: { alignItems: 'center', justifyContent: 'center', paddingVertical: Spacing.sm },
+  formCard: { flex: 1.12, minWidth: 0, gap: Spacing.xl },
   sectionHeading: { gap: Spacing.sm },
   field: { gap: Spacing.sm },
   ltrInput: { textAlign: 'left', writingDirection: 'ltr' },
   messagePanel: { borderRadius: Radius.md, padding: Spacing.md },
   messagePanelBorder: { borderWidth: 1 },
   actionGroup: { gap: Spacing.md, paddingTop: Spacing.sm },
+  trustPanel: { alignItems: 'flex-start', borderRadius: Radius.lg, gap: Spacing.md, padding: Spacing.md },
+  trustCopy: { flex: 1, minWidth: 0, gap: Spacing.xs },
+  iconBadge: {
+    alignItems: 'center',
+    borderRadius: Radius.pill,
+    height: 40,
+    justifyContent: 'center',
+    width: 40,
+  },
 });
