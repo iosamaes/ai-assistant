@@ -33,6 +33,17 @@ function categoryIcon(category: InvisibleWinCategory): AppIconName {
   return 'hypothesis';
 }
 
+function formatReflectionDate(value: string, locale: 'ar' | 'en'): string {
+  const timestamp = Date.parse(value);
+  if (!Number.isFinite(timestamp)) return '—';
+  const date = new Date(timestamp);
+  try {
+    return date.toLocaleDateString(locale === 'ar' ? 'ar-QA-u-nu-latn' : 'en-QA-u-nu-latn');
+  } catch {
+    return date.toISOString().slice(0, 10);
+  }
+}
+
 const copy = {
   ar: {
     eyebrow: 'تأملاتك',
@@ -300,9 +311,7 @@ export default function InvisibleWinsScreen() {
                 </View>
               </View>
               <MizanText>{item.note}</MizanText>
-              <MizanText variant="caption" muted>
-                {new Date(item.occurred_at).toLocaleDateString(locale === 'ar' ? 'ar-QA-u-nu-latn' : 'en-QA-u-nu-latn')}
-              </MizanText>
+              <MizanText variant="caption" muted>{formatReflectionDate(item.occurred_at, locale)}</MizanText>
             </Card>
           ))}
         </View>
