@@ -1,5 +1,5 @@
 import { router } from 'expo-router';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { Platform, Share, StyleSheet, View } from 'react-native';
 
 import { Card, MizanText, PrimaryButton, SecondaryButton } from '@/components/mizan-ui';
@@ -74,17 +74,24 @@ async function deliverJsonExport(payload: Record<string, unknown>) {
 }
 
 export default function PrivacyScreen() {
-  const { locale, refreshSession } = useAppState();
+  const { locale, refreshSession, userId } = useAppState();
   const copy = privacyCopy[locale];
   const [busy, setBusy] = useState<BusyAction>(null);
   const [confirmingDelete, setConfirmingDelete] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
+  const activeUserRef = useRef(userId);
+  activeUserRef.current = userId;
 
   const handleExport = async () => {
-    if (busy) return;
+    if (busy || !userId) return;
+    const targetUserId = userId;
     setBusy('export');
     setMessage(null);
-    const result = await exportMyData();
+    const result = await exportMyData(targetUserId);
+    if (activeUserRef.current !== targetUserId) {
+      setBusy(null);
+      return;
+    }
     if (!result.ok) {
       setMessage(copy.exportError);
       setBusy(null);
@@ -93,18 +100,23 @@ export default function PrivacyScreen() {
 
     try {
       await deliverJsonExport(result.value);
-      setMessage(copy.exportSuccess);
+      if (activeUserRef.current === targetUserId) setMessage(copy.exportSuccess);
     } catch {
-      setMessage(copy.exportError);
+      if (activeUserRef.current === targetUserId) setMessage(copy.exportError);
     }
     setBusy(null);
   };
 
   const handleDelete = async () => {
-    if (busy) return;
+    if (busy || !userId) return;
+    const targetUserId = userId;
     setBusy('delete');
     setMessage(null);
-    const result = await deleteMyAccount();
+    const result = await deleteMyAccount(targetUserId);
+    if (activeUserRef.current !== targetUserId) {
+      setBusy(null);
+      return;
+    }
     if (!result.ok) {
       setMessage(copy.deleteError);
       setBusy(null);
@@ -130,7 +142,7 @@ export default function PrivacyScreen() {
         <PrimaryButton
           label={busy === 'export' ? copy.exportWorking : copy.exportAction}
           onPress={() => void handleExport()}
-          disabled={busy !== null}
+          disabled={busy !== null || !userId}
         />
       </Card>
 
@@ -144,7 +156,7 @@ export default function PrivacyScreen() {
               setMessage(null);
               setConfirmingDelete(true);
             }}
-            disabled={busy !== null}
+            disabled={busy !== null || !userId}
           />
         ) : (
           <View style={styles.confirmation} accessibilityLiveRegion="polite">
@@ -153,7 +165,7 @@ export default function PrivacyScreen() {
             <PrimaryButton
               label={busy === 'delete' ? copy.deleteWorking : copy.deleteConfirm}
               onPress={() => void handleDelete()}
-              disabled={busy !== null}
+              disabled={busy !== null || !userId}
             />
             <SecondaryButton
               label={copy.deleteCancel}
