@@ -1,10 +1,19 @@
 -- CP6 Life Seasons RLS and atomic transition specification.
+-- CP10 extends the transition with expected-user fencing and authenticated-only execution.
 -- Intended for a disposable/local Supabase database after migrations are applied.
 -- The script runs inside a transaction and rolls back all fixture data.
 
 begin;
 create extension if not exists pgtap with schema extensions;
 select extensions.plan(1);
+
+do $$
+begin
+  if has_function_privilege('anon', 'public.set_life_season(text,jsonb,uuid)', 'EXECUTE') then
+    raise exception 'Privilege failure: anon can execute set_life_season';
+  end if;
+end;
+$$;
 
 insert into auth.users (id, instance_id, aud, role, email, encrypted_password, email_confirmed_at, created_at, updated_at)
 values
@@ -53,10 +62,25 @@ begin
   exception
     when insufficient_privilege then null;
   end;
+
+  begin
+    perform public.set_life_season(
+      'travel',
+      '{}'::jsonb,
+      '44444444-4444-4444-8444-444444444444'::uuid
+    );
+    raise exception 'Expected-user guard failure: user A accepted a save intended for user B';
+  exception
+    when insufficient_privilege then null;
+  end;
 end;
 $$;
 
-select public.set_life_season('build', '{"recovery":4}'::jsonb);
+select public.set_life_season(
+  'build',
+  '{"recovery":4}'::jsonb,
+  '33333333-3333-4333-8333-333333333333'::uuid
+);
 
 do $$
 begin
@@ -83,6 +107,6 @@ end;
 $$;
 
 reset role;
-select extensions.pass('Life-season history checks completed');
+select extensions.pass('Life-season history and account-fencing checks completed');
 select * from extensions.finish();
 rollback;
