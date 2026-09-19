@@ -34,7 +34,7 @@ Presentation authority remains the compact app-local theme and shared primitives
 
 The Premium Production Visual Pass has been statically applied across the primary shipped surfaces including Today, Life Map, WHY, Check-in, Insights, Personal Learning, What If, Recovery, Experiments, Integrations, Settings, Privacy, Auth, Onboarding, Capacity, Cost of Yes, Human ROI, Value Alignment, Life Seasons, Personalization, Invisible Wins, Update Password, and the root session-restoration state. Representative implementation commits are recorded in Git history and the presentation boundary is documented in `docs/CP9_PRESENTATION_ARCHITECTURE.md`.
 
-Navigation/state hardening currently includes:
+Navigation/state/localization hardening currently includes:
 - `de9ddb608498d4440874a831585ae19bb4a70b52` — offline authenticated root entry remains inside the product instead of bouncing to Auth.
 - `e3a817f552a8036974efef449d36a98718acef84` + `9c4f254c2117645d1f7ef6295e9063c185979111` — entry-route regression specifications for offline authenticated routing and session-loading behavior; added but not worker-run.
 - `b6d0878574de785c63cf0cfac5f1aae20ace813f` — shared Web `pointerEvents` deprecation path removed from the ambient `Screen` layers.
@@ -43,6 +43,7 @@ Navigation/state hardening currently includes:
 - `f4e38742c587150bfe87489bf0fd3b831dcad69b` — Check-in local answers and submit state are now scoped to the active account; switching users clears prior-user ratings immediately and stale submit/session-refresh completions cannot redirect or repaint the new account.
 - `a318a7152902159998d9f5ae87ab811502074da6` — focused Check-in account-switch regression specification covers stale User A submit completion after User B becomes active; added but not worker-run under the active policy.
 - `150294d7fc81c0a503893c44f32ca2be46dc9882` — Today dashboard and priorities wrapped grids now mirror their row direction from `isRtl`, so Arabic cards begin from the right instead of retaining LTR card ordering. This is a presentation-only semantic RTL correction; runtime visual confirmation remains part of owner validation rather than a separate worker-run unit test.
+- `a78e65f2059f815dc21aa129b96ccb5bbe307357` — corrected misleading Arabic Capacity copy that described Life Debt as an “unethical” planning signal; Arabic now matches the product rule and English source by describing it as neutral and explicitly not a moral judgment or performance measure.
 
 ### CP9 remaining
 - Finish static inspection only for concrete residual scaffold-level or navigation-state defects; avoid reworking already-premium screens without evidence.
@@ -95,6 +96,7 @@ Post-baseline:
 - Root recovery-route regression specification `apps/app/__tests__/root-layout-auth-routing-test.tsx` was added but not run under the active worker policy.
 - Check-in account-switch regression specification `apps/app/__tests__/check-in-session-fencing-test.tsx` was added but not run under the active worker policy.
 - Today semantic RTL grid correction is static source evidence only; representative Arabic runtime widths remain an owner-validation gate.
+- Capacity Arabic neutrality-copy correction is static localization evidence only; no runtime validation was run.
 
 ## Known blockers / risks
 - CP1: Windows session must be unlocked normally for true narrow-phone Arabic/English interaction evidence; see `automation/HUMAN_REQUIRED.md`.
@@ -128,6 +130,7 @@ Post-baseline:
 - `apps/app/src/app/privacy.tsx`
 - `apps/app/src/app/auth.tsx`
 - `apps/app/src/app/integrations.tsx`
+- `apps/app/src/app/capacity.tsx`
 - `apps/app/src/state/app-state.tsx`
 - `apps/app/src/components/app-error-boundary.tsx`
 - `apps/app/__tests__/root-layout-auth-routing-test.tsx`
