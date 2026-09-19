@@ -6,7 +6,7 @@ import { assessExplicitHumanROI } from '@/application/human-roi';
 import { Card, ChoiceChip, MizanText, MizanTextInput, SecondaryButton } from '@/components/mizan-ui';
 import { Screen } from '@/components/screen';
 import { Spacing } from '@/constants/theme';
-import { parseLocalizedDecimalInput } from '@/i18n/number-input';
+import { formatLocalizedNumber, parseLocalizedDecimalInput } from '@/i18n/number-input';
 import { useAppState } from '@/state/app-state';
 
 const RATINGS = [1, 2, 3, 4, 5] as const;
@@ -22,11 +22,11 @@ const copy = {
     protectedTitle: 'محمي من المقارنة',
     protectedBody: 'اخترت إبقاء هذا النشاط أو المعنى خارج المقارنة الكمية. ميزان يحترم ذلك ولا يحسب له عائدًا رقميًا.',
     benefit: 'الفائدة التي شعرت بها',
-    benefitHint: '1 = قليلة جدًا · 5 = عالية جدًا',
+    benefitHint: '١ = قليلة جدًا · ٥ = عالية جدًا',
     effort: 'الجهد الذي شعرت به',
-    effortHint: '1 = خفيف جدًا · 5 = مرتفع جدًا',
+    effortHint: '١ = خفيف جدًا · ٥ = مرتفع جدًا',
     time: 'الوقت الأسبوعي الفعلي أو المتوقع',
-    timePlaceholder: 'مثال: 3',
+    timePlaceholder: 'مثال: ٣',
     hoursPerWeek: 'ساعة / أسبوع',
     assessment: 'القراءة الحالية',
     insufficient: 'الأدلة غير مكتملة',
@@ -101,10 +101,9 @@ function parseHours(value: string): number | null {
   return parsed !== null && parsed >= 0 && parsed <= 168 ? parsed : null;
 }
 
-function formatHours(minutes: number | null): string {
+function formatHours(minutes: number | null, locale: 'ar' | 'en'): string {
   if (minutes === null) return '—';
-  const hours = Math.round((minutes / 60) * 10) / 10;
-  return Number.isInteger(hours) ? String(hours) : hours.toFixed(1);
+  return formatLocalizedNumber(minutes / 60, locale, 1);
 }
 
 export default function HumanROIScreen() {
@@ -115,6 +114,7 @@ export default function HumanROIScreen() {
   const [effortRating, setEffortRating] = useState<number | null>(null);
   const [timeText, setTimeText] = useState('');
   const observedAt = useMemo(() => new Date().toISOString(), []);
+  const ratingDenominator = formatLocalizedNumber(5, locale, 0);
 
   const assessment = useMemo(
     () =>
@@ -176,15 +176,18 @@ export default function HumanROIScreen() {
             <MizanText variant="label">{labels.benefit}</MizanText>
             <MizanText variant="caption" muted>{labels.benefitHint}</MizanText>
             <View style={[styles.choiceRow, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
-              {RATINGS.map((rating) => (
-                <ChoiceChip
-                  key={`benefit-${rating}`}
-                  accessibilityLabel={`${labels.benefit}: ${rating} / 5`}
-                  label={String(rating)}
-                  selected={benefitRating === rating}
-                  onPress={() => setBenefitRating(rating)}
-                />
-              ))}
+              {RATINGS.map((rating) => {
+                const localizedRating = formatLocalizedNumber(rating, locale, 0);
+                return (
+                  <ChoiceChip
+                    key={`benefit-${rating}`}
+                    accessibilityLabel={`${labels.benefit}: ${localizedRating} / ${ratingDenominator}`}
+                    label={localizedRating}
+                    selected={benefitRating === rating}
+                    onPress={() => setBenefitRating(rating)}
+                  />
+                );
+              })}
             </View>
           </View>
 
@@ -192,15 +195,18 @@ export default function HumanROIScreen() {
             <MizanText variant="label">{labels.effort}</MizanText>
             <MizanText variant="caption" muted>{labels.effortHint}</MizanText>
             <View style={[styles.choiceRow, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
-              {RATINGS.map((rating) => (
-                <ChoiceChip
-                  key={`effort-${rating}`}
-                  accessibilityLabel={`${labels.effort}: ${rating} / 5`}
-                  label={String(rating)}
-                  selected={effortRating === rating}
-                  onPress={() => setEffortRating(rating)}
-                />
-              ))}
+              {RATINGS.map((rating) => {
+                const localizedRating = formatLocalizedNumber(rating, locale, 0);
+                return (
+                  <ChoiceChip
+                    key={`effort-${rating}`}
+                    accessibilityLabel={`${labels.effort}: ${localizedRating} / ${ratingDenominator}`}
+                    label={localizedRating}
+                    selected={effortRating === rating}
+                    onPress={() => setEffortRating(rating)}
+                  />
+                );
+              })}
             </View>
           </View>
 
@@ -230,22 +236,22 @@ export default function HumanROIScreen() {
           <View style={[styles.metrics, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
             <View style={styles.metric}>
               <MizanText variant="caption" muted>{labels.benefitMetric}</MizanText>
-              <MizanText variant="title">{assessment.benefitRating ?? '—'} / 5</MizanText>
+              <MizanText variant="title">{assessment.benefitRating === null ? '—' : formatLocalizedNumber(assessment.benefitRating, locale, 0)} / {ratingDenominator}</MizanText>
             </View>
             <View style={styles.metric}>
               <MizanText variant="caption" muted>{labels.effortMetric}</MizanText>
-              <MizanText variant="title">{assessment.effortRating ?? '—'} / 5</MizanText>
+              <MizanText variant="title">{assessment.effortRating === null ? '—' : formatLocalizedNumber(assessment.effortRating, locale, 0)} / {ratingDenominator}</MizanText>
             </View>
             <View style={styles.metric}>
               <MizanText variant="caption" muted>{labels.timeMetric}</MizanText>
-              <MizanText variant="title">{formatHours(assessment.timeMinutesPerWeek)}</MizanText>
+              <MizanText variant="title">{formatHours(assessment.timeMinutesPerWeek, locale)}</MizanText>
               <MizanText variant="caption" muted>{labels.hoursPerWeek}</MizanText>
             </View>
           </View>
         ) : null}
 
         <MizanText variant="caption" muted>
-          {labels.confidence}: {labels.confidenceLevels[assessment.confidence.level]} · {labels.evidence}: {assessment.confidence.evidenceCount}
+          {labels.confidence}: {labels.confidenceLevels[assessment.confidence.level]} · {labels.evidence}: {formatLocalizedNumber(assessment.confidence.evidenceCount, locale, 0)}
         </MizanText>
       </Card>
 
