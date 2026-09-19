@@ -4,7 +4,7 @@
   "stale_after_seconds": 900,
   "owner_worker": "auto3",
   "owner_run_id": "f92fd12d-cc2d-42a8-b8d3-654bc5e33785",
-  "heartbeat_at": "2026-09-19T04:31:00.702233+00:00",
+  "heartbeat_at": "2026-09-19T04:32:00.093499+00:00",
   "lease_task_digest": "db05d2d78fc71edb1b71880d9e74535318fa6f4a",
   "candidate_worker": null,
   "candidate_task_digest": null,
