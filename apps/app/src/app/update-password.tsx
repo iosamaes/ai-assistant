@@ -62,9 +62,11 @@ export default function UpdatePasswordScreen() {
         <MizanTextInput
           accessibilityLabel={t('newPassword')}
           autoCapitalize="none"
+          autoComplete="new-password"
           autoCorrect={false}
           editable={!busy}
           secureTextEntry
+          textContentType="newPassword"
           value={password}
           onChangeText={setPassword}
         />
@@ -73,9 +75,11 @@ export default function UpdatePasswordScreen() {
         <MizanTextInput
           accessibilityLabel={t('confirmPassword')}
           autoCapitalize="none"
+          autoComplete="new-password"
           autoCorrect={false}
           editable={!busy}
           secureTextEntry
+          textContentType="newPassword"
           value={confirmPassword}
           onChangeText={setConfirmPassword}
         />
