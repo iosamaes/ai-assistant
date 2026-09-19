@@ -47,7 +47,9 @@ export default function AuthScreen() {
 
   const canSubmit = useMemo(() => {
     if (!email.trim() || busy) return false;
-    return mode === 'reset' || password.length >= 6;
+    if (mode === 'reset') return true;
+    if (mode === 'sign-up') return password.length >= 8;
+    return password.length >= 6;
   }, [busy, email, mode, password.length]);
 
   const authErrorText = (kind: AuthFailureKind) => {
@@ -169,6 +171,12 @@ export default function AuthScreen() {
                 value={password}
                 onChangeText={setPassword}
               />
+            </View>
+          ) : null}
+
+          {mode === 'sign-up' && password.length > 0 && password.length < 8 ? (
+            <View style={[styles.messagePanel, { backgroundColor: palette.surfaceMuted }]}>
+              <MizanText accessibilityLiveRegion="polite" variant="caption" muted>{t('passwordMinimum')}</MizanText>
             </View>
           ) : null}
 
