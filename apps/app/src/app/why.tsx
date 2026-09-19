@@ -12,6 +12,7 @@ import {
 import { Card, MizanText, PrimaryButton, SecondaryButton } from '@/components/mizan-ui';
 import { Screen } from '@/components/screen';
 import { Controls, Palette, Spacing } from '@/constants/theme';
+import { formatLocalizedNumber } from '@/i18n/number-input';
 import { useAppState } from '@/state/app-state';
 
 type LoadStatus = 'loading' | 'ready' | 'error';
@@ -120,6 +121,7 @@ function FactorCard({ factor, locale, isRtl }: { factor: WhyCandidateFactor; loc
   const palette = Palette[scheme === 'dark' ? 'dark' : 'light'];
   const local = copy[locale];
   const key: WhyFactorKey = factor.key;
+  const hundred = formatLocalizedNumber(100, locale, 0);
 
   return (
     <Card>
@@ -127,7 +129,7 @@ function FactorCard({ factor, locale, isRtl }: { factor: WhyCandidateFactor; loc
       <MizanText muted>{local.descriptions[key]}</MizanText>
       <View style={[styles.detailRow, { flexDirection: isRtl ? 'row-reverse' : 'row', borderTopColor: palette.border }]}>
         <MizanText variant="caption" muted style={styles.detailText}>{local.value}</MizanText>
-        <MizanText variant="label" style={styles.detailText}>{Math.round(factor.value)} / 100</MizanText>
+        <MizanText variant="label" style={styles.detailText}>{formatLocalizedNumber(Math.round(factor.value), locale, 0)} / {hundred}</MizanText>
       </View>
       <View style={[styles.detailRow, { flexDirection: isRtl ? 'row-reverse' : 'row', borderTopColor: palette.border }]}>
         <MizanText variant="caption" muted style={styles.detailText}>{local.confidence}</MizanText>
@@ -135,7 +137,7 @@ function FactorCard({ factor, locale, isRtl }: { factor: WhyCandidateFactor; loc
       </View>
       <View style={[styles.detailRow, { flexDirection: isRtl ? 'row-reverse' : 'row', borderTopColor: palette.border }]}>
         <MizanText variant="caption" muted style={styles.detailText}>{local.evidence}</MizanText>
-        <MizanText variant="label" style={styles.detailText}>{factor.evidence.length}</MizanText>
+        <MizanText variant="label" style={styles.detailText}>{formatLocalizedNumber(factor.evidence.length, locale, 0)}</MizanText>
       </View>
       <View style={[styles.detailRow, { flexDirection: isRtl ? 'row-reverse' : 'row', borderTopColor: palette.border }]}>
         <MizanText variant="caption" muted style={styles.detailText}>{local.window}</MizanText>
