@@ -9,7 +9,7 @@ import { AppErrorBoundary } from '@/components/app-error-boundary';
 import { Palette } from '@/constants/theme';
 import { AppStateProvider, useAppState } from '@/state/app-state';
 
-function AppNavigator() {
+export function AppNavigator() {
   const scheme = useColorScheme();
   const palette = Palette[scheme === 'dark' ? 'dark' : 'light'];
   const segments = useSegments();
@@ -41,10 +41,11 @@ function AppNavigator() {
 
     const firstSegment = segments[0];
     const isAuthRoute = firstSegment === 'auth';
+    const isPasswordRecoveryRoute = firstSegment === 'update-password';
     const hasUsableSession = sessionStatus === 'signed-in' || (sessionStatus === 'offline' && Boolean(userId));
 
     if (!hasUsableSession) {
-      if (!isAuthRoute) router.replace('/auth');
+      if (!isAuthRoute && !isPasswordRecoveryRoute) router.replace('/auth');
       return;
     }
 
