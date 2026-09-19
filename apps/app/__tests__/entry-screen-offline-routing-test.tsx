@@ -19,9 +19,12 @@ function appState(
   sessionStatus: 'signed-in' | 'signed-out' | 'offline' | 'loading',
   userId: string | null,
   onboardingCompleted = true,
+  locale: 'ar' | 'en' = 'en',
+  isRtl = locale === 'ar',
 ) {
   return {
-    locale: 'en',
+    isRtl,
+    locale,
     onboardingCompleted,
     sessionStatus,
     userId,
@@ -42,6 +45,17 @@ describe('EntryScreen offline routing', () => {
     expect(mockRedirect).not.toHaveBeenCalled();
     expect(view.getByText('Restoring context before asking you to decide')).toBeTruthy();
     expect(view.getByText('loading')).toBeTruthy();
+  });
+
+  test('aligns the loading status to the Arabic reading edge', async () => {
+    useAppStateMock.mockReturnValue(appState('loading', null, true, 'ar'));
+
+    const view = await render(<EntryScreen />);
+    const statusText = view.getByText('loading');
+
+    expect(statusText.parent?.props.style).toEqual(
+      expect.arrayContaining([expect.objectContaining({ alignSelf: 'flex-end' })]),
+    );
   });
 
   test('keeps an offline authenticated user in the product', async () => {
