@@ -164,7 +164,11 @@ export default function CapacityScreen() {
               </View>
               <View style={styles.metric}>
                 <MizanText variant="caption" muted>{labels.fragility}</MizanText>
-                <MizanText variant="title">{Math.round(snapshot.buffer.fragility ?? 0)} / 100</MizanText>
+                <MizanText variant="title">
+                  {snapshot.buffer.fragility === null || snapshot.buffer.fragility === undefined
+                    ? labels.unknown
+                    : `${Math.round(snapshot.buffer.fragility)} / 100`}
+                </MizanText>
               </View>
               <View style={styles.metric}>
                 <MizanText variant="caption" muted>{labels.band}</MizanText>
