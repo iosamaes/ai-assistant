@@ -1,5 +1,6 @@
 import { PropsWithChildren } from 'react';
 import {
+  Platform,
   Pressable,
   StyleProp,
   StyleSheet,
@@ -49,6 +50,19 @@ interface ChoiceChipProps {
   disabled?: boolean;
 }
 
+function shadowStyle(opacity: number, radius: number, offsetY: number, elevation: number): ViewStyle {
+  if (Platform.OS === 'web') {
+    return { boxShadow: `0px ${offsetY}px ${radius}px rgba(0, 0, 0, ${opacity})` };
+  }
+  return {
+    shadowColor: '#000000',
+    shadowOpacity: opacity,
+    shadowRadius: radius,
+    shadowOffset: { width: 0, height: offsetY },
+    elevation,
+  };
+}
+
 export function MizanText({ children, variant = 'body', muted = false, style, ...props }: MizanTextProps) {
   const scheme = useColorScheme();
   const palette = Palette[scheme === 'dark' ? 'dark' : 'light'];
@@ -76,6 +90,7 @@ export function Card({ children, style }: PropsWithChildren<{ style?: StyleProp<
   const scheme = useColorScheme();
   const palette = Palette[scheme === 'dark' ? 'dark' : 'light'];
   const isDark = scheme === 'dark';
+  const shadowOpacity = isDark ? SurfaceTreatment.cardShadowOpacity * 0.7 : SurfaceTreatment.cardShadowOpacity;
   return (
     <View
       style={[
@@ -83,12 +98,13 @@ export function Card({ children, style }: PropsWithChildren<{ style?: StyleProp<
         {
           backgroundColor: palette.surface,
           borderColor: palette.border,
-          shadowColor: '#000000',
-          shadowOpacity: isDark ? SurfaceTreatment.cardShadowOpacity * 0.7 : SurfaceTreatment.cardShadowOpacity,
-          shadowRadius: SurfaceTreatment.cardShadowRadius,
-          shadowOffset: { width: 0, height: SurfaceTreatment.cardShadowOffsetY },
-          elevation: SurfaceTreatment.cardElevation,
         },
+        shadowStyle(
+          shadowOpacity,
+          SurfaceTreatment.cardShadowRadius,
+          SurfaceTreatment.cardShadowOffsetY,
+          SurfaceTreatment.cardElevation,
+        ),
         style,
       ]}>
       {children}
@@ -142,6 +158,7 @@ export function PrimaryButton({ label, onPress, disabled = false }: ButtonProps)
   const palette = Palette[scheme === 'dark' ? 'dark' : 'light'];
   const { isRtl } = useAppState();
   const isDark = scheme === 'dark';
+  const shadowOpacity = isDark ? SurfaceTreatment.controlShadowOpacity * 0.65 : SurfaceTreatment.controlShadowOpacity;
   return (
     <Pressable
       accessibilityLabel={label}
@@ -153,13 +170,14 @@ export function PrimaryButton({ label, onPress, disabled = false }: ButtonProps)
         styles.button,
         {
           backgroundColor: palette.accent,
-          shadowColor: '#000000',
-          shadowOpacity: isDark ? SurfaceTreatment.controlShadowOpacity * 0.65 : SurfaceTreatment.controlShadowOpacity,
-          shadowRadius: SurfaceTreatment.controlShadowRadius,
-          shadowOffset: { width: 0, height: SurfaceTreatment.controlShadowOffsetY },
-          elevation: SurfaceTreatment.controlElevation,
           opacity: disabled ? Interaction.disabled : pressed ? Interaction.pressed : 1,
         },
+        shadowStyle(
+          shadowOpacity,
+          SurfaceTreatment.controlShadowRadius,
+          SurfaceTreatment.controlShadowOffsetY,
+          SurfaceTreatment.controlElevation,
+        ),
       ]}>
       <Text
         allowFontScaling
