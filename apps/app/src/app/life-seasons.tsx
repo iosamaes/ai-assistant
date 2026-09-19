@@ -1,5 +1,5 @@
 import { router } from 'expo-router';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { StyleSheet, useColorScheme, View } from 'react-native';
 
 import {
@@ -127,8 +127,13 @@ export default function LifeSeasonsScreen() {
   const [selectedSeason, setSelectedSeason] = useState<LifeSeason>(lifeSeason ?? 'balanced');
   const [targets, setTargets] = useState<TargetDraft>({});
   const [state, setState] = useState<LifeSeasonsState | null>(null);
+  const [stateUserId, setStateUserId] = useState<string | null>(null);
   const [loadStatus, setLoadStatus] = useState<LoadStatus>('loading');
   const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle');
+  const activeUserRef = useRef(userId);
+  const loadRequestRef = useRef(0);
+  const saveRequestRef = useRef(0);
+  activeUserRef.current = userId;
 
   useEffect(() => {
     let active = true;
@@ -141,37 +146,50 @@ export default function LifeSeasonsScreen() {
   }, [lifeSeason]);
 
   const reload = useCallback(async () => {
-    if (!userId) {
-      setState(null);
-      setTargets({});
-      setLoadStatus('ready');
+    const requestedUserId = userId;
+    const requestId = ++loadRequestRef.current;
+    const requestIsCurrent = () =>
+      loadRequestRef.current === requestId && activeUserRef.current === requestedUserId;
+
+    setState(null);
+    setStateUserId(null);
+    setTargets({});
+
+    if (!requestedUserId) {
+      if (requestIsCurrent()) setLoadStatus('ready');
       return;
     }
+
     setLoadStatus('loading');
-    const result = await loadLifeSeasonsState(userId);
+    const result = await loadLifeSeasonsState(requestedUserId);
+    if (!requestIsCurrent()) return;
+
     if (!result.ok) {
-      if (result.error.kind === 'session-expired') await refreshSession();
+      if (result.error.kind === 'session-expired') {
+        await refreshSession();
+        if (!requestIsCurrent()) return;
+      }
       setLoadStatus('error');
       return;
     }
+
     setState(result.value);
+    setStateUserId(requestedUserId);
     setTargets(result.value.targets as TargetDraft);
     setLoadStatus('ready');
   }, [refreshSession, userId]);
 
   useEffect(() => {
-    let active = true;
-    void Promise.resolve().then(() => {
-      if (active) return reload();
-      return undefined;
-    });
+    void reload();
     return () => {
-      active = false;
+      loadRequestRef.current += 1;
     };
   }, [reload]);
 
   const enabledSet = useMemo(() => new Set(enabledDomains), [enabledDomains]);
-  const history = state?.history ?? [];
+  const visibleState = stateUserId === userId ? state : null;
+  const visibleTargets = stateUserId === userId ? targets : {};
+  const history = visibleState?.history ?? [];
   const rangeArrow = isRtl ? '←' : '→';
   const controlsDisabled = loadStatus === 'loading' || saveStatus === 'saving';
 
@@ -187,7 +205,14 @@ export default function LifeSeasonsScreen() {
   };
 
   const handleSave = async () => {
-    if (!userId || saveStatus === 'saving') return;
+    const requestedUserId = userId;
+    if (!requestedUserId || saveStatus === 'saving') return;
+
+    const requestId = ++saveRequestRef.current;
+    const requestIsCurrent = () =>
+      saveRequestRef.current === requestId && activeUserRef.current === requestedUserId;
+    const seasonToSave = selectedSeason;
+
     setSaveStatus('saving');
     const filteredTargets: TargetDraft = {};
     for (const [domainId, rating] of Object.entries(targets)) {
@@ -196,14 +221,19 @@ export default function LifeSeasonsScreen() {
       }
     }
 
-    const result = await saveLifeSeason(selectedSeason, filteredTargets);
+    const result = await saveLifeSeason(seasonToSave, filteredTargets);
+    if (!requestIsCurrent()) return;
+
     if (!result.ok) {
-      if (result.error.kind === 'session-expired') await refreshSession();
+      if (result.error.kind === 'session-expired') {
+        await refreshSession();
+        if (!requestIsCurrent()) return;
+      }
       setSaveStatus('error');
       return;
     }
 
-    setLifeSeason(selectedSeason);
+    setLifeSeason(seasonToSave);
     setSaveStatus('saved');
     await reload();
   };
@@ -253,7 +283,7 @@ export default function LifeSeasonsScreen() {
               <View style={[styles.wrap, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
                 <ChoiceChip
                   label={labels.unset}
-                  selected={targets[domainId] === undefined}
+                  selected={visibleTargets[domainId] === undefined}
                   disabled={controlsDisabled}
                   onPress={() => setTarget(domainId, null)}
                 />
@@ -261,7 +291,7 @@ export default function LifeSeasonsScreen() {
                   <ChoiceChip
                     key={`${domainId}-${rating}`}
                     label={formatLocalizedNumber(rating, locale, 0)}
-                    selected={targets[domainId] === rating}
+                    selected={visibleTargets[domainId] === rating}
                     disabled={controlsDisabled}
                     onPress={() => setTarget(domainId, rating)}
                   />
@@ -278,7 +308,7 @@ export default function LifeSeasonsScreen() {
         />
 
         {saveStatus === 'saved' || saveStatus === 'error' || loadStatus === 'error' ? (
-          <View style={[styles.statusPanel, { backgroundColor: palette.surfaceMuted }]}>
+          <View style={[styles.statusPanel, { backgroundColor: palette.surfaceMuted }]}> 
             {saveStatus === 'saved' ? (
               <MizanText accessibilityLiveRegion="polite" muted>{labels.saved}</MizanText>
             ) : null}
@@ -323,7 +353,7 @@ export default function LifeSeasonsScreen() {
                 <MizanText muted>
                   {formatDate(entry.started_at, locale)}{entry.ended_at ? ` ${rangeArrow} ${formatDate(entry.ended_at, locale)}` : ''}
                 </MizanText>
-                <View style={[styles.recordedTargets, { borderTopColor: palette.border }]}>
+                <View style={[styles.recordedTargets, { borderTopColor: palette.border }]}> 
                   <MizanText variant="caption" muted>{labels.targets}</MizanText>
                   <MizanText>{recordedTargets || labels.none}</MizanText>
                 </View>
