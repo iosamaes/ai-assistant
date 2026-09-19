@@ -38,6 +38,7 @@ Presentation authority remains the compact app-local theme and shared primitives
 - `ff8cfb14ef84c7ac96b5d4cdbe8e2e1a87089806` — shared responsive canvas upgraded with restrained semantic ambient layers and production spacing rhythm.
 - `60178df8ed576ef0b7c4e901d9c76ec86c284f66` — Today premium composition: stronger check-in/One Move hierarchy, responsive state dashboard, semantic metric pills, quieter secondary surfaces, safe wrapping header/actions.
 - `fa9bee8ce35694af797e7650ea9e001ed8ad7632` — Life Map premium composition: accent hero, responsive domain-card grid, evidence/score/trend pills, Western-digit date formatting.
+- `c98cc638779b1a80ad84c0aac0971277363f387b` — Life Map semantic RTL hardening: the wrapped domain-card grid now mirrors from the app locale instead of retaining left-to-right card flow while Arabic text inside each card was already RTL.
 - `b7a54d31b8ff3652b6f59c1ec214da1790f4f77c` — WHY premium composition: accent hero, responsive factor grid, confidence/evidence/window tiles, safer state surfaces, Western-digit date formatting.
 - `aa988563ccc67c24db26b270e70f1a15c3dc69dd` — Check-in premium composition: accent introduction/progress surface, responsive metric grid, selected-state summaries, structured delivery/error states, grouped actions while preserving existing submission/offline behavior.
 - `2f114afd020beef932a91dd8e437dfd092d7bfbe` — Insights premium composition: evidence-window/pattern summary, stronger descriptive hero hierarchy, accent-led relationship cards, direction callouts, responsive evidence tiles, and structured loading/error/empty surfaces without changing inference semantics.
@@ -71,7 +72,7 @@ Navigation/state hardening added in the latest static pass:
 ### CP9 remaining
 - Continue the Premium Production Visual Pass only on any remaining shipped route that static inspection still shows at scaffold-level composition; password recovery/update and the root session-restoration state now match the premium direction, so prioritize only concrete remaining secondary/state surfaces before touching already-premium screens again.
 - Refine navigation shell/state/data presentation only where current code demonstrates a concrete need; avoid page-local design systems or wrapper-only abstraction.
-- Continue static defect review for untranslated production literals, Western-digit regressions, semantic RTL, accessibility/live announcements, truncation/dynamic type, keyboard/focus, unknown technical identifiers, and duplicated global visual decisions.
+- Continue static defect review for untranslated production literals, Western-digit regressions, semantic RTL (including wrapped multi-column/grid flow, not only text alignment), accessibility/live announcements, truncation/dynamic type, keyboard/focus, unknown technical identifiers, and duplicated global visual decisions.
 - Owner/runtime evidence is still required across representative phone/tablet/Web widths, Arabic/English, and shipped light/dark modes.
 - TASK-required design-swap proof is not claimed and still requires representative runtime evidence on Today, Life Map, WHY, and an interaction-heavy flow without edits outside the presentation boundary.
 
@@ -88,6 +89,7 @@ Implemented security/privacy work includes:
 - Confirmed server deletion triggers local purge attempts for pending offline mutations and recent Today snapshot; cleanup failure is reported separately from server deletion success.
 - Development error-boundary logging now serializes no `Error` field at all: arbitrary error object/message/name data is excluded, leaving only a fixed diagnostic label plus React component stack (`4f8437153debe805139b67e471b337e1c2dfae4f`). Focused privacy specification added in `apps/app/__tests__/app-error-boundary-privacy-test.tsx` (`5f78a05ca0fba452378d241e0912e7443f924cce`) and not worker-run.
 - Targeted logging/error review covers Supabase config/data access, integration persistence/sync, session storage, offline caches, privacy/Auth/delete paths, integration UI, root error boundary, global app-state handling, password-update/auth presentation, baseline-target persistence, experiment persistence, and What If trial-data persistence. Reviewed paths use raw messages only for internal coarse classification or have no sensitive logging sink.
+- The complete app-local integration contract boundary (`integrations/contracts.ts`, `adapters.ts`, and `provider-registry.ts`) was also statically reviewed: it contains typed normalized values plus deterministic/unavailable adapters/registration only, with no logging/error-reporting sink or raw provider payload logging path.
 - New-account creation now requires the same 8-character minimum already used by password recovery/update, with localized live guidance; sign-in keeps its 6-character client compatibility threshold for existing accounts. Focused regression specification added in `apps/app/__tests__/auth-screen-test.tsx` but not worker-run.
 - Health integration sync now rechecks authoritative consent/connection/scopes before provider read, before retry, after provider read, and before success bookkeeping; stale/revoked sync cannot silently reconnect.
 - Integration settings and global app-state hydration are fenced against previous-account async results.
@@ -101,7 +103,7 @@ Implemented security/privacy work includes:
 
 ## Exact next executable action
 1. Finish CP9 static inspection of remaining shipped routes/navigation state and apply the Premium Production Visual Pass only where a concrete scaffold-level composition still remains.
-2. Continue static CP9 defects: untranslated literals, Western-digit regressions, semantic RTL, accessibility/live announcements, truncation/dynamic type, keyboard/focus, and technical-id fallbacks.
+2. Continue static CP9 defects, with particular attention to wrapped responsive grids that still hard-code left-to-right flow under Arabic, plus untranslated literals, Western-digit regressions, accessibility/live announcements, truncation/dynamic type, keyboard/focus, and technical-id fallbacks.
 3. In parallel, continue CP10 repository-wide sensitive logging/error-reporting review for concrete uninspected sinks.
 4. Leave representative-width runtime checks, post-baseline tests/builds/typechecks/database validation suites, export/delete/local-purge proof, consent/account-switch runtime races, premium screenshot evidence, and final design-swap proof to owner validation under the active policy.
 
@@ -120,10 +122,11 @@ Post-baseline:
 - **No worker-run app tests, builds, typechecks, validation database scripts, cloud CI, or GitHub Actions are claimed for CP2–CP10 changes.**
 - Authorized product migrations `function_execute_hardening` and `account_data_export` were applied and resulting live function ACLs were read; this is implementation/state evidence, not a test-suite PASS.
 - `delete-account` deployment reports ACTIVE with JWT verification enabled; no destructive end-to-end deletion validation is claimed.
-- CP9 Premium Production Visual Pass commits through `2bf3e942e172c1d9233574468cdcdc4fbe7baae0` are static implementation evidence only until owner runtime review.
+- CP9 Premium Production Visual Pass plus the Life Map RTL grid correction through `c98cc638779b1a80ad84c0aac0971277363f387b` are static implementation evidence only until owner runtime review.
 - Offline entry routing, premium session-loading presentation, and shared Web `pointerEvents` warning fixes above are static source/specification evidence only; the focused regression specifications remain owner-run under the active worker policy.
 - Auth new-account password hardening is static implementation/specification evidence only: implementation `82fb811d77e01bfd61d07f3bdbbbcda92d3b6e9d`, specification `8b7b7258f054a7f5eedb1a320a9c8cea2f199bf1`; the specification was not worker-run.
 - Render-error log redaction is static implementation/specification evidence only: implementation `4f8437153debe805139b67e471b337e1c2dfae4f`, specification `5f78a05ca0fba452378d241e0912e7443f924cce`; the specification was not worker-run.
+- Integration contract/adapter/registry logging review is static source evidence only; no runtime provider traffic or telemetry test was executed.
 
 ## Known blockers / risks
 - CP1: Windows session must be unlocked normally for true narrow-phone Arabic/English interaction evidence; see `automation/HUMAN_REQUIRED.md`.
@@ -172,6 +175,9 @@ Post-baseline:
 - `apps/app/src/app/life-seasons.tsx`
 - `apps/app/src/app/personalization.tsx`
 - `apps/app/src/app/invisible-wins.tsx`
+- `apps/app/src/integrations/contracts.ts`
+- `apps/app/src/integrations/adapters.ts`
+- `apps/app/src/integrations/provider-registry.ts`
 - `apps/app/src/infrastructure/supabase/privacy.ts`
 - `apps/app/src/infrastructure/supabase/integrations.ts`
 - `apps/app/src/infrastructure/supabase/baseline-targets.ts`
