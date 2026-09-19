@@ -10,9 +10,11 @@ import {
   type DailyRecommendationOption,
   type OneMoveDecision,
 } from '@/application/daily-recommendation';
+import { AppIcon, type AppIconName } from '@/components/app-icon';
+import { BrandedIllustration } from '@/components/branded-illustration';
 import { Card, MizanText, PrimaryButton, SecondaryButton } from '@/components/mizan-ui';
 import { Screen } from '@/components/screen';
-import { Palette, Spacing } from '@/constants/theme';
+import { Controls, Palette, Radius, Spacing } from '@/constants/theme';
 import type { TranslationKey } from '@/i18n';
 import { formatLocalizedNumber } from '@/i18n/number-input';
 import { useAppState } from '@/state/app-state';
@@ -46,6 +48,13 @@ function reasonLabelKey(signal: DailyRecommendationOption['reasonSignal']): Tran
   return 'oneMoveWhyOverload';
 }
 
+function reasonIconName(signal: DailyRecommendationOption['reasonSignal']): AppIconName {
+  if (signal === 'recovery') return 'recovery';
+  if (signal === 'energy') return 'energy';
+  if (signal === 'connection') return 'connection';
+  return 'overload';
+}
+
 function confidenceLabelKey(level: ConfidenceLevel): TranslationKey {
   if (level === 'known') return 'confidenceKnown';
   if (level === 'likely') return 'confidenceLikely';
@@ -64,7 +73,7 @@ function decisionMessageKey(status: DecisionStatus): TranslationKey | null {
 }
 
 export default function OneMoveScreen() {
-  const { locale, refreshSession, t, userId } = useAppState();
+  const { isRtl, locale, refreshSession, t, userId } = useAppState();
   const scheme = useColorScheme();
   const palette = Palette[scheme === 'dark' ? 'dark' : 'light'];
   const activeUserRef = useRef(userId);
@@ -147,15 +156,28 @@ export default function OneMoveScreen() {
   return (
     <Screen>
       <Card style={[styles.hero, { backgroundColor: palette.accentSoft, borderColor: palette.accent }]}>
-        <MizanText variant="label" muted>{pageCopy.eyebrow}</MizanText>
-        <MizanText variant="display">{pageCopy.title}</MizanText>
-        <MizanText muted>{pageCopy.body}</MizanText>
+        <View style={[styles.heroLayout, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
+          <View style={styles.heroCopy}>
+            <MizanText variant="label" muted>{pageCopy.eyebrow}</MizanText>
+            <MizanText variant="display">{pageCopy.title}</MizanText>
+            <MizanText muted>{pageCopy.body}</MizanText>
+          </View>
+          <BrandedIllustration variant="focus" size={132} />
+        </View>
       </Card>
 
-      {loadStatus === 'loading' ? <MizanText accessibilityLiveRegion="polite" muted>{t('loading')}</MizanText> : null}
-      {loadStatus === 'error' ? <MizanText accessibilityLiveRegion="polite" muted>{t('currentStateError')}</MizanText> : null}
+      {loadStatus === 'loading' ? (
+        <Card style={[styles.stateCard, { backgroundColor: palette.surfaceMuted }]}>
+          <MizanText accessibilityLiveRegion="polite" muted>{t('loading')}</MizanText>
+        </Card>
+      ) : null}
+      {loadStatus === 'error' ? (
+        <Card style={[styles.stateCard, { backgroundColor: palette.surfaceMuted }]}>
+          <MizanText accessibilityLiveRegion="polite" muted>{t('currentStateError')}</MizanText>
+        </Card>
+      ) : null}
       {loadStatus === 'ready' && (!activeRecommendation || !activeLabelKey) ? (
-        <Card>
+        <Card style={[styles.stateCard, { backgroundColor: palette.surfaceMuted }]}>
           <MizanText variant="title">{t('oneMoveTitle')}</MizanText>
           <MizanText accessibilityLiveRegion="polite" muted>{t('oneMoveEmpty')}</MizanText>
         </Card>
@@ -163,15 +185,46 @@ export default function OneMoveScreen() {
 
       {activeRecommendation && activeLabelKey ? (
         <Card style={styles.focusCard}>
-          <MizanText variant="label" muted>{t('oneMoveTitle')}</MizanText>
-          <MizanText variant="title">{t(activeLabelKey)}</MizanText>
-          <MizanText muted>{t(reasonLabelKey(activeRecommendation.reasonSignal))}</MizanText>
-          <MizanText variant="caption" muted>
-            {t(confidenceLabelKey(activeRecommendation.confidence.level))} · {t('evidenceLabel')}: {formatLocalizedNumber(activeRecommendation.evidence.length, locale, 0)}
-          </MizanText>
+          <View style={[styles.focusHeader, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
+            <View style={[styles.iconWell, { backgroundColor: palette.accentSoft }]}>
+              <AppIcon name="oneMove" color={palette.accent} size={24} />
+            </View>
+            <View style={styles.focusCopy}>
+              <MizanText variant="label" muted>{t('oneMoveTitle')}</MizanText>
+              <MizanText variant="title">{t(activeLabelKey)}</MizanText>
+            </View>
+          </View>
+
+          <View style={[styles.reasonPanel, { backgroundColor: palette.surfaceMuted }]}>
+            <View style={[styles.reasonRow, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
+              <AppIcon name={reasonIconName(activeRecommendation.reasonSignal)} color={palette.accent} size={22} />
+              <MizanText muted style={styles.reasonText}>
+                {t(reasonLabelKey(activeRecommendation.reasonSignal))}
+              </MizanText>
+            </View>
+          </View>
+
+          <View style={[styles.detailGrid, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
+            <View style={[styles.detailTile, { backgroundColor: palette.surfaceMuted }]}>
+              <View style={[styles.detailHeading, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
+                <AppIcon name="confidence" color={palette.accent} size={18} />
+                <MizanText variant="caption" muted>{t('confidenceLabel')}</MizanText>
+              </View>
+              <MizanText variant="label">{t(confidenceLabelKey(activeRecommendation.confidence.level))}</MizanText>
+            </View>
+            <View style={[styles.detailTile, { backgroundColor: palette.surfaceMuted }]}>
+              <View style={[styles.detailHeading, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
+                <AppIcon name="evidence" color={palette.accent} size={18} />
+                <MizanText variant="caption" muted>{t('evidenceLabel')}</MizanText>
+              </View>
+              <MizanText variant="title">
+                {formatLocalizedNumber(activeRecommendation.evidence.length, locale, 0)}
+              </MizanText>
+            </View>
+          </View>
 
           {alternative && alternativeLabelKey && !finished ? (
-            <View style={styles.group}>
+            <View style={[styles.alternativePanel, { backgroundColor: palette.surfaceMuted }]}>
               <MizanText variant="caption" muted>{t('oneMoveAlternative')}</MizanText>
               <SecondaryButton
                 label={t(alternativeLabelKey)}
@@ -203,7 +256,9 @@ export default function OneMoveScreen() {
           </View>
 
           {decisionMessage ? (
-            <MizanText accessibilityLiveRegion="polite" muted>{t(decisionMessage)}</MizanText>
+            <View style={[styles.statusPanel, { backgroundColor: palette.accentSoft }]}>
+              <MizanText accessibilityLiveRegion="polite" muted>{t(decisionMessage)}</MizanText>
+            </View>
           ) : null}
         </Card>
       ) : null}
@@ -215,10 +270,80 @@ const styles = StyleSheet.create({
   hero: {
     gap: Spacing.md,
   },
+  heroLayout: {
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    flexWrap: 'wrap',
+    gap: Spacing.xl,
+  },
+  heroCopy: {
+    flexGrow: 1,
+    flexShrink: 1,
+    flexBasis: 320,
+    minWidth: 0,
+    gap: Spacing.md,
+  },
+  stateCard: {
+    paddingVertical: Spacing.lg,
+  },
   focusCard: {
-    gap: Spacing.lg,
+    gap: Spacing.xl,
+  },
+  focusHeader: {
+    alignItems: 'center',
+    gap: Spacing.md,
+  },
+  iconWell: {
+    width: Controls.standardHeight,
+    height: Controls.standardHeight,
+    borderRadius: Radius.md,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  focusCopy: {
+    flex: 1,
+    minWidth: 0,
+    gap: Spacing.xs,
+  },
+  reasonPanel: {
+    borderRadius: Radius.md,
+    padding: Spacing.lg,
+  },
+  reasonRow: {
+    alignItems: 'center',
+    gap: Spacing.sm,
+  },
+  reasonText: {
+    flex: 1,
+    minWidth: 0,
+  },
+  detailGrid: {
+    flexWrap: 'wrap',
+    gap: Spacing.sm,
+  },
+  detailTile: {
+    flexGrow: 1,
+    flexShrink: 1,
+    flexBasis: 160,
+    minWidth: 0,
+    borderRadius: Radius.md,
+    padding: Spacing.md,
+    gap: Spacing.sm,
+  },
+  detailHeading: {
+    alignItems: 'center',
+    gap: Spacing.xs,
+  },
+  alternativePanel: {
+    borderRadius: Radius.md,
+    padding: Spacing.lg,
+    gap: Spacing.sm,
   },
   group: {
     gap: Spacing.sm,
+  },
+  statusPanel: {
+    borderRadius: Radius.md,
+    padding: Spacing.md,
   },
 });
