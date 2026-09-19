@@ -143,6 +143,32 @@ export async function disconnectIntegration(
   return { ok: true, value: null };
 }
 
+export async function markIntegrationSyncSuccess(
+  userId: string,
+  capability: IntegrationCapability,
+  providerId: string,
+  consentedAt: string,
+  syncedAt = new Date().toISOString(),
+): Promise<DataResult<boolean>> {
+  if (!supabase) return unavailable();
+  const { data, error } = await supabase
+    .from('integration_connections')
+    .update({
+      last_synced_at: syncedAt,
+      last_error_code: null,
+      updated_at: syncedAt,
+    })
+    .eq('user_id', userId)
+    .eq('capability', capability)
+    .eq('provider_id', providerId)
+    .eq('status', 'connected')
+    .is('disconnected_at', null)
+    .eq('consented_at', consentedAt)
+    .select('id');
+  if (error) return failure(error);
+  return { ok: true, value: (data ?? []).length === 1 };
+}
+
 export async function markIntegrationSyncError(
   userId: string,
   capability: IntegrationCapability,
@@ -160,7 +186,9 @@ export async function markIntegrationSyncError(
     })
     .eq('user_id', userId)
     .eq('capability', capability)
-    .eq('provider_id', providerId);
+    .eq('provider_id', providerId)
+    .eq('status', 'connected')
+    .is('disconnected_at', null);
   if (error) return failure(error);
   return { ok: true, value: null };
 }
