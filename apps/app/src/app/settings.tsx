@@ -1,5 +1,5 @@
 import { router } from 'expo-router';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { StyleSheet, useColorScheme, View } from 'react-native';
 
 import { useSpiritualGroundingPreference } from '@/application/spiritual-grounding';
@@ -209,6 +209,7 @@ export default function SettingsScreen() {
   const palette = Palette[scheme === 'dark' ? 'dark' : 'light'];
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
+  const activeUserRef = useRef(userId);
   const syncMessage = syncStatus === 'offline' ? t('syncOffline') : syncStatus === 'error' ? t('syncError') : null;
   const spiritualLabels = spiritualCopy[locale];
   const labels = settingsCopy[locale];
@@ -216,32 +217,53 @@ export default function SettingsScreen() {
   const spiritualControlsDisabled = busy || spiritualStatus === 'loading' || spiritualStatus === 'saving';
   const priorities = enabledDomains.map((domainId) => t(domainId)).join(' · ');
 
+  useEffect(() => {
+    activeUserRef.current = userId;
+    let active = true;
+    void Promise.resolve().then(() => {
+      if (!active) return;
+      setBusy(false);
+      setMessage(null);
+    });
+    return () => {
+      active = false;
+    };
+  }, [userId]);
+
   const editPriorities = async () => {
-    if (busy) return;
+    if (busy || !userId) return;
+    const targetUserId = userId;
     setBusy(true);
     await resetOnboarding();
+    if (activeUserRef.current !== targetUserId) return;
     setBusy(false);
     router.replace('/onboarding');
   };
 
   const changeSpiritualGrounding = async (next: boolean) => {
-    if (busy || spiritualStatus === 'loading' || spiritualStatus === 'saving') return;
+    if (busy || !userId || spiritualStatus === 'loading' || spiritualStatus === 'saving') return;
+    const targetUserId = userId;
     setMessage(null);
     const saved = await persistSpiritualGroundingChoice(next);
+    if (activeUserRef.current !== targetUserId) return;
     if (!saved) setMessage(spiritualLabels.error);
   };
 
   const logout = async () => {
-    if (busy) return;
+    if (busy || !userId) return;
+    const targetUserId = userId;
     setBusy(true);
     setMessage(null);
     const result = await signOut();
     if (!result.ok) {
+      if (activeUserRef.current !== targetUserId) return;
       setMessage(t('authErrorGeneric'));
       setBusy(false);
       return;
     }
+    if (activeUserRef.current && activeUserRef.current !== targetUserId) return;
     await refreshSession();
+    if (activeUserRef.current && activeUserRef.current !== targetUserId) return;
     setBusy(false);
     router.replace('/auth');
   };
