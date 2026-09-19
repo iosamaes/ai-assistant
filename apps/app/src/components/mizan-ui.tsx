@@ -22,6 +22,7 @@ import {
   SurfaceTreatment,
   Typography,
 } from '@/constants/theme';
+import { normalizeLocalizedNumberInput } from '@/i18n/number-input';
 import { useAppState } from '@/state/app-state';
 
 interface MizanTextProps extends TextProps {
@@ -100,12 +101,21 @@ export function MizanTextInput({ style, ...props }: MizanTextInputProps) {
   const palette = Palette[scheme === 'dark' ? 'dark' : 'light'];
   const { isRtl } = useAppState();
   const disabled = props.editable === false || props.accessibilityState?.disabled === true;
+  const isNumericInput =
+    props.keyboardType === 'decimal-pad' ||
+    props.keyboardType === 'number-pad' ||
+    props.keyboardType === 'numeric';
 
   return (
     <TextInput
       {...props}
       accessibilityState={{ ...props.accessibilityState, disabled }}
       allowFontScaling
+      onChangeText={
+        props.onChangeText
+          ? (value) => props.onChangeText?.(isNumericInput ? normalizeLocalizedNumberInput(value) : value)
+          : undefined
+      }
       placeholderTextColor={props.placeholderTextColor ?? palette.textMuted}
       selectionColor={props.selectionColor ?? palette.accent}
       style={[
@@ -115,7 +125,7 @@ export function MizanTextInput({ style, ...props }: MizanTextInputProps) {
           borderColor: palette.border,
           color: palette.text,
           textAlign: isRtl ? 'right' : 'left',
-          writingDirection: isRtl ? 'rtl' : 'ltr',
+          writingDirection: isNumericInput ? 'ltr' : isRtl ? 'rtl' : 'ltr',
         },
         style,
       ]}
