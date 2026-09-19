@@ -367,7 +367,7 @@ export default function TodayScreen() {
               styles.settingsButton,
               {
                 borderColor: palette.border,
-                backgroundColor: palette.surface,
+                backgroundColor: palette.surfaceMuted,
                 opacity: pressed ? Interaction.subtlePressed : 1,
               },
             ]}>
@@ -378,14 +378,16 @@ export default function TodayScreen() {
 
       {syncMessage ? <MizanText accessibilityLiveRegion="polite" muted>{syncMessage}</MizanText> : null}
       {snapshotMessage ? (
-        <Card>
+        <Card style={{ backgroundColor: palette.surfaceMuted }}>
           <MizanText accessibilityLiveRegion="polite" variant="caption" muted>{snapshotMessage}</MizanText>
         </Card>
       ) : null}
 
-      <Card>
-        <MizanText variant="title">{t('checkInPromptTitle')}</MizanText>
-        <MizanText muted>{t('checkInPromptBody')}</MizanText>
+      <Card style={[styles.checkInHero, { backgroundColor: palette.accentSoft, borderColor: palette.accent }]}>
+        <View style={styles.heroCopy}>
+          <MizanText variant="title">{t('checkInPromptTitle')}</MizanText>
+          <MizanText muted>{t('checkInPromptBody')}</MizanText>
+        </View>
         <Link href="/check-in" asChild>
           <Pressable
             accessibilityLabel={t('checkInStart')}
@@ -401,78 +403,88 @@ export default function TodayScreen() {
         </Link>
       </Card>
 
-      <Card>
-        <MizanText variant="title">{t('currentStateTitle')}</MizanText>
-        <MizanText muted>{t('currentStateBody')}</MizanText>
-        {displayedDailyLoadStatus === 'loading' ? <MizanText accessibilityLiveRegion="polite" muted>{t('loading')}</MizanText> : null}
-        {displayedDailyLoadStatus === 'error' ? <MizanText accessibilityLiveRegion="polite" muted>{t('currentStateError')}</MizanText> : null}
-        {displayedDailyLoadStatus === 'ready' && visibleState.length === 0 ? (
-          <MizanText accessibilityLiveRegion="polite" muted>{t('currentStateEmpty')}</MizanText>
-        ) : null}
-        {visibleState.map(({ component, labelKey }) => (
-          <View key={component.key} style={[styles.stateItem, { borderTopColor: palette.border }]}>
-            <View style={[styles.stateRow, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
-              <MizanText variant="label">{t(labelKey)}</MizanText>
-              <MizanText variant="title">{formatWhole(Math.round(component.value ?? 0))} / {formatWhole(100)}</MizanText>
-            </View>
-            <MizanText variant="caption" muted>
-              {t(confidenceLabelKey(component.confidence.level))} · {t('evidenceLabel')}: {formatWhole(component.evidence.length)}
-            </MizanText>
-          </View>
-        ))}
-      </Card>
-
-      <Card>
-        <MizanText variant="title">{dailyCopy.title}</MizanText>
-        <MizanText muted>{dailyCopy.body}</MizanText>
-        {displayedDailyLoadStatus === 'loading' ? <MizanText accessibilityLiveRegion="polite" muted>{t('loading')}</MizanText> : null}
-        {displayedDailyLoadStatus === 'error' ? <MizanText accessibilityLiveRegion="polite" muted>{dailyCopy.error}</MizanText> : null}
-        {displayedDailyLoadStatus === 'ready' ? (
-          <View style={styles.oneMoveContent}>
-            <View style={[styles.stateItem, { borderTopColor: palette.border }]}>
+      <View style={styles.dashboardGrid}>
+        <Card style={styles.dashboardCard}>
+          <MizanText variant="title">{t('currentStateTitle')}</MizanText>
+          <MizanText muted>{t('currentStateBody')}</MizanText>
+          {displayedDailyLoadStatus === 'loading' ? <MizanText accessibilityLiveRegion="polite" muted>{t('loading')}</MizanText> : null}
+          {displayedDailyLoadStatus === 'error' ? <MizanText accessibilityLiveRegion="polite" muted>{t('currentStateError')}</MizanText> : null}
+          {displayedDailyLoadStatus === 'ready' && visibleState.length === 0 ? (
+            <MizanText accessibilityLiveRegion="polite" muted>{t('currentStateEmpty')}</MizanText>
+          ) : null}
+          {visibleState.map(({ component, labelKey }) => (
+            <View key={component.key} style={[styles.stateItem, { borderTopColor: palette.border }]}>
               <View style={[styles.stateRow, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
-                <MizanText variant="label">{dailyCopy.balance}</MizanText>
-                {dailyOverview?.balance?.score !== null && dailyOverview?.balance?.score !== undefined ? (
-                  <MizanText variant="title">{formatWhole(Math.round(dailyOverview.balance.score))} / {formatWhole(100)}</MizanText>
-                ) : null}
+                <MizanText variant="label">{t(labelKey)}</MizanText>
+                <View style={[styles.metricPill, { backgroundColor: palette.surfaceMuted }]}>
+                  <MizanText variant="label">{formatWhole(Math.round(component.value ?? 0))} / {formatWhole(100)}</MizanText>
+                </View>
               </View>
-              {dailyOverview?.balance?.score !== null && dailyOverview?.balance?.score !== undefined ? (
-                <MizanText variant="caption" muted>
-                  {t(confidenceLabelKey(dailyOverview.balance.confidence.level))} · {t('evidenceLabel')}: {formatWhole(dailyOverview.balance.evidence.length)}
-                </MizanText>
-              ) : (
-                <MizanText accessibilityLiveRegion="polite" muted>{dailyCopy.balanceEmpty}</MizanText>
-              )}
+              <MizanText variant="caption" muted>
+                {t(confidenceLabelKey(component.confidence.level))} · {t('evidenceLabel')}: {formatWhole(component.evidence.length)}
+              </MizanText>
             </View>
+          ))}
+        </Card>
 
-            <View style={[styles.stateItem, { borderTopColor: palette.border }]}>
-              <MizanText variant="label">{dailyCopy.momentum}</MizanText>
-              {(dailyOverview?.momentum.length ?? 0) === 0 ? (
-                <MizanText accessibilityLiveRegion="polite" muted>{dailyCopy.momentumEmpty}</MizanText>
-              ) : null}
-              {dailyOverview?.momentum.map(({ metric, momentum }) => {
-                const labelKey = stateLabelKey(metric);
-                if (!labelKey) return null;
-                return (
-                  <View key={metric} style={styles.oneMoveContent}>
-                    <View style={[styles.stateRow, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
-                      <MizanText>{t(labelKey)}</MizanText>
-                      <MizanText variant="label">{momentumLabel(momentum.direction, locale)}</MizanText>
+        <Card style={styles.dashboardCard}>
+          <MizanText variant="title">{dailyCopy.title}</MizanText>
+          <MizanText muted>{dailyCopy.body}</MizanText>
+          {displayedDailyLoadStatus === 'loading' ? <MizanText accessibilityLiveRegion="polite" muted>{t('loading')}</MizanText> : null}
+          {displayedDailyLoadStatus === 'error' ? <MizanText accessibilityLiveRegion="polite" muted>{dailyCopy.error}</MizanText> : null}
+          {displayedDailyLoadStatus === 'ready' ? (
+            <View style={styles.oneMoveContent}>
+              <View style={[styles.stateItem, { borderTopColor: palette.border }]}>
+                <View style={[styles.stateRow, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
+                  <MizanText variant="label">{dailyCopy.balance}</MizanText>
+                  {dailyOverview?.balance?.score !== null && dailyOverview?.balance?.score !== undefined ? (
+                    <View style={[styles.metricPill, { backgroundColor: palette.surfaceMuted }]}>
+                      <MizanText variant="label">{formatWhole(Math.round(dailyOverview.balance.score))} / {formatWhole(100)}</MizanText>
                     </View>
-                    <MizanText variant="caption" muted>
-                      {t(confidenceLabelKey(momentum.confidence.level))} · {t('evidenceLabel')}: {formatWhole(momentum.evidence.length)}
-                    </MizanText>
-                  </View>
-                );
-              })}
-            </View>
-          </View>
-        ) : null}
-      </Card>
+                  ) : null}
+                </View>
+                {dailyOverview?.balance?.score !== null && dailyOverview?.balance?.score !== undefined ? (
+                  <MizanText variant="caption" muted>
+                    {t(confidenceLabelKey(dailyOverview.balance.confidence.level))} · {t('evidenceLabel')}: {formatWhole(dailyOverview.balance.evidence.length)}
+                  </MizanText>
+                ) : (
+                  <MizanText accessibilityLiveRegion="polite" muted>{dailyCopy.balanceEmpty}</MizanText>
+                )}
+              </View>
 
-      <Card>
-        <MizanText variant="title">{t('oneMoveTitle')}</MizanText>
-        <MizanText muted>{t('oneMoveBody')}</MizanText>
+              <View style={[styles.stateItem, { borderTopColor: palette.border }]}>
+                <MizanText variant="label">{dailyCopy.momentum}</MizanText>
+                {(dailyOverview?.momentum.length ?? 0) === 0 ? (
+                  <MizanText accessibilityLiveRegion="polite" muted>{dailyCopy.momentumEmpty}</MizanText>
+                ) : null}
+                {dailyOverview?.momentum.map(({ metric, momentum }) => {
+                  const labelKey = stateLabelKey(metric);
+                  if (!labelKey) return null;
+                  return (
+                    <View key={metric} style={styles.oneMoveContent}>
+                      <View style={[styles.stateRow, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
+                        <MizanText>{t(labelKey)}</MizanText>
+                        <View style={[styles.metricPill, { backgroundColor: palette.surfaceMuted }]}>
+                          <MizanText variant="label">{momentumLabel(momentum.direction, locale)}</MizanText>
+                        </View>
+                      </View>
+                      <MizanText variant="caption" muted>
+                        {t(confidenceLabelKey(momentum.confidence.level))} · {t('evidenceLabel')}: {formatWhole(momentum.evidence.length)}
+                      </MizanText>
+                    </View>
+                  );
+                })}
+              </View>
+            </View>
+          ) : null}
+        </Card>
+      </View>
+
+      <Card style={[styles.oneMoveHero, { backgroundColor: palette.accentSoft, borderColor: palette.accent }]}>
+        <View style={styles.heroCopy}>
+          <MizanText variant="label" muted>{t('oneMoveTitle')}</MizanText>
+          <MizanText muted>{t('oneMoveBody')}</MizanText>
+        </View>
         {displayedDailyLoadStatus === 'loading' || recommendationLoadStatus === 'loading' ? (
           <MizanText accessibilityLiveRegion="polite" muted>{t('loading')}</MizanText>
         ) : null}
@@ -595,7 +607,7 @@ export default function TodayScreen() {
         ) : null}
       </Card>
 
-      <Card>
+      <Card style={{ backgroundColor: palette.surfaceMuted }}>
         <View style={[styles.statusRow, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
           <View style={[styles.dot, { backgroundColor: palette.accent }]} />
           <MizanText variant="label" muted>{t('learningState')}</MizanText>
@@ -608,7 +620,7 @@ export default function TodayScreen() {
         <MizanText variant="title">{t('priorities')}</MizanText>
         <View style={styles.grid}>
           {enabledDomains.map((domainId: DomainId) => (
-            <Card key={domainId} style={styles.domainCard}>
+            <Card key={domainId} style={[styles.domainCard, { backgroundColor: palette.surfaceMuted }]}>
               <MizanText variant="label">{t(domainId)}</MizanText>
               <MizanText variant="caption" muted>{t('learningState')}</MizanText>
             </Card>
@@ -620,8 +632,8 @@ export default function TodayScreen() {
 }
 
 const styles = StyleSheet.create({
-  topRow: { alignItems: 'center', justifyContent: 'space-between', gap: Spacing.lg },
-  heading: { flex: 1, gap: Spacing.xs },
+  topRow: { alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: Spacing.lg },
+  heading: { flexGrow: 1, flexShrink: 1, gap: Spacing.xs },
   settingsButton: {
     minHeight: Controls.minimumTouchHeight,
     justifyContent: 'center',
@@ -629,16 +641,27 @@ const styles = StyleSheet.create({
     borderWidth: Controls.borderWidth,
     borderRadius: Radius.pill,
   },
+  checkInHero: { gap: Spacing.xl },
+  heroCopy: { gap: Spacing.sm },
   primaryAction: {
     minHeight: Controls.standardHeight,
-    borderRadius: Radius.md,
+    borderRadius: Radius.pill,
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: Spacing.xl,
   },
   primaryActionText: { textAlign: 'center' },
-  stateItem: { gap: Spacing.xs, borderTopWidth: Controls.borderWidth, paddingTop: Spacing.md },
-  stateRow: { alignItems: 'center', justifyContent: 'space-between', gap: Spacing.md },
+  dashboardGrid: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'stretch', gap: Spacing.lg },
+  dashboardCard: { flexGrow: 1, flexShrink: 1, flexBasis: 320 },
+  stateItem: { gap: Spacing.sm, borderTopWidth: Controls.borderWidth, paddingTop: Spacing.md },
+  stateRow: { alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: Spacing.md },
+  metricPill: {
+    minHeight: Controls.minimumTouchHeight,
+    justifyContent: 'center',
+    paddingHorizontal: Spacing.md,
+    borderRadius: Radius.pill,
+  },
+  oneMoveHero: { gap: Spacing.xl },
   oneMoveContent: { gap: Spacing.md },
   alternativeBlock: { gap: Spacing.sm },
   decisionRow: { flexWrap: 'wrap', gap: Spacing.sm },
@@ -651,7 +674,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: Controls.borderWidth,
-    borderRadius: Radius.md,
+    borderRadius: Radius.pill,
   },
   feedbackScaleLabels: { justifyContent: 'space-between', gap: Spacing.md },
   feedbackInput: { minHeight: 88, textAlignVertical: 'top' },
@@ -659,5 +682,5 @@ const styles = StyleSheet.create({
   dot: { width: 8, height: 8, borderRadius: 4 },
   section: { gap: Spacing.lg },
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.md },
-  domainCard: { minWidth: 220, flexGrow: 1, flexBasis: 240 },
+  domainCard: { flexGrow: 1, flexShrink: 1, flexBasis: 240 },
 });
