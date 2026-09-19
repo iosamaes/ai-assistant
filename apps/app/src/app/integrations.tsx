@@ -134,7 +134,7 @@ function formatDate(value: string | null, locale: 'ar' | 'en'): string {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return value;
   try {
-    return new Intl.DateTimeFormat(locale === 'ar' ? 'ar-QA' : 'en', {
+    return new Intl.DateTimeFormat(locale === 'ar' ? 'ar-QA-u-nu-latn' : 'en', {
       year: 'numeric',
       month: 'short',
       day: 'numeric',
