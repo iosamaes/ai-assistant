@@ -15,12 +15,12 @@ export function parseLocalizedDecimalInput(value: string): number | null {
 
 export function formatLocalizedNumber(
   value: number,
-  locale: 'ar' | 'en',
+  _locale: 'ar' | 'en',
   maximumFractionDigits = 1,
 ): string {
   if (!Number.isFinite(value)) return '—';
   try {
-    return new Intl.NumberFormat(locale === 'ar' ? 'ar-QA' : 'en', {
+    return new Intl.NumberFormat('en-US-u-nu-latn', {
       maximumFractionDigits,
       minimumFractionDigits: 0,
       useGrouping: false,
