@@ -38,6 +38,7 @@ const copy = {
     remaining: 'الهامش المتبقي',
     displaced: 'الحد الأدنى للوقت المزاح',
     marginUsed: 'من الهامش المستخدم',
+    marginVisual: 'استخدام الهامش المعروف',
     evidence: 'أدلة مباشرة',
     confidence: 'الثقة',
     confidenceLevels: {
@@ -77,6 +78,7 @@ const copy = {
     remaining: 'Remaining margin',
     displaced: 'Minimum displaced time',
     marginUsed: 'of margin used',
+    marginVisual: 'Known margin usage',
     evidence: 'Direct evidence',
     confidence: 'Confidence',
     confidenceLevels: {
@@ -138,6 +140,14 @@ export default function CostOfYesScreen() {
           : assessment.status === 'tight'
             ? labels.tightBody
             : labels.displacingBody;
+
+  const marginUsedPercent = assessment.marginUsedPercent;
+  const visibleMarginPercent = marginUsedPercent === null
+    ? null
+    : Math.max(0, Math.min(100, Math.round(marginUsedPercent)));
+  const marginUsedText = marginUsedPercent === null
+    ? null
+    : `${formatLocalizedNumber(marginUsedPercent, locale, 0)}%`;
 
   return (
     <Screen>
@@ -230,11 +240,37 @@ export default function CostOfYesScreen() {
           </View>
         ) : null}
 
+        {visibleMarginPercent !== null && marginUsedText ? (
+          <View style={styles.marginVisualGroup}>
+            <View style={[styles.marginVisualHeader, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
+              <MizanText variant="label">{labels.marginVisual}</MizanText>
+              <MizanText variant="label">{marginUsedText}</MizanText>
+            </View>
+            <View
+              accessibilityRole="progressbar"
+              accessibilityLabel={labels.marginVisual}
+              accessibilityValue={{ min: 0, max: 100, now: visibleMarginPercent, text: marginUsedText }}
+              style={[styles.marginTrack, { backgroundColor: palette.surfaceMuted }]}
+            >
+              <View
+                style={[
+                  styles.marginFill,
+                  {
+                    alignSelf: isRtl ? 'flex-end' : 'flex-start',
+                    backgroundColor: palette.accent,
+                    width: `${visibleMarginPercent}%`,
+                  },
+                ]}
+              />
+            </View>
+          </View>
+        ) : null}
+
         <View style={[styles.evidenceRow, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
-          {assessment.marginUsedPercent !== null ? (
+          {marginUsedPercent !== null ? (
             <View style={[styles.marginPill, { backgroundColor: palette.accentSoft }]}>
               <MizanText variant="label">
-                {formatLocalizedNumber(assessment.marginUsedPercent, locale, 0)}% {labels.marginUsed}
+                {formatLocalizedNumber(marginUsedPercent, locale, 0)}% {labels.marginUsed}
               </MizanText>
             </View>
           ) : null}
@@ -263,6 +299,10 @@ const styles = StyleSheet.create({
   assessmentStatus: { gap: Spacing.md, borderRadius: Radius.md, padding: Spacing.lg },
   metrics: { flexWrap: 'wrap', gap: Spacing.md },
   metric: { flexGrow: 1, flexBasis: 160, minWidth: 0, gap: Spacing.xs, borderRadius: Radius.md, padding: Spacing.md },
+  marginVisualGroup: { gap: Spacing.sm },
+  marginVisualHeader: { alignItems: 'center', justifyContent: 'space-between', gap: Spacing.md },
+  marginTrack: { height: 10, borderRadius: Radius.pill, overflow: 'hidden' },
+  marginFill: { height: '100%', borderRadius: Radius.pill },
   evidenceRow: { alignItems: 'center', flexWrap: 'wrap', gap: Spacing.md },
   marginPill: { borderRadius: Radius.pill, paddingHorizontal: Spacing.md, paddingVertical: Spacing.sm },
   flexibleEvidence: { flexGrow: 1, flexShrink: 1, minWidth: 0 },
