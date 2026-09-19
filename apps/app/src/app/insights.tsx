@@ -32,6 +32,8 @@ const copy = {
     samples: 'الملاحظات المقترنة',
     window: 'نافذة الأدلة',
     effect: 'مؤشر الارتباط',
+    patterns: 'الأنماط المدعومة',
+    evidenceWindow: 'مدى القراءة',
     days: 'يوم',
     association: 'ارتباط ملحوظ',
     hypothesis: 'فرضية شخصية',
@@ -64,6 +66,8 @@ const copy = {
     samples: 'Paired observations',
     window: 'Evidence window',
     effect: 'Association indicator',
+    patterns: 'Supported patterns',
+    evidenceWindow: 'Reading window',
     days: 'days',
     association: 'Observed association',
     hypothesis: 'Personal hypothesis',
@@ -118,12 +122,15 @@ function InsightCard({ insight, locale, isRtl }: { insight: PersonalInsight; loc
 
   return (
     <Card style={styles.insightCard}>
+      <View style={[styles.cardAccent, { backgroundColor: palette.accent }]} />
       <View style={[styles.insightHeader, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
         <View style={styles.insightCopy}>
           <MizanText variant="title">{local.relationships[key]}</MizanText>
-          <MizanText muted>{directionLabel(insight, locale)}</MizanText>
+          <View style={[styles.directionBox, { backgroundColor: palette.accentSoft }]}>
+            <MizanText muted>{directionLabel(insight, locale)}</MizanText>
+          </View>
         </View>
-        <View style={[styles.statusPill, { backgroundColor: palette.accentSoft }]}>
+        <View style={[styles.statusPill, { backgroundColor: palette.accentSoft, borderColor: palette.accent }]}>
           <MizanText variant="caption">{statusLabel(insight.hypothesis.status, locale)}</MizanText>
         </View>
       </View>
@@ -135,7 +142,7 @@ function InsightCard({ insight, locale, isRtl }: { insight: PersonalInsight; loc
         </View>
         <View style={[styles.detailTile, { backgroundColor: palette.surfaceMuted }]}>
           <MizanText variant="caption" muted>{local.samples}</MizanText>
-          <MizanText variant="label">{formatLocalizedNumber(insight.hypothesis.sampleSize, locale, 0)}</MizanText>
+          <MizanText variant="title">{formatLocalizedNumber(insight.hypothesis.sampleSize, locale, 0)}</MizanText>
         </View>
         <View style={[styles.detailTile, { backgroundColor: palette.surfaceMuted }]}>
           <MizanText variant="caption" muted>{local.window}</MizanText>
@@ -143,7 +150,7 @@ function InsightCard({ insight, locale, isRtl }: { insight: PersonalInsight; loc
         </View>
         <View style={[styles.detailTile, { backgroundColor: palette.surfaceMuted }]}>
           <MizanText variant="caption" muted>{local.effect}</MizanText>
-          <MizanText variant="label" style={styles.detailText}>{effect}</MizanText>
+          <MizanText variant="title" style={styles.detailText}>{effect}</MizanText>
         </View>
       </View>
 
@@ -189,6 +196,11 @@ export default function InsightsScreen() {
     return () => { active = false; };
   }, [refreshSession, userId]);
 
+  const supportedPatternCount = status === 'ready'
+    ? formatLocalizedNumber(snapshot?.insights.length ?? 0, locale, 0)
+    : '—';
+  const evidenceWindow = `${formatLocalizedNumber(90, locale, 0)} ${local.days}`;
+
   return (
     <Screen>
       <View style={[styles.topRow, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
@@ -200,20 +212,43 @@ export default function InsightsScreen() {
       </View>
 
       <Card style={[styles.heroCard, { backgroundColor: palette.accentSoft, borderColor: palette.accent }]}>
+        <View style={[styles.cardAccent, { backgroundColor: palette.accent }]} />
         <View style={styles.heroCopy}>
           <MizanText variant="title">{local.title}</MizanText>
-          <MizanText muted>{local.body}</MizanText>
+          <MizanText>{local.body}</MizanText>
           <MizanText variant="caption" muted>{local.caveat}</MizanText>
         </View>
-        <PrimaryButton label={local.checkIn} onPress={() => router.push('/check-in')} />
+        <View style={styles.heroFooter}>
+          <View style={styles.heroStats}>
+            <View style={[styles.heroStat, { backgroundColor: palette.surface }]}>
+              <MizanText variant="caption" muted>{local.evidenceWindow}</MizanText>
+              <MizanText variant="title">{evidenceWindow}</MizanText>
+            </View>
+            <View style={[styles.heroStat, { backgroundColor: palette.surface }]}>
+              <MizanText variant="caption" muted>{local.patterns}</MizanText>
+              <MizanText variant="title">{supportedPatternCount}</MizanText>
+            </View>
+          </View>
+          <View style={styles.heroAction}>
+            <PrimaryButton label={local.checkIn} onPress={() => router.push('/check-in')} />
+          </View>
+        </View>
       </Card>
 
-      {status === 'loading' ? <MizanText accessibilityLiveRegion="polite" muted>{local.loading}</MizanText> : null}
+      {status === 'loading' ? (
+        <Card style={[styles.stateCard, { backgroundColor: palette.surfaceMuted }]}>
+          <MizanText accessibilityLiveRegion="polite" muted>{local.loading}</MizanText>
+        </Card>
+      ) : null}
       {status === 'error' ? (
-        <Card style={{ backgroundColor: palette.surfaceMuted }}><MizanText accessibilityLiveRegion="polite" muted>{local.error}</MizanText></Card>
+        <Card style={[styles.stateCard, { backgroundColor: palette.surfaceMuted }]}>
+          <MizanText accessibilityLiveRegion="polite" muted>{local.error}</MizanText>
+        </Card>
       ) : null}
       {status === 'ready' && (snapshot?.insights.length ?? 0) === 0 ? (
-        <Card style={{ backgroundColor: palette.surfaceMuted }}><MizanText accessibilityLiveRegion="polite" muted>{local.empty}</MizanText></Card>
+        <Card style={[styles.stateCard, { backgroundColor: palette.surfaceMuted }]}>
+          <MizanText accessibilityLiveRegion="polite" muted>{local.empty}</MizanText>
+        </Card>
       ) : null}
       {status === 'ready' ? (
         <View style={styles.insightGrid}>
@@ -231,15 +266,23 @@ const styles = StyleSheet.create({
   heading: { flex: 1, minWidth: 0, gap: Spacing.xs },
   heroCard: { gap: Spacing.xl },
   heroCopy: { gap: Spacing.sm },
+  heroFooter: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'stretch', gap: Spacing.lg },
+  heroStats: { flexGrow: 1, flexShrink: 1, flexBasis: 320, flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.sm },
+  heroStat: { flexGrow: 1, flexShrink: 1, flexBasis: 140, borderRadius: Radius.md, padding: Spacing.lg, gap: Spacing.xs },
+  heroAction: { flexGrow: 0, flexShrink: 1, minWidth: 190, justifyContent: 'flex-end' },
+  stateCard: { paddingVertical: Spacing.lg },
   insightGrid: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'stretch', gap: Spacing.lg },
-  insightCard: { flexGrow: 1, flexShrink: 1, flexBasis: 360 },
+  insightCard: { flexGrow: 1, flexShrink: 1, flexBasis: 360, overflow: 'hidden' },
+  cardAccent: { height: 4, borderRadius: Radius.pill, alignSelf: 'stretch' },
   insightHeader: { alignItems: 'flex-start', justifyContent: 'space-between', gap: Spacing.lg, flexWrap: 'wrap' },
   insightCopy: { flexGrow: 1, flexShrink: 1, flexBasis: 220, gap: Spacing.sm },
+  directionBox: { paddingHorizontal: Spacing.md, paddingVertical: Spacing.sm, borderRadius: Radius.md },
   statusPill: {
     minHeight: Controls.minimumTouchHeight,
     justifyContent: 'center',
     paddingHorizontal: Spacing.md,
     borderRadius: Radius.pill,
+    borderWidth: Controls.borderWidth,
   },
   detailGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.sm },
   detailTile: {
@@ -257,7 +300,7 @@ const styles = StyleSheet.create({
     gap: Spacing.md,
     flexWrap: 'wrap',
     borderTopWidth: Controls.borderWidth,
-    paddingTop: Spacing.sm,
+    paddingTop: Spacing.md,
   },
   detailText: { flexShrink: 1 },
 });
