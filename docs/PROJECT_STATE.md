@@ -38,6 +38,8 @@ Presentation boundary:
 
 Latest static CP9 work:
 - **Owner-wide Western-digit policy:** the mission now requires Western/ASCII digits `0-9` in both Arabic and English UI. `formatLocalizedNumber` always emits Latin digits, while localized input parsing remains tolerant of Arabic-Indic/Eastern keyboard input and normalizes it before calculation. Static Arabic copy across current routes/i18n was swept back to Western digits, and Arabic date/time formatting uses the `nu-latn` numbering-system extension so Arabic language/RTL presentation does not reintroduce `١٢٣`. Current route/i18n static scan found no Arabic-Indic/Eastern digit literals outside the intentional parser acceptance logic. Task commit `3ef3d3da60b45cce94b6b6680c1f56e6f0844c00`; formatter commit `a5e3a2864ba49700ac92de8fdfb33b49981c18ab`; translation/date cleanup continued through `81011c087f2990eb82e13275507cbfa69a04c0ef`.
+- **Personal Learning digit/state hardening:** Arabic Personal Learning history dates now force the Latin numbering system (`ar-QA-u-nu-latn`) so localized dates still obey the owner-wide Western-digit policy. The screen also clears prior action history before a new user/session load and renders learned-action cards only from a confirmed ready state, preventing stale prior-user learning data from remaining visible during loading or after a failed reload. Commit `8e94d06ff3c903488ca881adcad7a9f6f35dc4a2`.
+- **Personalization stale-state fencing:** Personalization now clears the previous Human State Vector before loading a new user/session and renders maturity/progression content only when the load is confirmed ready. This prevents stale personalization state from appearing alongside loading/error UI or leaking across a user switch. Commit `467ffd4d34467a960112186e746478be2aa73c97`.
 - **Integration fallback localization:** unknown/future provider ids, capability ids, and permission scopes no longer fall through to raw technical identifiers in shipped UI; Integrations now uses localized generic fallbacks in Arabic and English while keeping known provider/scope labels specific. Commit `8e1182e90339cb98411d26dffbc0fb628383bb69`.
 - **Invisible Wins state honesty:** load failures are now tracked separately from save feedback, so a failed history request no longer renders the contradictory “no reflections yet” empty state at the same time. The load failure remains a polite live announcement. Commit `6c9062a858a58b68603de703218695a02757e95f`.
 - **Integrations async-state fencing:** refresh failures now clear stale connection data, connection cards render only for a confirmed ready state, and a successful disconnect keeps controls fenced until the authoritative reload finishes. This prevents stale “connected” UI or a second disconnect action while the refreshed lifecycle state is unresolved. Commit `412658e1ddf1f51676d2b1c0beae7f244c505843`.
@@ -98,6 +100,7 @@ Post-baseline:
 - `apps/app/src/app/capacity.tsx`
 - `apps/app/src/app/life-map.tsx`
 - `apps/app/src/app/personal-learning.tsx`
+- `apps/app/src/app/personalization.tsx`
 - `apps/app/src/app/experiments.tsx`
 - `apps/app/src/app/recovery.tsx`
 - `apps/app/src/app/life-seasons.tsx`
