@@ -73,12 +73,11 @@ export class AppErrorBoundary extends Component<PropsWithChildren, State> {
     return { hasError: true };
   }
 
-  componentDidCatch(error: Error, info: ErrorInfo) {
+  componentDidCatch(_error: Error, info: ErrorInfo) {
     if (__DEV__) {
-      // Keep development diagnostics useful without serializing an arbitrary
-      // Error object/message that could contain backend or user-provided data.
+      // Keep development diagnostics useful without serializing any Error
+      // field that application code could populate with backend or user data.
       console.error('MIZAN render error', {
-        errorName: error.name,
         componentStack: info.componentStack,
       });
     }
