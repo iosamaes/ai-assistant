@@ -40,6 +40,8 @@ Navigation/state hardening currently includes:
 - `b6d0878574de785c63cf0cfac5f1aae20ace813f` — shared Web `pointerEvents` deprecation path removed from the ambient `Screen` layers.
 - `bcf210bc36d4f3ccfe995faa21707ab18083e3cc` — root auth guard now preserves `/update-password` while signed out so a password-reset deep link can finish establishing its temporary recovery session instead of racing to `/auth`.
 - `7d8d3310e33843170afdc33065738bca76cbe882` — focused root-layout routing specification covers the recovery-route exception, normal signed-out protection, and post-restoration Auth redirect; specification added but not worker-run under the active policy.
+- `f4e38742c587150bfe87489bf0fd3b831dcad69b` — Check-in local answers and submit state are now scoped to the active account; switching users clears prior-user ratings immediately and stale submit/session-refresh completions cannot redirect or repaint the new account.
+- `a318a7152902159998d9f5ae87ab811502074da6` — focused Check-in account-switch regression specification covers stale User A submit completion after User B becomes active; added but not worker-run under the active policy.
 
 ### CP9 remaining
 - Finish static inspection only for concrete residual scaffold-level or navigation-state defects; avoid reworking already-premium screens without evidence.
@@ -61,11 +63,11 @@ Implemented security/privacy work includes:
 - Targeted sensitive logging review covers Supabase config/data access, integration persistence/sync, session storage, offline caches, privacy/Auth/delete paths, integration UI, root error boundary, global app-state handling, password-update/auth presentation, baseline-target persistence, experiment persistence, What If trial data, and the app-local integration contract/adapter/registry boundary.
 - New-account creation requires the same 8-character minimum already used by password recovery/update; sign-in keeps the existing 6-character compatibility threshold.
 - Health integration sync rechecks authoritative consent/connection/scopes before provider read, before retry, after provider read, and before success bookkeeping; stale/revoked sync cannot silently reconnect.
-- Integration settings, app-state hydration, and Invisible Wins history are fenced against previous-account async completion.
+- Integration settings, app-state hydration, Invisible Wins history, Recovery plan loading, and Check-in local/submit state are fenced against previous-account async completion or local-state carryover.
 
 ### CP10 remaining
 - Complete repository-wide sensitive logging/error-reporting review beyond the targeted boundaries already inspected; fix only concrete leakage paths.
-- Owner/runtime validation remains required for cross-user/database tests, export/delete/local purge, destructive Edge deletion, consent revocation races, account-switch races, and the newly hardened reflection/auth/logging paths.
+- Owner/runtime validation remains required for cross-user/database tests, export/delete/local purge, destructive Edge deletion, consent revocation races, account-switch races, and the newly hardened reflection/auth/logging/check-in paths.
 - Supabase leaked-password protection remains an owner action in `automation/HUMAN_REQUIRED.md`.
 
 ## Exact next executable action
@@ -90,6 +92,7 @@ Post-baseline:
 - `delete-account` deployment reports ACTIVE with JWT verification enabled; no destructive end-to-end deletion validation is claimed.
 - CP9 Premium Production Visual Pass and later navigation/auth hardening are static source/specification evidence only until owner runtime review.
 - Root recovery-route regression specification `apps/app/__tests__/root-layout-auth-routing-test.tsx` was added but not run under the active worker policy.
+- Check-in account-switch regression specification `apps/app/__tests__/check-in-session-fencing-test.tsx` was added but not run under the active worker policy.
 
 ## Known blockers / risks
 - CP1: Windows session must be unlocked normally for true narrow-phone Arabic/English interaction evidence; see `automation/HUMAN_REQUIRED.md`.
@@ -116,6 +119,7 @@ Post-baseline:
 - `apps/app/src/app/index.tsx`
 - `apps/app/src/app/update-password.tsx`
 - `apps/app/src/app/today.tsx`
+- `apps/app/src/app/check-in.tsx`
 - `apps/app/src/app/life-map.tsx`
 - `apps/app/src/app/why.tsx`
 - `apps/app/src/app/settings.tsx`
@@ -131,4 +135,5 @@ Post-baseline:
 - `apps/app/__tests__/integration-consent-revocation-test.ts`
 - `apps/app/__tests__/integrations-screen-session-fencing-test.tsx`
 - `apps/app/__tests__/app-state-session-fencing-test.tsx`
+- `apps/app/__tests__/check-in-session-fencing-test.tsx`
 - `automation/HUMAN_REQUIRED.md`
