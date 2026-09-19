@@ -9,6 +9,7 @@ import {
   type WhyExplanation,
   type WhyFactorKey,
 } from '@/application/why';
+import { AppIcon, type AppIconName } from '@/components/app-icon';
 import { Card, MizanText, PrimaryButton, SecondaryButton } from '@/components/mizan-ui';
 import { Screen } from '@/components/screen';
 import { Controls, Palette, Radius, Spacing } from '@/constants/theme';
@@ -26,11 +27,13 @@ const copy = {
     loading: 'جاري فحص الأدلة المتاحة…',
     error: 'تعذر قراءة الأدلة الآن. لم يتم إنشاء تفسير بديل أو افتراض بيانات مفقودة.',
     empty: 'لا توجد حاليًا إشارات مدعومة بأدلة كافية. هذا لا يعني أن كل شيء مثالي؛ يعني فقط أن ميزان لا يملك بيانات كافية للتفسير.',
+    rank: 'الترتيب',
     value: 'الإشارة الحالية',
     confidence: 'الثقة',
     evidence: 'عدد الأدلة',
     window: 'نافذة الأدلة',
     recentOnly: 'قراءة حديثة واحدة',
+    caveatTitle: 'قراءة تفسيرية وليست تشخيصًا',
     caveat: 'الترتيب يصف ما يظهر معًا في بياناتك الحالية فقط. لا يثبت أن عاملًا ما سبّب شعورك، ولا يستخدم لاستنتاج مرض أو حالة نفسية.',
     checkIn: 'أضف فحصًا سريعًا',
     known: 'معروف',
@@ -60,11 +63,13 @@ const copy = {
     loading: 'Reviewing available evidence…',
     error: 'The evidence could not be read right now. MIZAN did not generate a substitute explanation or fill in missing data.',
     empty: 'There are no candidate signals with enough evidence right now. That does not mean everything is perfect; it only means MIZAN lacks enough data to explain it.',
+    rank: 'Rank',
     value: 'Current signal',
     confidence: 'Confidence',
     evidence: 'Evidence count',
     window: 'Evidence window',
     recentOnly: 'One recent observation',
+    caveatTitle: 'Interpretation, not diagnosis',
     caveat: 'This ranking describes what is present together in your current data. It does not prove that a factor caused how you feel and is not used to infer a disease or mental-health condition.',
     checkIn: 'Add a quick check-in',
     known: 'Known',
@@ -116,32 +121,68 @@ function evidenceWindowLabel(factor: WhyCandidateFactor, locale: 'ar' | 'en') {
   return `${formatDate(factor.evidenceStartAt, locale)} – ${formatDate(factor.evidenceEndAt, locale)}`;
 }
 
-function FactorCard({ factor, locale, isRtl }: { factor: WhyCandidateFactor; locale: 'ar' | 'en'; isRtl: boolean }) {
+function factorIcon(key: WhyFactorKey): AppIconName {
+  if (key === 'recovery') return 'recovery';
+  if (key === 'energy') return 'energy';
+  if (key === 'mental_load') return 'mentalLoad';
+  if (key === 'connection') return 'connection';
+  return 'overload';
+}
+
+function FactorCard({
+  factor,
+  rank,
+  locale,
+  isRtl,
+}: {
+  factor: WhyCandidateFactor;
+  rank: number;
+  locale: 'ar' | 'en';
+  isRtl: boolean;
+}) {
   const scheme = useColorScheme();
   const palette = Palette[scheme === 'dark' ? 'dark' : 'light'];
   const local = copy[locale];
   const key: WhyFactorKey = factor.key;
   const hundred = formatLocalizedNumber(100, locale, 0);
+  const iconColor = key === 'overload_risk' ? palette.danger : palette.accent;
 
   return (
     <Card style={styles.factorCard}>
       <View style={[styles.factorHeader, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
-        <View style={styles.factorCopy}>
-          <MizanText variant="title">{local.factors[key]}</MizanText>
-          <MizanText muted>{local.descriptions[key]}</MizanText>
+        <View style={[styles.factorIdentity, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
+          <View style={[styles.iconBadge, { backgroundColor: palette.accentSoft }]}>
+            <AppIcon name={factorIcon(key)} color={iconColor} size={25} />
+          </View>
+          <View style={styles.factorCopy}>
+            <View style={[styles.rankRow, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
+              <MizanText variant="caption" muted>{local.rank}</MizanText>
+              <View style={[styles.rankPill, { backgroundColor: palette.surfaceMuted }]}>
+                <MizanText variant="label">{formatLocalizedNumber(rank, locale, 0)}</MizanText>
+              </View>
+            </View>
+            <MizanText variant="title">{local.factors[key]}</MizanText>
+            <MizanText muted>{local.descriptions[key]}</MizanText>
+          </View>
         </View>
         <View style={[styles.signalPill, { backgroundColor: palette.accentSoft }]}>
           <MizanText variant="label">{formatLocalizedNumber(Math.round(factor.value), locale, 0)} / {hundred}</MizanText>
         </View>
       </View>
 
-      <View style={styles.detailGrid}>
+      <View style={[styles.detailGrid, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
         <View style={[styles.detailTile, { backgroundColor: palette.surfaceMuted }]}>
-          <MizanText variant="caption" muted>{local.confidence}</MizanText>
+          <View style={[styles.tileLabelRow, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
+            <AppIcon name="confidence" color={palette.accent} size={16} />
+            <MizanText variant="caption" muted>{local.confidence}</MizanText>
+          </View>
           <MizanText variant="label">{confidenceLabel(factor.confidence.level, locale)}</MizanText>
         </View>
         <View style={[styles.detailTile, { backgroundColor: palette.surfaceMuted }]}>
-          <MizanText variant="caption" muted>{local.evidence}</MizanText>
+          <View style={[styles.tileLabelRow, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
+            <AppIcon name="evidence" color={palette.accent} size={16} />
+            <MizanText variant="caption" muted>{local.evidence}</MizanText>
+          </View>
           <MizanText variant="label">{formatLocalizedNumber(factor.evidence.length, locale, 0)}</MizanText>
         </View>
         <View style={[styles.detailTile, styles.windowTile, { backgroundColor: palette.surfaceMuted }]}>
@@ -205,9 +246,20 @@ export default function WhyScreen() {
       </View>
 
       <Card style={[styles.heroCard, { backgroundColor: palette.accentSoft, borderColor: palette.accent }]}>
-        <View style={styles.heroCopy}>
-          <MizanText variant="title">{local.title}</MizanText>
-          <MizanText muted>{local.body}</MizanText>
+        <View style={[styles.heroTitleRow, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
+          <View style={[styles.heroIcon, { backgroundColor: palette.surface }]}>
+            <AppIcon name="hypothesis" color={palette.accent} size={28} />
+          </View>
+          <View style={styles.heroCopy}>
+            <MizanText variant="title">{local.title}</MizanText>
+            <MizanText muted>{local.body}</MizanText>
+          </View>
+        </View>
+        <View style={[styles.caveatBox, { backgroundColor: palette.surface, borderColor: palette.border }]}>
+          <View style={[styles.caveatTitleRow, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
+            <AppIcon name="evidence" color={palette.accent} size={18} />
+            <MizanText variant="label">{local.caveatTitle}</MizanText>
+          </View>
           <MizanText variant="caption" muted>{local.caveat}</MizanText>
         </View>
         <PrimaryButton label={local.checkIn} onPress={() => router.push('/check-in')} />
@@ -222,9 +274,9 @@ export default function WhyScreen() {
       ) : null}
 
       {status === 'ready' ? (
-        <View style={styles.factorGrid}>
-          {explanation?.factors.map((factor) => (
-            <FactorCard key={factor.key} factor={factor} locale={locale} isRtl={isRtl} />
+        <View style={[styles.factorGrid, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
+          {explanation?.factors.map((factor, index) => (
+            <FactorCard key={factor.key} factor={factor} rank={index + 1} locale={locale} isRtl={isRtl} />
           ))}
         </View>
       ) : null}
@@ -236,14 +288,23 @@ const styles = StyleSheet.create({
   topRow: { alignItems: 'flex-start', justifyContent: 'space-between', gap: Spacing.lg, flexWrap: 'wrap' },
   heading: { flex: 1, minWidth: 0, gap: Spacing.xs },
   heroCard: { gap: Spacing.xl },
-  heroCopy: { gap: Spacing.sm },
-  factorGrid: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'stretch', gap: Spacing.lg },
+  heroTitleRow: { alignItems: 'flex-start', gap: Spacing.lg },
+  heroIcon: { width: 52, height: 52, borderRadius: Radius.md, alignItems: 'center', justifyContent: 'center', flexShrink: 0 },
+  heroCopy: { flex: 1, minWidth: 0, gap: Spacing.sm },
+  caveatBox: { gap: Spacing.sm, borderWidth: Controls.borderWidth, borderRadius: Radius.md, padding: Spacing.lg },
+  caveatTitleRow: { alignItems: 'center', gap: Spacing.sm },
+  factorGrid: { flexWrap: 'wrap', alignItems: 'stretch', gap: Spacing.lg },
   factorCard: { flexGrow: 1, flexShrink: 1, flexBasis: 360 },
   factorHeader: { alignItems: 'flex-start', justifyContent: 'space-between', gap: Spacing.lg, flexWrap: 'wrap' },
-  factorCopy: { flexGrow: 1, flexShrink: 1, flexBasis: 220, gap: Spacing.sm },
+  factorIdentity: { flexGrow: 1, flexShrink: 1, flexBasis: 250, alignItems: 'flex-start', gap: Spacing.md },
+  iconBadge: { width: 48, height: 48, borderRadius: Radius.md, alignItems: 'center', justifyContent: 'center', flexShrink: 0 },
+  factorCopy: { flex: 1, minWidth: 0, gap: Spacing.sm },
+  rankRow: { alignItems: 'center', gap: Spacing.sm },
+  rankPill: { minWidth: 30, minHeight: 30, paddingHorizontal: Spacing.sm, borderRadius: Radius.pill, alignItems: 'center', justifyContent: 'center' },
   signalPill: { minHeight: Controls.minimumTouchHeight, justifyContent: 'center', paddingHorizontal: Spacing.md, borderRadius: Radius.pill },
-  detailGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.sm },
+  detailGrid: { flexWrap: 'wrap', gap: Spacing.sm },
   detailTile: { flexGrow: 1, flexShrink: 1, flexBasis: 140, gap: Spacing.xs, paddingHorizontal: Spacing.md, paddingVertical: Spacing.md, borderRadius: Radius.md },
+  tileLabelRow: { alignItems: 'center', gap: Spacing.xs },
   windowTile: { flexBasis: 220 },
   detailRow: {
     alignItems: 'flex-start',
