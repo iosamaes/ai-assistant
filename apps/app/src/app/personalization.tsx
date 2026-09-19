@@ -23,12 +23,16 @@ const copy = {
     empty: 'لا توجد حالة تخصيص متاحة بعد. ابدأ بتسجيل فحص سريع ليبدأ ميزان في التعلّم.',
     current: 'المرحلة الحالية',
     progression: 'مراحل التعلّم',
+    progressionBody: 'كل مرحلة تعني أن الأدلة أصبحت أكثر نضجًا، لا أن ميزان أصبح أكثر يقينًا بك كشخص.',
     coldStartTitle: 'بداية التعلّم',
     coldStartBody: 'الأدلة ما زالت محدودة، لذلك يتجنب ميزان ادعاء أن لديه خط أساس شخصيًا ثابتًا.',
     learningTitle: 'يتعلّم نمطك',
     learningBody: 'بدأت تظهر إشارات متكررة، لكن ميزان ما زال يعامل التخصيص على أنه غير ناضج ويعرض الثقة بوضوح.',
     personalizedTitle: 'تخصيص ناضج',
     personalizedBody: 'توجد أدلة حديثة كافية لاستخدام تقديرات شخصية أكثر، مع بقاء الثقة والبيانات الناقصة ظاهرة بدل إخفائها.',
+    activeStage: 'المرحلة النشطة',
+    futureStage: 'مرحلة لاحقة',
+    pastStage: 'تم تجاوزها',
     note: 'كل استنتاج يظل مقيدًا بحداثة الأدلة وجودتها؛ الوصول إلى مرحلة التخصيص لا يعني اليقين ولا يحول البيانات الناقصة إلى أرقام.',
     back: 'العودة للإعدادات',
   },
@@ -41,12 +45,16 @@ const copy = {
     empty: 'No personalization state is available yet. Start with a quick check-in so MIZAN can begin learning.',
     current: 'Current stage',
     progression: 'Learning stages',
+    progressionBody: 'Each stage means the evidence is more mature, not that MIZAN is more certain about you as a person.',
     coldStartTitle: 'Starting to learn',
     coldStartBody: 'Evidence is still limited, so MIZAN avoids pretending it has a stable personal baseline.',
     learningTitle: 'Learning your pattern',
     learningBody: 'Repeated signals are beginning to form, but MIZAN still treats personalization as immature and keeps confidence explicit.',
     personalizedTitle: 'Mature personalization',
     personalizedBody: 'There is enough recent evidence to use more personal estimates, while confidence and missing data remain visible rather than hidden.',
+    activeStage: 'Active stage',
+    futureStage: 'Later stage',
+    pastStage: 'Passed stage',
     note: 'Every inference still depends on evidence freshness and quality; reaching the personalized stage is not certainty and never turns missing data into numbers.',
     back: 'Back to settings',
   },
@@ -67,7 +75,7 @@ function stageBody(stage: PersonalizationMaturity, locale: 'ar' | 'en'): string 
 }
 
 export default function PersonalizationScreen() {
-  const { locale, refreshSession, userId } = useAppState();
+  const { isRtl, locale, refreshSession, userId } = useAppState();
   const [status, setStatus] = useState<LoadStatus>('loading');
   const [state, setState] = useState<HumanStateVector | null>(null);
   const scheme = useColorScheme();
@@ -103,67 +111,96 @@ export default function PersonalizationScreen() {
     };
   }, [refreshSession, userId]);
 
+  const currentStageIndex = state ? stageOrder.indexOf(state.maturity) : -1;
+
   return (
     <Screen>
-      <View style={styles.hero}>
-        <MizanText variant="label" muted>{labels.eyebrow}</MizanText>
-        <MizanText variant="display">{labels.title}</MizanText>
-        <MizanText muted>{labels.body}</MizanText>
+      <View style={[styles.topRow, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
+        <View style={styles.heading}>
+          <MizanText variant="label" muted>{labels.eyebrow}</MizanText>
+          <MizanText variant="display">{labels.title}</MizanText>
+        </View>
+        <SecondaryButton compact label={labels.back} onPress={() => router.replace('/settings')} />
       </View>
 
-      {status === 'loading' ? <MizanText accessibilityLiveRegion="polite" muted>{labels.loading}</MizanText> : null}
-      {status === 'error' ? <MizanText accessibilityLiveRegion="polite" muted>{labels.error}</MizanText> : null}
+      <Card style={[styles.heroCard, { backgroundColor: palette.accentSoft, borderColor: palette.accent }]}>
+        <MizanText variant="title">{state ? stageTitle(state.maturity, locale) : labels.current}</MizanText>
+        <MizanText>{labels.body}</MizanText>
+        {status === 'ready' && state ? (
+          <View style={[styles.currentPill, { backgroundColor: palette.surface, alignSelf: isRtl ? 'flex-end' : 'flex-start' }]}>
+            <MizanText variant="caption">{labels.activeStage}</MizanText>
+          </View>
+        ) : null}
+      </Card>
+
+      {status === 'loading' ? (
+        <Card style={{ backgroundColor: palette.surfaceMuted }}>
+          <MizanText accessibilityLiveRegion="polite" muted>{labels.loading}</MizanText>
+        </Card>
+      ) : null}
+      {status === 'error' ? (
+        <Card style={{ backgroundColor: palette.surfaceMuted }}>
+          <MizanText accessibilityLiveRegion="polite" muted>{labels.error}</MizanText>
+        </Card>
+      ) : null}
       {status === 'ready' && !state ? (
-        <Card>
+        <Card style={{ backgroundColor: palette.surfaceMuted }}>
           <MizanText accessibilityLiveRegion="polite" muted>{labels.empty}</MizanText>
         </Card>
       ) : null}
 
       {status === 'ready' && state ? (
         <>
-          <Card>
-            <MizanText variant="label" muted>{labels.current}</MizanText>
-            <MizanText variant="title">{stageTitle(state.maturity, locale)}</MizanText>
-            <MizanText muted>{stageBody(state.maturity, locale)}</MizanText>
-          </Card>
-
-          <View style={styles.progression}>
+          <View style={styles.sectionHeader}>
             <MizanText variant="title">{labels.progression}</MizanText>
-            {stageOrder.map((stage) => {
+            <MizanText muted>{labels.progressionBody}</MizanText>
+          </View>
+
+          <View style={[styles.progression, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
+            {stageOrder.map((stage, index) => {
               const active = stage === state.maturity;
+              const passed = index < currentStageIndex;
+              const stageStateLabel = active ? labels.activeStage : passed ? labels.pastStage : labels.futureStage;
               return (
-                <View
+                <Card
                   key={stage}
                   style={[
                     styles.stage,
                     {
                       borderColor: active ? palette.accent : palette.border,
-                      backgroundColor: palette.surface,
+                      backgroundColor: active ? palette.accentSoft : palette.surface,
                     },
                   ]}>
-                  <MizanText variant="label">{stageTitle(stage, locale)}</MizanText>
-                  <MizanText variant="caption" muted>{stageBody(stage, locale)}</MizanText>
-                </View>
+                  <View style={[styles.stageHeader, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
+                    <MizanText variant="title" style={styles.flexibleText}>{stageTitle(stage, locale)}</MizanText>
+                    <View style={[styles.stagePill, { backgroundColor: palette.surfaceMuted }]}>
+                      <MizanText variant="caption">{stageStateLabel}</MizanText>
+                    </View>
+                  </View>
+                  <MizanText muted>{stageBody(stage, locale)}</MizanText>
+                </Card>
               );
             })}
           </View>
 
-          <MizanText variant="caption" muted>{labels.note}</MizanText>
+          <Card style={{ backgroundColor: palette.surfaceMuted }}>
+            <MizanText variant="caption" muted>{labels.note}</MizanText>
+          </Card>
         </>
       ) : null}
-
-      <SecondaryButton compact label={labels.back} onPress={() => router.replace('/settings')} />
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  hero: { gap: Spacing.md },
-  progression: { gap: Spacing.sm },
-  stage: {
-    borderWidth: Controls.borderWidth,
-    borderRadius: Radius.sm,
-    gap: Spacing.xs,
-    padding: Spacing.md,
-  },
+  topRow: { alignItems: 'flex-start', justifyContent: 'space-between', gap: Spacing.lg, flexWrap: 'wrap' },
+  heading: { flex: 1, minWidth: 0, gap: Spacing.xs },
+  heroCard: { gap: Spacing.md },
+  currentPill: { borderRadius: Radius.pill, paddingHorizontal: Spacing.md, paddingVertical: Spacing.sm, maxWidth: '100%' },
+  sectionHeader: { gap: Spacing.sm },
+  progression: { flexWrap: 'wrap', alignItems: 'stretch', gap: Spacing.lg },
+  stage: { flexGrow: 1, flexShrink: 1, flexBasis: 260, gap: Spacing.md },
+  stageHeader: { alignItems: 'flex-start', justifyContent: 'space-between', gap: Spacing.sm, flexWrap: 'wrap' },
+  stagePill: { minHeight: Controls.minimumTouchHeight, justifyContent: 'center', borderRadius: Radius.pill, paddingHorizontal: Spacing.md },
+  flexibleText: { flexShrink: 1 },
 });
