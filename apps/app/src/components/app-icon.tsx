@@ -16,7 +16,10 @@ export type AppIconName =
   | 'trendUp'
   | 'trendFlat'
   | 'trendDown'
-  | 'evidence';
+  | 'evidence'
+  | 'pattern'
+  | 'hypothesis'
+  | 'confidence';
 
 const symbols = {
   home: { ios: 'house.fill', android: 'home', web: 'home' },
@@ -35,6 +38,9 @@ const symbols = {
   trendFlat: { ios: 'minus', android: 'trending_flat', web: 'trending_flat' },
   trendDown: { ios: 'arrow.down.right', android: 'trending_down', web: 'trending_down' },
   evidence: { ios: 'checkmark.seal.fill', android: 'fact_check', web: 'fact_check' },
+  pattern: { ios: 'chart.line.uptrend.xyaxis', android: 'timeline', web: 'timeline' },
+  hypothesis: { ios: 'lightbulb.fill', android: 'lightbulb', web: 'lightbulb' },
+  confidence: { ios: 'checkmark.shield.fill', android: 'verified', web: 'verified' },
 } as const;
 
 interface AppIconProps {
