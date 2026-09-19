@@ -58,6 +58,7 @@ Presentation authority remains the compact app-local theme and shared primitives
 - `c0fdf88655682900b36c90d531b3ef2114f065c2` — Personalization premium composition: current-maturity hero, responsive learning-stage cards with active/past/future state treatment, structured loading/error/empty states, and retained evidence-maturity caveats.
 - `726a969566a178332d0f21f09ca6e6694bfebc5e` — Invisible Wins premium composition plus account-state hardening: calm reflection hero/composer/history grid and structured delivery/load states; history is now explicitly owned by the active account and stale previous-account load/save completions cannot repaint the next account's reflection list.
 - `b88fb3a4d70994251300b52c8458e3409659aa17` — Update Password premium composition: secure recovery framing, structured credential form, designed requirement/match/session states, and input gating when no valid recovery session is active, while preserving the existing password-update behavior and raw-error shielding.
+- `2bf3e942e172c1d9233574468cdcdc4fbe7baae0` — entry/session-restoration surface upgraded from a lone loading label to a bilingual premium trust-state card with clear context-restoration messaging, semantic shared primitives, and a live loading status; routing behavior is unchanged.
 
 Additional static CP9 evidence includes Western/ASCII digit enforcement for Arabic and English formatted output, Arabic localized-number parsing, Arabic timestamps using `nu-latn`, Today cross-user async fencing, and targeted RTL/localization/dynamic-type/accessibility hardening across primary routes.
 
@@ -65,11 +66,12 @@ Navigation/state hardening added in the latest static pass:
 - `de9ddb608498d4440874a831585ae19bb4a70b52` — root entry routing now treats an authenticated offline session (`offline` + active `userId`) as usable, matching the root navigator and preventing an offline cold entry from bouncing back to Auth.
 - `e3a817f552a8036974efef449d36a98718acef84` — focused entry-route regression specification covers offline authenticated Today/onboarding routing and rejects offline-without-user as authenticated. The specification was added but not run under the active worker policy.
 - `b6d0878574de785c63cf0cfac5f1aae20ace813f` — shared `Screen` ambient layers moved `pointerEvents` from the deprecated React Native Web prop to the style property, preserving non-interactive decoration while removing a concrete Web console deprecation path.
+- `9c4f254c2117645d1f7ef6295e9063c185979111` — entry-route specification now also covers the designed session-loading state and confirms it does not redirect before restoration finishes; specification added but not worker-run under current policy.
 
 ### CP9 remaining
-- Continue the Premium Production Visual Pass only on any remaining shipped route that static inspection still shows at scaffold-level composition; password recovery/update now matches the premium auth direction, so prioritize only concrete remaining secondary/state surfaces before touching already-premium screens again.
+- Continue the Premium Production Visual Pass only on any remaining shipped route that static inspection still shows at scaffold-level composition; password recovery/update and the root session-restoration state now match the premium direction, so prioritize only concrete remaining secondary/state surfaces before touching already-premium screens again.
 - Refine navigation shell/state/data presentation only where current code demonstrates a concrete need; avoid page-local design systems or wrapper-only abstraction.
-- Continue static defect review for untranslated production literals, Western-digit regressions, semantic RTL, accessibility/live announcements, truncation/dynamic-type, keyboard/focus, unknown technical identifiers, and duplicated global visual decisions.
+- Continue static defect review for untranslated production literals, Western-digit regressions, semantic RTL, accessibility/live announcements, truncation/dynamic type, keyboard/focus, unknown technical identifiers, and duplicated global visual decisions.
 - Owner/runtime evidence is still required across representative phone/tablet/Web widths, Arabic/English, and shipped light/dark modes.
 - TASK-required design-swap proof is not claimed and still requires representative runtime evidence on Today, Life Map, WHY, and an interaction-heavy flow without edits outside the presentation boundary.
 
@@ -117,8 +119,8 @@ Post-baseline:
 - **No worker-run app tests, builds, typechecks, validation database scripts, cloud CI, or GitHub Actions are claimed for CP2–CP10 changes.**
 - Authorized product migrations `function_execute_hardening` and `account_data_export` were applied and resulting live function ACLs were read; this is implementation/state evidence, not a test-suite PASS.
 - `delete-account` deployment reports ACTIVE with JWT verification enabled; no destructive end-to-end deletion validation is claimed.
-- CP9 Premium Production Visual Pass commits through `b88fb3a4d70994251300b52c8458e3409659aa17` are static implementation evidence only until owner runtime review.
-- Offline entry routing and shared Web `pointerEvents` warning fixes above are static source evidence only; the focused regression specification remains owner-run under the active worker policy.
+- CP9 Premium Production Visual Pass commits through `2bf3e942e172c1d9233574468cdcdc4fbe7baae0` are static implementation evidence only until owner runtime review.
+- Offline entry routing, premium session-loading presentation, and shared Web `pointerEvents` warning fixes above are static source/specification evidence only; the focused regression specifications remain owner-run under the active worker policy.
 
 ## Known blockers / risks
 - CP1: Windows session must be unlocked normally for true narrow-phone Arabic/English interaction evidence; see `automation/HUMAN_REQUIRED.md`.
