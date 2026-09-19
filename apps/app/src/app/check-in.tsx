@@ -8,6 +8,7 @@ import {
   type DailyCheckInRating,
   type DailyCheckInRatings,
 } from '@/application/check-in';
+import { AppIcon, type AppIconName } from '@/components/app-icon';
 import { Card, ChoiceChip, MizanText, PrimaryButton, SecondaryButton } from '@/components/mizan-ui';
 import { Screen } from '@/components/screen';
 import { Controls, Palette, Radius, Spacing } from '@/constants/theme';
@@ -15,12 +16,12 @@ import { formatLocalizedNumber } from '@/i18n/number-input';
 import { useAppState } from '@/state/app-state';
 
 const ratingOptions = [1, 2, 3, 4, 5] as const;
-const metricItems = [
-  { metric: 'energy', label: 'checkInEnergy' },
-  { metric: 'recovery', label: 'checkInRecovery' },
-  { metric: 'mental_load', label: 'checkInMentalLoad' },
-  { metric: 'connection', label: 'checkInConnection' },
-] as const;
+const metricItems: readonly { metric: DailyCheckInMetric; label: 'checkInEnergy' | 'checkInRecovery' | 'checkInMentalLoad' | 'checkInConnection'; icon: AppIconName }[] = [
+  { metric: 'energy', label: 'checkInEnergy', icon: 'energy' },
+  { metric: 'recovery', label: 'checkInRecovery', icon: 'recovery' },
+  { metric: 'mental_load', label: 'checkInMentalLoad', icon: 'mentalLoad' },
+  { metric: 'connection', label: 'checkInConnection', icon: 'connection' },
+];
 
 const deliveryCopy = {
   ar: {
@@ -43,6 +44,7 @@ export default function CheckInScreen() {
   const answeredCount = useMemo(() => Object.keys(ratings).length, [ratings]);
   const interactionsLocked = submitState === 'saving' || submitState === 'queued';
   const progressLabel = `${formatLocalizedNumber(answeredCount, locale, 0)} / ${formatLocalizedNumber(metricItems.length, locale, 0)}`;
+  const progressPercent = (answeredCount / metricItems.length) * 100;
 
   useEffect(() => {
     activeUserRef.current = userId;
@@ -120,10 +122,26 @@ export default function CheckInScreen() {
             <MizanText variant="label">{progressLabel}</MizanText>
           </View>
         </View>
+        <View
+          accessibilityRole="progressbar"
+          accessibilityLabel={`${t('checkInTitle')}: ${progressLabel}`}
+          accessibilityValue={{ min: 0, max: metricItems.length, now: answeredCount, text: progressLabel }}
+          style={[styles.progressTrack, { backgroundColor: palette.surface }]}>
+          <View
+            style={[
+              styles.progressFill,
+              {
+                alignSelf: isRtl ? 'flex-end' : 'flex-start',
+                backgroundColor: palette.accent,
+                width: `${progressPercent}%` as `${number}%`,
+              },
+            ]}
+          />
+        </View>
       </Card>
 
       <View style={[styles.metricGrid, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
-        {metricItems.map(({ metric, label }) => {
+        {metricItems.map(({ metric, label, icon }) => {
           const selectedRating = ratings[metric];
           const selectedLabel = selectedRating === undefined
             ? t('checkInSkip')
@@ -138,7 +156,12 @@ export default function CheckInScreen() {
               ]}
             >
               <View style={[styles.metricHeader, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
-                <MizanText variant="title" style={styles.metricTitle}>{t(label)}</MizanText>
+                <View style={[styles.metricHeading, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
+                  <View style={[styles.metricIcon, { backgroundColor: palette.accentSoft }]}>
+                    <AppIcon name={icon} color={palette.accent} size={22} />
+                  </View>
+                  <MizanText variant="title" style={styles.metricTitle}>{t(label)}</MizanText>
+                </View>
                 <View style={[styles.selectionPill, { backgroundColor: palette.surfaceMuted }]}>
                   <MizanText variant="caption" muted>{selectedLabel}</MizanText>
                 </View>
@@ -222,10 +245,21 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.lg,
     borderRadius: Radius.pill,
   },
+  progressTrack: { height: 8, borderRadius: Radius.pill, overflow: 'hidden' },
+  progressFill: { height: '100%', borderRadius: Radius.pill },
   metricGrid: { flexWrap: 'wrap', alignItems: 'stretch', gap: Spacing.lg },
   metricCard: { flexGrow: 1, flexShrink: 1, flexBasis: 320 },
   metricHeader: { alignItems: 'flex-start', justifyContent: 'space-between', gap: Spacing.md, flexWrap: 'wrap' },
-  metricTitle: { flexGrow: 1, flexShrink: 1, flexBasis: 180 },
+  metricHeading: { flexGrow: 1, flexShrink: 1, flexBasis: 200, minWidth: 0, alignItems: 'center', gap: Spacing.md },
+  metricIcon: {
+    width: Controls.minimumTouchHeight,
+    height: Controls.minimumTouchHeight,
+    borderRadius: Radius.md,
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexShrink: 0,
+  },
+  metricTitle: { flexGrow: 1, flexShrink: 1, minWidth: 0 },
   selectionPill: {
     minHeight: Controls.minimumTouchHeight,
     justifyContent: 'center',
