@@ -566,9 +566,16 @@ Required:
 - Ensure responsive layout behavior is driven by a small shared set of semantic breakpoints/layout rules rather than scattered device-specific constants.
 - Confirm that no UI refactor pulls business rules, Supabase access, provider logic, or MIZAN scoring into presentation components.
 - Standardize reusable empty/loading/error/offline, control, surface, typography, and navigation treatments only where repetition is demonstrated.
+- Execute a **Premium Production Visual Pass** after the architectural/accessibility hardening. The shipped app must move beyond functional/scaffold styling into a visibly coherent premium product identity; CP9 cannot close merely because tokens, RTL, responsiveness, or accessibility are technically correct.
+- The premium pass must intentionally redesign visual hierarchy, page composition, navigation shell, surfaces/cards, typography emphasis, spacing rhythm, data visualization, state presentation, icons where useful, empty/error/loading treatment, and restrained micro-interactions while preserving the calm MIZAN character and avoiding visual noise.
+- Apply the premium pass across **all primary shipped surfaces**, with focused review of Today, Life Map, WHY, Insights/Personal Learning, What If, Recovery, Experiments, Integrations, Settings/Privacy, onboarding/auth, and other primary routes. Do not leave a split product where only a few showcase screens look premium.
+- The premium pass must use the shared semantic tokens/primitives and feature composition boundaries from section 7.1. Do not achieve a richer appearance by introducing page-specific hard-coded design systems or duplicating global visual decisions.
+- The final visual language must work intentionally in Arabic RTL and English, narrow/common phone widths, tablet portrait/landscape, and wide Web. Light/dark modes must both feel designed rather than mechanically inverted if both are shipped.
+- Record **visual evidence** for the premium pass: representative screenshots or equivalent runtime captures covering at minimum narrow/common phone, tablet, and wide Web, with Arabic RTL and English represented and both light/dark modes when shipped. Evidence must be sufficient for the owner to judge the actual production appearance, not only architecture.
+- Before CP9 is considered complete, the owner must be able to open a current representative build/server and see a clearly premium production-level visual transformation; a mostly functional development UI with only technical polish does not satisfy this gate.
 - Perform a **design-swap proof** on representative screens including Today, Life Map, WHY, and at least one interaction-heavy flow. Demonstrate that a substantially different visual direction can be achieved through theme/tokens, shared visual primitives/navigation, and feature composition only, with no edits required in `packages/core`, application intelligence/data contracts, Supabase/data-access, or provider adapters. Record the evidence in `docs/PROJECT_STATE.md`. Do not keep duplicate production themes solely for this proof.
 - Preserve the chosen production visual direction after the proof; design-swappability must not become runtime theme infrastructure or speculative over-engineering.
-**Gate:** no primary flow has horizontal overflow, unusable tap targets, inaccessible unlabeled controls, broken RTL, or layout collapse at representative widths; repeated global design decisions are not scattered across feature screens; and the representative design-swap proof demonstrates that a future full visual redesign does not require changes to core intelligence, application/data contracts, Supabase/data-access, or provider infrastructure.
+**Gate:** no primary flow has horizontal overflow, unusable tap targets, inaccessible unlabeled controls, broken RTL, or layout collapse at representative widths; repeated global design decisions are not scattered across feature screens; the representative design-swap proof demonstrates that a future full visual redesign does not require changes to core intelligence, application/data contracts, Supabase/data-access, or provider infrastructure; and the current shipped visual identity has completed the Premium Production Visual Pass with representative runtime visual evidence showing a coherent premium product across primary surfaces and screen classes.
 
 ### CP10 — Security, privacy, and owner-data control
 **Goal:** make the product safe enough to trust with personal life data.
@@ -635,6 +642,7 @@ The mission is code/product complete only when all of the following are true:
 - The universal app runs as one product on Web and resolves correctly for Android and iOS targets.
 - Arabic RTL and English experiences are functional across all primary flows and representative screen classes.
 - The presentation architecture is design-swappable: a future full visual identity change can be implemented through app-local semantic tokens/theme, justified shared visual primitives/navigation, and feature composition without modifying core intelligence, application/data contracts, Supabase/data-access, or provider adapters.
+- The current production UI has completed the CP9 Premium Production Visual Pass: primary surfaces present one coherent premium visual identity across representative phone/tablet/Web layouts and shipped appearance modes, with recorded runtime visual evidence rather than scaffold-only styling.
 - Global visual decisions are centralized without turning the UI into a wrapper hierarchy, styling DSL, generic component factory, or speculative theme framework.
 - Supabase migrations recreate the required backend schema; authentication, persistence, RLS, and user ownership are verified.
 - Core MIZAN intelligence is deterministic without AI, tested, explainable, uncertainty-aware, and handles sparse/missing data honestly.
@@ -725,6 +733,7 @@ At completion the repository must contain, at minimum:
 ## 27. Final product standard
 
 The completed application should feel like a coherent premium product, not a generated feature catalogue.
+Premium quality must be visibly present in the shipped interface itself—not only in architecture, accessibility, or future redesign potential—and must be demonstrated before CP9/final completion.
 Its value must come from a strong daily loop, trustworthy personal intelligence, calm decision support, and progressively better personalization.
 The UI should make complex intelligence feel simple.
 The chosen visual identity may evolve; the presentation architecture must make a future redesign a controlled UI-layer change rather than a product rewrite.
