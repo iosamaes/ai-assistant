@@ -32,7 +32,7 @@ CP8 is not credited `DONE` until owner/runtime evidence confirms restart/reload 
 ## CP9 current implementation
 Presentation authority remains the compact app-local theme and shared primitives. The current shared foundation includes semantic palette/typography/spacing/radii/control sizing, `MizanText`, cards, form controls, buttons/chips, responsive `Screen`, reduced-motion navigation behavior, broad RTL/dynamic-type/accessibility/localization hardening, Western-digit formatting, and async state fencing.
 
-The Premium Production Visual Pass has been statically applied across the primary shipped surfaces including Today, Life Map, WHY, Check-in, Insights, Personal Learning, What If, Recovery, Experiments, Integrations, Settings, Privacy, Auth, Onboarding, Capacity, Cost of Yes, Human ROI, Value Alignment, Life Seasons, Personalization, Invisible Wins, Update Password, and the root session-restoration state. Representative implementation commits are recorded in Git history and the presentation boundary is documented in `docs/CP9_PRESENTATION_ARCHITECTURE.md`.
+The Premium Production Visual Pass has a strong shared styling/accessibility foundation across the primary shipped surfaces, but the owner-approved showcase exposed a material reference-fidelity gap. CP9 is therefore **not near completion on visual implementation** until the blocking reference contract in `automation/TASK.md` is implemented: adaptive mobile bottom navigation + tablet/desktop sidebar/rail, a coherent production iconography system, Life Map radar/spider visualization, richer Today dashboard composition/meters, WHY/Insights icon/evidence language, What If/experiment visual meters, and the required illustration language for onboarding/focus/recovery. Existing styling work remains valid foundation; it must now be completed into the agreed product composition rather than treated as sufficient premium output.
 
 Navigation/state/localization hardening currently includes:
 - `de9ddb608498d4440874a831585ae19bb4a70b52` — offline authenticated root entry remains inside the product instead of bouncing to Auth.
@@ -46,8 +46,8 @@ Navigation/state/localization hardening currently includes:
 - `a78e65f2059f815dc21aa129b96ccb5bbe307357` — corrected misleading Arabic Capacity copy that described Life Debt as an “unethical” planning signal; Arabic now matches the product rule and English source by describing it as neutral and explicitly not a moral judgment or performance measure.
 
 ### CP9 remaining
-- Finish static inspection only for concrete residual scaffold-level or navigation-state defects; avoid reworking already-premium screens without evidence.
-- Continue targeted checks for untranslated literals, Western-digit regressions, semantic RTL in remaining wrapped grids, accessibility/live announcements, truncation/dynamic type, keyboard/focus, technical-id fallbacks, and duplicated global visual decisions.
+- **Blocking owner-reference implementation:** adaptive navigation shell (mobile bottom nav + tablet/desktop sidebar/rail), shared production iconography, Life Map radar/spider chart, Today visual dashboard/focus hero/meters, richer WHY/Insights evidence cards, What If/Experiments visual ranges/status, Personalization/Invisible Wins composition, and calm onboarding/recovery/focus illustration language.
+- After those structural visual gaps are implemented, finish the residual static sweep for untranslated literals, Western-digit regressions, semantic RTL, accessibility/live announcements, truncation/dynamic type, keyboard/focus, technical-id fallbacks, and duplicated global visual decisions.
 - Owner/runtime evidence is still required across representative phone/tablet/Web widths, Arabic/English, and shipped light/dark modes.
 - TASK-required design-swap proof is not yet claimed and still requires representative runtime evidence on Today, Life Map, WHY, and an interaction-heavy flow without edits outside the presentation boundary.
 
@@ -73,9 +73,10 @@ Implemented security/privacy work includes:
 - Supabase leaked-password protection remains an owner action in `automation/HUMAN_REQUIRED.md`.
 
 ## Exact next executable action
-1. Continue CP9 static inspection of residual navigation/state and remaining responsive RTL/accessibility/localization defects; only mutate when a concrete defect is demonstrated.
-2. Continue CP10 repository-wide sensitive logging/error-reporting review for uninspected sinks.
-3. Leave representative-width runtime checks, post-baseline tests/builds/typechecks/database validation suites, export/delete/local-purge proof, consent/account-switch runtime races, premium screenshot evidence, and final design-swap proof to owner validation under the active policy.
+1. CP9 priority is now the owner-approved reference contract: implement the adaptive navigation shell first, then the shared iconography layer, then Life Map radar/spider visualization, then Today/Home visual composition. Do **not** spend the next runs on micro-polish-only work while these structural gaps remain.
+2. Continue the remaining reference checklist in order: WHY/Insights visual language -> What If/Experiments meters/status -> Personalization/Invisible Wins/Recovery/Onboarding illustration/composition -> remaining gauges/secondary alignment.
+3. Keep CP10 security/privacy work parallel only when CP9 work is temporarily blocked or another safe independent batch is clearly higher value.
+4. Leave representative-width runtime checks, post-baseline tests/builds/typechecks/database validation suites, export/delete/local-purge proof, consent/account-switch runtime races, premium screenshot evidence, and final design-swap proof to owner validation under the active policy.
 
 ## Verification record
 Previously recorded owner-side baseline evidence:
