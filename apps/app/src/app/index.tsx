@@ -5,7 +5,7 @@ import { Screen } from '@/components/screen';
 import { useAppState } from '@/state/app-state';
 
 export default function EntryScreen() {
-  const { onboardingCompleted, sessionStatus, t } = useAppState();
+  const { onboardingCompleted, sessionStatus, t, userId } = useAppState();
 
   if (sessionStatus === 'loading') {
     return (
@@ -15,7 +15,10 @@ export default function EntryScreen() {
     );
   }
 
-  if (sessionStatus !== 'signed-in') {
+  const hasUsableSession =
+    sessionStatus === 'signed-in' || (sessionStatus === 'offline' && Boolean(userId));
+
+  if (!hasUsableSession) {
     return <Redirect href="/auth" />;
   }
 
