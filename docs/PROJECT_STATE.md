@@ -15,7 +15,7 @@
 - [ ] CP5 — Insight, explanation, personal learning — implementation present; validation pending
 - [ ] CP6 — Advanced decision tools — implementation present; validation pending
 - [ ] CP7 — Plugins, unified integrations, provider boundaries — implementation present; validation pending
-- [ ] CP8 — Reliability, offline tolerance, sync — current implementation statically reviewed complete; owner/runtime validation pending
+- [ ] CP8 — Reliability, offline tolerance, sync — statically reviewed complete; owner/runtime validation pending
 - [ ] CP9 — Responsive UX, accessibility, localization, polish, design-swappability — **IN_PROGRESS**
 - [ ] CP10 — Security, privacy, owner-data control
 - [ ] CP11 — Test matrix, performance, release readiness
@@ -33,74 +33,31 @@ Presentation boundary already in place:
 - semantic palette, typography, spacing, radii, controls/touch sizing, border, interaction, and responsive layout tokens in `apps/app/src/constants/theme.ts`;
 - shared `MizanText`, `Card`, `MizanTextInput`, `PrimaryButton`, `SecondaryButton`, and `ChoiceChip` primitives;
 - centralized responsive `Screen` behavior;
-- representative consolidation across all current primary routes;
+- representative consolidation across current primary routes;
 - navigation shell honors reduced-motion preference;
 - confidence/status localization is progressively removed from raw engine enums;
 - semantic RTL fixes cover grouped metric/date presentation where concrete issues were found;
-- async accessibility live announcements cover loading/error/empty/status transitions across the reviewed product surfaces.
+- async accessibility live announcements cover loading/error/empty/status transitions across reviewed product surfaces.
 
 Latest static CP9 work:
-- **Choice-control disabled semantics:** shared `ChoiceChip` now supports a real disabled state with native interaction blocking, `accessibilityState.disabled`, and the shared disabled-opacity token instead of forcing async screens to rely on silent handler guards.
-- **Check-in submission fencing:** rating and skip chips are disabled while a check-in is saving and after it has been queued, and the rating setter defensively rejects those transitions. This prevents users or assistive technology from changing the visible draft while an earlier payload is in flight and prevents a queued terminal state from being silently reopened through a rating tap.
-- **Localized decimal input:** Cost of Yes and Human ROI now normalize Western digits, Arabic-Indic digits, Eastern-Arabic/Persian digits, Arabic decimal separators, and comma decimals through the small shared `parseLocalizedDecimalInput` helper before applying each screen's existing `0..168` weekly-hours bound. This fixes a concrete Arabic-first input failure without moving decision math into presentation or introducing a generic locale framework.
-- **Shared semantic text direction:** `MizanText`, `MizanTextInput`, and primary-action labels now apply locale-aware `writingDirection` in addition to text alignment, so Arabic/English mixed punctuation and inline content follow the intended bidi paragraph direction across shared surfaces. Screen-specific semantic LTR overrides such as email remain possible because local styles are applied last.
-- **Recovery interaction flow:** advancing or skipping to a new recovery step now updates a polite accessibility live region on the step position, so screen-reader users receive an explicit transition cue instead of a silent in-place content replacement; recovery guidance and navigation behavior are unchanged.
-- **Life Map responsive/dynamic type:** the top navigation row, domain headers, and metric title/value rows now wrap instead of assuming a single horizontal line; long Arabic/English labels can shrink/wrap while values and navigation remain usable at narrow widths and larger text settings.
-- **WHY responsive/dynamic type:** the top navigation row and factor evidence rows now permit wrapping, and both label/value text can shrink within the row, reducing horizontal-overflow risk for Arabic, long evidence-window text, and accessibility text sizes without changing evidence interpretation.
-- **Check-in interaction-heavy surface:** low/high scale labels now support wrapping and shrink within their mirrored row, removing a remaining narrow-width/dynamic-type collision risk while preserving the existing rating semantics and metric-aware accessibility labels.
-- **Bootstrap error fallback:** the retry action label now centers its scalable text explicitly, so larger dynamic-type settings that wrap the Arabic/English retry copy keep intentional button alignment instead of falling back to directional line alignment.
-- **Shared choice controls:** `ChoiceChip` now centers its scalable label text so long Arabic/English labels, including consent and experiment choices, remain visually centered when dynamic type causes wrapping instead of inheriting directional left/right text alignment inside pill controls.
-- **Experiments:** the asynchronous no-history result now uses a polite accessibility live region, so screen readers announce the transition from loading to an empty experiment history without changing experiment consent, persistence, completion, or evaluation behavior.
-- **Shared primary actions:** `PrimaryButton` now centers its scalable label text, so long Arabic/English labels that wrap under larger accessibility text sizes retain intentional button alignment instead of inheriting directional left/right alignment.
-- **Invisible Wins:** its asynchronous no-reflections result now uses a polite accessibility live region, so the transition from loading to an empty history is announced without changing reflection persistence, offline queue behavior, or category semantics.
-- **Integrations:** the asynchronous no-connections result now announces its empty-state title through a polite accessibility live region. Provider lifecycle, consent, sync, disconnect, and persistence behavior are unchanged.
-- **Value Alignment:** the asynchronous no-alignment/no-values result now uses a polite accessibility live region while preserving alignment evidence, confidence, and identity-drift interpretation unchanged.
-- **Numeric choice controls:** shared `ChoiceChip` supports a semantic accessibility label distinct from its visible label; Check-in and Human ROI rating chips announce metric plus rating instead of a bare number.
-- **Reactive decision assessments:** Cost of Yes and Human ROI now expose their computed assessment title/body through polite live regions, so screen-reader users can hear assessment changes after numeric or choice input without changing decision math, confidence, or persistence behavior.
-- **Async-state coverage:** Today, Life Map, WHY, Insights, Capacity, Life Seasons, Entry, Personalization, Onboarding, Personal Learning, Experiments, Recovery, What If, Settings, Auth/recovery, Check-in, Value Alignment, Invisible Wins, and Integrations have received static accessibility-state review and targeted live-region fixes where concrete gaps were identified.
-
-Latest static product commits from this pass (not runtime-verified):
-- `71064ae6f183724685c67a543ad0650aa1c9c5d1` — add disabled interaction/accessibility semantics to shared `ChoiceChip`.
-- `52b0065ebc7014fedd701a26a6033c24b9ab86a7` — fence Check-in choice editing during saving and queued terminal state.
-- `f6750f42a739d1680578549961f52b6cdca88118` — add conservative localized decimal-input normalization for Arabic-first numeric entry.
-- `192642abc2ab1bc13feb5f8c052375bbc7cff329` — use localized decimal parsing in Cost of Yes weekly-hour fields.
-- `7a93fab1f4f12f3cdbb1d23b73efc91d7cb3cb0f` — use localized decimal parsing in Human ROI weekly-hour field.
-- `ec9a016cee5649cccaeb4af966d3037624f94fce` — add focused Jest specification for supported localized decimal forms and malformed input rejection.
-- `3df3ca5dd8625fc21eca86296e2bf0b5a384477e` — enforce locale-aware writing direction in shared text, input, and primary-action primitives.
-- `c56f0427239dfbe1a07f7592a0a17fd9420d58ed` — announce Recovery step progression to assistive technology.
-- `de80dac980b0715716ab0b926376f3d18abb40f3` — make Check-in low/high scale labels wrap safely under narrow width and dynamic type.
-- `becc73e8b3902a3027e055a4be606c84177d96af` — harden WHY top/evidence rows for narrow width and large dynamic type.
-- `541eda4c123022fb31fb215bbe13744bd1f9e156` — harden Life Map navigation/domain/metric rows for narrow width and large dynamic type.
-- `32ffc4c2340fd3871119a37574c7447ca3c13e07` — center wrapped bootstrap error-fallback retry label.
-- `2e6039225b44c75365a0923ec1e2a275ccfc0974` — announce Human ROI reactive assessment changes.
-- `5086df6ee4c8dd7a7520713d155fd30baf52b073` — announce Cost of Yes reactive assessment changes.
-- `eb6023f01a984b6954182518aff93036c10dfcaa` — center scalable/wrapped shared choice-chip labels.
-- `e19fbe5abd1d4169c11b8589c7199b5ac91f9202` — announce empty experiment history.
-- `e0c10da938445138afb543abf3e921edd411c8a3` — center scalable/wrapped shared primary-button labels.
-- `b9bbec5292980bbf693115e96a2e6b3c19b46041` — announce Invisible Wins empty history.
-- `5b1e3169b344eb593e4375534764fe3328915bec` — announce Integrations empty state.
-- `c9723f5cfd115f43a17722acfafd798bb9568800` — announce Value Alignment empty state.
-- `c72917c172289583d73fd641d361d15401dcddb9` — allow semantic accessibility labels on shared `ChoiceChip`.
-- `c04dc3de9097a6b2c339e1d3774e24f4a594c995` — metric-aware Check-in rating labels.
-- `8cfd836767586eed5e2b3fb8b4096b575dcdb38d` — metric-aware Human ROI rating labels.
-- `6af8b8b8047ff31a5b2d753695c826827a9e0629` — Insights async announcements.
-- `bf6bbc579a67f992c39cc4ac618acb61e052b43a` — Capacity async announcements.
-- `a319eed9a287c9d81840350d69ffe0524f674909` — Life Seasons async announcements.
-- `05bc6c3fd1a742950f2ca675f88058111a48e63b` — entry-session loading announcement.
-- `5933a06f19aa9b55118463ae7c74c02d3becda36` — Personalization async announcements.
-- `60d8e6f6155e3b63a6251c56a712a7be53040f44` — Onboarding persistence/sync announcements.
-- `4c85570f607947fe09b7d14fa2643f87185dd183` — Personal Learning async announcements.
-- `c3c65bf647b5520012ea659e41399b078b47d4b5` — Today accessibility/control/border treatment.
+- **Auth submission fencing:** language and auth-mode chips are now disabled while sign-in/sign-up/reset is in flight, and email/password fields become non-editable until the request finishes. This prevents the visible form or mode from drifting away from the credentials/action actually submitted and exposes the disabled choice state to assistive technology through the shared `ChoiceChip` semantics. Commit `b32714eb8b53dc43a9389e6f0c2ee2cbf3302294`.
+- **Password-update fencing:** new-password and confirmation fields are now non-editable while the password update request is in flight, preventing visible field values from diverging from the password already submitted. Commit `5d91b00584ccb3a4623065684034b52856a72d48`.
+- **Choice-control disabled semantics:** shared `ChoiceChip` supports native disabled interaction, `accessibilityState.disabled`, and the shared disabled-opacity token. Commit `71064ae6f183724685c67a543ad0650aa1c9c5d1`.
+- **Check-in submission fencing:** rating and skip chips are disabled while saving and after a queued terminal state. Commit `52b0065ebc7014fedd701a26a6033c24b9ab86a7`.
+- **Arabic-first numeric input:** Cost of Yes and Human ROI use localized decimal parsing for Western, Arabic-Indic, Eastern-Arabic/Persian digits and decimal separators; focused specification exists but has not been worker-run. Commits `f6750f42a739d1680578549961f52b6cdca88118`, `192642abc2ab1bc13feb5f8c052375bbc7cff329`, `7a93fab1f4f12f3cdbb1d23b73efc91d7cb3cb0f`, `ec9a016cee5649cccaeb4af966d3037624f94fce`.
+- **Shared bidi/dynamic-type hardening:** shared text/input/action primitives apply locale-aware writing direction; primary and choice labels center when wrapping; representative Life Map, WHY, Check-in, and Recovery flows were hardened for narrow widths, larger text, and assistive announcements.
+- **Async accessibility coverage:** Today, Life Map, WHY, Insights, Capacity, Life Seasons, Entry, Personalization, Onboarding, Personal Learning, Experiments, Recovery, What If, Settings, Auth/recovery, Check-in, Value Alignment, Invisible Wins, and Integrations have received static accessibility-state review with targeted live-region fixes where concrete gaps were found.
 
 The TASK-required final design-swap proof is **not claimed**. It still requires owner visual/runtime validation using a substantially different visual direction and representative device widths.
 
 ## Test matrix progress
-- Commit `d32636ddd253e3ec688376a4a42596e2844704df` added a broad CP2–CP9 app/runtime validation matrix, including component/application specifications and critical-flow coverage scaffolding.
-- Commit `ec9a016cee5649cccaeb4af966d3037624f94fce` adds focused coverage for Arabic-Indic/Eastern-Arabic decimal normalization and malformed localized numeric input; it has not been executed by workers under the current policy.
-- Those suites have **not** been executed by workers under the current task policy; no PASS is claimed from their presence alone.
+- Commit `d32636ddd253e3ec688376a4a42596e2844704df` added broad CP2–CP9 app/runtime validation coverage scaffolding.
+- Commit `ec9a016cee5649cccaeb4af966d3037624f94fce` added focused localized-number parsing coverage.
+- These suites have **not** been executed by workers under the current policy; no PASS is claimed from their presence alone.
+- No new automated test was added for the latest declarative auth/password interaction fencing; meaningful verification depends on pending runtime interaction/accessibility checks rather than duplicating React Native prop assertions.
 
 ## Exact next executable action
-1. Continue the repository-wide CP9 static review for untranslated production literals, semantic RTL issues, missing accessibility labels/states/live announcements, truncation/dynamic-type risks, duplicated global visual values, and unjustified local control treatments.
+1. Continue repository-wide CP9 static review for untranslated production literals, semantic RTL issues, missing accessibility labels/states/live announcements, truncation/dynamic-type risks, duplicated global visual values, and unjustified local control treatments.
 2. Revisit an already-audited surface only when static inspection finds a concrete remaining defect; avoid abstraction-only cleanup.
 3. Leave representative-width runtime checks, post-baseline tests/builds/typechecks, CP1–CP8 execution-dependent evidence, and the final design-swap proof to owner validation under the active policy.
 
@@ -118,8 +75,6 @@ Previously recorded owner-side baseline evidence:
 Post-baseline status:
 - No worker-run app tests, builds, typechecks, database scripts, cloud CI, or GitHub Actions are claimed for CP2–CP9 changes.
 - Current CP9 evidence is static implementation/code-review evidence only until owner validation runs the validation matrix and representative device/browser/screen-reader checks.
-- The localized-number parser has a focused Jest specification in `apps/app/__tests__/advanced-tools-test.ts`, but it was not executed by workers; no PASS is claimed.
-- No new automated test was added for the latest declarative `accessibilityLiveRegion` substitutions or shared text-alignment/responsive wrapping adjustments; meaningful verification depends on pending runtime/dynamic-type/screen-reader validation rather than duplicating React Native prop/style assertions.
 
 ## Known blockers / risks
 - CP1: Windows session must be unlocked normally for true narrow-phone Arabic/English interaction evidence; see `automation/HUMAN_REQUIRED.md`.
@@ -137,7 +92,6 @@ Post-baseline status:
 - `apps/app/src/components/screen.tsx`
 - `apps/app/src/components/app-error-boundary.tsx`
 - `apps/app/src/i18n/number-input.ts`
-- `apps/app/src/app/_layout.tsx`
 - `apps/app/src/app/auth.tsx`
 - `apps/app/src/app/update-password.tsx`
 - `apps/app/src/app/onboarding.tsx`
