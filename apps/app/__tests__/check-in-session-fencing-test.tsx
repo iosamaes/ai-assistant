@@ -62,4 +62,27 @@ describe('CheckInScreen session fencing', () => {
     expect(replaceMock).not.toHaveBeenCalled();
     expect(view.getByText('0 / 4')).toBeTruthy();
   });
+
+  test('keeps untouched metrics unselected and counts an explicit skip without persisting fake evidence', async () => {
+    submitDailyCheckInMock.mockResolvedValue({
+      ok: true,
+      value: { delivery: 'saved', ids: ['obs-1'], mutationId: 'mutation-1' },
+    });
+
+    const view = await render(<CheckInScreen />);
+
+    expect(view.getAllByText('Not answered yet')).toHaveLength(4);
+    expect(view.getAllByRole('button', { name: 'checkInSkip' })[0].props.accessibilityState.selected).toBe(false);
+
+    await fireEvent.press(view.getAllByRole('button', { name: 'checkInSkip' })[0]);
+    await waitFor(() => expect(view.getByText('1 / 4')).toBeTruthy());
+    expect(view.getAllByRole('button', { name: 'checkInSkip' })[0].props.accessibilityState.selected).toBe(true);
+    expect(view.getByRole('button', { name: 'checkInSave' }).props.accessibilityState.disabled).toBe(true);
+
+    await fireEvent.press(view.getByLabelText('checkInEnergy: 5'));
+    await waitFor(() => expect(view.getByText('2 / 4')).toBeTruthy());
+
+    await fireEvent.press(view.getByRole('button', { name: 'checkInSave' }));
+    await waitFor(() => expect(submitDailyCheckInMock).toHaveBeenCalledWith('user-a', { energy: 5 }));
+  });
 });
