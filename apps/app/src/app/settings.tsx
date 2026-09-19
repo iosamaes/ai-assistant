@@ -3,9 +3,10 @@ import { useState } from 'react';
 import { StyleSheet, useColorScheme, View } from 'react-native';
 
 import { useSpiritualGroundingPreference } from '@/application/spiritual-grounding';
+import { AppIcon, type AppIconName } from '@/components/app-icon';
 import { Card, ChoiceChip, MizanText, PrimaryButton, SecondaryButton } from '@/components/mizan-ui';
 import { Screen } from '@/components/screen';
-import { Palette, Spacing } from '@/constants/theme';
+import { Controls, Palette, Radius, Spacing } from '@/constants/theme';
 import { signOut } from '@/infrastructure/supabase/auth';
 import { useAppState } from '@/state/app-state';
 
@@ -159,18 +160,28 @@ const insightCopy = {
 } as const;
 
 interface SettingsLinkCardProps {
+  icon: AppIconName;
   title: string;
   body: string;
   action: string;
   onPress: () => void;
 }
 
-function SettingsLinkCard({ title, body, action, onPress }: SettingsLinkCardProps) {
+function SettingsLinkCard({ icon, title, body, action, onPress }: SettingsLinkCardProps) {
+  const { isRtl } = useAppState();
+  const scheme = useColorScheme();
+  const palette = Palette[scheme === 'dark' ? 'dark' : 'light'];
+
   return (
     <Card style={styles.linkCard}>
-      <View style={styles.linkCardCopy}>
-        <MizanText variant="title">{title}</MizanText>
-        <MizanText muted>{body}</MizanText>
+      <View style={[styles.linkCardHeader, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
+        <View style={[styles.linkIcon, { backgroundColor: palette.accentSoft }]}>
+          <AppIcon name={icon} color={palette.accent} size={22} />
+        </View>
+        <View style={styles.linkCardText}>
+          <MizanText variant="title">{title}</MizanText>
+          <MizanText muted>{body}</MizanText>
+        </View>
       </View>
       <SecondaryButton compact label={action} onPress={onPress} />
     </Card>
@@ -298,20 +309,20 @@ export default function SettingsScreen() {
       </View>
 
       <View style={[styles.cardGrid, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
-        <SettingsLinkCard title={insightLabels.lifeMapTitle} body={insightLabels.lifeMapBody} action={insightLabels.lifeMapOpen} onPress={() => router.push('/life-map')} />
-        <SettingsLinkCard title={insightLabels.whyTitle} body={insightLabels.whyBody} action={insightLabels.whyOpen} onPress={() => router.push('/why')} />
-        <SettingsLinkCard title={insightLabels.insightsTitle} body={insightLabels.insightsBody} action={insightLabels.insightsOpen} onPress={() => router.push('/insights')} />
-        <SettingsLinkCard title={insightLabels.learningTitle} body={insightLabels.learningBody} action={insightLabels.learningOpen} onPress={() => router.push('/personal-learning')} />
-        <SettingsLinkCard title={insightLabels.personalizationTitle} body={insightLabels.personalizationBody} action={insightLabels.personalizationOpen} onPress={() => router.push('/personalization')} />
-        <SettingsLinkCard title={insightLabels.alignmentTitle} body={insightLabels.alignmentBody} action={insightLabels.alignmentOpen} onPress={() => router.push('/value-alignment')} />
-        <SettingsLinkCard title={insightLabels.invisibleWinsTitle} body={insightLabels.invisibleWinsBody} action={insightLabels.invisibleWinsOpen} onPress={() => router.push('/invisible-wins')} />
-        <SettingsLinkCard title={insightLabels.whatIfTitle} body={insightLabels.whatIfBody} action={insightLabels.whatIfOpen} onPress={() => router.push('/what-if')} />
-        <SettingsLinkCard title={insightLabels.experimentsTitle} body={insightLabels.experimentsBody} action={insightLabels.experimentsOpen} onPress={() => router.push('/experiments')} />
-        <SettingsLinkCard title={insightLabels.recoveryTitle} body={insightLabels.recoveryBody} action={insightLabels.recoveryOpen} onPress={() => router.push('/recovery')} />
-        <SettingsLinkCard title={insightLabels.costOfYesTitle} body={insightLabels.costOfYesBody} action={insightLabels.costOfYesOpen} onPress={() => router.push('/cost-of-yes')} />
-        <SettingsLinkCard title={insightLabels.humanROITitle} body={insightLabels.humanROIBody} action={insightLabels.humanROIOpen} onPress={() => router.push('/human-roi')} />
-        <SettingsLinkCard title={insightLabels.lifeSeasonsTitle} body={insightLabels.lifeSeasonsBody} action={insightLabels.lifeSeasonsOpen} onPress={() => router.push('/life-seasons')} />
-        <SettingsLinkCard title={insightLabels.capacityTitle} body={insightLabels.capacityBody} action={insightLabels.capacityOpen} onPress={() => router.push('/capacity')} />
+        <SettingsLinkCard icon="lifeMap" title={insightLabels.lifeMapTitle} body={insightLabels.lifeMapBody} action={insightLabels.lifeMapOpen} onPress={() => router.push('/life-map')} />
+        <SettingsLinkCard icon="hypothesis" title={insightLabels.whyTitle} body={insightLabels.whyBody} action={insightLabels.whyOpen} onPress={() => router.push('/why')} />
+        <SettingsLinkCard icon="insights" title={insightLabels.insightsTitle} body={insightLabels.insightsBody} action={insightLabels.insightsOpen} onPress={() => router.push('/insights')} />
+        <SettingsLinkCard icon="pattern" title={insightLabels.learningTitle} body={insightLabels.learningBody} action={insightLabels.learningOpen} onPress={() => router.push('/personal-learning')} />
+        <SettingsLinkCard icon="personalization" title={insightLabels.personalizationTitle} body={insightLabels.personalizationBody} action={insightLabels.personalizationOpen} onPress={() => router.push('/personalization')} />
+        <SettingsLinkCard icon="values" title={insightLabels.alignmentTitle} body={insightLabels.alignmentBody} action={insightLabels.alignmentOpen} onPress={() => router.push('/value-alignment')} />
+        <SettingsLinkCard icon="reflection" title={insightLabels.invisibleWinsTitle} body={insightLabels.invisibleWinsBody} action={insightLabels.invisibleWinsOpen} onPress={() => router.push('/invisible-wins')} />
+        <SettingsLinkCard icon="hypothesis" title={insightLabels.whatIfTitle} body={insightLabels.whatIfBody} action={insightLabels.whatIfOpen} onPress={() => router.push('/what-if')} />
+        <SettingsLinkCard icon="experiment" title={insightLabels.experimentsTitle} body={insightLabels.experimentsBody} action={insightLabels.experimentsOpen} onPress={() => router.push('/experiments')} />
+        <SettingsLinkCard icon="recovery" title={insightLabels.recoveryTitle} body={insightLabels.recoveryBody} action={insightLabels.recoveryOpen} onPress={() => router.push('/recovery')} />
+        <SettingsLinkCard icon="margin" title={insightLabels.costOfYesTitle} body={insightLabels.costOfYesBody} action={insightLabels.costOfYesOpen} onPress={() => router.push('/cost-of-yes')} />
+        <SettingsLinkCard icon="values" title={insightLabels.humanROITitle} body={insightLabels.humanROIBody} action={insightLabels.humanROIOpen} onPress={() => router.push('/human-roi')} />
+        <SettingsLinkCard icon="season" title={insightLabels.lifeSeasonsTitle} body={insightLabels.lifeSeasonsBody} action={insightLabels.lifeSeasonsOpen} onPress={() => router.push('/life-seasons')} />
+        <SettingsLinkCard icon="margin" title={insightLabels.capacityTitle} body={insightLabels.capacityBody} action={insightLabels.capacityOpen} onPress={() => router.push('/capacity')} />
       </View>
 
       <View style={styles.sectionHeading}>
@@ -320,8 +331,8 @@ export default function SettingsScreen() {
       </View>
 
       <View style={[styles.cardGrid, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
-        <SettingsLinkCard title={insightLabels.integrationsTitle} body={insightLabels.integrationsBody} action={insightLabels.integrationsOpen} onPress={() => router.push('/integrations')} />
-        <SettingsLinkCard title={insightLabels.privacyTitle} body={insightLabels.privacyBody} action={insightLabels.privacyOpen} onPress={() => router.push('/privacy')} />
+        <SettingsLinkCard icon="integration" title={insightLabels.integrationsTitle} body={insightLabels.integrationsBody} action={insightLabels.integrationsOpen} onPress={() => router.push('/integrations')} />
+        <SettingsLinkCard icon="privacy" title={insightLabels.privacyTitle} body={insightLabels.privacyBody} action={insightLabels.privacyOpen} onPress={() => router.push('/privacy')} />
       </View>
 
       {syncMessage || message ? (
@@ -362,6 +373,16 @@ const styles = StyleSheet.create({
   },
   preferenceCard: { flexGrow: 1, flexBasis: 260, minWidth: 0 },
   linkCard: { flexGrow: 1, flexBasis: 300, minWidth: 0, justifyContent: 'space-between' },
+  linkCardHeader: { alignItems: 'flex-start', gap: Spacing.md },
+  linkIcon: {
+    width: Controls.minimumTouchHeight,
+    height: Controls.minimumTouchHeight,
+    borderRadius: Radius.md,
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexShrink: 0,
+  },
+  linkCardText: { flex: 1, minWidth: 0, gap: Spacing.sm },
   linkCardCopy: { gap: Spacing.sm },
   row: { flexWrap: 'wrap', gap: Spacing.sm },
   accountCard: { marginTop: Spacing.sm },
