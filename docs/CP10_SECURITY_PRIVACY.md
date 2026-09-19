@@ -89,7 +89,9 @@ The health-integration sync path now re-reads authoritative connection state bef
 
 `apps/app/__tests__/integration-consent-revocation-test.ts` specifies four revocation races: already-disabled consent prevents any provider call, revocation during a provider read discards the result before persistence, revocation between a temporary provider failure and retry prevents the retry, and a final state race cannot reactivate the connection. These specifications were added but not executed by workers under the current policy.
 
-This closes the concrete health-sync collection/reconnect gap statically. CP10 still needs the broader optional-module pass, including spiritual-grounding and any future provider-backed collectors, plus owner runtime validation of the integration revocation behavior.
+The broader current-code optional-module audit found no second provider-backed collection path that can bypass this health-sync fencing. Spiritual Grounding currently persists only the app-owned plugin preference; disabling it writes `enabled=false` and clears `consented_at`, and the plugin manifest has no external `dataRequirements`. Time-context and approximate-location capabilities currently expose only typed deterministic/unavailable adapters and centralized registration; there is no application path that reads either provider and persists collected data today. Any future collector for those capabilities must adopt the same authoritative connection/consent recheck before provider access and before persistence rather than relying on UI state.
+
+The integration settings presentation is also fenced to the initiating session. Async connection loads now carry both an active-user check and a monotonically invalidated request id, and disconnect completion is discarded after an account switch. This prevents integration metadata loaded for one account from being rendered into a subsequently active account. Implementation commit: `374ddcb24e43c62b103ff0037c889d2b24931c7f`; regression specification: `apps/app/__tests__/integrations-screen-session-fencing-test.tsx` in `b732b58cfed218e42555c110cc6f80ff5e8f52df`. The specification was added but not run by the worker under the active policy.
 
 ## Logging and error-reporting boundary
 
@@ -107,6 +109,6 @@ The live Supabase Security Advisor currently reports `auth_leaked_password_prote
 - Add focused tests for authenticated-only export/function ACL behavior and the delete-account boundary without exposing service credentials.
 - Verify export and account deletion end to end from Web and at least one native target.
 - Complete the repository-wide logging/error-reporting sensitive-data audit.
-- Complete the broader optional-module consent-revocation audit beyond the now-fenced health-integration sync path, and owner-validate the revocation races.
+- Owner-validate the health consent-revocation races and the new integration-screen account-switch fencing; apply the same lifecycle fencing if future time/location collectors are wired.
 - Re-run the live Supabase Security Advisor after the owner enables leaked-password protection.
 - Re-review the export/delete inventory whenever new user-owned tables, storage buckets, providers, or provider-side credentials are introduced.
