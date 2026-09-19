@@ -8,6 +8,7 @@ import {
   type InvisibleWinCategory,
   type StoredInvisibleWin,
 } from '@/application/reflections';
+import { AppIcon, type AppIconName } from '@/components/app-icon';
 import {
   Card,
   ChoiceChip,
@@ -21,6 +22,16 @@ import { Palette, Radius, Spacing } from '@/constants/theme';
 import { useAppState } from '@/state/app-state';
 
 const categories: InvisibleWinCategory[] = ['rest', 'boundary', 'family', 'repair', 'disconnect', 'health', 'other'];
+type HistoryFilter = 'all' | InvisibleWinCategory;
+
+function categoryIcon(category: InvisibleWinCategory): AppIconName {
+  if (category === 'rest') return 'recovery';
+  if (category === 'boundary') return 'margin';
+  if (category === 'family' || category === 'repair') return 'connection';
+  if (category === 'disconnect') return 'mentalLoad';
+  if (category === 'health') return 'energy';
+  return 'hypothesis';
+}
 
 const copy = {
   ar: {
@@ -30,6 +41,7 @@ const copy = {
     privacy: 'هذه التأملات منفصلة عن درجات الإنتاجية ولا تمنح نقاطًا أو سلاسل استمرار.',
     prompt: 'ما الذي يستحق أن تتذكره اليوم؟',
     promptBody: 'اختر نوع اللحظة ثم اكتب ما يكفي لتتذكر لماذا كانت مهمة. لا تحتاج إلى تحويلها إلى هدف أو إنجاز.',
+    capture: 'التقط لحظة مهمة',
     placeholder: 'مثال: أغلقت العمل مبكرًا وجلست مع عائلتي بدون هاتف.',
     save: 'حفظ التأمل',
     saving: 'جارٍ الحفظ…',
@@ -40,7 +52,10 @@ const copy = {
     loadError: 'تعذر تحميل تأملاتك الآن.',
     recent: 'تأملات حديثة',
     recentBody: 'سجل شخصي هادئ لما اخترت أنت اعتباره مهمًا، بدون ترتيب أو نقاط.',
+    filter: 'تصفية السجل',
+    all: 'الكل',
     empty: 'لا توجد تأملات بعد. لا يلزم تسجيل شيء إلا عندما يكون له معنى بالنسبة لك.',
+    emptyFiltered: 'لا توجد تأملات في هذه الفئة بعد. يمكنك تغيير الفلتر أو تسجيل لحظة جديدة عندما يكون لها معنى.',
     back: 'العودة إلى الإعدادات',
     categories: {
       rest: 'راحة',
@@ -59,6 +74,7 @@ const copy = {
     privacy: 'These reflections stay separate from productivity scoring and never create points or streaks.',
     prompt: 'What is worth remembering today?',
     promptBody: 'Choose the kind of moment, then write just enough to remember why it mattered. It never needs to become a goal or achievement.',
+    capture: 'Capture a meaningful moment',
     placeholder: 'Example: I stopped work early and spent phone-free time with my family.',
     save: 'Save reflection',
     saving: 'Saving…',
@@ -69,7 +85,10 @@ const copy = {
     loadError: 'MIZAN could not load your reflections right now.',
     recent: 'Recent reflections',
     recentBody: 'A quiet personal record of what you chose to recognize, without ranking or points.',
+    filter: 'Filter history',
+    all: 'All',
     empty: 'No reflections yet. You never need to log something unless it feels meaningful to you.',
+    emptyFiltered: 'There are no reflections in this category yet. Change the filter or capture a new moment when it feels meaningful.',
     back: 'Back to settings',
     categories: {
       rest: 'Rest',
@@ -90,6 +109,7 @@ export default function InvisibleWinsScreen() {
   const palette = Palette[scheme === 'dark' ? 'dark' : 'light'];
   const activeUserRef = useRef(userId);
   const [category, setCategory] = useState<InvisibleWinCategory>('rest');
+  const [historyFilter, setHistoryFilter] = useState<HistoryFilter>('all');
   const [note, setNote] = useState('');
   const [items, setItems] = useState<StoredInvisibleWin[]>([]);
   const [itemsOwnerId, setItemsOwnerId] = useState<string | null>(null);
@@ -98,6 +118,9 @@ export default function InvisibleWinsScreen() {
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const visibleItems = itemsOwnerId === userId ? items : [];
+  const filteredItems = historyFilter === 'all'
+    ? visibleItems
+    : visibleItems.filter((item) => item.category === historyFilter);
 
   useEffect(() => {
     let cancelled = false;
@@ -114,6 +137,7 @@ export default function InvisibleWinsScreen() {
       setMessage(null);
       setNote('');
       setCategory('rest');
+      setHistoryFilter('all');
       setLoading(Boolean(requestedUserId));
 
       if (!requestedUserId) return;
@@ -167,16 +191,27 @@ export default function InvisibleWinsScreen() {
       </View>
 
       <Card style={[styles.heroCard, { backgroundColor: palette.accentSoft, borderColor: palette.accent }]}>
-        <MizanText variant="title">{labels.title}</MizanText>
+        <View style={[styles.iconTitleRow, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
+          <View style={[styles.heroIcon, { backgroundColor: palette.surface }]}>
+            <AppIcon name="evidence" color={palette.accent} size={25} />
+          </View>
+          <MizanText variant="title" style={styles.flexibleText}>{labels.title}</MizanText>
+        </View>
         <MizanText>{labels.body}</MizanText>
         <MizanText variant="caption" muted>{labels.privacy}</MizanText>
       </Card>
 
-      <Card style={styles.composerCard}>
-        <View style={styles.sectionHeader}>
-          <MizanText variant="title">{labels.prompt}</MizanText>
-          <MizanText muted>{labels.promptBody}</MizanText>
+      <Card style={[styles.composerCard, { borderColor: palette.accent }]}>
+        <View style={[styles.iconTitleRow, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
+          <View style={[styles.captureIcon, { backgroundColor: palette.accentSoft }]}>
+            <AppIcon name={categoryIcon(category)} color={palette.accent} size={22} />
+          </View>
+          <View style={styles.flexibleText}>
+            <MizanText variant="label" muted>{labels.capture}</MizanText>
+            <MizanText variant="title">{labels.prompt}</MizanText>
+          </View>
         </View>
+        <MizanText muted>{labels.promptBody}</MizanText>
         <View style={[styles.chips, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
           {categories.map((item) => (
             <ChoiceChip
@@ -215,6 +250,24 @@ export default function InvisibleWinsScreen() {
           <MizanText variant="title">{labels.recent}</MizanText>
           <MizanText muted>{labels.recentBody}</MizanText>
         </View>
+
+        {!loading && !loadError && visibleItems.length > 0 ? (
+          <View style={styles.filterGroup}>
+            <MizanText variant="label" muted>{labels.filter}</MizanText>
+            <View style={[styles.chips, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
+              <ChoiceChip label={labels.all} selected={historyFilter === 'all'} onPress={() => setHistoryFilter('all')} />
+              {categories.map((item) => (
+                <ChoiceChip
+                  key={item}
+                  label={labels.categories[item]}
+                  selected={historyFilter === item}
+                  onPress={() => setHistoryFilter(item)}
+                />
+              ))}
+            </View>
+          </View>
+        ) : null}
+
         {loading ? (
           <Card style={{ backgroundColor: palette.surfaceMuted }}>
             <MizanText accessibilityLiveRegion="polite" muted>{labels.loading}</MizanText>
@@ -230,11 +283,21 @@ export default function InvisibleWinsScreen() {
             <MizanText accessibilityLiveRegion="polite" muted>{labels.empty}</MizanText>
           </Card>
         ) : null}
+        {!loading && !loadError && visibleItems.length > 0 && filteredItems.length === 0 ? (
+          <Card style={{ backgroundColor: palette.surfaceMuted }}>
+            <MizanText accessibilityLiveRegion="polite" muted>{labels.emptyFiltered}</MizanText>
+          </Card>
+        ) : null}
         <View style={[styles.reflectionGrid, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
-          {visibleItems.map((item) => (
-            <Card key={item.id} style={styles.reflectionCard}>
-              <View style={[styles.categoryPill, { backgroundColor: palette.accentSoft, alignSelf: isRtl ? 'flex-end' : 'flex-start' }]}>
-                <MizanText variant="caption">{labels.categories[item.category]}</MizanText>
+          {filteredItems.map((item) => (
+            <Card key={item.id} style={[styles.reflectionCard, { borderColor: palette.border }]}>
+              <View style={[styles.reflectionHeader, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
+                <View style={[styles.categoryIcon, { backgroundColor: palette.accentSoft }]}>
+                  <AppIcon name={categoryIcon(item.category)} color={palette.accent} size={19} />
+                </View>
+                <View style={[styles.categoryPill, { backgroundColor: palette.accentSoft }]}>
+                  <MizanText variant="caption">{labels.categories[item.category]}</MizanText>
+                </View>
               </View>
               <MizanText>{item.note}</MizanText>
               <MizanText variant="caption" muted>
@@ -251,14 +314,21 @@ export default function InvisibleWinsScreen() {
 const styles = StyleSheet.create({
   topRow: { alignItems: 'flex-start', justifyContent: 'space-between', gap: Spacing.lg, flexWrap: 'wrap' },
   heading: { flex: 1, minWidth: 0, gap: Spacing.xs },
+  flexibleText: { flex: 1, minWidth: 0 },
   heroCard: { gap: Spacing.md },
+  iconTitleRow: { alignItems: 'center', gap: Spacing.md },
+  heroIcon: { width: 48, height: 48, borderRadius: Radius.md, alignItems: 'center', justifyContent: 'center' },
+  captureIcon: { width: 44, height: 44, borderRadius: Radius.md, alignItems: 'center', justifyContent: 'center' },
   composerCard: { gap: Spacing.xl },
   section: { gap: Spacing.lg },
   sectionHeader: { gap: Spacing.sm },
+  filterGroup: { gap: Spacing.sm },
   chips: { flexWrap: 'wrap', gap: Spacing.sm },
   input: { minHeight: 140, textAlignVertical: 'top' },
   messagePanel: { borderRadius: Radius.md, padding: Spacing.md },
   reflectionGrid: { flexWrap: 'wrap', alignItems: 'stretch', gap: Spacing.lg },
-  reflectionCard: { flexGrow: 1, flexShrink: 1, flexBasis: 320 },
+  reflectionCard: { flexGrow: 1, flexShrink: 1, flexBasis: 320, gap: Spacing.md },
+  reflectionHeader: { alignItems: 'center', gap: Spacing.sm },
+  categoryIcon: { width: 34, height: 34, borderRadius: Radius.sm, alignItems: 'center', justifyContent: 'center' },
   categoryPill: { maxWidth: '100%', borderRadius: Radius.pill, paddingHorizontal: Spacing.md, paddingVertical: Spacing.sm },
 });
