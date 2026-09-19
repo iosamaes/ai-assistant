@@ -202,6 +202,13 @@ export default function WhatIfScreen() {
     };
   }, [definitions, refreshSession, selected, userId]);
 
+  const chooseScenario = (id: ScenarioId) => {
+    if (status === 'loading') return;
+    setStatus('loading');
+    setProjection(null);
+    setSelected(id);
+  };
+
   return (
     <Screen>
       <View style={styles.hero}>
@@ -218,7 +225,8 @@ export default function WhatIfScreen() {
               key={id}
               label={labels.scenarios[id].label}
               selected={selected === id}
-              onPress={() => setSelected(id)}
+              onPress={() => chooseScenario(id)}
+              disabled={status === 'loading'}
             />
           ))}
         </View>
