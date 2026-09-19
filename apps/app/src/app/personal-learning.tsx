@@ -253,21 +253,39 @@ export default function PersonalLearningScreen() {
                 {action.outcomes.length > 0 ? (
                   <View style={styles.history}>
                     <MizanText variant="label">{labels.recent}</MizanText>
-                    {action.outcomes.slice(0, 3).map((outcome) => (
-                      <View key={outcome.id} style={[styles.outcome, { backgroundColor: palette.surfaceMuted }]}>
-                        <View style={[styles.metricRow, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
-                          <View style={[styles.datePill, { backgroundColor: palette.surface }]}>
-                            <MizanText variant="caption" muted>{formatDate(outcome.observedAt, locale)}</MizanText>
+                    {action.outcomes.slice(0, 3).map((outcome) => {
+                      const boundedUsefulness = Math.max(1, Math.min(5, outcome.usefulness));
+                      const ratingText = `${formatLocalizedNumber(boundedUsefulness, locale, 0)}/${formatLocalizedNumber(5, locale, 0)}`;
+                      return (
+                        <View key={outcome.id} style={[styles.outcome, { backgroundColor: palette.surfaceMuted }]}>
+                          <View style={[styles.metricRow, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
+                            <View style={[styles.datePill, { backgroundColor: palette.surface }]}>
+                              <MizanText variant="caption" muted>{formatDate(outcome.observedAt, locale)}</MizanText>
+                            </View>
+                            <MizanText variant="label">{labels.rating}: {ratingText}</MizanText>
                           </View>
-                          <MizanText variant="label">
-                            {labels.rating}: {formatLocalizedNumber(outcome.usefulness, locale, 0)}/{formatLocalizedNumber(5, locale, 0)}
+                          <View
+                            accessibilityRole="progressbar"
+                            accessibilityLabel={`${labels.rating}: ${ratingText}`}
+                            accessibilityValue={{ min: 1, max: 5, now: boundedUsefulness, text: ratingText }}
+                            style={[styles.ratingTrack, { backgroundColor: palette.surface }]}>
+                            <View
+                              style={[
+                                styles.ratingFill,
+                                {
+                                  alignSelf: isRtl ? 'flex-end' : 'flex-start',
+                                  backgroundColor: palette.accent,
+                                  width: `${boundedUsefulness * 20}%` as `${number}%`,
+                                },
+                              ]}
+                            />
+                          </View>
+                          <MizanText variant="caption" muted>
+                            {outcome.outcomeNote ? `${labels.note}: ${outcome.outcomeNote}` : labels.noNote}
                           </MizanText>
                         </View>
-                        <MizanText variant="caption" muted>
-                          {outcome.outcomeNote ? `${labels.note}: ${outcome.outcomeNote}` : labels.noNote}
-                        </MizanText>
-                      </View>
-                    ))}
+                      );
+                    })}
                   </View>
                 ) : null}
               </Card>
@@ -315,4 +333,6 @@ const styles = StyleSheet.create({
   history: { gap: Spacing.sm },
   outcome: { padding: Spacing.md, borderRadius: Radius.md, gap: Spacing.sm },
   datePill: { minHeight: Controls.minimumTouchHeight, justifyContent: 'center', paddingHorizontal: Spacing.md, borderRadius: Radius.pill },
+  ratingTrack: { height: 8, borderRadius: Radius.pill, overflow: 'hidden' },
+  ratingFill: { height: '100%', borderRadius: Radius.pill },
 });
