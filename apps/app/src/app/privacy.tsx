@@ -2,6 +2,7 @@ import { router } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
 import { Alert, Platform, Share, StyleSheet, useColorScheme, View } from 'react-native';
 
+import { AppIcon } from '@/components/app-icon';
 import { Card, MizanText, PrimaryButton, SecondaryButton } from '@/components/mizan-ui';
 import { Screen } from '@/components/screen';
 import { Controls, Palette, Radius, Spacing } from '@/constants/theme';
@@ -108,9 +109,15 @@ export default function PrivacyScreen() {
   const [confirmingDelete, setConfirmingDelete] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const activeUserRef = useRef(userId);
+  const confirmationUserRef = useRef(userId);
 
   useEffect(() => {
     activeUserRef.current = userId;
+    if (confirmationUserRef.current !== userId) {
+      setConfirmingDelete(false);
+      setMessage(null);
+      confirmationUserRef.current = userId;
+    }
   }, [userId]);
 
   const handleExport = async () => {
@@ -188,7 +195,12 @@ export default function PrivacyScreen() {
       </View>
 
       <Card style={[styles.heroCard, { backgroundColor: palette.accentSoft, borderColor: palette.accent }]}>
-        <MizanText variant="title">{copy.heroTitle}</MizanText>
+        <View style={[styles.iconTitleRow, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
+          <View style={[styles.iconBadge, { backgroundColor: palette.surface }]}>
+            <AppIcon name="privacy" color={palette.accent} size={24} />
+          </View>
+          <MizanText variant="title" style={styles.flexibleText}>{copy.heroTitle}</MizanText>
+        </View>
         <MizanText>{copy.body}</MizanText>
         <MizanText variant="caption" muted>{copy.heroBody}</MizanText>
       </Card>
@@ -196,8 +208,15 @@ export default function PrivacyScreen() {
       <View style={[styles.actionGrid, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
         <Card style={styles.actionCard}>
           <View style={styles.cardCopy}>
-            <MizanText variant="label" muted>{copy.exportEyebrow}</MizanText>
-            <MizanText variant="title">{copy.exportTitle}</MizanText>
+            <View style={[styles.iconTitleRow, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
+              <View style={[styles.iconBadge, { backgroundColor: palette.accentSoft }]}>
+                <AppIcon name="evidence" color={palette.accent} size={22} />
+              </View>
+              <View style={styles.flexibleText}>
+                <MizanText variant="label" muted>{copy.exportEyebrow}</MizanText>
+                <MizanText variant="title">{copy.exportTitle}</MizanText>
+              </View>
+            </View>
             <MizanText muted>{copy.exportBody}</MizanText>
           </View>
           <View style={[styles.notePanel, { backgroundColor: palette.surfaceMuted }]}>
@@ -212,8 +231,15 @@ export default function PrivacyScreen() {
 
         <Card style={[styles.actionCard, { borderColor: palette.danger }]}>
           <View style={styles.cardCopy}>
-            <MizanText variant="label" style={{ color: palette.danger }}>{copy.deleteEyebrow}</MizanText>
-            <MizanText variant="title">{copy.deleteTitle}</MizanText>
+            <View style={[styles.iconTitleRow, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
+              <View style={[styles.iconBadge, { backgroundColor: palette.surfaceMuted }]}>
+                <AppIcon name="overload" color={palette.danger} size={22} />
+              </View>
+              <View style={styles.flexibleText}>
+                <MizanText variant="label" style={{ color: palette.danger }}>{copy.deleteEyebrow}</MizanText>
+                <MizanText variant="title">{copy.deleteTitle}</MizanText>
+              </View>
+            </View>
             <MizanText muted>{copy.deleteBody}</MizanText>
           </View>
           <View style={[styles.notePanel, { backgroundColor: palette.surfaceMuted }]}>
@@ -224,6 +250,7 @@ export default function PrivacyScreen() {
               label={copy.deleteStart}
               onPress={() => {
                 setMessage(null);
+                confirmationUserRef.current = userId;
                 setConfirmingDelete(true);
               }}
               disabled={busy !== null || !userId}
@@ -237,7 +264,7 @@ export default function PrivacyScreen() {
               <PrimaryButton
                 label={busy === 'delete' ? copy.deleteWorking : copy.deleteConfirm}
                 onPress={() => void handleDelete()}
-                disabled={busy !== null || !userId}
+                disabled={busy !== null || !userId || confirmationUserRef.current !== userId}
               />
               <SecondaryButton
                 label={copy.deleteCancel}
@@ -266,14 +293,23 @@ const styles = StyleSheet.create({
     gap: Spacing.lg,
   },
   heading: { flexGrow: 1, flexShrink: 1, minWidth: 0, gap: Spacing.xs },
+  flexibleText: { flex: 1, minWidth: 0 },
   heroCard: { gap: Spacing.md },
+  iconTitleRow: { alignItems: 'center', gap: Spacing.md },
+  iconBadge: {
+    alignItems: 'center',
+    borderRadius: Radius.pill,
+    height: 44,
+    justifyContent: 'center',
+    width: 44,
+  },
   actionGrid: {
     flexWrap: 'wrap',
     alignItems: 'stretch',
     gap: Spacing.lg,
   },
   actionCard: { flexGrow: 1, flexBasis: 320, minWidth: 0 },
-  cardCopy: { gap: Spacing.sm },
+  cardCopy: { gap: Spacing.md },
   notePanel: { borderRadius: Radius.md, padding: Spacing.md },
   confirmation: {
     gap: Spacing.md,
