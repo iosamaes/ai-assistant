@@ -10,6 +10,7 @@ import {
 import { Card, MizanText, SecondaryButton } from '@/components/mizan-ui';
 import { Screen } from '@/components/screen';
 import { Controls, Palette, Spacing } from '@/constants/theme';
+import { formatLocalizedNumber } from '@/i18n/number-input';
 import { useAppState } from '@/state/app-state';
 
 type LoadStatus = 'loading' | 'ready' | 'error';
@@ -38,8 +39,8 @@ const copy = {
     neutral: 'الأثر الشخصي قريب من المحايد',
     negative: 'يميل إلى أثر غير مفيد لك',
     back: 'العودة للإعدادات',
-    actionRecovery: 'احمِ 20 دقيقة للتعافي',
-    actionConnection: 'خصص 15 دقيقة لتواصل له معنى',
+    actionRecovery: 'احمِ ٢٠ دقيقة للتعافي',
+    actionConnection: 'خصص ١٥ دقيقة لتواصل له معنى',
     confidenceKnown: 'ثقة عالية',
     confidenceLikely: 'مرجّح',
     confidencePossible: 'ممكن',
@@ -174,7 +175,7 @@ export default function PersonalLearningScreen() {
             <View style={styles.metrics}>
               <View style={[styles.metricRow, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
                 <MizanText muted>{labels.samples}</MizanText>
-                <MizanText variant="label">{action.estimate.feedbackCount}</MizanText>
+                <MizanText variant="label">{formatLocalizedNumber(action.estimate.feedbackCount, locale, 0)}</MizanText>
               </View>
               <View style={[styles.metricRow, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
                 <MizanText muted>{labels.confidence}</MizanText>
@@ -183,7 +184,11 @@ export default function PersonalLearningScreen() {
               <View style={[styles.metricRow, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
                 <MizanText muted>{labels.recency}</MizanText>
                 <MizanText variant="label">
-                  {freshness === null ? '—' : freshness < 1 ? labels.today : `${Math.round(freshness)} ${labels.days}`}
+                  {freshness === null
+                    ? '—'
+                    : freshness < 1
+                      ? labels.today
+                      : `${formatLocalizedNumber(Math.round(freshness), locale, 0)} ${labels.days}`}
                 </MizanText>
               </View>
             </View>
@@ -200,7 +205,9 @@ export default function PersonalLearningScreen() {
                   <View key={outcome.id} style={[styles.outcome, { borderTopColor: palette.border }]}>
                     <View style={[styles.metricRow, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
                       <MizanText variant="caption" muted>{formatDate(outcome.observedAt, locale)}</MizanText>
-                      <MizanText variant="label">{labels.rating}: {outcome.usefulness}/5</MizanText>
+                      <MizanText variant="label">
+                        {labels.rating}: {formatLocalizedNumber(outcome.usefulness, locale, 0)}/{formatLocalizedNumber(5, locale, 0)}
+                      </MizanText>
                     </View>
                     <MizanText variant="caption" muted>
                       {outcome.outcomeNote ? `${labels.note}: ${outcome.outcomeNote}` : labels.noNote}
