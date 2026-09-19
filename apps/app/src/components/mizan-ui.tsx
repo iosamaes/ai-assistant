@@ -19,6 +19,7 @@ import {
   Palette,
   Radius,
   Spacing,
+  SurfaceTreatment,
   Typography,
 } from '@/constants/theme';
 import { useAppState } from '@/state/app-state';
@@ -73,8 +74,22 @@ export function MizanText({ children, variant = 'body', muted = false, style, ..
 export function Card({ children, style }: PropsWithChildren<{ style?: StyleProp<ViewStyle> }>) {
   const scheme = useColorScheme();
   const palette = Palette[scheme === 'dark' ? 'dark' : 'light'];
+  const isDark = scheme === 'dark';
   return (
-    <View style={[styles.card, { backgroundColor: palette.surface, borderColor: palette.border }, style]}>
+    <View
+      style={[
+        styles.card,
+        {
+          backgroundColor: palette.surface,
+          borderColor: palette.border,
+          shadowColor: '#000000',
+          shadowOpacity: isDark ? SurfaceTreatment.cardShadowOpacity * 0.7 : SurfaceTreatment.cardShadowOpacity,
+          shadowRadius: SurfaceTreatment.cardShadowRadius,
+          shadowOffset: { width: 0, height: SurfaceTreatment.cardShadowOffsetY },
+          elevation: SurfaceTreatment.cardElevation,
+        },
+        style,
+      ]}>
       {children}
     </View>
   );
@@ -92,6 +107,7 @@ export function MizanTextInput({ style, ...props }: MizanTextInputProps) {
       accessibilityState={{ ...props.accessibilityState, disabled }}
       allowFontScaling
       placeholderTextColor={props.placeholderTextColor ?? palette.textMuted}
+      selectionColor={props.selectionColor ?? palette.accent}
       style={[
         styles.input,
         {
@@ -111,6 +127,7 @@ export function PrimaryButton({ label, onPress, disabled = false }: ButtonProps)
   const scheme = useColorScheme();
   const palette = Palette[scheme === 'dark' ? 'dark' : 'light'];
   const { isRtl } = useAppState();
+  const isDark = scheme === 'dark';
   return (
     <Pressable
       accessibilityLabel={label}
@@ -122,6 +139,11 @@ export function PrimaryButton({ label, onPress, disabled = false }: ButtonProps)
         styles.button,
         {
           backgroundColor: palette.accent,
+          shadowColor: '#000000',
+          shadowOpacity: isDark ? SurfaceTreatment.controlShadowOpacity * 0.65 : SurfaceTreatment.controlShadowOpacity,
+          shadowRadius: SurfaceTreatment.controlShadowRadius,
+          shadowOffset: { width: 0, height: SurfaceTreatment.controlShadowOffsetY },
+          elevation: SurfaceTreatment.controlElevation,
           opacity: disabled ? Interaction.disabled : pressed ? Interaction.pressed : 1,
         },
       ]}>
@@ -156,7 +178,7 @@ export function SecondaryButton({
         styles.secondaryButton,
         compact ? styles.secondaryButtonCompact : null,
         {
-          backgroundColor: palette.surface,
+          backgroundColor: compact ? palette.surface : palette.surfaceMuted,
           borderColor: palette.border,
           opacity: disabled ? Interaction.disabled : pressed ? Interaction.subtlePressed : 1,
         },
@@ -195,7 +217,12 @@ const styles = StyleSheet.create({
   body: Typography.body,
   label: Typography.label,
   caption: Typography.caption,
-  card: { borderWidth: Controls.borderWidth, borderRadius: Radius.lg, padding: Spacing.xl, gap: Spacing.md },
+  card: {
+    borderWidth: Controls.borderWidth,
+    borderRadius: Radius.lg,
+    padding: Spacing.xl,
+    gap: Spacing.lg,
+  },
   input: {
     minHeight: Controls.standardHeight,
     borderWidth: Controls.borderWidth,
@@ -207,7 +234,7 @@ const styles = StyleSheet.create({
   },
   button: {
     minHeight: Controls.standardHeight,
-    borderRadius: Radius.md,
+    borderRadius: Radius.pill,
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: Spacing.xl,
