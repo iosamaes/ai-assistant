@@ -1,3 +1,6 @@
+import { clearPendingUserMutations } from '@/infrastructure/offline/pending-mutations';
+import { clearRecentDailySnapshot } from '@/infrastructure/offline/recent-daily-snapshot';
+
 import { supabase } from './client';
 
 export type PrivacyFailureKind = 'not-configured' | 'export-failed' | 'delete-failed';
@@ -67,9 +70,16 @@ export async function deleteMyAccount(expectedUserId: string): Promise<PrivacyRe
     return { ok: false, error: { kind: 'delete-failed' } };
   }
 
-  // The server has already hard-deleted the authenticated user. Clear the
-  // local session only if the same user is still active; never sign out a new
-  // user that may have become active while the deletion request was in flight.
+  // The authoritative account is gone at this point, so remove app-owned
+  // device/browser caches keyed to that user as well. Cleanup is best-effort:
+  // a storage failure cannot roll back the already-confirmed server deletion.
+  await Promise.all([
+    clearPendingUserMutations(expectedUserId),
+    clearRecentDailySnapshot(expectedUserId),
+  ]);
+
+  // Clear the local auth session only if the same user is still active; never
+  // sign out a new user that may have become active while deletion was in flight.
   const { data: sessionData } = await supabase.auth.getSession();
   if (sessionData.session?.user.id === expectedUserId) {
     await supabase.auth.signOut({ scope: 'local' });
