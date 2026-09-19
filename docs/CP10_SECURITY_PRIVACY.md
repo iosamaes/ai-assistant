@@ -74,12 +74,15 @@ The deletion boundary is deliberately server-side:
 2. the Edge Function validates the bearer token to resolve the actual Supabase user;
 3. only the server function reads `SUPABASE_SERVICE_ROLE_KEY` from the Edge runtime environment;
 4. the server calls the Auth admin delete-user operation for that authenticated user;
-5. the existing `ON DELETE CASCADE` ownership constraints remove all current application-owned rows;
-6. the client clears its local session after confirmed deletion.
+5. the existing `ON DELETE CASCADE` ownership constraints remove all current application-owned database rows;
+6. after confirmed server deletion, the client purges the deleted user's pending offline mutation slots and recent daily snapshot from app-owned local storage;
+7. the client clears the local auth session only when that same deleted user is still active, so a concurrent account switch cannot sign out the new user.
+
+The local cleanup path is explicit rather than silently assumed. `clearPendingUserMutations()` removes every user-keyed retry slot, and `clearRecentDailySnapshot()` removes the user-keyed cached Today snapshot. `deleteMyAccount()` returns `localDataCleared` separately from server deletion success because a device/browser storage failure cannot roll back an already-confirmed server deletion. If local cleanup cannot be confirmed, the privacy screen tells the user that the account was deleted but local app/site data should be cleared before sharing the device. Implementation commits: `cf78a9ad33cb7b370ed7807d2b9eb43890b693e1`, `cabc2ccaf37dfb16e9b273306ce90aa6e1e71a65`, `0e57f7ccc98cb9c0ef4f08c5c7ecea7050f4fd78`, and `53a28408a49292a596fc454152c8323c90ff157a`.
 
 The service-role key is not present in client source or client environment names and is not returned in responses. The Edge Function intentionally does not log bearer tokens, user IDs, request bodies, exported data, or service errors containing sensitive payloads.
 
-The UI uses a two-step destructive flow. It also states the provider boundary clearly: deletion removes the MIZAN account, MIZAN-owned data, and MIZAN connection metadata, but cannot erase original records held independently in a user's account with an external provider.
+The UI uses a two-step destructive flow. It also states the provider boundary clearly: deletion removes the MIZAN account, MIZAN-owned data, MIZAN connection metadata, and the currently known app-owned local caches for that user, but cannot erase original records held independently in a user's account with an external provider.
 
 ## Optional-data consent
 
@@ -97,9 +100,9 @@ The integration settings presentation is also fenced to the initiating session. 
 
 `supabase/tests/account_data_export_security.sql` now specifies the database-side export boundary with rollback-only fixtures. It asserts that `anon` lacks execute privilege, `authenticated` retains execute privilege, the export payload is scoped to the active caller, another user's observation marker cannot leak into the JSON, and nested records do not re-emit `user_id`. Commit: `db58d7c6ab58be4e1260ea85bdeaa50fffedb741`.
 
-`apps/app/__tests__/privacy-session-fencing-test.ts` now also specifies that the client calls only the intended export RPC and deletion function, refuses to start either operation for a different active session, returns coarse error kinds rather than backend/Edge error bodies, and leaves the local session untouched when deletion fails. Commit: `38321e68279ef571d691dcce842252bb6a6667db`.
+`apps/app/__tests__/privacy-session-fencing-test.ts` specifies that the client calls only the intended export RPC and deletion function, refuses to start either operation for a different active session, returns coarse error kinds rather than backend/Edge error bodies, leaves local account data untouched when server deletion fails, purges the deleted user's local caches after confirmed server deletion even if another account becomes active, and distinguishes confirmed server deletion from incomplete local storage cleanup. Latest commit: `bc38ccba6ed4d549c6dd087716022fb21a5aa573`.
 
-These are implementation/specification evidence only. They were not executed by the worker under the current policy, and the deployed Edge Function still needs owner-side end-to-end authentication and destructive-deletion validation.
+These are implementation/specification evidence only. They were not executed by the worker under the current policy, and the deployed Edge Function plus Web/native local-purge behavior still need owner-side end-to-end validation.
 
 ## Logging and error-reporting boundary
 
@@ -107,7 +110,9 @@ The export/deletion and Auth boundaries return coarse application error kinds an
 
 The root render error boundary previously passed the complete `Error` object to `console.error` during development. That could unnecessarily serialize a backend or user-derived message into local development logs, so it now logs only the stable error name plus React component stack under `__DEV__`; the arbitrary error object/message is excluded. Production rendering does not use that debug path. Commit: `7e78c5ff94bd6331098ff436d892b76a968749e8`.
 
-A broader repository-wide source-level log/error-reporting review is still required before CP10 can be considered complete. The current targeted review covered the Auth client/UI, privacy client boundary, deletion Edge Function, and root render boundary; it must not be treated as proof that every future adapter/telemetry path is clean.
+The targeted source audit now also covers Supabase public configuration/client setup, generic data-access error classification, integration persistence/sync error classification, session storage, pending offline mutations, the recent daily snapshot cache, and integration UI presentation. These paths either return stable/coarse kinds/codes or contain no logging sink. Provider sync persistence records a sanitized stage/kind error code rather than a raw provider message.
+
+A broader repository-wide source-level log/error-reporting review is still required before CP10 can be considered complete. The current review must not be treated as proof that every application screen, future adapter, or telemetry path is clean.
 
 ## Auth hardening still requiring owner action
 
@@ -117,8 +122,8 @@ The live Supabase Security Advisor currently reports `auth_leaked_password_prote
 
 - Execute the expanded cross-user authorization suite and `account_data_export_security.sql` in the owner validation environment and record evidence.
 - Execute the expanded privacy client specifications and validate the deployed delete-account authentication/deletion boundary end to end without exposing service credentials.
-- Verify export and account deletion end to end from Web and at least one native target.
+- Verify export, account deletion, local cache purge, and the local-cleanup warning path end to end from Web and at least one native target.
 - Complete the repository-wide logging/error-reporting sensitive-data audit beyond the targeted boundaries already reviewed.
 - Owner-validate the health consent-revocation races and the new integration-screen account-switch fencing; apply the same lifecycle fencing if future time/location collectors are wired.
 - Re-run the live Supabase Security Advisor after the owner enables leaked-password protection.
-- Re-review the export/delete inventory whenever new user-owned tables, storage buckets, providers, or provider-side credentials are introduced.
+- Re-review the export/delete/local-cache inventory whenever new user-owned tables, storage buckets, local persistence stores, providers, or provider-side credentials are introduced.
