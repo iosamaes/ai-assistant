@@ -37,6 +37,8 @@ Presentation boundary:
 - broad static pass over RTL, dynamic type, accessibility states/live regions, async interaction fencing, localization, and repeated visual semantics across primary routes.
 
 Latest static CP9 work:
+- **Onboarding baseline numeric localization:** the optional baseline-target explanation now uses Arabic-Indic digits in Arabic, and the 1–5 target chips render through the shared locale-aware formatter so Arabic and English remain consistent with the rest of the product. Commit `f1c29980f7f22785576052d077c3732bb596461d`.
+- **What If numeric localization:** scenario assumptions now use Arabic-Indic minute values in Arabic, while current-state values, plausible ranges, and evidence counts render through the shared locale-aware formatter. English retains Western digits. Commit `4da2ef10335ce1399acf838885e520f15fb649b3`.
 - **Today numeric localization:** Today now uses the shared locale-aware formatter for current-state scores and `/100` denominators, state/balance/momentum evidence counts, One Move evidence counts, and feedback rating text plus its assistive labels. Arabic therefore renders Arabic-Indic digits consistently on the primary dashboard while English retains Western digits. Commit `92c9a3a6a6a1fa0f7cd1039daaaf26c81e71548f`.
 - **Arabic-first numeric presentation:** `apps/app/src/i18n/number-input.ts` provides shared locale-aware numeric formatting in addition to localized decimal parsing. Cost of Yes and Human ROI render Arabic-Indic digits for Arabic placeholders, rating controls/accessibility labels, calculated hours, evidence counts, and percentage/rating values while retaining Western-digit output for English. Earlier commits: `f38750f1848a73e38cfbbdad8de85b598439632a`, `93bae4e5dee36a9d2310b7d8fae1d6eceb443a23`, `8075d87d80b52a78c3601edf5f1570bc020e4a39`.
 - **Numeric localization extended across evidence surfaces:** Insights, WHY, Capacity, and Life Map now use the shared formatter for user-facing sample/evidence counts, score denominators, effect/window values, and other dynamic numbers; Arabic static window copy on these audited surfaces uses Arabic-Indic digits where applicable. Capacity also preserves a genuinely unknown evidence count as `—` instead of manufacturing `0` when no snapshot exists. Commits `a7737820279ef87ffff7c6aebba67994682b121b`, `1b707719be16b339bf02e1ccaf151592b5a9fb14`, `cf667c6b8ce513292260c25bf97ef2630c5feae4`, `be50e86ca8f12f2bf735ca507b83c0a8bca5afc3`.
@@ -89,6 +91,8 @@ Post-baseline:
 - `apps/app/src/components/mizan-ui.tsx`
 - `apps/app/src/components/screen.tsx`
 - `apps/app/src/i18n/number-input.ts`
+- `apps/app/src/app/onboarding.tsx`
+- `apps/app/src/app/what-if.tsx`
 - `apps/app/src/app/cost-of-yes.tsx`
 - `apps/app/src/app/human-roi.tsx`
 - `apps/app/src/app/insights.tsx`
