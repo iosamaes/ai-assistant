@@ -1,11 +1,11 @@
 import { router } from 'expo-router';
 import { useMemo, useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet, useColorScheme, View } from 'react-native';
 
 import { assessExplicitHumanROI } from '@/application/human-roi';
 import { Card, ChoiceChip, MizanText, MizanTextInput, SecondaryButton } from '@/components/mizan-ui';
 import { Screen } from '@/components/screen';
-import { Spacing } from '@/constants/theme';
+import { Palette, Radius, Spacing } from '@/constants/theme';
 import { formatLocalizedNumber, parseLocalizedDecimalInput } from '@/i18n/number-input';
 import { useAppState } from '@/state/app-state';
 
@@ -17,10 +17,13 @@ const copy = {
     title: 'العائد الإنساني',
     body: 'قارن فقط ما صرّحت أنت بأنه فائدة وما صرّحت بأنه جهد ووقت. لا توجد درجة قيمة للإنسان، ولا يحوّل ميزان العلاقات أو العبادة أو اللحظات المقدسة إلى معادلة إجبارية.',
     mode: 'كيف تريد التعامل مع هذا الشيء؟',
+    modeBody: 'يمكنك إبقاء المعنى خارج أي مقارنة رقمية بالكامل. إذا اخترت المقارنة فلن يستخدم ميزان إلا ما تدخله أنت صراحةً.',
     compare: 'مقارنة أدلة صريحة',
     protect: 'أبقِه خارج التحسين',
     protectedTitle: 'محمي من المقارنة',
     protectedBody: 'اخترت إبقاء هذا النشاط أو المعنى خارج المقارنة الكمية. ميزان يحترم ذلك ولا يحسب له عائدًا رقميًا.',
+    inputTitle: 'صف تجربتك كما شعرت بها',
+    inputBody: 'الفائدة والجهد مقياسان منفصلان؛ الوقت يظهر كسياق ولا يتحول إلى معامل سري في النتيجة.',
     benefit: 'الفائدة التي شعرت بها',
     benefitHint: '1 = قليلة جدًا · 5 = عالية جدًا',
     effort: 'الجهد الذي شعرت به',
@@ -29,6 +32,7 @@ const copy = {
     timePlaceholder: 'مثال: 3',
     hoursPerWeek: 'ساعة / أسبوع',
     assessment: 'القراءة الحالية',
+    assessmentBody: 'هذه القراءة وصفية وقابلة للفحص؛ لا تحوّل تجربتك إلى رقم موحد أو قرار تلقائي.',
     insufficient: 'الأدلة غير مكتملة',
     missingBenefit: 'اختر تقييم الفائدة الذي عبّرت عنه أنت.',
     missingEffort: 'اختر تقييم الجهد الذي عبّرت عنه أنت.',
@@ -58,10 +62,13 @@ const copy = {
     title: 'Human ROI',
     body: 'Compare only benefit, effort, and time you explicitly report. There is no human-worth score, and MIZAN does not force relationships, worship, or sacred moments into an optimization equation.',
     mode: 'How should this be treated?',
+    modeBody: 'You can keep meaning entirely outside numerical comparison. If you choose comparison, MIZAN uses only what you explicitly enter.',
     compare: 'Compare explicit evidence',
     protect: 'Keep outside optimization',
     protectedTitle: 'Protected from comparison',
     protectedBody: 'You chose to keep this activity or meaning outside quantitative comparison. MIZAN respects that and does not calculate a numeric return.',
+    inputTitle: 'Describe the experience as you felt it',
+    inputBody: 'Benefit and effort stay separate scales; time remains context and never becomes a hidden coefficient in the result.',
     benefit: 'Benefit you experienced',
     benefitHint: '1 = very low · 5 = very high',
     effort: 'Effort you experienced',
@@ -70,6 +77,7 @@ const copy = {
     timePlaceholder: 'Example: 3',
     hoursPerWeek: 'hours / week',
     assessment: 'Current assessment',
+    assessmentBody: 'This reading stays descriptive and inspectable; it does not collapse your experience into one score or an automatic decision.',
     insufficient: 'Incomplete evidence',
     missingBenefit: 'Choose the benefit rating you explicitly report.',
     missingEffort: 'Choose the effort rating you explicitly report.',
@@ -109,6 +117,8 @@ function formatHours(minutes: number | null, locale: 'ar' | 'en'): string {
 export default function HumanROIScreen() {
   const { isRtl, locale } = useAppState();
   const labels = copy[locale];
+  const scheme = useColorScheme();
+  const palette = Palette[scheme === 'dark' ? 'dark' : 'light'];
   const [protectedMeaning, setProtectedMeaning] = useState(false);
   const [benefitRating, setBenefitRating] = useState<number | null>(null);
   const [effortRating, setEffortRating] = useState<number | null>(null);
@@ -156,14 +166,25 @@ export default function HumanROIScreen() {
 
   return (
     <Screen>
-      <View style={styles.hero}>
-        <MizanText variant="label" muted>{labels.eyebrow}</MizanText>
-        <MizanText variant="display">{labels.title}</MizanText>
-        <MizanText muted>{labels.body}</MizanText>
+      <View style={[styles.topRow, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
+        <View style={styles.heading}>
+          <MizanText variant="label" muted>{labels.eyebrow}</MizanText>
+          <MizanText variant="display">{labels.title}</MizanText>
+        </View>
+        <SecondaryButton compact label={labels.back} onPress={() => router.replace('/settings')} />
       </View>
 
-      <Card>
-        <MizanText variant="title">{labels.mode}</MizanText>
+      <Card style={[styles.heroCard, { backgroundColor: palette.accentSoft, borderColor: palette.accent }]}>
+        <MizanText variant="title">{labels.title}</MizanText>
+        <MizanText>{labels.body}</MizanText>
+        <MizanText variant="caption" muted>{labels.caveat}</MizanText>
+      </Card>
+
+      <Card style={styles.modeCard}>
+        <View style={styles.sectionHeader}>
+          <MizanText variant="title">{labels.mode}</MizanText>
+          <MizanText muted>{labels.modeBody}</MizanText>
+        </View>
         <View style={[styles.choiceRow, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
           <ChoiceChip label={labels.compare} selected={!protectedMeaning} onPress={() => setProtectedMeaning(false)} />
           <ChoiceChip label={labels.protect} selected={protectedMeaning} onPress={() => setProtectedMeaning(true)} />
@@ -171,46 +192,53 @@ export default function HumanROIScreen() {
       </Card>
 
       {!protectedMeaning ? (
-        <Card>
-          <View style={styles.field}>
-            <MizanText variant="label">{labels.benefit}</MizanText>
-            <MizanText variant="caption" muted>{labels.benefitHint}</MizanText>
-            <View style={[styles.choiceRow, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
-              {RATINGS.map((rating) => {
-                const localizedRating = formatLocalizedNumber(rating, locale, 0);
-                return (
-                  <ChoiceChip
-                    key={`benefit-${rating}`}
-                    accessibilityLabel={`${labels.benefit}: ${localizedRating} / ${ratingDenominator}`}
-                    label={localizedRating}
-                    selected={benefitRating === rating}
-                    onPress={() => setBenefitRating(rating)}
-                  />
-                );
-              })}
+        <Card style={styles.inputCard}>
+          <View style={styles.sectionHeader}>
+            <MizanText variant="title">{labels.inputTitle}</MizanText>
+            <MizanText muted>{labels.inputBody}</MizanText>
+          </View>
+
+          <View style={[styles.ratingGrid, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
+            <View style={[styles.ratingPanel, { backgroundColor: palette.surfaceMuted }]}>
+              <MizanText variant="label">{labels.benefit}</MizanText>
+              <MizanText variant="caption" muted>{labels.benefitHint}</MizanText>
+              <View style={[styles.choiceRow, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
+                {RATINGS.map((rating) => {
+                  const localizedRating = formatLocalizedNumber(rating, locale, 0);
+                  return (
+                    <ChoiceChip
+                      key={`benefit-${rating}`}
+                      accessibilityLabel={`${labels.benefit}: ${localizedRating} / ${ratingDenominator}`}
+                      label={localizedRating}
+                      selected={benefitRating === rating}
+                      onPress={() => setBenefitRating(rating)}
+                    />
+                  );
+                })}
+              </View>
+            </View>
+
+            <View style={[styles.ratingPanel, { backgroundColor: palette.surfaceMuted }]}>
+              <MizanText variant="label">{labels.effort}</MizanText>
+              <MizanText variant="caption" muted>{labels.effortHint}</MizanText>
+              <View style={[styles.choiceRow, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
+                {RATINGS.map((rating) => {
+                  const localizedRating = formatLocalizedNumber(rating, locale, 0);
+                  return (
+                    <ChoiceChip
+                      key={`effort-${rating}`}
+                      accessibilityLabel={`${labels.effort}: ${localizedRating} / ${ratingDenominator}`}
+                      label={localizedRating}
+                      selected={effortRating === rating}
+                      onPress={() => setEffortRating(rating)}
+                    />
+                  );
+                })}
+              </View>
             </View>
           </View>
 
-          <View style={styles.field}>
-            <MizanText variant="label">{labels.effort}</MizanText>
-            <MizanText variant="caption" muted>{labels.effortHint}</MizanText>
-            <View style={[styles.choiceRow, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
-              {RATINGS.map((rating) => {
-                const localizedRating = formatLocalizedNumber(rating, locale, 0);
-                return (
-                  <ChoiceChip
-                    key={`effort-${rating}`}
-                    accessibilityLabel={`${labels.effort}: ${localizedRating} / ${ratingDenominator}`}
-                    label={localizedRating}
-                    selected={effortRating === rating}
-                    onPress={() => setEffortRating(rating)}
-                  />
-                );
-              })}
-            </View>
-          </View>
-
-          <View style={styles.field}>
+          <View style={styles.timeField}>
             <MizanText variant="label">{labels.time}</MizanText>
             <MizanTextInput
               accessibilityLabel={labels.time}
@@ -225,24 +253,27 @@ export default function HumanROIScreen() {
         </Card>
       ) : null}
 
-      <Card>
-        <MizanText variant="label" muted>{labels.assessment}</MizanText>
-        <View accessibilityLiveRegion="polite" style={styles.assessmentStatus}>
+      <Card style={styles.assessmentCard}>
+        <View style={styles.sectionHeader}>
+          <MizanText variant="label" muted>{labels.assessment}</MizanText>
+          <MizanText variant="caption" muted>{labels.assessmentBody}</MizanText>
+        </View>
+        <View accessibilityLiveRegion="polite" style={[styles.assessmentStatus, { backgroundColor: palette.surfaceMuted }]}>
           <MizanText variant="title">{statusTitle}</MizanText>
           <MizanText>{statusBody}</MizanText>
         </View>
 
         {assessment.status !== 'protected' && assessment.status !== 'insufficient' ? (
           <View style={[styles.metrics, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
-            <View style={styles.metric}>
+            <View style={[styles.metric, { backgroundColor: palette.surfaceMuted }]}>
               <MizanText variant="caption" muted>{labels.benefitMetric}</MizanText>
               <MizanText variant="title">{assessment.benefitRating === null ? '—' : formatLocalizedNumber(assessment.benefitRating, locale, 0)} / {ratingDenominator}</MizanText>
             </View>
-            <View style={styles.metric}>
+            <View style={[styles.metric, { backgroundColor: palette.surfaceMuted }]}>
               <MizanText variant="caption" muted>{labels.effortMetric}</MizanText>
               <MizanText variant="title">{assessment.effortRating === null ? '—' : formatLocalizedNumber(assessment.effortRating, locale, 0)} / {ratingDenominator}</MizanText>
             </View>
-            <View style={styles.metric}>
+            <View style={[styles.metric, { backgroundColor: palette.surfaceMuted }]}>
               <MizanText variant="caption" muted>{labels.timeMetric}</MizanText>
               <MizanText variant="title">{formatHours(assessment.timeMinutesPerWeek, locale)}</MizanText>
               <MizanText variant="caption" muted>{labels.hoursPerWeek}</MizanText>
@@ -250,22 +281,30 @@ export default function HumanROIScreen() {
           </View>
         ) : null}
 
-        <MizanText variant="caption" muted>
-          {labels.confidence}: {labels.confidenceLevels[assessment.confidence.level]} · {labels.evidence}: {formatLocalizedNumber(assessment.confidence.evidenceCount, locale, 0)}
-        </MizanText>
+        <View style={[styles.evidencePill, { backgroundColor: palette.accentSoft, alignSelf: isRtl ? 'flex-end' : 'flex-start' }]}>
+          <MizanText variant="caption">
+            {labels.confidence}: {labels.confidenceLevels[assessment.confidence.level]} · {labels.evidence}: {formatLocalizedNumber(assessment.confidence.evidenceCount, locale, 0)}
+          </MizanText>
+        </View>
       </Card>
-
-      <MizanText variant="caption" muted>{labels.caveat}</MizanText>
-      <SecondaryButton compact label={labels.back} onPress={() => router.replace('/settings')} />
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  hero: { gap: Spacing.md, paddingTop: Spacing.xl },
-  field: { gap: Spacing.sm },
+  topRow: { alignItems: 'flex-start', justifyContent: 'space-between', gap: Spacing.lg, flexWrap: 'wrap' },
+  heading: { flex: 1, minWidth: 0, gap: Spacing.xs },
+  heroCard: { gap: Spacing.md },
+  modeCard: { gap: Spacing.xl },
+  sectionHeader: { gap: Spacing.sm },
   choiceRow: { flexWrap: 'wrap', gap: Spacing.sm },
-  assessmentStatus: { gap: Spacing.md },
+  inputCard: { gap: Spacing.xl },
+  ratingGrid: { flexWrap: 'wrap', gap: Spacing.lg },
+  ratingPanel: { flexGrow: 1, flexBasis: 300, minWidth: 0, borderRadius: Radius.md, padding: Spacing.lg, gap: Spacing.sm },
+  timeField: { gap: Spacing.sm },
+  assessmentCard: { gap: Spacing.xl },
+  assessmentStatus: { gap: Spacing.md, borderRadius: Radius.md, padding: Spacing.lg },
   metrics: { flexWrap: 'wrap', gap: Spacing.md },
-  metric: { flexGrow: 1, flexBasis: 140, minWidth: 120, gap: Spacing.xs },
+  metric: { flexGrow: 1, flexBasis: 160, minWidth: 0, gap: Spacing.xs, borderRadius: Radius.md, padding: Spacing.md },
+  evidencePill: { maxWidth: '100%', borderRadius: Radius.pill, paddingHorizontal: Spacing.md, paddingVertical: Spacing.sm },
 });
