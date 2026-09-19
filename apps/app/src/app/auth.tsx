@@ -164,6 +164,7 @@ export default function AuthScreen() {
                 autoCorrect={false}
                 editable={!busy}
                 secureTextEntry
+                style={styles.ltrInput}
                 textContentType={mode === 'sign-up' ? 'newPassword' : 'password'}
                 value={password}
                 onChangeText={setPassword}
