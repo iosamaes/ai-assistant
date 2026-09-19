@@ -21,6 +21,7 @@ import {
 } from '@/components/mizan-ui';
 import { Screen } from '@/components/screen';
 import { Spacing } from '@/constants/theme';
+import { formatLocalizedNumber } from '@/i18n/number-input';
 import { useAppState } from '@/state/app-state';
 
 const templateIds = Object.keys(experimentTemplates) as ExperimentTemplateId[];
@@ -150,8 +151,8 @@ const copy = {
   },
 } as const;
 
-function formatValue(value: number | null): string {
-  return value === null ? '—' : String(Math.round(value * 10) / 10);
+function formatValue(value: number | null, locale: 'ar' | 'en'): string {
+  return value === null ? '—' : formatLocalizedNumber(value, locale, 1);
 }
 
 export default function ExperimentsScreen() {
@@ -265,7 +266,7 @@ export default function ExperimentsScreen() {
       <Card key={experiment.id}>
         <MizanText variant="title">{templateLabel}</MizanText>
         <MizanText>{experiment.hypothesis}</MizanText>
-        <MizanText muted>{labels.duration}: {experiment.duration_days} {labels.days}</MizanText>
+        <MizanText muted>{labels.duration}: {formatLocalizedNumber(experiment.duration_days, locale, 0)} {labels.days}</MizanText>
         <MizanText muted>{labels.metric}: {(labels.metrics as Record<string, string>)[experiment.metric] ?? experiment.metric}</MizanText>
         <MizanText muted>{labels.status}: {labels.statuses[experiment.status]}</MizanText>
         <MizanText variant="caption" muted>
@@ -303,10 +304,10 @@ export default function ExperimentsScreen() {
         ) : (
           <View style={styles.resultGroup}>
             <MizanText variant="label">{labels.outcome}: {labels.outcomes[evaluation.outcome]}</MizanText>
-            <MizanText muted>{labels.baseline}: {formatValue(evaluation.baselineMedian)}</MizanText>
-            <MizanText muted>{labels.followup}: {formatValue(evaluation.followupMedian)}</MizanText>
+            <MizanText muted>{labels.baseline}: {formatValue(evaluation.baselineMedian, locale)}</MizanText>
+            <MizanText muted>{labels.followup}: {formatValue(evaluation.followupMedian, locale)}</MizanText>
             <MizanText variant="caption" muted>
-              {labels.evidence}: {evaluation.baselineEvidenceCount + evaluation.followupEvidenceCount} · {labels.confidence}: {labels.confidenceLevels[evaluation.confidence.level]}
+              {labels.evidence}: {formatLocalizedNumber(evaluation.baselineEvidenceCount + evaluation.followupEvidenceCount, locale, 0)} · {labels.confidence}: {labels.confidenceLevels[evaluation.confidence.level]}
             </MizanText>
           </View>
         )}
@@ -352,7 +353,7 @@ export default function ExperimentsScreen() {
             style={[styles.input, { writingDirection: isRtl ? 'rtl' : 'ltr' }]}
           />
           <MizanText muted>
-            {labels.duration}: {experimentTemplates[selected].durationDays} {labels.days} · {labels.metric}: {labels.metrics[experimentTemplates[selected].metric]}
+            {labels.duration}: {formatLocalizedNumber(experimentTemplates[selected].durationDays, locale, 0)} {labels.days} · {labels.metric}: {labels.metrics[experimentTemplates[selected].metric]}
           </MizanText>
           <ChoiceChip
             label={labels.consent}
