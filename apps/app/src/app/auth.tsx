@@ -110,11 +110,13 @@ export default function AuthScreen() {
         <MizanTextInput
           accessibilityLabel={t('email')}
           autoCapitalize="none"
+          autoComplete="email"
           autoCorrect={false}
           editable={!busy}
           keyboardType="email-address"
           placeholder="name@example.com"
           style={styles.ltrInput}
+          textContentType="emailAddress"
           value={email}
           onChangeText={setEmail}
         />
@@ -125,9 +127,11 @@ export default function AuthScreen() {
             <MizanTextInput
               accessibilityLabel={t('password')}
               autoCapitalize="none"
+              autoComplete={mode === 'sign-up' ? 'new-password' : 'current-password'}
               autoCorrect={false}
               editable={!busy}
               secureTextEntry
+              textContentType={mode === 'sign-up' ? 'newPassword' : 'password'}
               value={password}
               onChangeText={setPassword}
             />
