@@ -149,9 +149,9 @@ function capabilityIconName(capability: StoredIntegrationConnection['capability'
 function formatDate(value: string | null, locale: 'ar' | 'en'): string {
   if (!value) return '—';
   const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return value;
+  if (Number.isNaN(date.getTime())) return '—';
   try {
-    return new Intl.DateTimeFormat(locale === 'ar' ? 'ar-QA-u-nu-latn' : 'en', {
+    return new Intl.DateTimeFormat(locale === 'ar' ? 'ar-QA-u-nu-latn' : 'en-QA-u-nu-latn', {
       year: 'numeric',
       month: 'short',
       day: 'numeric',
@@ -159,7 +159,7 @@ function formatDate(value: string | null, locale: 'ar' | 'en'): string {
       minute: '2-digit',
     }).format(date);
   } catch {
-    return date.toISOString();
+    return '—';
   }
 }
 
