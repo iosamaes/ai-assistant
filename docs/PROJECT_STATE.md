@@ -39,6 +39,7 @@ Presentation boundary:
 Latest static CP9 work:
 - **Arabic-first numeric presentation:** `apps/app/src/i18n/number-input.ts` provides shared locale-aware numeric formatting in addition to localized decimal parsing. Cost of Yes and Human ROI render Arabic-Indic digits for Arabic placeholders, rating controls/accessibility labels, calculated hours, evidence counts, and percentage/rating values while retaining Western-digit output for English. Earlier commits: `f38750f1848a73e38cfbbdad8de85b598439632a`, `93bae4e5dee36a9d2310b7d8fae1d6eceb443a23`, `8075d87d80b52a78c3601edf5f1570bc020e4a39`.
 - **Numeric localization extended across evidence surfaces:** Insights, WHY, Capacity, and Life Map now use the shared formatter for user-facing sample/evidence counts, score denominators, effect/window values, and other dynamic numbers; Arabic static window copy on these audited surfaces uses Arabic-Indic digits where applicable. Capacity also preserves a genuinely unknown evidence count as `—` instead of manufacturing `0` when no snapshot exists. Commits `a7737820279ef87ffff7c6aebba67994682b121b`, `1b707719be16b339bf02e1ccaf151592b5a9fb14`, `cf667c6b8ce513292260c25bf97ef2630c5feae4`, `be50e86ca8f12f2bf735ca507b83c0a8bca5afc3`.
+- **Numeric localization extended across personal-learning/decision flows:** Personal Learning now locale-formats feedback/evidence counts, freshness days, usefulness ratings, and Arabic minute numerals; Experiments locale-formats durations, evaluation medians, and combined evidence counts while preserving locale-aware dates; Recovery locale-formats evidence counts and live step counters. Commits `a025cb10ed8e5b417b9e46b10398a5f56306aedb`, `e1c522d6806c3cb084db444cfa9e60dbbd70b7a9`, `88565944cef48dc4b805ee2330e3cda6c2120173`.
 - **Insights dynamic-type hardening:** header/detail rows now wrap and allow text shrinkage consistently with the already-hardened WHY/Life Map patterns, reducing narrow-width and large-text collision risk. Commit `a7737820279ef87ffff7c6aebba67994682b121b`.
 - **Numeric localization specification:** `apps/app/__tests__/advanced-tools-test.ts` covers Arabic and English formatted-number output in addition to localized decimal parsing. Commit `4cd50a79e013ba78cd25ced4e6a6d99600a236fb`; not worker-run under current policy.
 - **Recent accessibility/interaction hardening already on main:** async state fencing across onboarding, auth, password recovery, What If, Invisible Wins, Experiments, Life Seasons, Settings and Check-in; disabled semantics in shared fields/chips; keyboard-safe shared scrolling; startup-safe reduced motion; root fallback bidi parity; unknown-data honesty in Capacity; localized integration metadata; live-region/RTL/dynamic-type fixes across primary surfaces.
@@ -91,5 +92,8 @@ Post-baseline:
 - `apps/app/src/app/why.tsx`
 - `apps/app/src/app/capacity.tsx`
 - `apps/app/src/app/life-map.tsx`
+- `apps/app/src/app/personal-learning.tsx`
+- `apps/app/src/app/experiments.tsx`
+- `apps/app/src/app/recovery.tsx`
 - `apps/app/__tests__/advanced-tools-test.ts`
 - `automation/HUMAN_REQUIRED.md`
