@@ -6,6 +6,7 @@ import { assessExplicitHumanROI } from '@/application/human-roi';
 import { Card, ChoiceChip, MizanText, MizanTextInput, SecondaryButton } from '@/components/mizan-ui';
 import { Screen } from '@/components/screen';
 import { Spacing } from '@/constants/theme';
+import { parseLocalizedDecimalInput } from '@/i18n/number-input';
 import { useAppState } from '@/state/app-state';
 
 const RATINGS = [1, 2, 3, 4, 5] as const;
@@ -96,10 +97,8 @@ const copy = {
 } as const;
 
 function parseHours(value: string): number | null {
-  const normalized = value.trim().replace(',', '.');
-  if (normalized.length === 0) return null;
-  const parsed = Number(normalized);
-  return Number.isFinite(parsed) && parsed >= 0 && parsed <= 168 ? parsed : null;
+  const parsed = parseLocalizedDecimalInput(value);
+  return parsed !== null && parsed >= 0 && parsed <= 168 ? parsed : null;
 }
 
 function formatHours(minutes: number | null): string {
