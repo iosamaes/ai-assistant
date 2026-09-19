@@ -11,7 +11,7 @@ import {
 } from '@/application/insights';
 import { Card, MizanText, PrimaryButton, SecondaryButton } from '@/components/mizan-ui';
 import { Screen } from '@/components/screen';
-import { Controls, Palette, Spacing } from '@/constants/theme';
+import { Controls, Palette, Radius, Spacing } from '@/constants/theme';
 import { formatLocalizedNumber } from '@/i18n/number-input';
 import { useAppState } from '@/state/app-state';
 
@@ -117,28 +117,39 @@ function InsightCard({ insight, locale, isRtl }: { insight: PersonalInsight; loc
     : formatLocalizedNumber(insight.hypothesis.effect, locale, 2);
 
   return (
-    <Card>
-      <MizanText variant="title">{local.relationships[key]}</MizanText>
-      <MizanText muted>{directionLabel(insight, locale)}</MizanText>
+    <Card style={styles.insightCard}>
+      <View style={[styles.insightHeader, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
+        <View style={styles.insightCopy}>
+          <MizanText variant="title">{local.relationships[key]}</MizanText>
+          <MizanText muted>{directionLabel(insight, locale)}</MizanText>
+        </View>
+        <View style={[styles.statusPill, { backgroundColor: palette.accentSoft }]}>
+          <MizanText variant="caption">{statusLabel(insight.hypothesis.status, locale)}</MizanText>
+        </View>
+      </View>
+
+      <View style={styles.detailGrid}>
+        <View style={[styles.detailTile, { backgroundColor: palette.surfaceMuted }]}>
+          <MizanText variant="caption" muted>{local.confidence}</MizanText>
+          <MizanText variant="label">{confidenceLabel(insight.hypothesis.confidence.level, locale)}</MizanText>
+        </View>
+        <View style={[styles.detailTile, { backgroundColor: palette.surfaceMuted }]}>
+          <MizanText variant="caption" muted>{local.samples}</MizanText>
+          <MizanText variant="label">{formatLocalizedNumber(insight.hypothesis.sampleSize, locale, 0)}</MizanText>
+        </View>
+        <View style={[styles.detailTile, { backgroundColor: palette.surfaceMuted }]}>
+          <MizanText variant="caption" muted>{local.window}</MizanText>
+          <MizanText variant="label" style={styles.detailText}>{window}</MizanText>
+        </View>
+        <View style={[styles.detailTile, { backgroundColor: palette.surfaceMuted }]}>
+          <MizanText variant="caption" muted>{local.effect}</MizanText>
+          <MizanText variant="label" style={styles.detailText}>{effect}</MizanText>
+        </View>
+      </View>
+
       <View style={[styles.detailRow, { flexDirection: isRtl ? 'row-reverse' : 'row', borderTopColor: palette.border }]}>
         <MizanText variant="caption" muted style={styles.detailText}>{local.status}</MizanText>
         <MizanText variant="label" style={styles.detailText}>{statusLabel(insight.hypothesis.status, locale)}</MizanText>
-      </View>
-      <View style={[styles.detailRow, { flexDirection: isRtl ? 'row-reverse' : 'row', borderTopColor: palette.border }]}>
-        <MizanText variant="caption" muted style={styles.detailText}>{local.confidence}</MizanText>
-        <MizanText variant="label" style={styles.detailText}>{confidenceLabel(insight.hypothesis.confidence.level, locale)}</MizanText>
-      </View>
-      <View style={[styles.detailRow, { flexDirection: isRtl ? 'row-reverse' : 'row', borderTopColor: palette.border }]}>
-        <MizanText variant="caption" muted style={styles.detailText}>{local.samples}</MizanText>
-        <MizanText variant="label" style={styles.detailText}>{formatLocalizedNumber(insight.hypothesis.sampleSize, locale, 0)}</MizanText>
-      </View>
-      <View style={[styles.detailRow, { flexDirection: isRtl ? 'row-reverse' : 'row', borderTopColor: palette.border }]}>
-        <MizanText variant="caption" muted style={styles.detailText}>{local.window}</MizanText>
-        <MizanText variant="label" style={styles.detailText}>{window}</MizanText>
-      </View>
-      <View style={[styles.detailRow, { flexDirection: isRtl ? 'row-reverse' : 'row', borderTopColor: palette.border }]}>
-        <MizanText variant="caption" muted style={styles.detailText}>{local.effect}</MizanText>
-        <MizanText variant="label" style={styles.detailText}>{effect}</MizanText>
       </View>
     </Card>
   );
@@ -146,6 +157,8 @@ function InsightCard({ insight, locale, isRtl }: { insight: PersonalInsight; loc
 
 export default function InsightsScreen() {
   const { isRtl, locale, refreshSession, userId } = useAppState();
+  const scheme = useColorScheme();
+  const palette = Palette[scheme === 'dark' ? 'dark' : 'light'];
   const [snapshot, setSnapshot] = useState<InsightsSnapshot | null>(null);
   const [status, setStatus] = useState<LoadStatus>('loading');
   const local = copy[locale];
@@ -186,20 +199,29 @@ export default function InsightsScreen() {
         <SecondaryButton compact label={local.back} onPress={() => router.replace('/today')} />
       </View>
 
-      <Card>
-        <MizanText muted>{local.body}</MizanText>
-        <MizanText variant="caption" muted>{local.caveat}</MizanText>
+      <Card style={[styles.heroCard, { backgroundColor: palette.accentSoft, borderColor: palette.accent }]}>
+        <View style={styles.heroCopy}>
+          <MizanText variant="title">{local.title}</MizanText>
+          <MizanText muted>{local.body}</MizanText>
+          <MizanText variant="caption" muted>{local.caveat}</MizanText>
+        </View>
         <PrimaryButton label={local.checkIn} onPress={() => router.push('/check-in')} />
       </Card>
 
       {status === 'loading' ? <MizanText accessibilityLiveRegion="polite" muted>{local.loading}</MizanText> : null}
-      {status === 'error' ? <Card><MizanText accessibilityLiveRegion="polite" muted>{local.error}</MizanText></Card> : null}
-      {status === 'ready' && (snapshot?.insights.length ?? 0) === 0 ? (
-        <Card><MizanText accessibilityLiveRegion="polite" muted>{local.empty}</MizanText></Card>
+      {status === 'error' ? (
+        <Card style={{ backgroundColor: palette.surfaceMuted }}><MizanText accessibilityLiveRegion="polite" muted>{local.error}</MizanText></Card>
       ) : null}
-      {status === 'ready' ? snapshot?.insights.map((insight) => (
-        <InsightCard key={insight.key} insight={insight} locale={locale} isRtl={isRtl} />
-      )) : null}
+      {status === 'ready' && (snapshot?.insights.length ?? 0) === 0 ? (
+        <Card style={{ backgroundColor: palette.surfaceMuted }}><MizanText accessibilityLiveRegion="polite" muted>{local.empty}</MizanText></Card>
+      ) : null}
+      {status === 'ready' ? (
+        <View style={styles.insightGrid}>
+          {snapshot?.insights.map((insight) => (
+            <InsightCard key={insight.key} insight={insight} locale={locale} isRtl={isRtl} />
+          ))}
+        </View>
+      ) : null}
     </Screen>
   );
 }
@@ -207,6 +229,28 @@ export default function InsightsScreen() {
 const styles = StyleSheet.create({
   topRow: { alignItems: 'flex-start', justifyContent: 'space-between', gap: Spacing.lg, flexWrap: 'wrap' },
   heading: { flex: 1, minWidth: 0, gap: Spacing.xs },
+  heroCard: { gap: Spacing.xl },
+  heroCopy: { gap: Spacing.sm },
+  insightGrid: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'stretch', gap: Spacing.lg },
+  insightCard: { flexGrow: 1, flexShrink: 1, flexBasis: 360 },
+  insightHeader: { alignItems: 'flex-start', justifyContent: 'space-between', gap: Spacing.lg, flexWrap: 'wrap' },
+  insightCopy: { flexGrow: 1, flexShrink: 1, flexBasis: 220, gap: Spacing.sm },
+  statusPill: {
+    minHeight: Controls.minimumTouchHeight,
+    justifyContent: 'center',
+    paddingHorizontal: Spacing.md,
+    borderRadius: Radius.pill,
+  },
+  detailGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.sm },
+  detailTile: {
+    flexGrow: 1,
+    flexShrink: 1,
+    flexBasis: 140,
+    gap: Spacing.xs,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.md,
+    borderRadius: Radius.md,
+  },
   detailRow: {
     alignItems: 'flex-start',
     justifyContent: 'space-between',
