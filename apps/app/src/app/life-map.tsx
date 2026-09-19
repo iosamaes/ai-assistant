@@ -295,7 +295,6 @@ function RadarChart({
         return (
           <View
             key={`label-${domain.domainId}`}
-            pointerEvents="none"
             style={[styles.radarAxisLabel, { left: labelLeft, top: labelTop, width: labelWidth }]}>
             <AppIcon name={domainIcons[domain.domainId]} color={domain.score === null ? palette.textMuted : palette.accent} size={17} />
             <MizanText variant="caption" style={styles.centeredText} numberOfLines={2}>
@@ -306,7 +305,6 @@ function RadarChart({
       })}
 
       <View
-        pointerEvents="none"
         style={[
           styles.radarCenter,
           {
@@ -341,7 +339,7 @@ function DomainCard({ domain, locale, isRtl }: { domain: LifeMapDomainHistory; l
       <View style={[styles.domainHeader, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
         <View style={[styles.domainIdentity, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
           <View style={[styles.domainIcon, { backgroundColor: palette.accentSoft }]}>
-            <AppIcon name={domainIcons[domain.domainId]} color={palette.accent} size={22} />
+            <AppIcon name={domainIcons[domain.domainId]} color={domain.score === null ? palette.textMuted : palette.accent} size={22} />
           </View>
           <MizanText variant="title" style={styles.flexibleRowText}>{local.domains[domain.domainId]}</MizanText>
         </View>
@@ -538,7 +536,7 @@ const styles = StyleSheet.create({
   radar: { alignSelf: 'center', position: 'relative' },
   radarRing: { borderRadius: Radius.pill, borderWidth: Controls.borderWidth, position: 'absolute' },
   radarDot: { borderRadius: Radius.pill, height: 10, position: 'absolute', width: 10 },
-  radarAxisLabel: { alignItems: 'center', gap: 2, position: 'absolute' },
+  radarAxisLabel: { alignItems: 'center', gap: 2, pointerEvents: 'none', position: 'absolute' },
   radarCenter: {
     alignItems: 'center',
     borderRadius: Radius.lg,
@@ -546,6 +544,7 @@ const styles = StyleSheet.create({
     height: 86,
     justifyContent: 'center',
     paddingHorizontal: Spacing.sm,
+    pointerEvents: 'none',
     position: 'absolute',
     width: 116,
   },
