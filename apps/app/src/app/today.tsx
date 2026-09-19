@@ -101,7 +101,7 @@ function cachedSnapshotMessage(snapshot: DailySnapshot | null, locale: 'ar' | 'e
   if (!Number.isFinite(savedAt.getTime())) return null;
   const copy = overviewCopy[locale];
   const reason = snapshot.degradedBy === 'not-configured' ? copy.cacheNotConfigured : copy.cacheUnavailable;
-  return `${reason} ${copy.cacheSavedAt}: ${savedAt.toLocaleString(locale === 'ar' ? 'ar-QA' : 'en-QA')}`;
+  return `${reason} ${copy.cacheSavedAt}: ${savedAt.toLocaleString(locale === 'ar' ? 'ar-QA-u-nu-latn' : 'en-QA-u-nu-latn')}`;
 }
 
 function actionLabelKey(actionId: string): TranslationKey | null {
