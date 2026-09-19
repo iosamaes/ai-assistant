@@ -6,6 +6,7 @@ import {
   disableIntegrationConnection,
   loadIntegrationSettings,
 } from '@/application/integrations';
+import { AppIcon, type AppIconName } from '@/components/app-icon';
 import { Card, MizanText, SecondaryButton } from '@/components/mizan-ui';
 import { Screen } from '@/components/screen';
 import { Controls, Palette, Radius, Spacing } from '@/constants/theme';
@@ -139,6 +140,12 @@ function scopeLabel(scope: string, locale: 'ar' | 'en'): string {
   return scopeLabels[locale][scope] ?? copy[locale].unknownPermission;
 }
 
+function capabilityIconName(capability: StoredIntegrationConnection['capability']): AppIconName {
+  if (capability === 'health_data') return 'recovery';
+  if (capability === 'time_context') return 'margin';
+  return 'lifeMap';
+}
+
 function formatDate(value: string | null, locale: 'ar' | 'en'): string {
   if (!value) return '—';
   const date = new Date(value);
@@ -250,7 +257,12 @@ export default function IntegrationsScreen() {
       </View>
 
       <Card style={[styles.heroCard, { backgroundColor: palette.accentSoft, borderColor: palette.accent }]}>
-        <MizanText variant="title">{labels.heroTitle}</MizanText>
+        <View style={[styles.heroHeading, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
+          <View style={[styles.heroIcon, { backgroundColor: palette.surface }]}>
+            <AppIcon name="integration" color={palette.accent} size={24} />
+          </View>
+          <MizanText variant="title" style={styles.flexibleText}>{labels.heroTitle}</MizanText>
+        </View>
         <MizanText>{labels.body}</MizanText>
         <MizanText variant="caption" muted>{labels.heroBody}</MizanText>
       </Card>
@@ -295,9 +307,14 @@ export default function IntegrationsScreen() {
                 key={connection.id}
                 style={isConnected ? { borderColor: palette.accent } : undefined}>
                 <View style={[styles.connectionHeader, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
-                  <View style={styles.flexibleText}>
-                    <MizanText variant="label" muted>{labels.capability}</MizanText>
-                    <MizanText variant="title">{capabilityLabel}</MizanText>
+                  <View style={[styles.capabilityHeading, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
+                    <View style={[styles.capabilityIcon, { backgroundColor: palette.accentSoft }]}>
+                      <AppIcon name={capabilityIconName(connection.capability)} color={palette.accent} size={22} />
+                    </View>
+                    <View style={styles.flexibleText}>
+                      <MizanText variant="label" muted>{labels.capability}</MizanText>
+                      <MizanText variant="title">{capabilityLabel}</MizanText>
+                    </View>
                   </View>
                   <View
                     style={[
@@ -309,20 +326,29 @@ export default function IntegrationsScreen() {
                 </View>
 
                 <View style={[styles.providerPanel, { backgroundColor: palette.surfaceMuted }]}>
-                  <MizanText variant="caption" muted>{labels.provider}</MizanText>
+                  <View style={[styles.detailHeading, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
+                    <AppIcon name="integration" color={palette.accent} size={18} />
+                    <MizanText variant="caption" muted>{labels.provider}</MizanText>
+                  </View>
                   <MizanText variant="title">{providerLabel(connection.providerId, locale)}</MizanText>
                 </View>
 
                 <MizanText variant="label">{labels.sourceDetails}</MizanText>
                 <View style={[styles.detailsGrid, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
                   <View style={styles.detailBlock}>
-                    <MizanText variant="caption" muted>{labels.lastSync}</MizanText>
+                    <View style={[styles.detailHeading, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
+                      <AppIcon name="evidence" color={palette.accent} size={18} />
+                      <MizanText variant="caption" muted>{labels.lastSync}</MizanText>
+                    </View>
                     <MizanText variant="label">
                       {connection.lastSyncedAt ? formatDate(connection.lastSyncedAt, locale) : labels.never}
                     </MizanText>
                   </View>
                   <View style={styles.detailBlock}>
-                    <MizanText variant="caption" muted>{labels.consent}</MizanText>
+                    <View style={[styles.detailHeading, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
+                      <AppIcon name="privacy" color={palette.accent} size={18} />
+                      <MizanText variant="caption" muted>{labels.consent}</MizanText>
+                    </View>
                     <MizanText variant="label">
                       {connection.consentedAt ? formatDate(connection.consentedAt, locale) : labels.never}
                     </MizanText>
@@ -330,7 +356,10 @@ export default function IntegrationsScreen() {
                 </View>
 
                 <View style={[styles.permissionsGroup, { borderTopColor: palette.border }]}>
-                  <MizanText variant="label">{labels.permissions}</MizanText>
+                  <View style={[styles.detailHeading, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
+                    <AppIcon name="privacy" color={palette.accent} size={18} />
+                    <MizanText variant="label">{labels.permissions}</MizanText>
+                  </View>
                   {permissionLabels.length > 0 ? (
                     <View style={[styles.permissionPills, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
                       {permissionLabels.map((permission, index) => (
@@ -368,7 +397,10 @@ export default function IntegrationsScreen() {
       ) : null}
 
       <Card style={[styles.privacyCard, { backgroundColor: palette.surfaceMuted }]}>
-        <MizanText variant="label">{labels.privacyTitle}</MizanText>
+        <View style={[styles.privacyHeading, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
+          <AppIcon name="privacy" color={palette.accent} size={22} />
+          <MizanText variant="label" style={styles.flexibleText}>{labels.privacyTitle}</MizanText>
+        </View>
         <MizanText variant="caption" muted>{labels.privacy}</MizanText>
       </Card>
     </Screen>
@@ -385,11 +417,36 @@ const styles = StyleSheet.create({
   heading: { flex: 1, minWidth: 0, gap: Spacing.xs },
   flexibleText: { flex: 1, minWidth: 0 },
   heroCard: { gap: Spacing.md },
+  heroHeading: { alignItems: 'center', gap: Spacing.md },
+  heroIcon: {
+    width: Controls.standardHeight,
+    height: Controls.standardHeight,
+    borderRadius: Radius.md,
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexShrink: 0,
+  },
   connectionHeader: {
     alignItems: 'flex-start',
     justifyContent: 'space-between',
     gap: Spacing.md,
     flexWrap: 'wrap',
+  },
+  capabilityHeading: {
+    flexGrow: 1,
+    flexShrink: 1,
+    flexBasis: 260,
+    minWidth: 0,
+    alignItems: 'center',
+    gap: Spacing.md,
+  },
+  capabilityIcon: {
+    width: Controls.minimumTouchHeight,
+    height: Controls.minimumTouchHeight,
+    borderRadius: Radius.md,
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexShrink: 0,
   },
   statusPill: {
     borderRadius: Radius.pill,
@@ -410,6 +467,7 @@ const styles = StyleSheet.create({
     flexBasis: 220,
     gap: Spacing.xs,
   },
+  detailHeading: { alignItems: 'center', gap: Spacing.xs },
   permissionsGroup: {
     borderTopWidth: Controls.borderWidth,
     paddingTop: Spacing.lg,
@@ -428,4 +486,5 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   privacyCard: { gap: Spacing.sm },
+  privacyHeading: { alignItems: 'center', gap: Spacing.sm },
 });
