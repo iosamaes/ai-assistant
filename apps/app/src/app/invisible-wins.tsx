@@ -142,11 +142,13 @@ export default function InvisibleWinsScreen() {
               label={labels.categories[item]}
               selected={category === item}
               onPress={() => setCategory(item)}
+              disabled={saving}
             />
           ))}
         </View>
         <MizanTextInput
           accessibilityLabel={labels.prompt}
+          editable={!saving}
           multiline
           maxLength={1000}
           placeholder={labels.placeholder}
