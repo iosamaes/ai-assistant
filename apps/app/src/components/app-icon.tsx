@@ -9,7 +9,14 @@ export type AppIconName =
   | 'recovery'
   | 'connection'
   | 'work'
-  | 'margin';
+  | 'margin'
+  | 'energy'
+  | 'mentalLoad'
+  | 'overload'
+  | 'trendUp'
+  | 'trendFlat'
+  | 'trendDown'
+  | 'evidence';
 
 const symbols = {
   home: { ios: 'house.fill', android: 'home', web: 'home' },
@@ -21,6 +28,13 @@ const symbols = {
   connection: { ios: 'person.2.fill', android: 'groups', web: 'groups' },
   work: { ios: 'briefcase.fill', android: 'work', web: 'work' },
   margin: { ios: 'clock.fill', android: 'schedule', web: 'schedule' },
+  energy: { ios: 'bolt.heart.fill', android: 'electric_bolt', web: 'electric_bolt' },
+  mentalLoad: { ios: 'brain.head.profile', android: 'psychology', web: 'psychology' },
+  overload: { ios: 'exclamationmark.triangle.fill', android: 'warning', web: 'warning' },
+  trendUp: { ios: 'arrow.up.right', android: 'trending_up', web: 'trending_up' },
+  trendFlat: { ios: 'minus', android: 'trending_flat', web: 'trending_flat' },
+  trendDown: { ios: 'arrow.down.right', android: 'trending_down', web: 'trending_down' },
+  evidence: { ios: 'checkmark.seal.fill', android: 'fact_check', web: 'fact_check' },
 } as const;
 
 interface AppIconProps {
