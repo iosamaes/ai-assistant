@@ -87,15 +87,16 @@ Implemented security/privacy work includes:
 - Client Privacy & Data flow for export and two-step account deletion; Web JSON download/native share path; initiating-user/session fencing.
 - Confirmed server deletion triggers local purge attempts for pending offline mutations and recent Today snapshot; cleanup failure is reported separately from server deletion success.
 - Development error-boundary logging no longer emits arbitrary error objects/messages.
-- Targeted logging/error review completed for Supabase config/data access, integration persistence/sync, session storage, offline caches, privacy/Auth/delete paths, integration UI, and root error boundary.
+- Targeted logging/error review completed for Supabase config/data access, integration persistence/sync, session storage, offline caches, privacy/Auth/delete paths, integration UI, root error boundary, global app-state handling, and password-update/auth presentation.
+- New-account creation now requires the same 8-character minimum already used by password recovery/update, with localized live guidance; sign-in keeps its 6-character client compatibility threshold for existing accounts. Focused regression specification added in `apps/app/__tests__/auth-screen-test.tsx` but not worker-run.
 - Health integration sync now rechecks authoritative consent/connection/scopes before provider read, before retry, after provider read, and before success bookkeeping; stale/revoked sync cannot silently reconnect.
 - Integration settings and global app-state hydration are fenced against previous-account async results.
 - Invisible Wins history now binds loaded items to the active user and rejects prior-account async load/save completion from repainting a new account; runtime validation remains pending.
-- Focused static specifications exist for privacy session fencing/local purge, consent revocation, integration-screen account switching, and app-state account-switch hydration.
+- Focused static specifications exist for privacy session fencing/local purge, consent revocation, integration-screen account switching, app-state account-switch hydration, and new-account password minimum behavior.
 
 ### CP10 remaining
 - Complete repository-wide sensitive logging/error-reporting review beyond the already inspected boundaries; fix only concrete leakage paths.
-- Owner/runtime validation remains required for cross-user/database tests, export/delete/local-purge, destructive Edge deletion, consent revocation races, account-switch races, and the newly hardened reflection account-switch path.
+- Owner/runtime validation remains required for cross-user/database tests, export/delete/local-purge, destructive Edge deletion, consent revocation races, account-switch races, and the newly hardened reflection/auth paths.
 - Supabase leaked-password protection remains an owner action in `automation/HUMAN_REQUIRED.md`.
 
 ## Exact next executable action
@@ -121,6 +122,7 @@ Post-baseline:
 - `delete-account` deployment reports ACTIVE with JWT verification enabled; no destructive end-to-end deletion validation is claimed.
 - CP9 Premium Production Visual Pass commits through `2bf3e942e172c1d9233574468cdcdc4fbe7baae0` are static implementation evidence only until owner runtime review.
 - Offline entry routing, premium session-loading presentation, and shared Web `pointerEvents` warning fixes above are static source/specification evidence only; the focused regression specifications remain owner-run under the active worker policy.
+- Auth new-account password hardening is static implementation/specification evidence only: implementation `82fb811d77e01bfd61d07f3bdbbbcda92d3b6e9d`, specification `8b7b7258f054a7f5eedb1a320a9c8cea2f199bf1`; the specification was not worker-run.
 
 ## Known blockers / risks
 - CP1: Windows session must be unlocked normally for true narrow-phone Arabic/English interaction evidence; see `automation/HUMAN_REQUIRED.md`.
@@ -176,6 +178,7 @@ Post-baseline:
 - `apps/app/src/application/integrations.ts`
 - `apps/app/src/state/app-state.tsx`
 - `apps/app/src/components/app-error-boundary.tsx`
+- `apps/app/__tests__/auth-screen-test.tsx`
 - `apps/app/__tests__/entry-screen-offline-routing-test.tsx`
 - `apps/app/__tests__/privacy-session-fencing-test.ts`
 - `apps/app/__tests__/integration-consent-revocation-test.ts`
