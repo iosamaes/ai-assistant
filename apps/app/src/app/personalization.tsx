@@ -1,23 +1,37 @@
 import type { HumanStateVector, PersonalizationMaturity } from '@mizan/core';
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { StyleSheet, useColorScheme, View } from 'react-native';
+import { Pressable, StyleSheet, useColorScheme, View } from 'react-native';
 
 import { loadCurrentHumanState } from '@/application/daily-intelligence';
+import { AppIcon, type AppIconName } from '@/components/app-icon';
 import { Card, MizanText, SecondaryButton } from '@/components/mizan-ui';
 import { Screen } from '@/components/screen';
-import { Controls, Palette, Radius, Spacing } from '@/constants/theme';
-import { useAppState } from '@/state/app-state';
+import { Controls, Interaction, Palette, Radius, Spacing } from '@/constants/theme';
+import { type DomainId, useAppState } from '@/state/app-state';
 
 type LoadStatus = 'loading' | 'ready' | 'error';
 
 const stageOrder: readonly PersonalizationMaturity[] = ['cold_start', 'learning', 'personalized'];
+const domainOrder: readonly DomainId[] = ['recovery', 'connection', 'work', 'margin'];
+
+function domainIcon(domainId: DomainId): AppIconName {
+  if (domainId === 'recovery') return 'recovery';
+  if (domainId === 'connection') return 'connection';
+  if (domainId === 'work') return 'work';
+  return 'margin';
+}
 
 const copy = {
   ar: {
     eyebrow: 'التخصيص',
     title: 'إلى أي مدى تعلّم ميزان عن نمطك؟',
     body: 'هذه ليست درجة لك. إنها توضح فقط مدى نضج الأدلة الشخصية التي يعتمد عليها ميزان، وقد تتراجع المرحلة إذا أصبحت البيانات قديمة أو قليلة.',
+    areasTitle: 'المجالات التي تريدها في ميزانك',
+    areasBody: 'فعّل فقط المجالات التي تريد أن تدخل في تجربتك اليومية. يمكنك تغييرها هنا بدون تحويل التخصيص إلى حكم ثابت عليك.',
+    enabled: 'مفعّل',
+    disabled: 'غير مفعّل',
+    keepOne: 'يجب إبقاء مجال واحد على الأقل مفعّلًا.',
     loading: 'جارٍ قراءة حالة التخصيص…',
     error: 'تعذر قراءة حالة التخصيص الآن.',
     empty: 'لا توجد حالة تخصيص متاحة بعد. ابدأ بتسجيل فحص سريع ليبدأ ميزان في التعلّم.',
@@ -40,6 +54,11 @@ const copy = {
     eyebrow: 'Personalization',
     title: 'How much has MIZAN learned about your pattern?',
     body: 'This is not a score for you. It only describes how mature the personal evidence is, and the stage can move backward when evidence becomes old or sparse.',
+    areasTitle: 'Areas you want in your MIZAN',
+    areasBody: 'Enable only the areas you want in your daily experience. You can change them here without turning personalization into a fixed judgment about you.',
+    enabled: 'Enabled',
+    disabled: 'Disabled',
+    keepOne: 'At least one area must stay enabled.',
     loading: 'Reading personalization maturity…',
     error: 'Personalization maturity could not be loaded right now.',
     empty: 'No personalization state is available yet. Start with a quick check-in so MIZAN can begin learning.',
@@ -75,7 +94,7 @@ function stageBody(stage: PersonalizationMaturity, locale: 'ar' | 'en'): string 
 }
 
 export default function PersonalizationScreen() {
-  const { isRtl, locale, refreshSession, userId } = useAppState();
+  const { enabledDomains, isRtl, locale, refreshSession, t, toggleDomain, userId } = useAppState();
   const [status, setStatus] = useState<LoadStatus>('loading');
   const [state, setState] = useState<HumanStateVector | null>(null);
   const scheme = useColorScheme();
@@ -131,6 +150,53 @@ export default function PersonalizationScreen() {
             <MizanText variant="caption">{labels.activeStage}</MizanText>
           </View>
         ) : null}
+      </Card>
+
+      <Card style={styles.areasCard}>
+        <View style={styles.sectionHeader}>
+          <MizanText variant="title">{labels.areasTitle}</MizanText>
+          <MizanText muted>{labels.areasBody}</MizanText>
+        </View>
+        <View style={styles.areaList}>
+          {domainOrder.map((domainId) => {
+            const enabled = enabledDomains.includes(domainId);
+            const isLastEnabled = enabled && enabledDomains.length === 1;
+            return (
+              <Pressable
+                key={domainId}
+                accessibilityRole="switch"
+                accessibilityLabel={t(domainId)}
+                accessibilityState={{ checked: enabled, disabled: isLastEnabled }}
+                accessibilityHint={isLastEnabled ? labels.keepOne : undefined}
+                disabled={isLastEnabled}
+                onPress={() => toggleDomain(domainId)}
+                style={({ pressed }) => [
+                  styles.areaRow,
+                  {
+                    backgroundColor: enabled ? palette.accentSoft : palette.surfaceMuted,
+                    borderColor: enabled ? palette.accent : palette.border,
+                    flexDirection: isRtl ? 'row-reverse' : 'row',
+                    opacity: pressed ? Interaction.subtlePressed : isLastEnabled ? Interaction.disabled : 1,
+                  },
+                ]}
+              >
+                <View style={[styles.areaIdentity, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
+                  <View style={[styles.domainIcon, { backgroundColor: palette.surface }]}>
+                    <AppIcon name={domainIcon(domainId)} color={enabled ? palette.accent : palette.textMuted} size={22} />
+                  </View>
+                  <View style={styles.flexibleText}>
+                    <MizanText variant="label">{t(domainId)}</MizanText>
+                    {isLastEnabled ? <MizanText variant="caption" muted>{labels.keepOne}</MizanText> : null}
+                  </View>
+                </View>
+                <View style={[styles.statePill, { backgroundColor: palette.surface }]}>
+                  <View style={[styles.stateDot, { backgroundColor: enabled ? palette.accent : palette.textMuted }]} />
+                  <MizanText variant="caption">{enabled ? labels.enabled : labels.disabled}</MizanText>
+                </View>
+              </Pressable>
+            );
+          })}
+        </View>
       </Card>
 
       {status === 'loading' ? (
@@ -197,10 +263,25 @@ const styles = StyleSheet.create({
   heading: { flex: 1, minWidth: 0, gap: Spacing.xs },
   heroCard: { gap: Spacing.md },
   currentPill: { borderRadius: Radius.pill, paddingHorizontal: Spacing.md, paddingVertical: Spacing.sm, maxWidth: '100%' },
+  areasCard: { gap: Spacing.lg },
+  areaList: { gap: Spacing.sm },
+  areaRow: {
+    minHeight: 70,
+    borderWidth: Controls.borderWidth,
+    borderRadius: Radius.md,
+    padding: Spacing.md,
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: Spacing.md,
+  },
+  areaIdentity: { flex: 1, minWidth: 0, alignItems: 'center', gap: Spacing.md },
+  domainIcon: { width: 42, height: 42, borderRadius: Radius.sm, alignItems: 'center', justifyContent: 'center', flexShrink: 0 },
+  statePill: { minHeight: 34, borderRadius: Radius.pill, paddingHorizontal: Spacing.md, flexDirection: 'row', alignItems: 'center', gap: Spacing.xs },
+  stateDot: { width: 8, height: 8, borderRadius: Radius.pill },
   sectionHeader: { gap: Spacing.sm },
   progression: { flexWrap: 'wrap', alignItems: 'stretch', gap: Spacing.lg },
   stage: { flexGrow: 1, flexShrink: 1, flexBasis: 260, gap: Spacing.md },
   stageHeader: { alignItems: 'flex-start', justifyContent: 'space-between', gap: Spacing.sm, flexWrap: 'wrap' },
   stagePill: { minHeight: Controls.minimumTouchHeight, justifyContent: 'center', borderRadius: Radius.pill, paddingHorizontal: Spacing.md },
-  flexibleText: { flexShrink: 1 },
+  flexibleText: { flex: 1, minWidth: 0, flexShrink: 1 },
 });
