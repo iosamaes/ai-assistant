@@ -37,6 +37,9 @@ const copy = {
     disabled: 'متوقف',
     error: 'خطأ',
     never: 'لا يوجد',
+    unknownProvider: 'مزود خارجي',
+    unknownCapability: 'قدرة خارجية',
+    unknownPermission: 'صلاحية إضافية',
     capabilityLabels: {
       health_data: 'بيانات الصحة والساعات',
       time_context: 'سياق الوقت والتقويم',
@@ -67,6 +70,9 @@ const copy = {
     disabled: 'Disabled',
     error: 'Error',
     never: 'None',
+    unknownProvider: 'External provider',
+    unknownCapability: 'External capability',
+    unknownPermission: 'Additional permission',
     capabilityLabels: {
       health_data: 'Health & wearable data',
       time_context: 'Time & calendar context',
@@ -116,11 +122,11 @@ const scopeLabels: Record<'ar' | 'en', Record<string, string>> = {
 };
 
 function providerLabel(providerId: string, locale: 'ar' | 'en'): string {
-  return providerLabels[locale][providerId] ?? providerId;
+  return providerLabels[locale][providerId] ?? copy[locale].unknownProvider;
 }
 
 function scopeLabel(scope: string, locale: 'ar' | 'en'): string {
-  return scopeLabels[locale][scope] ?? scope;
+  return scopeLabels[locale][scope] ?? copy[locale].unknownPermission;
 }
 
 function formatDate(value: string | null, locale: 'ar' | 'en'): string {
@@ -222,7 +228,7 @@ export default function IntegrationsScreen() {
         return (
           <Card key={connection.id}>
             <MizanText variant="title">
-              {labels.capabilityLabels[connection.capability] ?? connection.capability}
+              {labels.capabilityLabels[connection.capability] ?? labels.unknownCapability}
             </MizanText>
             <View style={styles.details}>
               <MizanText>{labels.provider}: {providerLabel(connection.providerId, locale)}</MizanText>
