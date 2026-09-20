@@ -183,11 +183,13 @@ function RangeMeter({
   projectedMin,
   projectedMax,
   locale,
+  isRtl,
 }: {
   currentValue: number | null;
   projectedMin: number | null;
   projectedMax: number | null;
   locale: 'ar' | 'en';
+  isRtl: boolean;
 }) {
   const scheme = useColorScheme();
   const palette = Palette[scheme === 'dark' ? 'dark' : 'light'];
@@ -209,14 +211,26 @@ function RangeMeter({
             {
               backgroundColor: palette.accentSoft,
               borderColor: palette.accent,
-              left: percent(bandStart),
+              left: isRtl ? undefined : percent(bandStart),
+              right: isRtl ? percent(bandStart) : undefined,
               width: percent(bandWidth),
             },
           ]}
         />
-        <View style={[styles.currentMarker, { backgroundColor: palette.accent, left: percent(current) }]} />
+        <View
+          style={[
+            styles.currentMarker,
+            {
+              backgroundColor: palette.accent,
+              left: isRtl ? undefined : percent(current),
+              right: isRtl ? percent(current) : undefined,
+              marginLeft: isRtl ? 0 : -1.5,
+              marginRight: isRtl ? -1.5 : 0,
+            },
+          ]}
+        />
       </View>
-      <View style={styles.scaleRow}>
+      <View style={[styles.scaleRow, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
         <MizanText variant="caption" muted>{formatLocalizedNumber(0, locale, 0)}</MizanText>
         <MizanText variant="caption" muted>{formatLocalizedNumber(100, locale, 0)}</MizanText>
       </View>
@@ -404,6 +418,7 @@ export default function WhatIfScreen() {
                       projectedMin={effect.projectedMin}
                       projectedMax={effect.projectedMax}
                       locale={locale}
+                      isRtl={isRtl}
                     />
 
                     <View style={[styles.evidenceRow, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
@@ -498,8 +513,8 @@ const styles = StyleSheet.create({
   rangeMeter: { gap: Spacing.xs },
   rangeTrack: { height: 20, borderRadius: Radius.pill, position: 'relative', overflow: 'hidden' },
   rangeBand: { position: 'absolute', top: 4, bottom: 4, borderWidth: Controls.borderWidth, borderRadius: Radius.pill },
-  currentMarker: { position: 'absolute', top: 1, bottom: 1, width: 3, borderRadius: Radius.pill, marginLeft: -1.5 },
-  scaleRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  currentMarker: { position: 'absolute', top: 1, bottom: 1, width: 3, borderRadius: Radius.pill },
+  scaleRow: { justifyContent: 'space-between', alignItems: 'center' },
   evidenceRow: { alignItems: 'center', gap: Spacing.xs },
   caveatCard: { gap: Spacing.sm },
   caveatTitleRow: { alignItems: 'center', gap: Spacing.sm },
