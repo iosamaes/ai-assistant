@@ -19,7 +19,7 @@ describe('Playwright live-mutation isolation policy', () => {
     expect(notificationSpec).toContain('test.skip(!mutationsEnabled');
   });
 
-  test('irreversible deletion remains isolated, explicitly opted in, and dedicated-fixture only', () => {
+  test('irreversible deletion remains isolated, explicitly opted in, dedicated-fixture only, and contract-confirming', () => {
     const repoRoot = path.resolve(__dirname, '../../..');
     const deletionSpec = fs.readFileSync(
       path.join(repoRoot, 'tests', 'e2e', 'account-deletion-live.spec.ts'),
@@ -32,6 +32,8 @@ describe('Playwright live-mutation isolation policy', () => {
     expect(deletionSpec).toContain('MIZAN_E2E_DELETE_EMAIL must be a dedicated disposable account');
     expect(deletionSpec).toContain('expect(mismatchDeletion.status()).toBe(409)');
     expect(deletionSpec).toContain("toMatchObject({ error: 'account_changed' })");
+    expect(deletionSpec).toContain('expect(deletionResponse.status()).toBe(200)');
+    expect(deletionSpec).toContain("expect(await deletionResponse.json()).toMatchObject({ ok: true })");
     expect(deletionSpec).toContain('expect(reauthentication.status()).toBe(400)');
   });
 
