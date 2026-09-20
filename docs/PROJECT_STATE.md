@@ -43,6 +43,10 @@ The owner-approved premium reference contract is now broadly present in static s
 - `834d732e6bc169b9a247b4e12449d2dd3aeaffd5` — shared `AppIcon` glyphs are now explicitly decorative to assistive technology because their meaning is supplied by adjacent text or an already-labelled parent control; this prevents duplicate/unlabelled symbol announcements without changing icon visuals.
 - `590e064b24b712ef83460c05faf2dc7157527997` — focused AppIcon accessibility regression specification records the decorative-symbol contract; intentionally not worker-run under policy.
 - `f3054b2a17ef9535d8ca68899ed68cfb3f04ac6f` — source-policy regression specification rejects Arabic-Indic and Eastern Arabic/Persian digits from shipped route/component copy and the main localization catalog while intentionally leaving localized-digit parsing implementation free to recognize those inputs; intentionally not worker-run under policy.
+- `b48234834a1aca7c865d4d6dee44100facd3ff57` — Recovery now mirrors its summary-stat row and ordered multi-step progress segments from the app-local RTL state, so Arabic no longer presents those semantic sequences from the physical left edge.
+- `089b423e67be4df923ce7f5e1d4c88b7442e43b1` — focused Recovery RTL source-policy specification records both mirrored layout requirements; intentionally not worker-run under policy.
+- `33f99b904b1cb41cf2288412004bd6bfbc5ca987` — Experiments now mirrors all wrapped semantic grids that previously remained physical-LTR: template choices, plan statistics, experiment metadata, and baseline/follow-up comparison blocks.
+- `b7ab909961069ed2a3da48d8a6bab96e0c2499fd` — focused Experiments RTL source-policy specification records those four wrapped-grid requirements; intentionally not worker-run under policy.
 
 ### CP9 remaining
 - Continue only concrete residual static defects on still-unreviewed shipped surfaces: untranslated literals, semantic RTL/icon direction, missing accessibility semantics, truncation/dynamic type, keyboard/focus, technical identifiers, or duplicated global visual decisions. Avoid speculative abstraction and do not churn already-reviewed screens without evidence.
@@ -82,7 +86,7 @@ Post-baseline:
 - **No worker-run app tests, builds, typechecks, validation database scripts, cloud CI, or GitHub Actions are claimed for CP2–CP10 changes.**
 - Authorized migrations `0009`–`0012` were applied previously; live reads confirmed the hardened Life Season RPC signature/ACL. This is implementation/state evidence, not a behavioral test-suite PASS.
 - `delete-account` version 2 previously reported ACTIVE with JWT verification enabled; no destructive end-to-end deletion validation is claimed.
-- All premium-reference and residual CP9 commits, including the latest accessibility/numeric-policy specifications above, remain static implementation/specification evidence until owner validation.
+- All premium-reference and residual CP9 commits, including the latest accessibility/numeric-policy and RTL-layout specifications above, remain static implementation/specification evidence until owner validation.
 
 ## Known blockers / risks
 - CP1/CP9: true phone/tablet/Web visual interaction evidence still needs an unlocked owner runtime; see `automation/HUMAN_REQUIRED.md`.
@@ -123,6 +127,8 @@ Post-baseline:
 - `apps/app/src/app/update-password.tsx`
 - `apps/app/__tests__/app-icon-accessibility-test.tsx`
 - `apps/app/__tests__/western-digit-source-policy-test.ts`
+- `apps/app/__tests__/recovery-rtl-layout-policy-test.ts`
+- `apps/app/__tests__/experiments-rtl-layout-policy-test.ts`
 - `supabase/tests/rls_cross_user.sql`
 - `supabase/tests/account_data_export_security.sql`
 - `supabase/migrations/0009_function_execute_hardening.sql`
