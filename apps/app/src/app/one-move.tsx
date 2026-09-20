@@ -79,43 +79,51 @@ export default function OneMoveScreen() {
   const scheme = useColorScheme();
   const palette = Palette[scheme === 'dark' ? 'dark' : 'light'];
   const activeUserRef = useRef(userId);
+  activeUserRef.current = userId;
   const [loadStatus, setLoadStatus] = useState<LoadStatus>('loading');
   const [recommendation, setRecommendation] = useState<DailyRecommendation | null>(null);
+  const [recommendationUserId, setRecommendationUserId] = useState<string | null>(null);
   const [selectedActionId, setSelectedActionId] = useState<string | null>(null);
   const [decisionStatus, setDecisionStatus] = useState<DecisionStatus>('idle');
   const pageCopy = copy[locale];
 
   useEffect(() => {
-    activeUserRef.current = userId;
-  }, [userId]);
-
-  useEffect(() => {
     let active = true;
+    const requestedUserId = userId;
+    const requestIsCurrent = () => active && activeUserRef.current === requestedUserId;
 
     void (async () => {
       await Promise.resolve();
-      if (!active) return;
+      if (!requestIsCurrent()) return;
       setLoadStatus('loading');
       setRecommendation(null);
+      setRecommendationUserId(requestedUserId);
       setSelectedActionId(null);
       setDecisionStatus('idle');
 
-      if (!userId) {
-        if (active) setLoadStatus('ready');
+      if (!requestedUserId) {
+        if (requestIsCurrent()) setLoadStatus('ready');
         return;
       }
 
-      const snapshot = await loadDailySnapshot(userId);
-      if (!active) return;
+      const snapshot = await loadDailySnapshot(requestedUserId);
+      if (!requestIsCurrent()) return;
       if (!snapshot.ok) {
-        if (snapshot.error.kind === 'session-expired') await refreshSession();
-        if (active) setLoadStatus('error');
+        if (snapshot.error.kind === 'session-expired') {
+          await refreshSession();
+          if (!requestIsCurrent()) return;
+        }
+        setLoadStatus('error');
         return;
       }
 
-      const nextRecommendation = await loadPersonalizedDailyRecommendation(userId, snapshot.value.humanState);
-      if (!active) return;
+      const nextRecommendation = await loadPersonalizedDailyRecommendation(
+        requestedUserId,
+        snapshot.value.humanState,
+      );
+      if (!requestIsCurrent()) return;
       setRecommendation(nextRecommendation);
+      setRecommendationUserId(requestedUserId);
       setSelectedActionId(nextRecommendation?.primary.actionId ?? null);
       setLoadStatus('ready');
     })();
@@ -125,27 +133,43 @@ export default function OneMoveScreen() {
     };
   }, [refreshSession, userId]);
 
-  const options = recommendation ? [recommendation.primary, ...recommendation.alternatives] : [];
+  const currentRecommendation =
+    userId !== null && recommendationUserId === userId ? recommendation : null;
+  const displayedLoadStatus: LoadStatus =
+    userId === null ? 'ready' : recommendationUserId === userId ? loadStatus : 'loading';
+  const options = currentRecommendation
+    ? [currentRecommendation.primary, ...currentRecommendation.alternatives]
+    : [];
   const activeRecommendation =
-    options.find((option) => option.actionId === selectedActionId) ?? recommendation?.primary ?? null;
+    options.find((option) => option.actionId === selectedActionId) ?? currentRecommendation?.primary ?? null;
   const activeLabelKey = activeRecommendation ? actionLabelKey(activeRecommendation.actionId) : null;
-  const alternative = recommendation?.alternatives.find(
+  const alternative = currentRecommendation?.alternatives.find(
     (option) => option.actionId !== activeRecommendation?.actionId,
-  ) ?? (activeRecommendation?.actionId !== recommendation?.primary.actionId ? recommendation?.primary : null);
+  ) ?? (activeRecommendation?.actionId !== currentRecommendation?.primary.actionId ? currentRecommendation?.primary : null);
   const alternativeLabelKey = alternative ? actionLabelKey(alternative.actionId) : null;
   const finished =
     decisionStatus === 'accepted' || decisionStatus === 'deferred' || decisionStatus === 'declined';
   const decisionMessage = decisionMessageKey(decisionStatus);
 
   const handleDecision = async (decision: OneMoveDecision) => {
-    if (!userId || !recommendation || !activeRecommendation || decisionStatus === 'saving' || finished) return;
+    if (
+      !userId ||
+      activeUserRef.current !== userId ||
+      recommendationUserId !== userId ||
+      !currentRecommendation ||
+      !activeRecommendation ||
+      decisionStatus === 'saving' ||
+      finished
+    ) {
+      return;
+    }
     const actingUserId = userId;
     setDecisionStatus('saving');
     const result = await recordOneMoveDecision(
       actingUserId,
       activeRecommendation,
       decision,
-      activeRecommendation.actionId !== recommendation.primary.actionId,
+      activeRecommendation.actionId !== currentRecommendation.primary.actionId,
     );
     if (activeUserRef.current !== actingUserId) return;
     if (!result.ok) {
@@ -174,17 +198,17 @@ export default function OneMoveScreen() {
         </View>
       </Card>
 
-      {loadStatus === 'loading' ? (
+      {displayedLoadStatus === 'loading' ? (
         <Card style={[styles.stateCard, { backgroundColor: palette.surfaceMuted }]}>
           <MizanText accessibilityLiveRegion="polite" muted>{t('loading')}</MizanText>
         </Card>
       ) : null}
-      {loadStatus === 'error' ? (
+      {displayedLoadStatus === 'error' ? (
         <Card style={[styles.stateCard, { backgroundColor: palette.surfaceMuted }]}>
           <MizanText accessibilityLiveRegion="polite" muted>{t('currentStateError')}</MizanText>
         </Card>
       ) : null}
-      {loadStatus === 'ready' && (!activeRecommendation || !activeLabelKey) ? (
+      {displayedLoadStatus === 'ready' && (!activeRecommendation || !activeLabelKey) ? (
         <Card style={[styles.stateCard, { backgroundColor: palette.surfaceMuted }]}>
           <MizanText variant="title">{t('oneMoveTitle')}</MizanText>
           <MizanText accessibilityLiveRegion="polite" muted>{t('oneMoveEmpty')}</MizanText>
