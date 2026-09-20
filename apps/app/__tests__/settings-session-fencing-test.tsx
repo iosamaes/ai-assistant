@@ -17,6 +17,21 @@ describe('Settings account-switch fencing policy', () => {
     expect(resetEffect).toBeGreaterThan(renderSync);
   });
 
+  test('clears account-owned transient UI state during render on account switch', () => {
+    const transientRef = source.indexOf('const transientUserRef = useRef(userId);');
+    const accountGuard = source.indexOf('if (transientUserRef.current !== userId)', transientRef);
+    const clearBusy = source.indexOf('setBusy(false);', accountGuard);
+    const clearMessage = source.indexOf('setMessage(null);', accountGuard);
+    const resetEffect = source.indexOf('useEffect(() => {', accountGuard);
+
+    expect(transientRef).toBeGreaterThanOrEqual(0);
+    expect(accountGuard).toBeGreaterThan(transientRef);
+    expect(clearBusy).toBeGreaterThan(accountGuard);
+    expect(clearMessage).toBeGreaterThan(accountGuard);
+    expect(clearBusy).toBeLessThan(resetEffect);
+    expect(clearMessage).toBeLessThan(resetEffect);
+  });
+
   test('guards async settings completions against an account that became inactive', () => {
     expect(source).toContain('const targetUserId = userId;');
     expect(source).toContain('if (activeUserRef.current !== targetUserId) return;');
