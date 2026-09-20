@@ -34,6 +34,9 @@ function collectCriticalBrowserDiagnostics(page: Page): BrowserDiagnostics {
   });
   page.on('requestfailed', (request) => {
     const failure = request.failure()?.errorText ?? 'unknown network failure';
+    // Route changes can cancel an in-flight browser request by design. Keep the
+    // CP11 guard focused on actual network/runtime failures rather than navigation aborts.
+    if (failure === 'net::ERR_ABORTED') return;
     diagnostics.failedRequests.push(`${request.method()} ${request.url()} :: ${failure}`);
   });
   page.on('response', (response) => {
