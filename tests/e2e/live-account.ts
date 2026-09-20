@@ -72,12 +72,6 @@ export async function expectNoHorizontalOverflow(page: Page) {
   expect(overflow.scroll).toBeLessThanOrEqual(overflow.viewport + 1);
 }
 
-export function collectPageErrors(page: Page): string[] {
-  const errors: string[] = [];
-  page.on('pageerror', (error) => errors.push(error.message));
-  return errors;
-}
-
 async function switchAuthToEnglish(page: Page) {
   const english = page.getByRole('button', { name: 'English', exact: true });
   if (await english.isVisible()) await english.click();
