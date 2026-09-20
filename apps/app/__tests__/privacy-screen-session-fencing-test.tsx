@@ -31,6 +31,10 @@ beforeEach(() => {
   useAppStateMock.mockReturnValue(appState('user-a'));
 });
 
+afterEach(() => {
+  jest.restoreAllMocks();
+});
+
 describe('PrivacyScreen account-switch fencing', () => {
   test('requires a fresh delete confirmation after the active user changes', async () => {
     const view = await render(<PrivacyScreen />);
@@ -65,7 +69,7 @@ describe('PrivacyScreen account-switch fencing', () => {
     );
 
     const view = await render(<PrivacyScreen />);
-    await fireEvent.press(view.getByText('Create JSON file'));
+    await fireEvent.press(view.getByText('Prepare JSON export'));
     await waitFor(() => expect(exportMyDataMock).toHaveBeenCalledWith('user-a'));
 
     useAppStateMock.mockReturnValue(appState('user-b'));
@@ -76,6 +80,20 @@ describe('PrivacyScreen account-switch fencing', () => {
     });
 
     expect(shareSpy).not.toHaveBeenCalled();
-    expect(view.queryByText('Your data copy is ready.')).toBeNull();
+    expect(view.queryByText('Your JSON export was handed off to its destination.')).toBeNull();
+  });
+
+  test('does not claim a successful native export when the share sheet is dismissed', async () => {
+    const shareSpy = jest.spyOn(Share, 'share').mockResolvedValue({ action: Share.dismissedAction });
+    exportMyDataMock.mockResolvedValue({ ok: true, value: { profile: { display_name: 'User A' } } });
+
+    const view = await render(<PrivacyScreen />);
+    await fireEvent.press(view.getByText('Prepare JSON export'));
+
+    await waitFor(() => expect(shareSpy).toHaveBeenCalled());
+    await waitFor(() => {
+      expect(view.getByText('Sharing was cancelled. No export copy was sent, and your stored data was not changed.')).toBeTruthy();
+      expect(view.queryByText('Your JSON export was handed off to its destination.')).toBeNull();
+    });
   });
 });
