@@ -10,10 +10,11 @@ const requiredVariables = [
   'MIZAN_E2E_ONBOARDING_MUTATION_EMAIL',
   'MIZAN_E2E_ONBOARDING_MUTATION_PASSWORD',
 ];
-const protectedReusableEmailVariables = [
+const protectedFixtureEmailVariables = [
   'MIZAN_E2E_COMPLETED_EMAIL',
   'MIZAN_E2E_ARABIC_EMAIL',
   'MIZAN_E2E_ONBOARDING_EMAIL',
+  'MIZAN_E2E_DELETE_EMAIL',
 ];
 const mutationSpecs = [
   'tests/e2e/product-live.spec.ts',
@@ -32,12 +33,12 @@ if (missingVariables.length > 0) {
 }
 
 const onboardingMutationEmail = env.MIZAN_E2E_ONBOARDING_MUTATION_EMAIL.trim().toLowerCase();
-const reusedFixtureVariables = protectedReusableEmailVariables.filter(
+const reusedFixtureVariables = protectedFixtureEmailVariables.filter(
   (name) => env[name]?.trim().toLowerCase() === onboardingMutationEmail,
 );
 if (reusedFixtureVariables.length > 0) {
   console.error(
-    `MIZAN_E2E_ONBOARDING_MUTATION_EMAIL must be a separate disposable account. It matches protected reusable fixture variables: ${reusedFixtureVariables.join(', ')}`,
+    `MIZAN_E2E_ONBOARDING_MUTATION_EMAIL must be a separate disposable account. It matches protected fixture variables: ${reusedFixtureVariables.join(', ')}`,
   );
   process.exit(1);
 }
@@ -53,4 +54,4 @@ const result = spawnSync(playwrightCommand, ['test', ...mutationSpecs], {
 if (result.error) throw result.error;
 if (result.status !== 0) process.exit(result.status ?? 1);
 
-console.log('Mutation E2E completed. The reusable read-only onboarding fixture was not consumed by onboarding completion.');
+console.log('Mutation E2E completed. The reusable read-only onboarding and dedicated deletion fixtures were not consumed by onboarding completion.');
