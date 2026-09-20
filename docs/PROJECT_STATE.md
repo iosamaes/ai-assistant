@@ -23,8 +23,10 @@
 - [ ] CP12 — Independent final review and handoff
 
 ## Latest productive changes
-CP11 now has performance evidence prepared for the **actual Expo static Web export**, not only the development-server runtime, and the static cleanup sweep removed one concrete destructive starter artifact.
+A new CP10 account-switch review found and closed a concrete **Life Seasons local-draft ownership gap**. CP11 production-performance readiness from the immediately preceding pass remains current.
 
+- `b69e55bd817c9dbdecad694dc50cc9069d8b926d` — Life Seasons now binds the locally selected season and target draft to the account that owns them. During the render-to-effect window after an account switch, prior-account targets are not used, the prior selected season is not presented as the active account's draft, editing/saving is disabled until the active account's Life Seasons state is loaded, and `handleSave` refuses to persist unless both draft owners match the current user. This prevents User A's unsaved season/target choices from being copied into User B by a fast save after account switching.
+- `3866d797333514ae451b1bf64daba0cbbad89f52` — strengthened the Life Seasons account-switch policy specification to require account-owned season drafts, visible target filtering, disabled controls until ownership is current, and save-time owner checks. The specification is intentionally not worker-run under the active execution policy.
 - `852b7600d3f5a272872479d154c6d3093737b0f2` — added `tests/e2e/production-performance.spec.ts`, an opt-in read-only performance sanity journey that runs against `playwright.production.config.ts` and the exported files served from `apps/app/dist`. It measures authenticated Home readiness plus Home → Life Map → One Move → Insights → More transitions, captures production resource timing and long tasks, checks horizontal overflow/browser diagnostics, and attaches `production-performance-sanity.json`. Broad timing limits remain regression tripwires rather than product SLOs.
 - `66a36372f76334aa4b4b54eb4eef77cb9f385379` — added the owner-side command `npm run test:e2e:production:performance`, isolated to one production desktop project so the measurement is not multiplied across smoke viewports.
 - `5d3cbe2e90c8b3e2a76e545bfb3d8cae569d134a` + `755f54fa1c26e96ea14e28cb0b5a8ce6ab636e54` — hardened both production-export and controlled-runtime performance probes so route timing does not stop at URL/tab selection alone; each measured transition now also waits for a route-specific visible surface marker on Life Map, One Move, Insights, and Settings.
@@ -61,10 +63,10 @@ Prepared owner/runtime evidence includes:
 ## CP10 security/privacy state
 Detailed ledger/threat model: `docs/CP10_SECURITY_PRIVACY.md`.
 
-Implemented source hardening includes user-owned table/RLS review, cross-user policy specifications, function-execute hardening migration `0009`, authenticated portable export migration `0010`, Life Season expected-user fencing migrations `0011`/`0012`, JWT-protected `delete-account` Edge Function v2 with expected-user matching, export/two-step deletion and local-cache purge attempts, consent rechecks around integration sync, safer logging/error boundaries, and broad account-switch/session fencing.
+Implemented source hardening includes user-owned table/RLS review, cross-user policy specifications, function-execute hardening migration `0009`, authenticated portable export migration `0010`, Life Season expected-user fencing migrations `0011`/`0012`, JWT-protected `delete-account` Edge Function v2 with expected-user matching, export/two-step deletion and local-cache purge attempts, consent rechecks around integration sync, safer logging/error boundaries, broad account-switch/session fencing, and explicit ownership fencing for Life Seasons local season/target drafts so a stale draft cannot be saved into a newly active account.
 
 ### CP10 remaining
-- Owner/runtime validation for cross-user/database specifications, Life Season expected-user behavior, export/delete/local purge, destructive Edge deletion v2, consent-revocation races, account-switch/session-binding cases, offline replay ownership, and notification-preference isolation/persistence.
+- Owner/runtime validation for cross-user/database specifications, Life Season expected-user and local-draft behavior, export/delete/local purge, destructive Edge deletion v2, consent-revocation races, account-switch/session-binding cases, offline replay ownership, and notification-preference isolation/persistence.
 - Supabase leaked-password protection remains an owner action in `automation/HUMAN_REQUIRED.md`.
 
 ## CP11 static readiness
@@ -87,7 +89,7 @@ Prepared static readiness includes:
 
 ## Exact next executable action
 1. Continue CP9 static work only when a concrete residual defect is demonstrated; otherwise preserve the prepared runtime evidence for owner validation.
-2. Keep CP10 source review limited to genuinely new security/account-sensitive boundaries.
+2. Keep CP10 source review limited to genuinely new security/account-sensitive boundaries, with the Life Seasons local-draft switch window now fenced.
 3. Keep CP11 static harness aligned with the release contract and continue only evidence-backed repository-hygiene cleanup; owner validation now has both development-runtime and actual static-export performance probes, while execution-dependent gates remain pending.
 4. After CP0–CP11 gates are honestly satisfied with current execution evidence, begin CP12 independent two-worker verification. Do not claim completion from source presence alone.
 
@@ -106,7 +108,7 @@ Post-baseline:
 - **No worker-run app tests, builds, typechecks, validation database scripts, Web E2E, screenshot captures, performance runs, production-export smoke/size runs, GitHub Actions, or cloud CI are claimed for CP2–CP11 changes.**
 - Migrations `0009`–`0012` were applied previously; live ACL/state reads are implementation evidence, not a behavioral suite PASS.
 - `delete-account` v2 was previously deployed ACTIVE with JWT verification; destructive end-to-end deletion remains unverified until the owner-side disposable-account journey runs.
-- Latest implementation/harness commits in this run: `852b7600d3f5a272872479d154c6d3093737b0f2`, `66a36372f76334aa4b4b54eb4eef77cb9f385379`, `5d3cbe2e90c8b3e2a76e545bfb3d8cae569d134a`, `755f54fa1c26e96ea14e28cb0b5a8ce6ab636e54`, `36b4f885204951168f16977cfadfe5a8d3fa6dfb`.
+- Latest implementation/harness commits now include `b69e55bd817c9dbdecad694dc50cc9069d8b926d`, `3866d797333514ae451b1bf64daba0cbbad89f52`, `852b7600d3f5a272872479d154c6d3093737b0f2`, `66a36372f76334aa4b4b54eb4eef77cb9f385379`, `5d3cbe2e90c8b3e2a76e545bfb3d8cae569d134a`, `755f54fa1c26e96ea14e28cb0b5a8ce6ab636e54`, and `36b4f885204951168f16977cfadfe5a8d3fa6dfb`.
 
 ## Known blockers / owner actions
 - CP1/CP9 representative physical/runtime visual interaction evidence requires the owner environment to be normally unlocked; see `automation/HUMAN_REQUIRED.md`.
@@ -121,6 +123,8 @@ Post-baseline:
 - `docs/CP10_SECURITY_PRIVACY.md`
 - `docs/CP11_RELEASE_READINESS.md`
 - `apps/app/app.json`
+- `apps/app/src/app/life-seasons.tsx`
+- `apps/app/__tests__/life-seasons-session-fencing-test.tsx`
 - `apps/app/__tests__/app-native-platform-config-policy-test.ts`
 - `playwright.production.config.ts`
 - `scripts/serve-expo-static.mjs`
