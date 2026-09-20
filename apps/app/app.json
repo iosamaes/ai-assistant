@@ -8,7 +8,6 @@
     "scheme": "mizan",
     "userInterfaceStyle": "automatic",
     "ios": {
-      "icon": "./assets/expo.icon",
       "bundleIdentifier": "com.mizan.app",
       "supportsTablet": true
     },
