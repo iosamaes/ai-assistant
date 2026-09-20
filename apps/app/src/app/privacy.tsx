@@ -110,12 +110,13 @@ export default function PrivacyScreen() {
   const [message, setMessage] = useState<string | null>(null);
   const [confirmationUserId, setConfirmationUserId] = useState<string | null>(null);
   const activeUserRef = useRef(userId);
+  activeUserRef.current = userId;
 
   useEffect(() => {
-    activeUserRef.current = userId;
     let active = true;
     void Promise.resolve().then(() => {
       if (!active) return;
+      setBusy(null);
       setConfirmingDelete(false);
       setConfirmationUserId(null);
       setMessage(null);
@@ -131,10 +132,7 @@ export default function PrivacyScreen() {
     setBusy('export');
     setMessage(null);
     const result = await exportMyData(targetUserId);
-    if (activeUserRef.current !== targetUserId) {
-      setBusy(null);
-      return;
-    }
+    if (activeUserRef.current !== targetUserId) return;
     if (!result.ok) {
       setMessage(copy.exportError);
       setBusy(null);
@@ -147,7 +145,7 @@ export default function PrivacyScreen() {
     } catch {
       if (activeUserRef.current === targetUserId) setMessage(copy.exportError);
     }
-    setBusy(null);
+    if (activeUserRef.current === targetUserId) setBusy(null);
   };
 
   const handleDelete = async () => {
@@ -158,10 +156,7 @@ export default function PrivacyScreen() {
     const result = await deleteMyAccount(targetUserId);
 
     if (!result.ok) {
-      if (activeUserRef.current !== targetUserId) {
-        setBusy(null);
-        return;
-      }
+      if (activeUserRef.current !== targetUserId) return;
       setMessage(copy.deleteError);
       setBusy(null);
       return;
@@ -170,16 +165,14 @@ export default function PrivacyScreen() {
     // A null active user is expected after deleting/signing out the target.
     // A different non-null user means an account switch happened in flight;
     // never refresh or redirect that newly active account.
-    if (activeUserRef.current && activeUserRef.current !== targetUserId) {
-      setBusy(null);
-      return;
-    }
+    if (activeUserRef.current && activeUserRef.current !== targetUserId) return;
 
     if (!result.value.localDataCleared) {
       showLocalCleanupWarning(copy.cleanupWarningTitle, copy.cleanupWarningBody);
     }
 
     await refreshSession();
+    if (activeUserRef.current && activeUserRef.current !== targetUserId) return;
     setBusy(null);
     router.replace('/auth');
   };
