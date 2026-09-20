@@ -35,7 +35,7 @@ describe('Playwright live-mutation isolation policy', () => {
     expect(deletionSpec).toContain('expect(reauthentication.status()).toBe(400)');
   });
 
-  test('development and production matrices keep export evidence isolated and target only the authorized Supabase project', () => {
+  test('development and production matrices keep export evidence isolated and target only the authorized Supabase project with public client credentials', () => {
     const repoRoot = path.resolve(__dirname, '../../..');
     const defaultConfig = fs.readFileSync(path.join(repoRoot, 'playwright.config.ts'), 'utf8');
     const productionConfig = fs.readFileSync(path.join(repoRoot, 'playwright.production.config.ts'), 'utf8');
@@ -49,6 +49,9 @@ describe('Playwright live-mutation isolation policy', () => {
       expect(config).toContain('assertAuthorizedLiveSupabaseUrl(liveSupabaseUrl)');
       expect(config).toContain("configuredUrl.protocol !== 'https:'");
       expect(config).toContain('configuredProjectRef !== authorizedSupabaseProjectRef');
+      expect(config).toContain('assertUnprivilegedSupabaseClientKey(liveSupabasePublishableKey)');
+      expect(config).toContain("key.startsWith('sb_secret_')");
+      expect(config).toContain("payload.role === 'service_role'");
     }
     expect(packageJson.scripts?.['test:e2e:production']).toContain('production-web.spec.ts');
     expect(packageJson.scripts?.['test:e2e:production']).toContain('--config=playwright.production.config.ts');
@@ -73,6 +76,10 @@ describe('Playwright live-mutation isolation policy', () => {
     expect(runner).toContain('configuredUrl.hostname.endsWith(hostedSuffix)');
     expect(runner).toContain('configuredProjectRef !== authorizedSupabaseProjectRef');
     expect(runner).toContain('Release baseline is authorized only for Supabase project');
+    expect(runner).toContain('usesPrivilegedSupabaseKey(env.MIZAN_E2E_SUPABASE_PUBLISHABLE_KEY)');
+    expect(runner).toContain("key.startsWith('sb_secret_')");
+    expect(runner).toContain("payload?.role === 'service_role'");
+    expect(runner).toContain('Secret and service-role keys are rejected');
     expect(runner).toContain("'MIZAN_E2E_MUTATIONS'");
     expect(runner).toContain("'MIZAN_E2E_DESTRUCTIVE'");
     expect(runner).toContain("'MIZAN_E2E_VISUAL_EVIDENCE'");
