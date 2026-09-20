@@ -19,6 +19,23 @@ describe('Playwright live-mutation isolation policy', () => {
     expect(notificationSpec).toContain('test.skip(!mutationsEnabled');
   });
 
+  test('onboarding mutation uses a disposable fixture instead of consuming release-baseline onboarding evidence', () => {
+    const repoRoot = path.resolve(__dirname, '../../..');
+    const onboardingSpec = fs.readFileSync(path.join(repoRoot, 'tests', 'e2e', 'onboarding-live.spec.ts'), 'utf8');
+    const liveAccount = fs.readFileSync(path.join(repoRoot, 'tests', 'e2e', 'live-account.ts'), 'utf8');
+    const baselineRunner = fs.readFileSync(path.join(repoRoot, 'scripts', 'run-release-baseline.mjs'), 'utf8');
+
+    expect(liveAccount).toContain('MIZAN_E2E_ONBOARDING_MUTATION_EMAIL');
+    expect(liveAccount).toContain('MIZAN_E2E_ONBOARDING_MUTATION_PASSWORD');
+    expect(onboardingSpec).toContain('signInOnboardingMutationAccount');
+    expect(onboardingSpec).toContain('mutationEmail === readOnlyEmail');
+    expect(onboardingSpec).toContain(
+      'MIZAN_E2E_ONBOARDING_MUTATION_EMAIL must be separate from the reusable MIZAN_E2E_ONBOARDING_EMAIL fixture.',
+    );
+    expect(baselineRunner).not.toContain("'MIZAN_E2E_ONBOARDING_MUTATION_EMAIL'");
+    expect(baselineRunner).not.toContain("'MIZAN_E2E_ONBOARDING_MUTATION_PASSWORD'");
+  });
+
   test('key plugin mutation proves persistence and restoration across document reload', () => {
     const repoRoot = path.resolve(__dirname, '../../..');
     const productSpec = fs.readFileSync(path.join(repoRoot, 'tests', 'e2e', 'product-live.spec.ts'), 'utf8');
