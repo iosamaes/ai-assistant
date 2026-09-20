@@ -80,6 +80,7 @@ export const Layout = {
   compactWidth: 380,
   tabletBreakpoint: 768,
   wideBreakpoint: 1024,
+  navigationRailWidth: 188,
   horizontalPadding: {
     compact: Spacing.lg,
     regular: Spacing.xl,
