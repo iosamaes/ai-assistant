@@ -5,7 +5,7 @@ import { Pressable, StyleSheet, useColorScheme, View } from 'react-native';
 
 import { loadCurrentHumanState } from '@/application/daily-intelligence';
 import { AppIcon, type AppIconName } from '@/components/app-icon';
-import { Card, MizanText, SecondaryButton } from '@/components/mizan-ui';
+import { Card, focusRingStyle, MizanText, SecondaryButton } from '@/components/mizan-ui';
 import { Screen } from '@/components/screen';
 import { Controls, Interaction, Palette, Radius, Spacing } from '@/constants/theme';
 import { type DomainId, useAppState } from '@/state/app-state';
@@ -98,6 +98,7 @@ export default function PersonalizationScreen() {
   const [status, setStatus] = useState<LoadStatus>('loading');
   const [state, setState] = useState<HumanStateVector | null>(null);
   const [stateUserId, setStateUserId] = useState<string | null>(null);
+  const [focusedDomain, setFocusedDomain] = useState<DomainId | null>(null);
   const activeUserRef = useRef(userId);
   activeUserRef.current = userId;
   const scheme = useColorScheme();
@@ -186,6 +187,8 @@ export default function PersonalizationScreen() {
                 accessibilityState={{ checked: enabled, disabled: isLastEnabled }}
                 accessibilityHint={isLastEnabled ? labels.keepOne : undefined}
                 disabled={isLastEnabled}
+                onBlur={() => setFocusedDomain(null)}
+                onFocus={() => setFocusedDomain(domainId)}
                 onPress={() => toggleDomain(domainId)}
                 style={({ pressed }) => [
                   styles.areaRow,
@@ -195,6 +198,7 @@ export default function PersonalizationScreen() {
                     flexDirection: isRtl ? 'row-reverse' : 'row',
                     opacity: pressed ? Interaction.subtlePressed : isLastEnabled ? Interaction.disabled : 1,
                   },
+                  focusRingStyle(palette.accent, focusedDomain === domainId && !isLastEnabled),
                 ]}
               >
                 <View style={[styles.areaIdentity, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
