@@ -210,7 +210,15 @@ export default function SettingsScreen() {
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const activeUserRef = useRef(userId);
+  const transientUserRef = useRef(userId);
   activeUserRef.current = userId;
+
+  if (transientUserRef.current !== userId) {
+    transientUserRef.current = userId;
+    setBusy(false);
+    setMessage(null);
+  }
+
   const syncMessage = syncStatus === 'offline' ? t('syncOffline') : syncStatus === 'error' ? t('syncError') : null;
   const spiritualLabels = spiritualCopy[locale];
   const labels = settingsCopy[locale];
