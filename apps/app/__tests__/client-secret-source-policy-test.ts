@@ -19,15 +19,20 @@ function collectSourceFiles(target: string): string[] {
 }
 
 describe('client secret source policy', () => {
-  test('production app source contains no Supabase service-role or secret-key markers', () => {
+  test('all client-bundled production source contains no Supabase service-role or secret-key markers', () => {
     const appRoot = path.resolve(__dirname, '..');
-    const sourceRoot = path.join(appRoot, 'src');
-    const files = collectSourceFiles(sourceRoot);
+    const repoRoot = path.resolve(appRoot, '..', '..');
+    const clientSourceRoots = [
+      path.join(appRoot, 'src'),
+      path.join(repoRoot, 'packages', 'core', 'src'),
+      path.join(repoRoot, 'packages', 'plugins', 'src'),
+    ];
+    const files = clientSourceRoots.flatMap(collectSourceFiles);
 
     const violations = files.flatMap((file) => {
       const content = fs.readFileSync(file, 'utf8');
       return FORBIDDEN_CLIENT_SECRET_MARKERS.flatMap(({ label, pattern }) =>
-        pattern.test(content) ? [`${path.relative(appRoot, file)}: ${label}`] : [],
+        pattern.test(content) ? [`${path.relative(repoRoot, file)}: ${label}`] : [],
       );
     });
 
