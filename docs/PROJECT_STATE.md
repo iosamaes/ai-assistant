@@ -33,6 +33,7 @@ Detailed presentation/design-swappability ledger: `docs/CP9_PRESENTATION_ARCHITE
 The owner-approved premium reference contract is broadly present in static source: adaptive Home/Life Map/One Move/Insights/More navigation, shared semantic iconography, responsive Life Map radar, premium Today/One Move, WHY/Insights evidence language, What If range visualization, experiment/recovery/onboarding/personalization/invisible-wins treatments, truthful bounded quantitative meters, and premium Auth/Privacy/Settings/Integrations/secondary decision surfaces. Static hardening also covers Western-digit formatting, localized numeric input normalization, malformed-date fallbacks, app-local RTL geometry, reduced-motion navigation, dynamic-type/shared control sizing, and multiple account-switch/session-fencing paths.
 
 ### Latest CP9 residual sweep
+- `88817770bc4afbfc1760af1776abb03aacb1fedf` + `87053fc4ec9fa41c364f5ad38a888fb14adb7ce6` — Integrations no longer exposes implementation-facing “deterministic core/provider” wording in visible English copy; user-facing core/sample-source language replaces it while internal provider IDs remain unchanged, and a focused source-policy specification was added but intentionally not worker-run.
 - `eb13debc885d5bc459f61b5a019709282f2c6128` + `e4d41662d8d73e491f824517d86ab8a8f02d3cbd` — the active Experiments time-progress meter now exposes a contextual accessible name that includes the experiment label instead of presenting an unnamed progress control; focused source-policy regression coverage added and intentionally not worker-run.
 - `834d732e6bc169b9a247b4e12449d2dd3aeaffd5` + `590e064b24b712ef83460c05faf2dc7157527997` — shared `AppIcon` glyphs are decorative to assistive technology where adjacent labelled content supplies meaning; focused specification added and not worker-run.
 - `f3054b2a17ef9535d8ca68899ed68cfb3f04ac6f` — source-policy specification rejects Arabic-Indic/Eastern Arabic digits from shipped copy while retaining tolerant localized input parsing; not worker-run.
@@ -150,6 +151,7 @@ Post-baseline:
 - `apps/app/src/app/human-roi.tsx`
 - `apps/app/__tests__/app-icon-accessibility-test.tsx`
 - `apps/app/__tests__/western-digit-source-policy-test.ts`
+- `apps/app/__tests__/integrations-user-facing-language-policy-test.ts`
 - `apps/app/__tests__/recovery-rtl-layout-policy-test.ts`
 - `apps/app/__tests__/recovery-screen-session-fencing-test.tsx`
 - `apps/app/__tests__/experiments-rtl-layout-policy-test.ts`
