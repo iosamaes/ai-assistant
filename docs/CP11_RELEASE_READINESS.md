@@ -41,9 +41,9 @@ Real credentials never belong in source control; `.env.example` documents names 
 | Scenario / What If | `tests/e2e/product-live.spec.ts` | scenario switch plus assumption visibility |
 | Settings / optional module | `tests/e2e/product-live.spec.ts` | Spiritual Grounding toggle and restore behind mutation opt-in |
 | Privacy | `tests/e2e/product-live.spec.ts` | portable JSON export/download without destructive deletion |
-| Responsive Web | Playwright projects | 390×844 phone, 834×1194 tablet portrait, 1194×834 tablet landscape, and 1440×900 desktop, with the existing overflow assertions executed by each applicable specification |
+| Responsive Web | Playwright projects | 320×568 narrow phone, 390×844 common phone, 834×1194 tablet portrait, 1194×834 tablet landscape, and 1440×900 desktop; every viewport runs in both light and dark emulated color schemes, and existing overflow assertions execute in each applicable project |
 
-The Playwright project matrix deliberately uses the same Chromium engine with explicit viewport classes so layout regressions can be compared across widths without introducing a browser-engine variable. Native Android/iOS validation remains a separate owner/runtime gate.
+The Playwright project matrix deliberately uses the same Chromium engine with explicit viewport classes and emulated light/dark color schemes so layout and appearance regressions can be compared without introducing a browser-engine variable. The five viewport classes × two color schemes produce ten static Web projects. Native Android/iOS validation remains a separate owner/runtime gate.
 
 ## Still required before CP11 can close
 
