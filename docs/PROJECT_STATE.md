@@ -23,6 +23,9 @@
 - [ ] CP12 — Independent final review and handoff
 
 ## Latest productive changes
+- `db173d9dc7ba95f4dc1bd7f88e488ddc43160936` — corrected the default Playwright development matrix so production-only `production-web.spec.ts` and `production-performance.spec.ts` are explicitly ignored there. Those specifications now remain tied to the dedicated production Playwright configuration and static-export server instead of being able to run against the Expo development server and masquerade as production-export evidence.
+- `1427e8d759d19781d82387e91718f239d821a325` — extended the Playwright release-safety policy specification to guard that production/dev isolation and require the explicit production scripts to keep using `playwright.production.config.ts`.
+- `5e1838d97c6fd31945978e44af4733a6397d73c1` — added generated local `supabase/config.toml` to the root ignore policy so following the documented `supabase init` clean-checkout flow does not dirty the repository or invite an environment-specific CLI config into source control.
 - `1124d3bb30dcfa6d83999f83dfa43fb5c185bbe0` — hardened `npm run check:release:baseline` so the completed-English, completed-Arabic, and incomplete-onboarding fixtures must be three distinct accounts. Fixture emails are normalized with trim/lowercase before comparison, and only environment-variable names are reported on conflict so credentials are not exposed. This prevents a reused account from invalidating persisted-locale/onboarding release evidence while still reaching the aggregate runner.
 - `0292b95a586a572ca9bbdfb1f849060a7994166a` — extended the Playwright release-safety policy specification to guard the new distinct-fixture preflight alongside the existing required-variable and fail-closed mutation/destructive protections.
 - `cd0c8f61aa4ef929059a5ae2455a3a00439ed523` — updated `.env.example` to state explicitly that the non-destructive release baseline requires three distinct live accounts and rejects reused fixture emails.
@@ -88,8 +91,10 @@ Prepared readiness includes:
 - Auth/route guard/password recovery, onboarding, completed-account navigation, persisted Arabic locale coverage, Recovery/What If, privacy export, live daily-loop and feedback-learning mutations, Spiritual Grounding toggle/restore, notification preference persistence/restore, destructive account deletion with a dedicated-only fixture guard, explicit HTTP `409 account_changed` expected-user fencing, explicit HTTP `400` post-delete credential rejection, and a source-level policy guard for those irreversible-test invariants, plus browser diagnostics, production logging policy, semantic contrast policy, and CP9 visual capture.
 - Read-only performance sampling for both the controlled Expo E2E runtime and the served static production Web export.
 - Production static-Web export smoke, direct-route hydration coverage, static-size reporting, and explicit Web/Android/iOS Expo export scripts.
+- The default development Playwright matrix explicitly excludes the production static-export smoke/performance specifications; those remain bound to `playwright.production.config.ts`, and a source-policy guard protects the separation so development-server runs cannot be mistaken for production-export evidence.
 - Root `npm run test:db` provides an explicit local-only Supabase pgTAP/RLS/security suite entry point, and `npm run lint:db` provides a local database lint gate that reports warnings while failing on errors.
 - Root `npm run check:release:baseline` now gives the owner a single fail-fast baseline after local Supabase reset. Its repository runner removes all mutation/destructive/visual/performance opt-in flags, requires the public Supabase client values plus completed-English, completed-Arabic, and incomplete-onboarding credentials before any child command runs, and rejects reuse of any of those three fixture accounts after normalized email comparison. This prevents required authenticated/RTL/onboarding suites from silently skipping or reusing one persisted account under incompatible evidence roles. The static Playwright policy specification guards the safety boundary, required-variable preflight, and distinct-fixture contract.
+- Generated local `supabase/config.toml` is ignored at the repository root, matching the documented owner-side `supabase init` clean-checkout workflow and keeping environment-specific CLI config out of source control.
 - Native iPad eligibility and MIZAN-owned app icon/favicon/adaptive/splash contracts are guarded statically.
 
 ### CP11 remaining
@@ -121,6 +126,7 @@ Post-baseline:
 - Migrations `0009`–`0012` were applied previously; live ACL/state reads are implementation evidence, not a behavioral suite PASS.
 - `delete-account` v2 was previously deployed ACTIVE with JWT verification; destructive end-to-end deletion remains unverified until the owner-side disposable-account journey runs.
 - Account-export verification now includes the all-current-data-family rollback specification in `f7e1ee35532da287c80310fb08ef0dcf0d3d3d54`; it has not been executed by a worker under the current validation policy.
+- Latest CP11 static hardening also isolates production-only Playwright evidence from the development matrix (`db173d9dc7ba95f4dc1bd7f88e488ddc43160936`) with a policy guard (`1427e8d759d19781d82387e91718f239d821a325`), and aligns the clean-checkout Supabase-init workflow with source-control hygiene (`5e1838d97c6fd31945978e44af4733a6397d73c1`).
 - Latest owner-executable release-harness additions now include distinct baseline-fixture identity enforcement plus its static guard (`1124d3bb30dcfa6d83999f83dfa43fb5c185bbe0`, `0292b95a586a572ca9bbdfb1f849060a7994166a`) and the matching `.env.example` clarification (`cd0c8f61aa4ef929059a5ae2455a3a00439ed523`). Earlier release-harness additions remain the required baseline-fixture preflight and guard (`c71195df5236408f9508ea96cecc5c06c2e0c963`, `9527c697fd56eadcb9310b14d9a9bd38fb468b2d`), the clean-checkout documentation update (`da8ab323d216b8d5cf48fca8a421f459f1f5d3c0`, `17d5bdf4fd7f750cd19c2ddecceb6636f219bbb4`), the fail-closed aggregate baseline runner and safety specification (`6bb5b3dc6323b4c4dca997199381032d565791b3`, `563e7494bf58acb751bca6afe185254f2dcc8ef4`, `0a8fb1326b8be529ac983b6f6c4f2fbbb5b2e92f`), its documentation (`7d04a1c4f52b2962d983af65f4c4dab20828edfd`, `b77d640f06a728c07a8256b37ee16c765b987306`), the destructive-test safety policy (`fa621532c129eeb85edea8a041d1a1abcfcdd437`), destructive-fixture reuse protection (`0fa422d3c90db3b381f355f31f35f53e865c948b`), expected-user mismatch and strict post-delete authentication proof (`249f70164e3042884ffc883f33e0f453080ad205`, building on `2b8f7044c2fff10a252778bde332b7238930595a`), the local-only database test command (`6cf2f9136d48960086dd1c68c3199cfb66860835`), and the database lint command (`982821b080bf6f985e4e8ae179105323f42b2502`).
 
 ## Known blockers / owner actions
@@ -132,6 +138,7 @@ Post-baseline:
 ## Evidence paths
 - `README.md`
 - `.env.example`
+- `.gitignore`
 - `package.json`
 - `docs/CP8_RELIABILITY.md`
 - `docs/CP9_PRESENTATION_ARCHITECTURE.md`
@@ -143,6 +150,7 @@ Post-baseline:
 - `apps/app/__tests__/app-state-persistence-queue-session-fencing-test.tsx`
 - `apps/app/__tests__/localized-number-policy-test.ts`
 - `apps/app/__tests__/playwright-mutation-isolation-policy-test.ts`
+- `playwright.config.ts`
 - `playwright.production.config.ts`
 - `scripts/run-release-baseline.mjs`
 - `scripts/serve-expo-static.mjs`
