@@ -26,6 +26,7 @@ export type AppIconName =
   | 'season'
   | 'integration'
   | 'privacy'
+  | 'notification'
   | 'personalization';
 
 const symbols = {
@@ -54,6 +55,7 @@ const symbols = {
   season: { ios: 'calendar', android: 'calendar_month', web: 'calendar_month' },
   integration: { ios: 'link', android: 'link', web: 'link' },
   privacy: { ios: 'lock.shield.fill', android: 'privacy_tip', web: 'privacy_tip' },
+  notification: { ios: 'bell.fill', android: 'notifications', web: 'notifications' },
   personalization: { ios: 'slider.horizontal.3', android: 'tune', web: 'tune' },
 } as const;
 
