@@ -7,13 +7,16 @@ const todaySource = fs.readFileSync(
 );
 
 describe('Today account-switch fencing policy', () => {
-  test('binds One Move decisions and explicit outcome feedback to the initiating account', () => {
+  test('binds rendered recommendations, One Move decisions, and explicit outcome feedback to the active account', () => {
     expect(todaySource).toContain('const activeUserRef = useRef(userId);');
     expect(todaySource).toContain('activeUserRef.current = userId;');
+    expect(todaySource).toContain('const [recommendationUserId, setRecommendationUserId]');
+    expect(todaySource).toContain('recommendationUserId === userId ? recommendation : null');
+    expect(todaySource).toContain('setRecommendationUserId(userId);');
     expect(todaySource).toContain('const actingUserId = userId;');
     expect(todaySource.match(/activeUserRef\.current !== actingUserId/g)?.length ?? 0).toBeGreaterThanOrEqual(4);
-    expect(todaySource).toContain('userId: actingUserId,');
+    expect(todaySource).toContain('userId: actingUserId');
     expect(todaySource).toContain('const feedbackForUser = activeFeedbackTarget;');
-    expect(todaySource).toContain('recordExplicitActionOutcome(\n      actingUserId,');
+    expect(todaySource).toContain('recordExplicitActionOutcome(actingUserId, feedbackForUser.actionId');
   });
 });
