@@ -19,12 +19,14 @@ This enables non-destructive checks for the adaptive navigation shell, Life Map/
 ### 3. Live mutation E2E
 Set `MIZAN_E2E_MUTATIONS=1` only when the configured account is disposable or dedicated to automation. This additionally enables check-in persistence, the One Move → explicit outcome feedback → Personal Learning loop, and an optional Spiritual Grounding preference toggle that restores its original state.
 
+Mutation-enabled product tests self-skip outside the single `desktop-light` Playwright project. This keeps the shared live account from receiving the same write journey concurrently across the ten responsive/color-scheme projects while preserving the full matrix for non-destructive coverage.
+
 ### 4. Live onboarding E2E
 Use a separate account that is intentionally incomplete:
 - `MIZAN_E2E_ONBOARDING_EMAIL`
 - `MIZAN_E2E_ONBOARDING_PASSWORD`
 
-The read-only onboarding check verifies branded onboarding without product navigation. With `MIZAN_E2E_MUTATIONS=1`, the dedicated account can complete the essential setup and must land on Today with product navigation present.
+The read-only onboarding check verifies branded onboarding without product navigation. With `MIZAN_E2E_MUTATIONS=1`, the dedicated account can complete the essential setup and must land on Today with product navigation present. Because completion consumes the account's incomplete-onboarding state, mutation mode skips the read-only onboarding matrix and runs the completion journey once in `desktop-light`; this avoids racing a one-time state transition against parallel responsive projects.
 
 ### 5. Destructive account-deletion E2E
 Use a separate completed account created only to be permanently deleted:
@@ -41,23 +43,24 @@ Real credentials never belong in source control; `.env.example` documents names 
 | CP11 journey | Specification | Current static coverage |
 | --- | --- | --- |
 | Auth / route guard | `tests/e2e/auth.spec.ts` | signed-out guard, locale switch, password-reset mode, overflow |
-| Onboarding | `tests/e2e/onboarding-live.spec.ts` | incomplete account, no product chrome, essential setup completion behind mutation opt-in |
+| Onboarding | `tests/e2e/onboarding-live.spec.ts` | incomplete-account/no-product-chrome checks across the responsive matrix when mutation mode is off; essential setup completion is mutation-gated and isolated to one `desktop-light` project |
 | Primary product shell | `tests/e2e/product-live.spec.ts` | Home shell plus Life Map, One Move, Insights, More across configured phone/tablet/desktop projects |
-| Daily loop | `tests/e2e/product-live.spec.ts` | live low-energy check-in persistence behind mutation opt-in |
-| Feedback learning | `tests/e2e/product-live.spec.ts` | repeated evidence → One Move accept → explicit 4/5 feedback → Personal Learning evidence |
+| Daily loop | `tests/e2e/product-live.spec.ts` | live low-energy check-in persistence behind mutation opt-in and isolated to `desktop-light` |
+| Feedback learning | `tests/e2e/product-live.spec.ts` | repeated evidence → One Move accept → explicit 4/5 feedback → Personal Learning evidence, mutation-gated and isolated to `desktop-light` |
 | Recovery | `tests/e2e/product-live.spec.ts` | Recovery surface plus next-step interaction |
 | Scenario / What If | `tests/e2e/product-live.spec.ts` | scenario switch plus assumption visibility |
-| Settings / optional module | `tests/e2e/product-live.spec.ts` | Spiritual Grounding toggle and restore behind mutation opt-in |
+| Settings / optional module | `tests/e2e/product-live.spec.ts` | Spiritual Grounding toggle and restore behind mutation opt-in and isolated to `desktop-light` |
 | Privacy export | `tests/e2e/product-live.spec.ts` | portable JSON export/download without destructive deletion |
 | Privacy deletion | `tests/e2e/account-deletion-live.spec.ts` | dedicated completed deletion account, two-step destructive confirmation, user-scoped Web cache cleanup, server-side credential rejection after deletion; separately gated by `MIZAN_E2E_DESTRUCTIVE=1` and executed once in `desktop-light` |
 | Responsive Web | Playwright projects | 320×568 narrow phone, 390×844 common phone, 834×1194 tablet portrait, 1194×834 tablet landscape, and 1440×900 desktop; every viewport runs in both light and dark emulated color schemes, and existing overflow assertions execute in each applicable project |
 
-The Playwright project matrix deliberately uses the same Chromium engine with explicit viewport classes and emulated light/dark color schemes so layout and appearance regressions can be compared without introducing a browser-engine variable. The five viewport classes × two color schemes produce ten static Web projects. Native Android/iOS validation remains a separate owner/runtime gate. The irreversible deletion specification is the deliberate exception to the full matrix and runs once only.
+The Playwright project matrix deliberately uses the same Chromium engine with explicit viewport classes and emulated light/dark color schemes so layout and appearance regressions can be compared without introducing a browser-engine variable. The five viewport classes × two color schemes produce ten static Web projects. Native Android/iOS validation remains a separate owner/runtime gate. Stateful live mutations and irreversible deletion are deliberate exceptions to the full matrix and run once in `desktop-light`; the other projects remain read-only for those shared-account journeys.
 
 ## Still required before CP11 can close
 
 - Run the full TypeScript, lint, unit/component/integration, database/policy, and Web E2E suites from a trustworthy checkout.
 - Add or execute any missing behavior discovered by those runs; static specifications are not a PASS.
+- Run the responsive read-only matrix without `MIZAN_E2E_MUTATIONS=1`; enable mutation mode only with dedicated/disposable live accounts and expect those write journeys to execute once in `desktop-light`.
 - Execute the prepared destructive deletion specification only with an intentionally disposable dedicated account; do not reuse the normal completed-account fixture. Use `npm run test:e2e:delete-account` after configuring the documented environment and setting `MIZAN_E2E_DESTRUCTIVE=1`.
 - Execute Expo diagnostics plus Android/iOS bundle/export checks available in the owner environment.
 - Inspect production Web console/network behavior and production export output.
