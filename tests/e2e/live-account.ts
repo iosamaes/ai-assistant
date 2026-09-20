@@ -22,6 +22,12 @@ export const onboardingAccountConfigured = Boolean(
     process.env.MIZAN_E2E_ONBOARDING_PASSWORD,
 );
 
+export const onboardingMutationAccountConfigured = Boolean(
+  liveSupabaseConfigured &&
+    process.env.MIZAN_E2E_ONBOARDING_MUTATION_EMAIL &&
+    process.env.MIZAN_E2E_ONBOARDING_MUTATION_PASSWORD,
+);
+
 export const mutationsEnabled = process.env.MIZAN_E2E_MUTATIONS === '1';
 
 async function switchAuthToEnglish(page: Page) {
@@ -67,7 +73,15 @@ export async function signInArabicCompletedAccount(page: Page) {
 export async function signInOnboardingAccount(page: Page) {
   const email = process.env.MIZAN_E2E_ONBOARDING_EMAIL;
   const password = process.env.MIZAN_E2E_ONBOARDING_PASSWORD;
-  if (!email || !password) throw new Error('Onboarding-account E2E credentials are not configured.');
+  if (!email || !password) throw new Error('Onboarding read-only E2E credentials are not configured.');
+  await signInWithCredentials(page, email, password);
+  await expect(page).toHaveURL(/\/onboarding$/);
+}
+
+export async function signInOnboardingMutationAccount(page: Page) {
+  const email = process.env.MIZAN_E2E_ONBOARDING_MUTATION_EMAIL;
+  const password = process.env.MIZAN_E2E_ONBOARDING_MUTATION_PASSWORD;
+  if (!email || !password) throw new Error('Onboarding mutation E2E credentials are not configured.');
   await signInWithCredentials(page, email, password);
   await expect(page).toHaveURL(/\/onboarding$/);
 }
