@@ -47,9 +47,9 @@ export default function UpdatePasswordScreen() {
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const activeUserRef = useRef(userId);
+  activeUserRef.current = userId;
 
   useEffect(() => {
-    activeUserRef.current = userId;
     setPassword('');
     setConfirmPassword('');
     setBusy(false);
