@@ -6,7 +6,7 @@
 - CP11 verification/release-readiness harnesses are prepared; execution is pending because the active worker policy forbids workers from running product tests, builds, typechecks, database suites, GitHub Actions, or cloud CI.
 - Product authority: GitHub `iosamaes/ai-assistant@main`.
 - Task digest: `f2786fbae29a0ee1fa7bf77eb1504fc8fb80c208`.
-- Latest source-hardening commit reviewed in this ledger: `2b56227df4a2df44c39e32f632c2ef8b5a703836`.
+- Latest source-hardening commit reviewed in this ledger: `92332a1d965e79fcee482d4fa5f21ba745959a88`.
 
 ## Checkpoints
 - [x] CP0 — Reconnaissance, product model, executable plan
@@ -24,8 +24,9 @@
 - [ ] CP12 — Independent final review and handoff — **NOT_STARTED**
 
 ## Latest productive changes
-- `2b56227df4a2df44c39e32f632c2ef8b5a703836` — broadened the CP10 client-secret source policy from only `apps/app/src` to every current client-bundled production source root: `apps/app/src`, `packages/core/src`, and `packages/plugins/src`. The guard rejects the Supabase service-role environment marker, current `sb_secret_` key prefix, and legacy `service_role` marker before those values can be introduced into app/core/plugin source. Server-only Edge Function source is intentionally outside this client-bundle rule. This specification is present but unexecuted under worker policy.
-- `1126ad46ce3965ea943d948acc10634421b3b4fe` — introduced the initial production-app client-secret source guard; the later commit above closes the core/plugin bundle coverage gap.
+- `2b56227df4a2df44c39e32f632c2ef8b5a703836` + `78780be624b866377da9ea4fd7b041018be3fbd0` — expanded the CP10 client-secret source policy from only `apps/app/src` to all current client-bundled production roots (`apps/app/src`, `packages/core/src`, `packages/plugins/src`) and Expo manifest/config candidates (`app.json`, `app.config.*` when present). The guard rejects Supabase service-role/secret-key markers before they can be introduced into source or shipped Expo configuration. Server-only Edge Function source is intentionally outside this client-bundle rule. The specification is present but unexecuted under worker policy.
+- `cdf3884f23e02c5ffd3900f4c0203712d3e2c1ba` + `92332a1d965e79fcee482d4fa5f21ba745959a88` — hardened public Supabase client configuration so only `http:`/`https:` URLs are accepted before client construction, while preserving local HTTP Supabase development and hosted HTTPS use. The existing public-key guard continues to accept current publishable keys or legacy `anon` JWTs and reject current `sb_secret_` keys plus legacy service-role JWTs. A focused regression specification covers the new non-HTTP rejection; it was not executed by the worker.
+- `1126ad46ce3965ea943d948acc10634421b3b4fe` — introduced the initial production-app client-secret source guard that the later commits above broadened.
 - `00048202c92e0f2b979ee95940242d5d8e18b22f` + related navigation commits — closed the demonstrated CP9 tablet-navigation gap by using the shared semantic tablet breakpoint for the persistent side rail while preserving phone bottom navigation and RTL/LTR rail behavior.
 - `70584656d22c8bae22950a167b67eaed080dd226` — strengthened the Western-digit policy with a production-source scan; localized Arabic/Persian digit glyphs remain allowed only at the input-normalization boundary.
 - `5e0f27b7a9a40f73ab0d11c231501a26b9345f0b` + `bfba0d3b32591afc7e9ebbb522a7a0619ee37d54` — added visible Web keyboard focus to Personalization domain switches and guarded it statically.
@@ -46,13 +47,6 @@ Design-swap procedure: `docs/CP9_DESIGN_SWAP_PROOF.md`.
 
 The blocking premium-reference contract is broadly present in static source: adaptive Home/Life Map/One Move/Insights/More navigation, phone bottom navigation plus tablet/wide rail, shared iconography, responsive Life Map radar, premium Today/One Move hierarchy, WHY/Insights evidence language, What If ranges, Experiments/Recovery/Onboarding/Personalization/Invisible Wins treatments, bounded meters, semantic light/dark roles, MIZAN-owned branding, Western digits in both locales, RTL-aware geometry, reduced-motion handling, responsive/shared control sizing, and explicit visible Web focus treatment on shared and demonstrated direct-screen controls.
 
-Prepared evidence includes:
-- `tests/e2e/visual-evidence-live.spec.ts` — Today, Life Map, WHY, and interacted Check-in across the responsive light/dark matrix in persisted English and Arabic RTL.
-- `apps/app/__tests__/keyboard-focus-visual-policy-test.ts` — shared controls/navigation plus demonstrated Today, Experiments, and Personalization direct-control focus treatment.
-- `apps/app/__tests__/app-navigation-rtl-test.tsx` — Arabic/English tablet rail and phone bottom-navigation behavior.
-- `apps/app/__tests__/localized-number-policy-test.ts` and `western-digit-source-policy-test.ts` — Western-digit rendering/source policy while accepting localized numeric input at the normalization boundary.
-- `apps/app/__tests__/theme-contrast-policy-test.ts` and `app-native-platform-config-policy-test.ts` — semantic contrast and native branding/iPad configuration contracts.
-
 ### CP9 remaining
 - Make only demonstrated residual accessibility/RTL/localization/focus/presentation fixes; do not manufacture speculative polish.
 - Execute and inspect the prepared visual matrix at 320×568, 390×844, 834×1194, 1194×834, and 1440×900 across Arabic/English and shipped light/dark modes.
@@ -63,11 +57,11 @@ Prepared evidence includes:
 ## CP10 security/privacy state
 Detailed ledger/threat model: `docs/CP10_SECURITY_PRIVACY.md`.
 
-Implemented source hardening includes user-owned table/RLS review, cross-user policy specifications, function-execute hardening migration `0009`, authenticated portable export migration `0010`, Life Season expected-user fencing migrations `0011`/`0012`, JWT-protected `delete-account` Edge Function v2 with expected-user matching, export/two-step deletion and local-cache purge attempts, consent rechecks around integration sync, safer logging/error boundaries, broad account-switch/session fencing, account-owned local drafts/queued persistence, platform-truthful native export/share behavior, and a client-bundle secret-marker policy covering app/core/plugin production source.
+Implemented source hardening includes user-owned table/RLS review, cross-user policy specifications, function-execute hardening migration `0009`, authenticated portable export migration `0010`, Life Season expected-user fencing migrations `0011`/`0012`, JWT-protected `delete-account` Edge Function v2 with expected-user matching, export/two-step deletion and local-cache purge attempts, consent rechecks around integration sync, safer logging/error boundaries, broad account-switch/session fencing, account-owned local drafts/queued persistence, platform-truthful native export/share behavior, client-bundle secret-marker protection across app/core/plugin plus Expo config, and public Supabase config validation that rejects elevated secret/service-role credentials and non-HTTP(S) endpoints before client construction.
 
 ### CP10 remaining
 - Owner/runtime validation for cross-user/database specifications, Life Season expected-user/local-draft behavior, queued AppState account switching, export/delete/local purge, Edge deletion v2, consent-revocation races, account-switch/session-binding cases, offline replay ownership, notification-preference isolation/persistence, and native export/share dismissal behavior.
-- Execute the client-secret policy with the normal app test suite; the current worker only prepared/reviewed source and did not claim a PASS.
+- Execute the client-config/client-secret specifications with the normal app test suite; the current worker only prepared/reviewed source and did not claim a PASS.
 - Supabase leaked/compromised-password protection remains an owner action in `automation/HUMAN_REQUIRED.md`.
 
 ## CP11 static readiness
@@ -80,7 +74,7 @@ Prepared readiness includes:
 - Development-runtime and production-export performance probes.
 - Production static-Web export smoke/direct-route hydration and static-size reporting.
 - Local-only `npm run test:db` and `npm run lint:db` database gates.
-- Fail-closed `npm run check:release:baseline` that requires the authorized Supabase project and distinct reusable English/Arabic/onboarding fixtures while stripping mutation/destructive/visual/performance opt-ins.
+- Fail-closed `npm run check:release:baseline` requiring the authorized Supabase project and distinct reusable English/Arabic/onboarding fixtures while stripping mutation/destructive/visual/performance opt-ins.
 - Fail-closed dedicated mutation and destructive runners with role-collision protection.
 
 ### CP11 remaining
@@ -108,7 +102,7 @@ See `automation/HUMAN_REQUIRED.md`. Current open owner actions are:
 
 ## Exact next executable action
 1. Continue CP9 source work only if a concrete residual defect is demonstrated; otherwise leave runtime visual/focus/native/design-swap proof to owner validation.
-2. Continue CP10 source review only for genuinely unreviewed client/security/account-sensitive boundaries. The client-secret marker guard now covers every current app/core/plugin source root intended for client bundling.
+2. Continue CP10 source review only for genuinely unreviewed client/security/account-sensitive boundaries; client source/config and public Supabase config now fail closed against the demonstrated secret/URL classes above.
 3. Keep CP11 static harness aligned with the release contract without running forbidden execution gates. Owner validation should proceed as documented in `docs/CP11_RELEASE_READINESS.md` once the required fixtures/environment are available.
 4. When CP0–CP11 gates have actual evidence, proceed to CP12 independent final review; do not mark `TASK_DONE` from static implementation alone.
 
@@ -121,6 +115,8 @@ See `automation/HUMAN_REQUIRED.md`. Current open owner actions are:
 - `docs/CP9_DESIGN_SWAP_PROOF.md`
 - `docs/CP10_SECURITY_PRIVACY.md`
 - `docs/CP11_RELEASE_READINESS.md`
+- `apps/app/src/infrastructure/supabase/config.ts`
+- `apps/app/__tests__/supabase-config-test.ts`
 - `apps/app/__tests__/client-secret-source-policy-test.ts`
 - `apps/app/__tests__/keyboard-focus-visual-policy-test.ts`
 - `apps/app/__tests__/localized-number-policy-test.ts`
