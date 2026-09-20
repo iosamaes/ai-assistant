@@ -26,7 +26,18 @@ type RepresentativeSurface = {
   readyText: LocalizedPattern;
   loadingText?: LocalizedPattern;
   errorText?: LocalizedPattern;
+  prepareInteraction?: (page: Page, locale: VisualEvidenceLocale) => Promise<void>;
 };
+
+async function prepareCheckInInteraction(page: Page, locale: VisualEvidenceLocale) {
+  const energyThree = page.getByRole('button', {
+    name: locale === 'ar' ? 'الطاقة: 3' : 'Energy: 3',
+    exact: true,
+  });
+  await energyThree.click();
+  await expect(energyThree).toHaveAttribute('aria-selected', 'true');
+  await expect(page.getByRole('button', { name: locale === 'ar' ? 'حفظ التسجيل' : 'Save check-in', exact: true })).toBeEnabled();
+}
 
 const representativeSurfaces: readonly RepresentativeSurface[] = [
   {
@@ -84,6 +95,7 @@ const representativeSurfaces: readonly RepresentativeSurface[] = [
       en: /^Quick check-in$/,
       ar: /^تسجيل سريع$/,
     },
+    prepareInteraction: prepareCheckInInteraction,
   },
 ];
 
@@ -111,6 +123,7 @@ async function captureRepresentativeSurfaces(page: Page, testInfo: TestInfo, loc
     await expect(page).toHaveURL(new RegExp(`${surface.path.replace('/', '\\/')}$`));
     await expect(page.getByRole('tablist')).toBeVisible();
     await waitForStableVisualSurface(page, surface, locale);
+    if (surface.prepareInteraction) await surface.prepareInteraction(page, locale);
     await expectNoHorizontalOverflow(page);
 
     const attachmentName = `cp9-${locale}-${testInfo.project.name}-${surface.name}`;
