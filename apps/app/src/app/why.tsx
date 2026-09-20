@@ -1,6 +1,6 @@
 import type { ConfidenceLevel } from '@mizan/core';
 import { router } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { StyleSheet, useColorScheme, View } from 'react-native';
 
 import {
@@ -110,7 +110,7 @@ function formatDate(value: string, locale: 'ar' | 'en') {
       month: 'short',
     }).format(new Date(timestamp));
   } catch {
-    return new Date(timestamp).toISOString().slice(0, 10);
+    return '—';
   }
 }
 
@@ -202,38 +202,57 @@ function FactorCard({
 export default function WhyScreen() {
   const { isRtl, locale, refreshSession, userId } = useAppState();
   const [explanation, setExplanation] = useState<WhyExplanation | null>(null);
+  const [explanationUserId, setExplanationUserId] = useState<string | null>(null);
   const [status, setStatus] = useState<LoadStatus>('loading');
+  const activeUserRef = useRef(userId);
+  activeUserRef.current = userId;
   const local = copy[locale];
   const scheme = useColorScheme();
   const palette = Palette[scheme === 'dark' ? 'dark' : 'light'];
 
   useEffect(() => {
     let active = true;
+    const requestedUserId = userId;
+    const requestIsCurrent = () => active && activeUserRef.current === requestedUserId;
+
     void (async () => {
       await Promise.resolve();
-      if (!active) return;
-      if (!userId) {
+      if (!requestIsCurrent()) return;
+      if (!requestedUserId) {
         setExplanation(null);
+        setExplanationUserId(null);
         setStatus('ready');
         return;
       }
 
+      setExplanation(null);
+      setExplanationUserId(requestedUserId);
       setStatus('loading');
-      const result = await loadWhyExplanation(userId);
-      if (!active) return;
+      const result = await loadWhyExplanation(requestedUserId);
+      if (!requestIsCurrent()) return;
       if (result.ok) {
         setExplanation(result.value);
+        setExplanationUserId(requestedUserId);
         setStatus('ready');
         return;
       }
-      if (result.error.kind === 'session-expired') await refreshSession();
-      if (active) setStatus('error');
+      if (result.error.kind === 'session-expired') {
+        await refreshSession();
+        if (!requestIsCurrent()) return;
+      }
+      setExplanation(null);
+      setExplanationUserId(requestedUserId);
+      setStatus('error');
     })();
 
     return () => {
       active = false;
     };
   }, [refreshSession, userId]);
+
+  const currentExplanation = userId !== null && explanationUserId === userId ? explanation : null;
+  const displayedStatus: LoadStatus =
+    userId === null ? 'ready' : explanationUserId === userId ? status : 'loading';
 
   return (
     <Screen>
@@ -265,17 +284,17 @@ export default function WhyScreen() {
         <PrimaryButton label={local.checkIn} onPress={() => router.push('/check-in')} />
       </Card>
 
-      {status === 'loading' ? <MizanText accessibilityLiveRegion="polite" muted>{local.loading}</MizanText> : null}
-      {status === 'error' ? (
+      {displayedStatus === 'loading' ? <MizanText accessibilityLiveRegion="polite" muted>{local.loading}</MizanText> : null}
+      {displayedStatus === 'error' ? (
         <Card style={{ backgroundColor: palette.surfaceMuted }}><MizanText accessibilityLiveRegion="polite" muted>{local.error}</MizanText></Card>
       ) : null}
-      {status === 'ready' && (explanation?.factors.length ?? 0) === 0 ? (
+      {displayedStatus === 'ready' && (currentExplanation?.factors.length ?? 0) === 0 ? (
         <Card style={{ backgroundColor: palette.surfaceMuted }}><MizanText accessibilityLiveRegion="polite" muted>{local.empty}</MizanText></Card>
       ) : null}
 
-      {status === 'ready' ? (
+      {displayedStatus === 'ready' ? (
         <View style={[styles.factorGrid, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
-          {explanation?.factors.map((factor, index) => (
+          {currentExplanation?.factors.map((factor, index) => (
             <FactorCard key={factor.key} factor={factor} rank={index + 1} locale={locale} isRtl={isRtl} />
           ))}
         </View>
