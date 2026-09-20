@@ -9,28 +9,108 @@ import {
   arabicCompletedAccountConfigured,
   completedAccountConfigured,
   signInArabicCompletedAccount,
-  signInCompletedAccount,
+  signInEnglishCompletedAccount,
 } from './live-account';
 
 const visualEvidenceEnabled = process.env.MIZAN_E2E_VISUAL_EVIDENCE === '1';
-const liveReason = 'Requires live Supabase configuration plus completed-account credentials.';
+const liveReason = 'Requires live Supabase configuration plus a completed account whose persisted MIZAN locale is English.';
 const arabicLiveReason = 'Requires live Supabase configuration plus a completed account whose persisted MIZAN locale is Arabic.';
 const evidenceReason = 'Set MIZAN_E2E_VISUAL_EVIDENCE=1 only when intentionally capturing CP9 runtime visual evidence.';
 
-const representativeSurfaces = [
-  { name: 'today', path: '/today' },
-  { name: 'life-map', path: '/life-map' },
-  { name: 'why', path: '/why' },
-  { name: 'check-in', path: '/check-in' },
-] as const;
+type VisualEvidenceLocale = 'en' | 'ar';
+type LocalizedPattern = Readonly<Record<VisualEvidenceLocale, RegExp>>;
 
-async function captureRepresentativeSurfaces(page: Page, testInfo: TestInfo, locale: 'en' | 'ar') {
+type RepresentativeSurface = {
+  name: string;
+  path: '/today' | '/life-map' | '/why' | '/check-in';
+  readyText: LocalizedPattern;
+  loadingText?: LocalizedPattern;
+  errorText?: LocalizedPattern;
+};
+
+const representativeSurfaces: readonly RepresentativeSurface[] = [
+  {
+    name: 'today',
+    path: '/today',
+    readyText: {
+      en: /^Your calm space for today$/,
+      ar: /^مساحتك الهادئة لليوم$/,
+    },
+    loadingText: {
+      en: /^Loading your state…$/,
+      ar: /^جارٍ تحميل حالتك…$/,
+    },
+    errorText: {
+      en: /^Your current state could not be loaded right now\.$/,
+      ar: /^تعذر تحميل صورتك الحالية الآن\.$/,
+    },
+  },
+  {
+    name: 'life-map',
+    path: '/life-map',
+    readyText: {
+      en: /^Life map$/,
+      ar: /^خريطة الحياة$/,
+    },
+    loadingText: {
+      en: /^Reading your history…$/,
+      ar: /^جاري قراءة تاريخك…$/,
+    },
+    errorText: {
+      en: /^The life map could not be loaded right now\. Missing data was not replaced with estimates\.$/,
+      ar: /^تعذر تحميل خريطة الحياة الآن\. لم يتم استبدال البيانات الناقصة بتقديرات\.$/,
+    },
+  },
+  {
+    name: 'why',
+    path: '/why',
+    readyText: {
+      en: /^Why might I feel off\?$/,
+      ar: /^لماذا قد أشعر أنني لست على ما يرام؟$/,
+    },
+    loadingText: {
+      en: /^Reviewing available evidence…$/,
+      ar: /^جاري فحص الأدلة المتاحة…$/,
+    },
+    errorText: {
+      en: /^The evidence could not be read right now\. MIZAN did not generate a substitute explanation or fill in missing data\.$/,
+      ar: /^تعذر قراءة الأدلة الآن\. لم يتم إنشاء تفسير بديل أو افتراض بيانات مفقودة\.$/,
+    },
+  },
+  {
+    name: 'check-in',
+    path: '/check-in',
+    readyText: {
+      en: /^Quick check-in$/,
+      ar: /^تسجيل سريع$/,
+    },
+  },
+];
+
+async function waitForStableVisualSurface(page: Page, surface: RepresentativeSurface, locale: VisualEvidenceLocale) {
+  await expect(page.getByText(surface.readyText[locale], { exact: true }).first()).toBeVisible();
+
+  if (surface.loadingText) {
+    await expect(page.getByText(surface.loadingText[locale], { exact: true })).toHaveCount(0);
+  }
+
+  if (surface.errorText) {
+    await expect(page.getByText(surface.errorText[locale], { exact: true })).toHaveCount(0);
+  }
+
+  await page.evaluate(async () => {
+    await document.fonts.ready;
+  });
+}
+
+async function captureRepresentativeSurfaces(page: Page, testInfo: TestInfo, locale: VisualEvidenceLocale) {
   const diagnostics = collectCriticalBrowserDiagnostics(page);
 
   for (const surface of representativeSurfaces) {
     await page.goto(surface.path);
     await expect(page).toHaveURL(new RegExp(`${surface.path.replace('/', '\\/')}$`));
     await expect(page.getByRole('tablist')).toBeVisible();
+    await waitForStableVisualSurface(page, surface, locale);
     await expectNoHorizontalOverflow(page);
 
     const attachmentName = `cp9-${locale}-${testInfo.project.name}-${surface.name}`;
@@ -47,7 +127,7 @@ test.describe('CP9 runtime visual evidence capture', () => {
 
   test('English representative surfaces are captured across the configured responsive and appearance matrix', async ({ page }, testInfo) => {
     test.skip(!completedAccountConfigured, liveReason);
-    await signInCompletedAccount(page);
+    await signInEnglishCompletedAccount(page);
     await captureRepresentativeSurfaces(page, testInfo, 'en');
   });
 
