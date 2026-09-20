@@ -138,6 +138,7 @@ export default function LifeSeasonsScreen() {
   const [loadStatus, setLoadStatus] = useState<LoadStatus>('loading');
   const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle');
   const activeUserRef = useRef(userId);
+  activeUserRef.current = userId;
   const loadRequestRef = useRef(0);
   const saveRequestRef = useRef(0);
 
@@ -152,7 +153,6 @@ export default function LifeSeasonsScreen() {
   }, [lifeSeason]);
 
   useEffect(() => {
-    activeUserRef.current = userId;
     saveRequestRef.current += 1;
     let active = true;
     void Promise.resolve().then(() => {
