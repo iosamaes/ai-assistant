@@ -352,7 +352,16 @@ function DomainCard({ domain, locale, isRtl }: { domain: LifeMapDomainHistory; l
 
       {domainScore !== null ? (
         <View style={[styles.meterTrack, { backgroundColor: palette.surfaceMuted }]} accessibilityElementsHidden>
-          <View style={[styles.meterFill, { backgroundColor: palette.accent, width: `${Math.max(0, Math.min(100, domainScore))}%` }]} />
+          <View
+            style={[
+              styles.meterFill,
+              {
+                alignSelf: isRtl ? 'flex-end' : 'flex-start',
+                backgroundColor: palette.accent,
+                width: `${Math.max(0, Math.min(100, domainScore))}%`,
+              },
+            ]}
+          />
         </View>
       ) : null}
 
