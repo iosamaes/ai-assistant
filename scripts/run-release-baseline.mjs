@@ -1,3 +1,4 @@
+import { Buffer } from 'node:buffer';
 import { spawnSync } from 'node:child_process';
 
 const isWindows = process.platform === 'win32';
@@ -25,6 +26,20 @@ const distinctBaselineFixtureEmailVariables = [
   'MIZAN_E2E_ARABIC_EMAIL',
   'MIZAN_E2E_ONBOARDING_EMAIL',
 ];
+
+function usesPrivilegedSupabaseKey(rawKey) {
+  const key = rawKey.trim();
+  if (key.startsWith('sb_secret_')) return true;
+
+  const parts = key.split('.');
+  if (parts.length !== 3) return false;
+  try {
+    const payload = JSON.parse(Buffer.from(parts[1], 'base64url').toString('utf8'));
+    return payload?.role === 'service_role';
+  } catch {
+    return false;
+  }
+}
 
 const env = { ...process.env };
 for (const flag of optInFlags) delete env[flag];
@@ -55,6 +70,13 @@ try {
 if (configuredProjectRef !== authorizedSupabaseProjectRef) {
   console.error(
     `Release baseline is authorized only for Supabase project ${authorizedSupabaseProjectRef}. Check MIZAN_E2E_SUPABASE_URL before running live E2E.`,
+  );
+  process.exit(1);
+}
+
+if (usesPrivilegedSupabaseKey(env.MIZAN_E2E_SUPABASE_PUBLISHABLE_KEY)) {
+  console.error(
+    'Release baseline requires an anon/publishable Supabase client key. Secret and service-role keys are rejected.',
   );
   process.exit(1);
 }
