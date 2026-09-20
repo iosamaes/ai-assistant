@@ -19,6 +19,20 @@ describe('Playwright live-mutation isolation policy', () => {
     expect(notificationSpec).toContain('test.skip(!mutationsEnabled');
   });
 
+  test('key plugin mutation proves persistence and restoration across document reload', () => {
+    const repoRoot = path.resolve(__dirname, '../../..');
+    const productSpec = fs.readFileSync(path.join(repoRoot, 'tests', 'e2e', 'product-live.spec.ts'), 'utf8');
+
+    expect(productSpec).toContain(
+      'optional Spiritual Grounding preference persists across reload and restores on a dedicated live account',
+    );
+    expect(productSpec).toContain("testInfo.project.name !== 'desktop-light'");
+    expect(productSpec).toContain('test.skip(!mutationsEnabled');
+    expect(productSpec).toContain("await expect(target).toHaveAttribute('aria-selected', 'true')");
+    expect(productSpec).toContain("await expect(original).toHaveAttribute('aria-selected', 'true')");
+    expect(productSpec.match(/await page\.reload\(\);/g) ?? []).toHaveLength(2);
+  });
+
   test('irreversible deletion remains isolated, explicitly opted in, dedicated-fixture only, and contract-confirming', () => {
     const repoRoot = path.resolve(__dirname, '../../..');
     const deletionSpec = fs.readFileSync(
