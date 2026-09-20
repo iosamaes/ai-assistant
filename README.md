@@ -115,7 +115,7 @@ CP11 also has an opt-in, read-only Web performance sanity sample. With the persi
 npm run test:e2e:performance
 ```
 
-The sample runs once in `desktop-light`, records authenticated Home readiness plus primary-shell route transition durations, captures resource-timing and browser long-task data, and attaches `performance-sanity.json` to the Playwright result. Its broad timing ceilings are regression tripwires rather than product SLOs, and the command uses the controlled E2E Expo runtime; release performance still requires owner review of the production Web export and recorded real measurements.
+The sample runs once in `desktop-light`, records authenticated Home readiness plus primary-shell route transition durations, captures resource-timing and browser long-task data, and attaches `performance-sanity.json` to the Playwright result. Its broad timing ceilings are regression tripwires rather than product SLOs. This command uses the controlled E2E Expo runtime; the production static export has a separate performance probe described below so the two results can be compared rather than conflated.
 
 The destructive deletion journey requires a dedicated disposable account plus `MIZAN_E2E_DESTRUCTIVE=1`:
 
@@ -147,9 +147,17 @@ npm run test:e2e:production
 
 The signed-out production smoke runs without live credentials; when the normal `MIZAN_E2E_SUPABASE_*` plus persisted-English completed-account credentials are present, the same command also verifies authenticated direct-route hydration and primary-shell navigation from the static export. It checks shared browser page/console/network/5xx diagnostics and horizontal overflow. This harness must still be executed and its output inspected before it counts as release evidence.
 
-The Web export should also be inspected for representative responsive layouts and production interaction/startup performance. The size report is measurement evidence, not a product SLO or proof that an individual chunk is optimally split; investigate material regressions against the reviewed release baseline. Android/iOS exports validate the JavaScript/native bundle graph available without owner signing credentials; store-signed artifacts and publication remain owner release operations.
+With the same persisted-English completed fixture and `MIZAN_E2E_PERFORMANCE=1`, CP11 can also measure the actual served static export instead of the Expo development runtime:
 
-Before release, also run the complete matrix described in `docs/CP11_RELEASE_READINESS.md`, including database/RLS checks, representative Arabic RTL and English layouts, light/dark modes, privacy export/deletion, offline/reconnect behavior, and performance sanity checks.
+```bash
+npm run test:e2e:production:performance
+```
+
+This command rebuilds/reports/serves `apps/app/dist` through the production Playwright configuration, runs once in the production desktop project, measures authenticated Home readiness and primary-shell route transitions, captures production resource timing and browser long tasks, and attaches `production-performance-sanity.json`. The broad timing limits are regression tripwires rather than product SLOs. Retain this report alongside the Web size report and compare it with `performance-sanity.json`; investigate material differences or pathological main-thread work before release.
+
+The Web export should also be inspected for representative responsive layouts and production interaction/startup performance. The size and timing reports are measurement evidence, not proof that an individual chunk is optimally split or that every device class is fast; investigate material regressions against the reviewed release baseline. Android/iOS exports validate the JavaScript/native bundle graph available without owner signing credentials; store-signed artifacts and publication remain owner release operations.
+
+Before release, also run the complete matrix described in `docs/CP11_RELEASE_READINESS.md`, including database/RLS checks, representative Arabic RTL and English layouts, light/dark modes, privacy export/deletion, offline/reconnect behavior, and both controlled-runtime and production-export performance sanity checks.
 
 ## Architecture and product rules
 
