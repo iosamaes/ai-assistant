@@ -220,4 +220,22 @@ describe('privacy session fencing', () => {
     expect(mockClearRecentDailySnapshot).toHaveBeenCalledWith('user-a');
     expect(mockSignOut).toHaveBeenCalledWith({ scope: 'local' });
   });
+
+  test('reports incomplete local cleanup when local session state cannot be read after deletion', async () => {
+    mockGetSession
+      .mockResolvedValueOnce(sessionResult('user-a'))
+      .mockResolvedValueOnce({
+        data: { session: null },
+        error: { message: 'local auth storage unavailable' },
+      });
+    mockInvoke.mockResolvedValue({ data: { ok: true }, error: null });
+
+    await expect(deleteMyAccount('user-a')).resolves.toEqual({
+      ok: true,
+      value: { localDataCleared: false },
+    });
+    expect(mockClearPendingUserMutations).toHaveBeenCalledWith('user-a');
+    expect(mockClearRecentDailySnapshot).toHaveBeenCalledWith('user-a');
+    expect(mockSignOut).not.toHaveBeenCalled();
+  });
 });
