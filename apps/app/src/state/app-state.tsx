@@ -63,6 +63,11 @@ function isPersonalValue(value: string): value is PersonalValue {
   return personalValueOrder.includes(value as PersonalValue);
 }
 
+function localeFromSessionMetadata(session: Session): Locale | null {
+  const candidate = session.user.user_metadata?.locale;
+  return candidate === 'ar' || candidate === 'en' ? candidate : null;
+}
+
 interface AppStateValue {
   locale: Locale;
   isRtl: boolean;
@@ -128,6 +133,7 @@ export function AppStateProvider({ children }: PropsWithChildren) {
 
       const nextUserId = session.user.id;
       const isNewUser = activeUserRef.current !== nextUserId;
+      const metadataLocale = localeFromSessionMetadata(session);
       activeUserRef.current = nextUserId;
       setUserId(nextUserId);
       setSessionStatus('loading');
@@ -167,7 +173,10 @@ export function AppStateProvider({ children }: PropsWithChildren) {
           setOnboardingCompleted(profile.onboarding_completed);
         } else {
           resetUserState();
+          if (metadataLocale) setLocaleState(metadataLocale);
         }
+      } else if (isNewUser && metadataLocale) {
+        setLocaleState(metadataLocale);
       }
 
       if (contextResult.ok) {
