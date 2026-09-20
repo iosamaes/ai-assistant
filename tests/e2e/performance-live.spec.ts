@@ -102,10 +102,25 @@ test.describe('live read-only performance sanity', () => {
     await expectNoHorizontalOverflow(page);
 
     const routeCases = [
-      { label: 'Home-to-Life-Map', tab: 'Life Map', path: /\/life-map$/ },
-      { label: 'Life-Map-to-One-Move', tab: 'One Move', path: /\/one-move$/ },
-      { label: 'One-Move-to-Insights', tab: 'Insights', path: /\/insights$/ },
-      { label: 'Insights-to-More', tab: 'More', path: /\/settings$/ },
+      { label: 'Home-to-Life-Map', tab: 'Life Map', path: /\/life-map$/, readyText: 'Life map' },
+      {
+        label: 'Life-Map-to-One-Move',
+        tab: 'One Move',
+        path: /\/one-move$/,
+        readyText: 'Your One Move, directly',
+      },
+      {
+        label: 'One-Move-to-Insights',
+        tab: 'Insights',
+        path: /\/insights$/,
+        readyText: 'Insights and patterns',
+      },
+      {
+        label: 'Insights-to-More',
+        tab: 'More',
+        path: /\/settings$/,
+        readyText: 'Shape MIZAN around your life',
+      },
     ] as const;
 
     for (const route of routeCases) {
@@ -115,6 +130,7 @@ test.describe('live read-only performance sanity', () => {
           await target.click();
           await expect(page).toHaveURL(route.path);
           await expect(target).toHaveAttribute('aria-selected', 'true');
+          await expect(page.getByText(route.readyText, { exact: true }).first()).toBeVisible();
         }),
       );
       await expectNoHorizontalOverflow(page);
