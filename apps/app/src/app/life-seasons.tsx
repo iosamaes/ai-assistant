@@ -132,6 +132,7 @@ export default function LifeSeasonsScreen() {
   const scheme = useColorScheme();
   const palette = Palette[scheme === 'dark' ? 'dark' : 'light'];
   const [selectedSeason, setSelectedSeason] = useState<LifeSeason>(lifeSeason ?? 'balanced');
+  const [selectedSeasonUserId, setSelectedSeasonUserId] = useState<string | null>(userId);
   const [targets, setTargets] = useState<TargetDraft>({});
   const [state, setState] = useState<LifeSeasonsState | null>(null);
   const [stateUserId, setStateUserId] = useState<string | null>(null);
@@ -145,12 +146,15 @@ export default function LifeSeasonsScreen() {
   useEffect(() => {
     let active = true;
     void Promise.resolve().then(() => {
-      if (active) setSelectedSeason(lifeSeason ?? 'balanced');
+      if (active) {
+        setSelectedSeason(lifeSeason ?? 'balanced');
+        setSelectedSeasonUserId(userId);
+      }
     });
     return () => {
       active = false;
     };
-  }, [lifeSeason]);
+  }, [lifeSeason, userId]);
 
   useEffect(() => {
     saveRequestRef.current += 1;
@@ -212,9 +216,11 @@ export default function LifeSeasonsScreen() {
   const enabledSet = useMemo(() => new Set(enabledDomains), [enabledDomains]);
   const visibleState = stateUserId === userId ? state : null;
   const visibleTargets = stateUserId === userId ? targets : {};
+  const visibleSelectedSeason = selectedSeasonUserId === userId ? selectedSeason : (lifeSeason ?? 'balanced');
+  const draftReadyForActiveUser = Boolean(userId) && stateUserId === userId && selectedSeasonUserId === userId;
   const history = visibleState?.history ?? [];
   const rangeArrow = isRtl ? '←' : '→';
-  const controlsDisabled = loadStatus === 'loading' || saveStatus === 'saving';
+  const controlsDisabled = !draftReadyForActiveUser || loadStatus === 'loading' || saveStatus === 'saving';
 
   const setTarget = (domainId: DomainId, rating: Rating | null) => {
     if (controlsDisabled) return;
@@ -229,16 +235,21 @@ export default function LifeSeasonsScreen() {
 
   const handleSave = async () => {
     const requestedUserId = userId;
-    if (!requestedUserId || saveStatus === 'saving') return;
+    if (
+      !requestedUserId ||
+      saveStatus === 'saving' ||
+      stateUserId !== requestedUserId ||
+      selectedSeasonUserId !== requestedUserId
+    ) return;
 
     const requestId = ++saveRequestRef.current;
     const requestIsCurrent = () =>
       saveRequestRef.current === requestId && activeUserRef.current === requestedUserId;
-    const seasonToSave = selectedSeason;
+    const seasonToSave = visibleSelectedSeason;
 
     setSaveStatus('saving');
     const filteredTargets: TargetDraft = {};
-    for (const [domainId, rating] of Object.entries(targets)) {
+    for (const [domainId, rating] of Object.entries(visibleTargets)) {
       if (enabledSet.has(domainId as DomainId) && RATINGS.includes(rating as Rating)) {
         filteredTargets[domainId] = rating as Rating;
       }
@@ -285,11 +296,12 @@ export default function LifeSeasonsScreen() {
             <ChoiceChip
               key={season}
               label={labels.seasons[season]}
-              selected={selectedSeason === season}
+              selected={visibleSelectedSeason === season}
               disabled={controlsDisabled}
               onPress={() => {
                 if (controlsDisabled) return;
                 setSelectedSeason(season);
+                setSelectedSeasonUserId(userId);
                 if (saveStatus !== 'idle') setSaveStatus('idle');
               }}
             />
