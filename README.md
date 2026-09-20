@@ -42,7 +42,7 @@ EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY
 
 For normal Expo development, place the real public values in `apps/app/.env.local` or provide them in the shell that launches Expo. Never place a Supabase service-role key in the app or any `EXPO_PUBLIC_*` variable.
 
-The root `.env.example` also documents optional Playwright live-account variables. The normal completed account, Arabic completed account, incomplete onboarding account, and destructive deletion account are intentionally separate fixtures because their test lifecycles differ. Mutation, visual-evidence capture, and destructive modes stay opt-in.
+The root `.env.example` also documents optional Playwright live-account variables. The normal completed account, Arabic completed account, incomplete onboarding account, and destructive deletion account are intentionally separate fixtures because their test lifecycles differ. Mutation, visual-evidence capture, performance sampling, and destructive modes stay opt-in.
 
 ## Run the app
 
@@ -108,6 +108,14 @@ npm run test:e2e:visual
 ```
 
 That command captures Today, Life Map, WHY, and Check-in for English and persisted-Arabic accounts across every configured phone/tablet/desktop and light/dark Playwright project. Before each screenshot, the harness waits for the intended localized surface, waits for its loading state to settle where applicable, rejects known load-error states, and waits for browser fonts so mislabeled or half-loaded captures cannot silently count as evidence. Screenshots are attached to the Playwright test output; their presence is evidence only after the run actually succeeds.
+
+CP11 also has an opt-in, read-only Web performance sanity sample. With the persisted-English completed account configured, set `MIZAN_E2E_PERFORMANCE=1` and run:
+
+```bash
+npm run test:e2e:performance
+```
+
+The sample runs once in `desktop-light`, records authenticated Home readiness plus primary-shell route transition durations, captures resource-timing and browser long-task data, and attaches `performance-sanity.json` to the Playwright result. Its broad timing ceilings are regression tripwires rather than product SLOs, and the command uses the controlled E2E Expo runtime; release performance still requires owner review of the production Web export and recorded real measurements.
 
 The destructive deletion journey requires a dedicated disposable account plus `MIZAN_E2E_DESTRUCTIVE=1`:
 
