@@ -29,6 +29,14 @@ function deferred() {
   return { promise, resolve };
 }
 
+function deferredValue<T>() {
+  let resolve!: (value: T) => void;
+  const promise = new Promise<T>((next) => {
+    resolve = next;
+  });
+  return { promise, resolve };
+}
+
 function appState(userId: string, refreshSession: () => Promise<void>) {
   return {
     isRtl: false,
@@ -38,6 +46,11 @@ function appState(userId: string, refreshSession: () => Promise<void>) {
     userId,
   } as unknown as ReturnType<typeof useAppState>;
 }
+
+const snapshotResult = {
+  ok: true,
+  value: { humanState: { generatedAt: '2026-09-19T00:00:00.000Z', maturity: 'cold_start', components: [] } },
+} as Awaited<ReturnType<typeof loadDailySnapshot>>;
 
 const recommendation = {
   primary: {
@@ -58,10 +71,7 @@ const recommendation = {
 
 beforeEach(() => {
   jest.resetAllMocks();
-  loadDailySnapshotMock.mockResolvedValue({
-    ok: true,
-    value: { humanState: { generatedAt: '2026-09-19T00:00:00.000Z', maturity: 'cold_start', components: [] } },
-  } as Awaited<ReturnType<typeof loadDailySnapshot>>);
+  loadDailySnapshotMock.mockResolvedValue(snapshotResult);
   loadRecommendationMock.mockResolvedValue(recommendation);
   recordDecisionMock.mockResolvedValue({ ok: false, error: { kind: 'session-expired' } });
 });
@@ -85,5 +95,27 @@ describe('OneMoveScreen account-switch fencing', () => {
     await waitFor(() => {
       expect(view.queryByText(translations.en.oneMoveSaveError)).toBeNull();
     });
+  });
+
+  test('hides the previous account recommendation immediately while the new account is loading', async () => {
+    const refreshSession = jest.fn(async () => undefined);
+    const userBSnapshot = deferredValue<Awaited<ReturnType<typeof loadDailySnapshot>>>();
+    loadDailySnapshotMock.mockImplementation((userId) =>
+      userId === 'user-b' ? userBSnapshot.promise : Promise.resolve(snapshotResult),
+    );
+
+    useAppStateMock.mockReturnValue(appState('user-a', refreshSession));
+    const view = await render(<OneMoveScreen />);
+    await waitFor(() => expect(view.getByRole('button', { name: translations.en.oneMoveAccept })).toBeTruthy());
+
+    useAppStateMock.mockReturnValue(appState('user-b', refreshSession));
+    await view.rerender(<OneMoveScreen />);
+
+    expect(view.queryByRole('button', { name: translations.en.oneMoveAccept })).toBeNull();
+    expect(view.getByText(translations.en.loading)).toBeTruthy();
+    await waitFor(() => expect(loadDailySnapshotMock).toHaveBeenCalledWith('user-b'));
+
+    userBSnapshot.resolve(snapshotResult);
+    await waitFor(() => expect(view.getByRole('button', { name: translations.en.oneMoveAccept })).toBeTruthy());
   });
 });
