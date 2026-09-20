@@ -42,6 +42,10 @@ interface ButtonProps {
   disabled?: boolean;
 }
 
+interface PrimaryButtonProps extends ButtonProps {
+  tone?: 'accent' | 'danger';
+}
+
 interface ChoiceChipProps {
   label: string;
   accessibilityLabel?: string;
@@ -153,12 +157,14 @@ export function MizanTextInput({ style, ...props }: MizanTextInputProps) {
   );
 }
 
-export function PrimaryButton({ label, onPress, disabled = false }: ButtonProps) {
+export function PrimaryButton({ label, onPress, disabled = false, tone = 'accent' }: PrimaryButtonProps) {
   const scheme = useColorScheme();
   const palette = Palette[scheme === 'dark' ? 'dark' : 'light'];
   const { isRtl } = useAppState();
   const isDark = scheme === 'dark';
   const shadowOpacity = isDark ? SurfaceTreatment.controlShadowOpacity * 0.65 : SurfaceTreatment.controlShadowOpacity;
+  const backgroundColor = tone === 'danger' ? palette.danger : palette.accent;
+  const foregroundColor = tone === 'danger' ? palette.onDanger : palette.onAccent;
   return (
     <Pressable
       accessibilityLabel={label}
@@ -169,7 +175,7 @@ export function PrimaryButton({ label, onPress, disabled = false }: ButtonProps)
       style={({ pressed }) => [
         styles.button,
         {
-          backgroundColor: palette.accent,
+          backgroundColor,
           opacity: disabled ? Interaction.disabled : pressed ? Interaction.pressed : 1,
         },
         shadowStyle(
@@ -183,7 +189,7 @@ export function PrimaryButton({ label, onPress, disabled = false }: ButtonProps)
         allowFontScaling
         style={[
           styles.buttonText,
-          { color: palette.onAccent, writingDirection: isRtl ? 'rtl' : 'ltr' },
+          { color: foregroundColor, writingDirection: isRtl ? 'rtl' : 'ltr' },
         ]}>
         {label}
       </Text>
