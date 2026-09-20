@@ -286,10 +286,11 @@ export function AppStateProvider({ children }: PropsWithChildren) {
       nextValues: readonly PersonalValue[],
       nextPrivacyMode: PrivacyMode | null,
     ) => {
-      if (!userId) return Promise.resolve();
+      if (!userId || activeUserRef.current !== userId) return Promise.resolve();
       const targetUserId = userId;
 
       const persist = async () => {
+        if (activeUserRef.current !== targetUserId) return;
         setSyncStatus('saving');
         const [profileResult, preferenceResult] = await Promise.all([
           upsertProfile(targetUserId, {
