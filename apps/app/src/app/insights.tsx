@@ -1,6 +1,6 @@
 import type { ConfidenceLevel, RelationshipStatus } from '@mizan/core';
 import { router } from 'expo-router';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { StyleSheet, useColorScheme, View } from 'react-native';
 
 import {
@@ -196,47 +196,65 @@ export default function InsightsScreen() {
   const scheme = useColorScheme();
   const palette = Palette[scheme === 'dark' ? 'dark' : 'light'];
   const [snapshot, setSnapshot] = useState<InsightsSnapshot | null>(null);
+  const [snapshotUserId, setSnapshotUserId] = useState<string | null>(null);
   const [status, setStatus] = useState<LoadStatus>('loading');
   const [filter, setFilter] = useState<InsightFilter>('all');
+  const activeUserRef = useRef(userId);
+  activeUserRef.current = userId;
   const local = copy[locale];
 
   useEffect(() => {
     let active = true;
+    const requestedUserId = userId;
+    const requestIsCurrent = () => active && activeUserRef.current === requestedUserId;
+
     void (async () => {
       await Promise.resolve();
-      if (!active) return;
-      if (!userId) {
+      if (!requestIsCurrent()) return;
+      if (!requestedUserId) {
         setSnapshot(null);
+        setSnapshotUserId(null);
         setStatus('ready');
         return;
       }
 
+      setSnapshot(null);
+      setSnapshotUserId(requestedUserId);
       setStatus('loading');
-      const result = await loadInsightsSnapshot(userId);
-      if (!active) return;
+      const result = await loadInsightsSnapshot(requestedUserId);
+      if (!requestIsCurrent()) return;
       if (result.ok) {
         setSnapshot(result.value);
+        setSnapshotUserId(requestedUserId);
         setStatus('ready');
         return;
       }
-      if (result.error.kind === 'session-expired') await refreshSession();
-      if (active) setStatus('error');
+      if (result.error.kind === 'session-expired') {
+        await refreshSession();
+        if (!requestIsCurrent()) return;
+      }
+      setSnapshot(null);
+      setSnapshotUserId(requestedUserId);
+      setStatus('error');
     })();
 
     return () => { active = false; };
   }, [refreshSession, userId]);
 
+  const currentSnapshot = userId !== null && snapshotUserId === userId ? snapshot : null;
+  const displayedStatus: LoadStatus =
+    userId === null ? 'ready' : snapshotUserId === userId ? status : 'loading';
   const visibleInsights = useMemo(() => {
-    const insights = snapshot?.insights ?? [];
+    const insights = currentSnapshot?.insights ?? [];
     if (filter === 'all') return insights;
     return insights.filter((insight) => insight.hypothesis.status === filter);
-  }, [filter, snapshot?.insights]);
+  }, [currentSnapshot?.insights, filter]);
 
-  const supportedPatternCount = status === 'ready'
-    ? formatLocalizedNumber(snapshot?.insights.length ?? 0, locale, 0)
+  const supportedPatternCount = displayedStatus === 'ready'
+    ? formatLocalizedNumber(currentSnapshot?.insights.length ?? 0, locale, 0)
     : '—';
   const evidenceWindow = `${formatLocalizedNumber(90, locale, 0)} ${local.days}`;
-  const hasAnyInsights = (snapshot?.insights.length ?? 0) > 0;
+  const hasAnyInsights = (currentSnapshot?.insights.length ?? 0) > 0;
 
   return (
     <Screen>
@@ -277,7 +295,7 @@ export default function InsightsScreen() {
         </View>
       </Card>
 
-      {status === 'ready' && hasAnyInsights ? (
+      {displayedStatus === 'ready' && hasAnyInsights ? (
         <View style={styles.filterSection} accessibilityRole="summary">
           <MizanText variant="label" muted>{local.filterLabel}</MizanText>
           <View style={[styles.filterRow, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
@@ -288,27 +306,27 @@ export default function InsightsScreen() {
         </View>
       ) : null}
 
-      {status === 'loading' ? (
+      {displayedStatus === 'loading' ? (
         <Card style={[styles.stateCard, { backgroundColor: palette.surfaceMuted }]}>
           <MizanText accessibilityLiveRegion="polite" muted>{local.loading}</MizanText>
         </Card>
       ) : null}
-      {status === 'error' ? (
+      {displayedStatus === 'error' ? (
         <Card style={[styles.stateCard, { backgroundColor: palette.surfaceMuted }]}>
           <MizanText accessibilityLiveRegion="polite" muted>{local.error}</MizanText>
         </Card>
       ) : null}
-      {status === 'ready' && !hasAnyInsights ? (
+      {displayedStatus === 'ready' && !hasAnyInsights ? (
         <Card style={[styles.stateCard, { backgroundColor: palette.surfaceMuted }]}>
           <MizanText accessibilityLiveRegion="polite" muted>{local.empty}</MizanText>
         </Card>
       ) : null}
-      {status === 'ready' && hasAnyInsights && visibleInsights.length === 0 ? (
+      {displayedStatus === 'ready' && hasAnyInsights && visibleInsights.length === 0 ? (
         <Card style={[styles.stateCard, { backgroundColor: palette.surfaceMuted }]}>
           <MizanText accessibilityLiveRegion="polite" muted>{local.filterEmpty}</MizanText>
         </Card>
       ) : null}
-      {status === 'ready' ? (
+      {displayedStatus === 'ready' ? (
         <View style={[styles.insightGrid, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
           {visibleInsights.map((insight) => (
             <InsightCard key={insight.key} insight={insight} locale={locale} isRtl={isRtl} />
