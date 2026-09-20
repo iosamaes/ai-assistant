@@ -17,6 +17,34 @@ const liveReason = 'Requires MIZAN_E2E_SUPABASE_URL, MIZAN_E2E_SUPABASE_PUBLISHA
 const arabicLiveReason = 'Requires the live Supabase client configuration plus a completed account whose saved MIZAN locale is Arabic.';
 const mutationProjectReason = 'Live mutation E2E runs once in desktop-light to avoid concurrent writes against one shared account.';
 
+const premiumReferenceSurfaces = [
+  {
+    path: '/why',
+    title: /Why might I feel off\?|لماذا قد أشعر أنني لست على ما يرام؟/,
+  },
+  {
+    path: '/personal-learning',
+    title: /What has MIZAN learned from your experience\?|ما الذي تعلّمناه من تجربتك؟/,
+  },
+  {
+    path: '/experiments',
+    title: /Test one small hypothesis in your own life|اختبر فرضية صغيرة على حياتك/,
+  },
+  {
+    path: '/integrations',
+    title: /External sources|المصادر الخارجية/,
+  },
+] as const;
+
+async function expectPremiumReferenceSurfaces(page: Page) {
+  for (const surface of premiumReferenceSurfaces) {
+    await page.goto(surface.path);
+    await expect(page).toHaveURL(new RegExp(`${surface.path.replace('/', '\\/')}$`));
+    await expect(page.getByText(surface.title, { exact: true })).toBeVisible();
+    await expectNoHorizontalOverflow(page);
+  }
+}
+
 async function recordLowEnergyCheckIn(page: Page) {
   await page.goto('/check-in');
   await page.getByRole('button', { name: /Energy: 1|الطاقة: 1/, exact: true }).click();
@@ -57,6 +85,14 @@ test.describe('live completed-account product journeys', () => {
     await more.click();
     await expect(page).toHaveURL(/\/settings$/);
     await expectNoHorizontalOverflow(page);
+    expectNoCriticalBrowserDiagnostics(diagnostics);
+  });
+
+  test('premium-reference evidence surfaces render read-only across the responsive matrix', async ({ page }) => {
+    const diagnostics = collectCriticalBrowserDiagnostics(page);
+    await signInCompletedAccount(page);
+
+    await expectPremiumReferenceSurfaces(page);
     expectNoCriticalBrowserDiagnostics(diagnostics);
   });
 
@@ -191,6 +227,14 @@ test.describe('live Arabic completed-account read-only journeys', () => {
     await expect(page).toHaveURL(/\/settings$/);
     await expect(page.getByText('اضبط ميزان على حياتك، لا العكس', { exact: true })).toBeVisible();
     await expectNoHorizontalOverflow(page);
+    expectNoCriticalBrowserDiagnostics(diagnostics);
+  });
+
+  test('Arabic premium-reference evidence surfaces stay localized and overflow-free', async ({ page }) => {
+    const diagnostics = collectCriticalBrowserDiagnostics(page);
+    await signInArabicCompletedAccount(page);
+
+    await expectPremiumReferenceSurfaces(page);
     expectNoCriticalBrowserDiagnostics(diagnostics);
   });
 });
