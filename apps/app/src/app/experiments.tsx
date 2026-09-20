@@ -457,6 +457,7 @@ export default function ExperimentsScreen() {
             </View>
             <View
               accessibilityRole="progressbar"
+              accessibilityLabel={`${templateLabel} — ${labels.progress}`}
               accessibilityValue={{ min: 0, max: 100, now: progressPercent ?? 0, text: progressLabel }}
               style={[styles.progressTrack, { backgroundColor: palette.surfaceMuted }]}
             >
