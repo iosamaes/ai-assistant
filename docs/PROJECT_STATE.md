@@ -46,6 +46,9 @@ Recent residual fixes include semantic RTL progress geometry, unknown-safe date/
 - `eb9c048f3ad774ba14f78c4459c1710b1c2eeaaf` — corrected the light semantic `textMuted` token from `#627067` to `#5C6A61` after static luminance analysis showed the previous token below 4.5:1 on both `surfaceMuted` and `accentSoft`, two shipped backgrounds used with normal-size muted copy.
 - `cc1196c7ecee9aece8fa828b8bceededd09d7cbe` — added `apps/app/__tests__/theme-contrast-policy-test.ts`, which computes sRGB relative luminance and statically requires the shipped semantic normal-text/surface pairs to remain at least 4.5:1 in light and dark. The specification has **not** been executed by workers.
 - `08f19860603b58a5c30e28b224a17a9b597f5673` — CP9 presentation architecture now records the contrast defect, token fix, and static regression contract without claiming a runtime/test PASS.
+- `4cdde370fd067d926470b8bd2174793c948a2870` — the English visual-evidence path now proves the normal completed fixture has a persisted English MIZAN locale before accepting it as English evidence; authentication-screen language alone can no longer silently mislabel an Arabic profile capture.
+- `3d95935188efd8b896c09ef3cb74cf780fbaeeeb` — the CP9 visual capture now waits for each surface's localized ready marker, waits for asynchronous loading text to clear where applicable, rejects known load-error states, and waits for browser fonts before taking the screenshot. This prevents half-loaded or wrongly localized screenshots from counting as evidence.
+- `170acaf0c28bc2c7a7685dac3187d6f0f905ac81` + `f3964eeafd239b7bdfb70b93e9236047c5fdd1ce` — `.env.example` and the root README now document the persisted-English fixture requirement and the stable-capture contract without adding credentials or claiming execution.
 
 ### CP9 remaining
 - Fix only demonstrated residual defects on still-unreviewed shipped surfaces; do not manufacture speculative polish.
@@ -66,6 +69,7 @@ The TASK-required **Notifications/preferences** product surface was previously m
 - `b099e34f49b8c57e0144ea5545346c5a0bc7df1d` — added a mutation-gated live Web specification that toggles the one-minute check-in notification preference, reloads Settings to prove persisted state, restores the original value, reloads again, and checks overflow/browser diagnostics. It is intentionally limited to `desktop-light` and remains unexecuted by workers.
 - `b5e842d6b2fcf1443f4cb59badfe59726b06015c` — `npm run test:e2e:mutations` now includes the notification-preference persistence/restore specification alongside the existing live mutation journeys.
 - `eceb93f8866d4e203276ecfc3c18019d782deeda` — strengthened the static notification policy specification to guard disabled-row fallback semantics and explicit consent timestamp clearing when all reminder categories are off.
+- `819ab8a0970749e558b424b891703a41049a12ad` — added a behavioral regression specification for notification-preference account switching: a stale load from user A cannot replace user B's loaded preferences, and a stale save completion from user A cannot alter user B's state. The specification is intentionally unexecuted under worker policy.
 
 Actual notification scheduling/delivery remains intentionally **not claimed**. If the product later chooses to ship device push/local scheduling, it still requires an application-owned notification provider boundary, permissions/credential handling, and owner/runtime validation; a push-provider credential action should only be added to `automation/HUMAN_REQUIRED.md` when such delivery is actually being implemented and blocked by missing credentials.
 
@@ -74,7 +78,7 @@ Detailed ledger/threat model: `docs/CP10_SECURITY_PRIVACY.md`.
 
 Implemented source hardening includes RLS/ownership review of user-owned client-visible tables, cross-user policy specifications, function-execute hardening migration `0009`, authenticated portable export migration `0010`, Life Season expected-user fencing migrations `0011`/`0012`, JWT-protected `delete-account` Edge Function v2 with expected-user matching, export/two-step deletion UI and local-cache purge attempts, consent rechecks around integration sync, safer error-boundary/logging boundaries, and broad account-switch/session fencing.
 
-Account-sensitive presentation paths hardened or explicitly reviewed include Today decision/feedback, Invisible Wins, Recovery, Check-in, Privacy, Onboarding, Update Password, Settings, Personalization, Life Seasons, Experiments, Cost of Yes, Human ROI, Capacity, Integrations, WHY, What If, Personal Learning, Value Alignment, root offline replay, and notification-preference persistence. The production sensitive logging/error-reporting source review is complete for the previously reviewed tree and must reopen when a genuinely new production sink/boundary is introduced.
+Account-sensitive presentation paths hardened or explicitly reviewed include Today decision/feedback, Invisible Wins, Recovery, Check-in, Privacy, Onboarding, Update Password, Settings, Personalization, Life Seasons, Experiments, Cost of Yes, Human ROI, Capacity, Integrations, WHY, What If, Personal Learning, Value Alignment, root offline replay, and notification-preference persistence. Notification preferences now also have a behavioral stale-load/stale-save account-switch regression specification. The production sensitive logging/error-reporting source review is complete for the previously reviewed tree and must reopen when a genuinely new production sink/boundary is introduced.
 
 ### CP10 remaining
 - Owner/runtime validation for cross-user/database specifications, Life Season expected-user behavior, export/delete/local purge, destructive Edge deletion v2, consent-revocation races, account-switch/session-binding cases, offline replay ownership, and notification-preference account isolation/persistence restoration.
@@ -85,13 +89,13 @@ Detailed release ledger: `docs/CP11_RELEASE_READINESS.md`.
 
 The Playwright Web matrix defines **320×568**, **390×844**, **834×1194**, **1194×834**, and **1440×900**, each in light/dark emulated color schemes. Native Android/iOS validation is a separate owner/runtime gate.
 
-Prepared static verification includes auth/route guard/password recovery, real Tab/Enter keyboard navigation of auth controls, accessible-label password targeting, onboarding, completed-account pointer and keyboard navigation, Recovery/What If/Settings/Privacy export, daily-loop mutation paths, One Move → explicit feedback → Personal Learning, Spiritual Grounding preference toggle/restore, notification preference toggle → reload persistence → restore → reload verification, Arabic persisted-locale read-only coverage including keyboard navigation after RTL hydration, destructive deletion with a dedicated disposable account, shared critical browser diagnostics, production logging policy, semantic text-contrast regression coverage, the CP9 visual-evidence capture matrix, and read-only notification-preference presence/disclosure coverage.
+Prepared static verification includes auth/route guard/password recovery, real Tab/Enter keyboard navigation of auth controls, accessible-label password targeting, onboarding, completed-account pointer and keyboard navigation, Recovery/What If/Settings/Privacy export, daily-loop mutation paths, One Move → explicit feedback → Personal Learning, Spiritual Grounding preference toggle/restore, notification preference toggle → reload persistence → restore → reload verification, notification-preference stale-load/stale-save account-switch fencing, Arabic persisted-locale read-only coverage including keyboard navigation after RTL hydration, destructive deletion with a dedicated disposable account, shared critical browser diagnostics, production logging policy, semantic text-contrast regression coverage, and a locale-verified/load-settled CP9 visual-evidence capture matrix.
 
-These are static harness/readiness changes only. **No E2E run, screenshot capture result, keyboard PASS, contrast-test PASS, destructive delete, notification preference persistence PASS, test result, typecheck, build, database-policy execution, performance result, or release PASS is claimed by workers under the active policy.**
+These are static harness/readiness changes only. **No E2E run, screenshot capture result, keyboard PASS, contrast-test PASS, destructive delete, notification preference persistence/session-fencing PASS, test result, typecheck, build, database-policy execution, performance result, or release PASS is claimed by workers under the active policy.**
 
 ## Exact next executable action
 1. Continue CP9 static work only when a concrete accessibility/RTL/localization/focus/technical-id/presentation defect is demonstrated; otherwise leave runtime visual/interaction proof to owner validation.
-2. Keep CP10 source review scoped to genuinely new account-sensitive/security boundaries introduced by new work; notification preferences now have a prepared mutation/persistence journey but still need owner execution and account-switch verification.
+2. Keep CP10 source review scoped to genuinely new account-sensitive/security boundaries introduced by new work; notification preferences now have live persistence and behavioral account-switch specifications but still need owner execution evidence.
 3. Keep CP11 static harness aligned with the release matrix. Owner validation must execute typecheck/lint/tests, SQL/RLS suites, Web E2E including keyboard/focus and notification-preference mutation journeys, visual capture, destructive deletion, production Web inspection, native/export checks, performance sanity, clean-checkout setup, and deliberate design-swap proof.
 4. When CP0–CP11 gates are honestly satisfied with execution evidence, proceed to CP12 independent two-worker review. Do not claim completion from static implementation alone.
 
@@ -110,7 +114,7 @@ Post-baseline:
 - **No worker-run app tests, builds, typechecks, validation database scripts, cloud CI, or GitHub Actions are claimed for CP2–CP11 changes.**
 - Authorized migrations `0009`–`0012` were applied previously; live reads confirmed the hardened Life Season RPC signature/ACL. This is implementation/state evidence, not a behavioral test-suite PASS.
 - `delete-account` version 2 previously reported ACTIVE with JWT verification enabled; destructive end-to-end deletion remains unexecuted.
-- Premium-reference fixes, account-fencing specifications, notification-preference code/specifications, notification-preference live persistence harness, visual-evidence harness, responsive/keyboard E2E matrix, semantic contrast regression specification, and production logging guards remain static evidence until owner validation.
+- Premium-reference fixes, account-fencing specifications, notification-preference code/specifications, notification-preference live persistence and session-fencing harnesses, locale-verified/load-settled visual-evidence harness, responsive/keyboard E2E matrix, semantic contrast regression specification, and production logging guards remain static evidence until owner validation.
 - Root/app setup and release documentation are MIZAN-specific, but the documented clean-checkout flow still requires owner execution evidence.
 
 ## Known blockers / risks
@@ -119,9 +123,9 @@ Post-baseline:
 - CP10: Supabase leaked-password protection remains disabled pending the recorded owner Auth-setting action.
 - Cross-user/database specifications and all post-baseline runtime/type/build gates require owner execution evidence.
 - Recent Today snapshot native SecureStore behavior/capacity still needs owner runtime validation.
-- CP9 representative screenshots, keyboard/focus interaction validation, and final design-swap proof remain outstanding even though capture and keyboard automation are prepared.
+- CP9 representative screenshots, keyboard/focus interaction validation, and final design-swap proof remain outstanding even though capture and keyboard automation are prepared. English capture now requires a persisted-English completed fixture rather than merely an English auth form.
 - Privacy export/delete, local cache purge/warning behavior, account-scoped confirmation, Edge v2 expected-user deletion fencing, Life Season expected-user fencing, and account-switch/session-binding behavior still need Web/native/end-to-end validation.
-- Notification preferences persist safely in existing app-owned storage and now have a prepared live persistence/restore journey, but actual device notification scheduling/push delivery is intentionally unavailable and unclaimed.
+- Notification preferences persist safely in existing app-owned storage and now have prepared live persistence/restore plus account-switch regression specifications, but actual device notification scheduling/push delivery is intentionally unavailable and unclaimed.
 - The optional Arabic read-only matrix requires a dedicated completed test account with persisted Arabic locale; absent credentials cause the specification to skip rather than mutate another account.
 - No real AI, wearable, calendar, location, or notification-provider credentials are configured; deterministic/unavailable behavior remains the supported fallback where applicable.
 
@@ -144,6 +148,7 @@ Post-baseline:
 - `tests/e2e/onboarding-live.spec.ts`
 - `tests/e2e/account-deletion-live.spec.ts`
 - `apps/app/__tests__/notification-preferences-policy-test.ts`
+- `apps/app/__tests__/notification-preferences-session-fencing-test.tsx`
 - `apps/app/__tests__/production-logging-privacy-policy-test.ts`
 - `apps/app/__tests__/theme-contrast-policy-test.ts`
 - `apps/app/src/application/notification-preferences.ts`
