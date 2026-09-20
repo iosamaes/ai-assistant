@@ -200,31 +200,12 @@ function formattedDayContext(locale: 'ar' | 'en'): string {
   }).format(new Date());
 }
 
-function SignalMeter({
-  value,
-  trackColor,
-  fillColor,
-  isRtl,
-}: {
-  value: number | null;
-  trackColor: string;
-  fillColor: string;
-  isRtl: boolean;
-}) {
+function SignalMeter({ value, trackColor, fillColor, isRtl }: { value: number | null; trackColor: string; fillColor: string; isRtl: boolean }) {
   const clamped = value === null ? null : Math.max(0, Math.min(100, value));
   return (
     <View style={[styles.meterTrack, { backgroundColor: trackColor }]}>
       {clamped !== null ? (
-        <View
-          style={[
-            styles.meterFill,
-            {
-              alignSelf: isRtl ? 'flex-end' : 'flex-start',
-              backgroundColor: fillColor,
-              width: `${clamped}%` as `${number}%`,
-            },
-          ]}
-        />
+        <View style={[styles.meterFill, { alignSelf: isRtl ? 'flex-end' : 'flex-start', backgroundColor: fillColor, width: `${clamped}%` as `${number}%` }]} />
       ) : null}
     </View>
   );
@@ -238,6 +219,7 @@ export default function TodayScreen() {
   const [dailySnapshotUserId, setDailySnapshotUserId] = useState<string | null>(null);
   const [dailyLoadStatus, setDailyLoadStatus] = useState<DailyLoadStatus>('loading');
   const [recommendation, setRecommendation] = useState<DailyRecommendation | null>(null);
+  const [recommendationUserId, setRecommendationUserId] = useState<string | null>(null);
   const [recommendationLoadStatus, setRecommendationLoadStatus] = useState<RecommendationLoadStatus>('loading');
   const [selectedActionId, setSelectedActionId] = useState<string | null>(null);
   const [decisionStatus, setDecisionStatus] = useState<DecisionStatus>('idle');
@@ -254,11 +236,12 @@ export default function TodayScreen() {
   const dayContext = formattedDayContext(locale);
   const formatWhole = (value: number) => formatLocalizedNumber(value, locale, 0);
   const currentDailySnapshot = userId !== null && dailySnapshotUserId === userId ? dailySnapshot : null;
-  const displayedDailyLoadStatus: DailyLoadStatus =
-    userId !== null && dailyLoadStatus === 'ready' && dailySnapshotUserId !== userId ? 'loading' : dailyLoadStatus;
+  const displayedDailyLoadStatus: DailyLoadStatus = userId !== null && dailyLoadStatus === 'ready' && dailySnapshotUserId !== userId ? 'loading' : dailyLoadStatus;
   const humanState = currentDailySnapshot?.humanState ?? null;
   const dailyOverview = currentDailySnapshot?.overview ?? null;
   const snapshotMessage = cachedSnapshotMessage(currentDailySnapshot, locale);
+  const currentRecommendation = userId !== null && recommendationUserId === userId ? recommendation : null;
+  const displayedRecommendationLoadStatus: RecommendationLoadStatus = userId !== null && humanState && recommendationLoadStatus === 'ready' && recommendationUserId !== userId ? 'loading' : recommendationLoadStatus;
   const activeFeedbackTarget = feedbackTarget?.userId === userId ? feedbackTarget : null;
 
   useEffect(() => {
@@ -276,7 +259,6 @@ export default function TodayScreen() {
         setDailyLoadStatus('ready');
         return;
       }
-
       setDailySnapshot(null);
       setDailySnapshotUserId(null);
       setDailyLoadStatus('loading');
@@ -295,21 +277,14 @@ export default function TodayScreen() {
         setDailyLoadStatus('error');
       }
     })();
-
-    return () => {
-      active = false;
-    };
+    return () => { active = false; };
   }, [refreshSession, userId]);
 
-  const visibleState = useMemo(
-    () =>
-      (humanState?.components ?? []).flatMap((component) => {
-        const labelKey = stateLabelKey(component.key);
-        if (!labelKey) return [];
-        return [{ component, labelKey }];
-      }),
-    [humanState],
-  );
+  const visibleState = useMemo(() => (humanState?.components ?? []).flatMap((component) => {
+    const labelKey = stateLabelKey(component.key);
+    if (!labelKey) return [];
+    return [{ component, labelKey }];
+  }), [humanState]);
 
   useEffect(() => {
     let active = true;
@@ -318,20 +293,20 @@ export default function TodayScreen() {
       if (!active) return;
       if (!userId || !humanState) {
         setRecommendation(null);
+        setRecommendationUserId(null);
         setRecommendationLoadStatus('ready');
         return;
       }
-
+      setRecommendation(null);
+      setRecommendationUserId(null);
       setRecommendationLoadStatus('loading');
       const nextRecommendation = await loadPersonalizedDailyRecommendation(userId, humanState);
       if (!active) return;
       setRecommendation(nextRecommendation);
+      setRecommendationUserId(userId);
       setRecommendationLoadStatus('ready');
     })();
-
-    return () => {
-      active = false;
-    };
+    return () => { active = false; };
   }, [humanState, userId]);
 
   useEffect(() => {
@@ -343,7 +318,6 @@ export default function TodayScreen() {
         setFeedbackTarget(null);
         return;
       }
-
       setFeedbackTarget(null);
       const result = await recoverPendingActionFeedback(userId);
       if (!active) return;
@@ -353,23 +327,18 @@ export default function TodayScreen() {
       }
       setFeedbackTarget(result.value ? { ...result.value, userId } : null);
     })();
-
-    return () => {
-      active = false;
-    };
+    return () => { active = false; };
   }, [refreshSession, userId]);
 
   useEffect(() => {
     let active = true;
     void Promise.resolve().then(() => {
       if (!active) return;
-      setSelectedActionId(recommendation?.primary.actionId ?? null);
+      setSelectedActionId(currentRecommendation?.primary.actionId ?? null);
       setDecisionStatus('idle');
     });
-    return () => {
-      active = false;
-    };
-  }, [recommendation?.primary.actionId]);
+    return () => { active = false; };
+  }, [currentRecommendation?.primary.actionId]);
 
   useEffect(() => {
     let active = true;
@@ -379,91 +348,53 @@ export default function TodayScreen() {
       setFeedbackNote('');
       setFeedbackStatus('idle');
     });
-    return () => {
-      active = false;
-    };
+    return () => { active = false; };
   }, [activeFeedbackTarget?.actionEventId]);
 
-  const recommendationOptions = recommendation
-    ? [recommendation.primary, ...recommendation.alternatives]
-    : [];
-  const activeRecommendation =
-    recommendationOptions.find((option) => option.actionId === selectedActionId) ?? recommendation?.primary ?? null;
+  const recommendationOptions = currentRecommendation ? [currentRecommendation.primary, ...currentRecommendation.alternatives] : [];
+  const activeRecommendation = recommendationOptions.find((option) => option.actionId === selectedActionId) ?? currentRecommendation?.primary ?? null;
   const activeActionLabel = activeRecommendation ? actionLabelKey(activeRecommendation.actionId) : null;
-  const alternative = recommendation?.alternatives.find((option) => option.actionId !== activeRecommendation?.actionId) ??
-    (activeRecommendation?.actionId !== recommendation?.primary.actionId ? recommendation?.primary : null);
+  const alternative = currentRecommendation?.alternatives.find((option) => option.actionId !== activeRecommendation?.actionId) ?? (activeRecommendation?.actionId !== currentRecommendation?.primary.actionId ? currentRecommendation?.primary : null);
   const alternativeLabel = alternative ? actionLabelKey(alternative.actionId) : null;
-  const decisionFinished =
-    decisionStatus === 'accepted' || decisionStatus === 'deferred' || decisionStatus === 'declined';
+  const decisionFinished = decisionStatus === 'accepted' || decisionStatus === 'deferred' || decisionStatus === 'declined';
   const decisionMessage = decisionMessageKey(decisionStatus);
   const feedbackMessage = feedbackMessageKey(feedbackStatus);
 
   const handleDecision = async (decision: OneMoveDecision) => {
-    if (!userId || !recommendation || !activeRecommendation || decisionStatus === 'saving' || decisionFinished) return;
+    if (!userId || !currentRecommendation || !activeRecommendation || decisionStatus === 'saving' || decisionFinished) return;
     const actingUserId = userId;
     setDecisionStatus('saving');
-    const result = await recordOneMoveDecision(
-      actingUserId,
-      activeRecommendation,
-      decision,
-      activeRecommendation.actionId !== recommendation.primary.actionId,
-    );
+    const result = await recordOneMoveDecision(actingUserId, activeRecommendation, decision, activeRecommendation.actionId !== currentRecommendation.primary.actionId);
     if (activeUserRef.current !== actingUserId) return;
     if (!result.ok) {
       if (result.error.kind === 'session-expired') {
         await refreshSession();
         if (activeUserRef.current !== actingUserId) return;
       }
-      setDecisionStatus(
-        result.error.kind === 'unavailable' || result.error.kind === 'not-configured' ? 'offline' : 'error',
-      );
+      setDecisionStatus(result.error.kind === 'unavailable' || result.error.kind === 'not-configured' ? 'offline' : 'error');
       return;
     }
-
     setDecisionStatus(decision);
     if (decision === 'accepted') {
-      setFeedbackTarget({
-        userId: actingUserId,
-        actionEventId: result.value,
-        actionId: activeRecommendation.actionId,
-        acceptedAt: new Date().toISOString(),
-      });
+      setFeedbackTarget({ userId: actingUserId, actionEventId: result.value, actionId: activeRecommendation.actionId, acceptedAt: new Date().toISOString() });
     }
   };
 
   const handleFeedback = async () => {
-    if (
-      !userId ||
-      !activeFeedbackTarget ||
-      feedbackUsefulness === null ||
-      feedbackStatus === 'saving' ||
-      feedbackStatus === 'saved'
-    ) {
-      return;
-    }
-
+    if (!userId || !activeFeedbackTarget || feedbackUsefulness === null || feedbackStatus === 'saving' || feedbackStatus === 'saved') return;
     const actingUserId = userId;
     const feedbackForUser = activeFeedbackTarget;
     setFeedbackStatus('saving');
-    const result = await recordExplicitActionOutcome(
-      actingUserId,
-      feedbackForUser.actionId,
-      feedbackForUser.actionEventId,
-      feedbackUsefulness,
-      feedbackNote,
-    );
+    const result = await recordExplicitActionOutcome(actingUserId, feedbackForUser.actionId, feedbackForUser.actionEventId, feedbackUsefulness, feedbackNote);
     if (activeUserRef.current !== actingUserId) return;
     if (!result.ok) {
       if (result.error.kind === 'session-expired') {
         await refreshSession();
         if (activeUserRef.current !== actingUserId) return;
       }
-      setFeedbackStatus(
-        result.error.kind === 'unavailable' || result.error.kind === 'not-configured' ? 'offline' : 'error',
-      );
+      setFeedbackStatus(result.error.kind === 'unavailable' || result.error.kind === 'not-configured' ? 'offline' : 'error');
       return;
     }
-
     setFeedbackStatus('saved');
   };
 
@@ -474,33 +405,13 @@ export default function TodayScreen() {
           <MizanText variant="label" muted>{t('appName')}</MizanText>
           <MizanText variant="display">{t('todayTitle')}</MizanText>
           <MizanText muted>{todayCopy.greeting}</MizanText>
-          <View
-            style={[
-              styles.dayStrip,
-              {
-                alignSelf: isRtl ? 'flex-end' : 'flex-start',
-                backgroundColor: palette.surfaceMuted,
-                borderColor: palette.border,
-                flexDirection: isRtl ? 'row-reverse' : 'row',
-              },
-            ]}>
+          <View style={[styles.dayStrip, { alignSelf: isRtl ? 'flex-end' : 'flex-start', backgroundColor: palette.surfaceMuted, borderColor: palette.border, flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
             <AppIcon name="home" color={palette.accent} size={17} />
             <MizanText variant="caption">{dayContext}</MizanText>
           </View>
         </View>
         <Link href="/settings" asChild>
-          <Pressable
-            accessibilityLabel={t('settings')}
-            accessibilityRole="button"
-            style={({ pressed }) => [
-              styles.settingsButton,
-              {
-                borderColor: palette.border,
-                backgroundColor: palette.surfaceMuted,
-                opacity: pressed ? Interaction.subtlePressed : 1,
-                flexDirection: isRtl ? 'row-reverse' : 'row',
-              },
-            ]}>
+          <Pressable accessibilityLabel={t('settings')} accessibilityRole="button" style={({ pressed }) => [styles.settingsButton, { borderColor: palette.border, backgroundColor: palette.surfaceMuted, opacity: pressed ? Interaction.subtlePressed : 1, flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
             <AppIcon name="more" color={palette.textMuted} size={18} />
             <MizanText variant="label">{t('settings')}</MizanText>
           </Pressable>
@@ -508,234 +419,72 @@ export default function TodayScreen() {
       </View>
 
       {syncMessage ? <MizanText accessibilityLiveRegion="polite" muted>{syncMessage}</MizanText> : null}
-      {snapshotMessage ? (
-        <Card style={{ backgroundColor: palette.surfaceMuted }}>
-          <MizanText accessibilityLiveRegion="polite" variant="caption" muted>{snapshotMessage}</MizanText>
-        </Card>
-      ) : null}
+      {snapshotMessage ? <Card style={{ backgroundColor: palette.surfaceMuted }}><MizanText accessibilityLiveRegion="polite" variant="caption" muted>{snapshotMessage}</MizanText></Card> : null}
 
       <Card style={[styles.oneMoveHero, { backgroundColor: palette.accentSoft, borderColor: palette.accent }]}>
-        <View
-          style={[
-            styles.focusHeroRow,
-            { flexDirection: isWideHome ? (isRtl ? 'row-reverse' : 'row') : 'column' },
-          ]}>
+        <View style={[styles.focusHeroRow, { flexDirection: isWideHome ? (isRtl ? 'row-reverse' : 'row') : 'column' }]}>
           <View style={styles.focusHeroCopy}>
             <View style={[styles.iconLabelRow, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
-              <View style={[styles.iconBadge, { backgroundColor: palette.surface }]}>
-                <AppIcon name="oneMove" color={palette.accent} size={20} />
-              </View>
+              <View style={[styles.iconBadge, { backgroundColor: palette.surface }]}><AppIcon name="oneMove" color={palette.accent} size={20} /></View>
               <MizanText variant="label" muted>{todayCopy.focusEyebrow}</MizanText>
             </View>
             <MizanText muted>{todayCopy.focusBody}</MizanText>
-
-            {displayedDailyLoadStatus === 'loading' || recommendationLoadStatus === 'loading' ? (
-              <MizanText accessibilityLiveRegion="polite" muted>{t('loading')}</MizanText>
-            ) : null}
-            {displayedDailyLoadStatus === 'ready' && recommendationLoadStatus === 'ready' && (!activeRecommendation || !activeActionLabel) ? (
-              <MizanText accessibilityLiveRegion="polite" muted>{t('oneMoveEmpty')}</MizanText>
-            ) : null}
+            {displayedDailyLoadStatus === 'loading' || displayedRecommendationLoadStatus === 'loading' ? <MizanText accessibilityLiveRegion="polite" muted>{t('loading')}</MizanText> : null}
+            {displayedDailyLoadStatus === 'ready' && displayedRecommendationLoadStatus === 'ready' && (!activeRecommendation || !activeActionLabel) ? <MizanText accessibilityLiveRegion="polite" muted>{t('oneMoveEmpty')}</MizanText> : null}
             {activeRecommendation && activeActionLabel ? (
               <View style={styles.oneMoveContent}>
                 <MizanText variant="title">{t(activeActionLabel)}</MizanText>
-                <View style={[styles.reasonRow, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
-                  <AppIcon name={signalIconName(activeRecommendation.reasonSignal)} color={palette.accent} size={18} />
-                  <MizanText muted style={styles.flexText}>{t(reasonLabelKey(activeRecommendation.reasonSignal))}</MizanText>
-                </View>
-                <View style={[styles.evidenceRow, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
-                  <AppIcon name="evidence" color={palette.textMuted} size={16} />
-                  <MizanText variant="caption" muted style={styles.flexText}>
-                    {t(confidenceLabelKey(activeRecommendation.confidence.level))} · {t('evidenceLabel')}: {formatWhole(activeRecommendation.evidence.length)}
-                  </MizanText>
-                </View>
-
-                {alternative && alternativeLabel && !decisionFinished ? (
-                  <View style={styles.alternativeBlock}>
-                    <MizanText variant="caption" muted>{t('oneMoveAlternative')}</MizanText>
-                    <SecondaryButton
-                      label={t(alternativeLabel)}
-                      disabled={decisionStatus === 'saving'}
-                      onPress={() => {
-                        setSelectedActionId(alternative.actionId);
-                        setDecisionStatus('idle');
-                      }}
-                    />
-                  </View>
-                ) : null}
-
+                <View style={[styles.reasonRow, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}><AppIcon name={signalIconName(activeRecommendation.reasonSignal)} color={palette.accent} size={18} /><MizanText muted style={styles.flexText}>{t(reasonLabelKey(activeRecommendation.reasonSignal))}</MizanText></View>
+                <View style={[styles.evidenceRow, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}><AppIcon name="evidence" color={palette.textMuted} size={16} /><MizanText variant="caption" muted style={styles.flexText}>{t(confidenceLabelKey(activeRecommendation.confidence.level))} · {t('evidenceLabel')}: {formatWhole(activeRecommendation.evidence.length)}</MizanText></View>
+                {alternative && alternativeLabel && !decisionFinished ? <View style={styles.alternativeBlock}><MizanText variant="caption" muted>{t('oneMoveAlternative')}</MizanText><SecondaryButton label={t(alternativeLabel)} disabled={decisionStatus === 'saving'} onPress={() => { setSelectedActionId(alternative.actionId); setDecisionStatus('idle'); }} /></View> : null}
                 <View style={[styles.decisionRow, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
-                  <View style={styles.decisionButtonSlot}>
-                    <PrimaryButton
-                      label={t('oneMoveAccept')}
-                      disabled={decisionStatus === 'saving' || decisionFinished}
-                      onPress={() => void handleDecision('accepted')}
-                    />
-                  </View>
-                  <View style={styles.decisionButtonSlot}>
-                    <SecondaryButton
-                      label={t('oneMoveDefer')}
-                      disabled={decisionStatus === 'saving' || decisionFinished}
-                      onPress={() => void handleDecision('deferred')}
-                    />
-                  </View>
-                  <View style={styles.decisionButtonSlot}>
-                    <SecondaryButton
-                      label={t('oneMoveDecline')}
-                      disabled={decisionStatus === 'saving' || decisionFinished}
-                      onPress={() => void handleDecision('declined')}
-                    />
-                  </View>
+                  <View style={styles.decisionButtonSlot}><PrimaryButton label={t('oneMoveAccept')} disabled={decisionStatus === 'saving' || decisionFinished} onPress={() => void handleDecision('accepted')} /></View>
+                  <View style={styles.decisionButtonSlot}><SecondaryButton label={t('oneMoveDefer')} disabled={decisionStatus === 'saving' || decisionFinished} onPress={() => void handleDecision('deferred')} /></View>
+                  <View style={styles.decisionButtonSlot}><SecondaryButton label={t('oneMoveDecline')} disabled={decisionStatus === 'saving' || decisionFinished} onPress={() => void handleDecision('declined')} /></View>
                 </View>
-
                 {decisionMessage ? <MizanText accessibilityLiveRegion="polite" muted>{t(decisionMessage)}</MizanText> : null}
               </View>
             ) : null}
           </View>
-
-          <View style={styles.illustrationSlot}>
-            <BrandedIllustration variant="focus" size={isWideHome ? 172 : 138} />
-          </View>
+          <View style={styles.illustrationSlot}><BrandedIllustration variant="focus" size={isWideHome ? 172 : 138} /></View>
         </View>
 
         {activeFeedbackTarget ? (
           <View style={[styles.feedbackBlock, { borderTopColor: palette.border }]}>
-            <MizanText variant="title">{t('feedbackTitle')}</MizanText>
-            <MizanText muted>{t('feedbackBody')}</MizanText>
-            <MizanText variant="label">{t('feedbackUsefulness')}</MizanText>
+            <MizanText variant="title">{t('feedbackTitle')}</MizanText><MizanText muted>{t('feedbackBody')}</MizanText><MizanText variant="label">{t('feedbackUsefulness')}</MizanText>
             <View style={[styles.ratingRow, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
               {OUTCOME_RATINGS.map((value) => {
                 const selected = feedbackUsefulness === value;
                 const disabled = feedbackStatus === 'saving' || feedbackStatus === 'saved';
                 const formattedValue = formatWhole(value);
                 const formattedTotal = formatWhole(OUTCOME_RATINGS.length);
-                return (
-                  <Pressable
-                    key={value}
-                    accessibilityLabel={`${t('feedbackUsefulness')}: ${formattedValue} / ${formattedTotal}`}
-                    accessibilityRole="button"
-                    accessibilityState={{ selected, disabled }}
-                    disabled={disabled}
-                    onPress={() => {
-                      setFeedbackUsefulness(value);
-                      if (feedbackStatus === 'offline' || feedbackStatus === 'error') setFeedbackStatus('idle');
-                    }}
-                    style={({ pressed }) => [
-                      styles.ratingButton,
-                      {
-                        borderColor: selected ? palette.accent : palette.border,
-                        backgroundColor: selected ? palette.accent : palette.surface,
-                        opacity: disabled ? Interaction.disabled : pressed ? Interaction.chipPressed : 1,
-                      },
-                    ]}>
-                    <MizanText
-                      variant="label"
-                      style={selected ? [styles.primaryActionText, { color: palette.onAccent }] : undefined}>
-                      {formattedValue}
-                    </MizanText>
-                  </Pressable>
-                );
+                return <Pressable key={value} accessibilityLabel={`${t('feedbackUsefulness')}: ${formattedValue} / ${formattedTotal}`} accessibilityRole="button" accessibilityState={{ selected, disabled }} disabled={disabled} onPress={() => { setFeedbackUsefulness(value); if (feedbackStatus === 'offline' || feedbackStatus === 'error') setFeedbackStatus('idle'); }} style={({ pressed }) => [styles.ratingButton, { borderColor: selected ? palette.accent : palette.border, backgroundColor: selected ? palette.accent : palette.surface, opacity: disabled ? Interaction.disabled : pressed ? Interaction.chipPressed : 1 }]}><MizanText variant="label" style={selected ? [styles.primaryActionText, { color: palette.onAccent }] : undefined}>{formattedValue}</MizanText></Pressable>;
               })}
             </View>
-            <View style={[styles.feedbackScaleLabels, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
-              <MizanText variant="caption" muted>{t('feedbackLow')}</MizanText>
-              <MizanText variant="caption" muted>{t('feedbackHigh')}</MizanText>
-            </View>
-            <MizanTextInput
-              accessibilityLabel={t('feedbackNotePlaceholder')}
-              editable={feedbackStatus !== 'saving' && feedbackStatus !== 'saved'}
-              maxLength={280}
-              multiline
-              onChangeText={(text) => {
-                setFeedbackNote(text);
-                if (feedbackStatus === 'offline' || feedbackStatus === 'error') setFeedbackStatus('idle');
-              }}
-              placeholder={t('feedbackNotePlaceholder')}
-              style={styles.feedbackInput}
-              value={feedbackNote}
-            />
-            <PrimaryButton
-              label={t('feedbackSave')}
-              disabled={feedbackUsefulness === null || feedbackStatus === 'saving' || feedbackStatus === 'saved'}
-              onPress={() => void handleFeedback()}
-            />
+            <View style={[styles.feedbackScaleLabels, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}><MizanText variant="caption" muted>{t('feedbackLow')}</MizanText><MizanText variant="caption" muted>{t('feedbackHigh')}</MizanText></View>
+            <MizanTextInput accessibilityLabel={t('feedbackNotePlaceholder')} editable={feedbackStatus !== 'saving' && feedbackStatus !== 'saved'} maxLength={280} multiline onChangeText={(text) => { setFeedbackNote(text); if (feedbackStatus === 'offline' || feedbackStatus === 'error') setFeedbackStatus('idle'); }} placeholder={t('feedbackNotePlaceholder')} style={styles.feedbackInput} value={feedbackNote} />
+            <PrimaryButton label={t('feedbackSave')} disabled={feedbackUsefulness === null || feedbackStatus === 'saving' || feedbackStatus === 'saved'} onPress={() => void handleFeedback()} />
             {feedbackMessage ? <MizanText accessibilityLiveRegion="polite" muted>{t(feedbackMessage)}</MizanText> : null}
           </View>
         ) : null}
       </Card>
 
       <Card style={[styles.checkInPanel, { backgroundColor: palette.surface }]}>
-        <View
-          style={[
-            styles.checkInRow,
-            { flexDirection: isWideHome ? (isRtl ? 'row-reverse' : 'row') : 'column' },
-          ]}>
-          <View style={styles.checkInCopy}>
-            <View style={[styles.iconLabelRow, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
-              <View style={[styles.iconBadge, { backgroundColor: palette.accentSoft }]}>
-                <AppIcon name="energy" color={palette.accent} size={20} />
-              </View>
-              <MizanText variant="label" muted>{todayCopy.quickCheckIn}</MizanText>
-            </View>
-            <MizanText variant="title">{t('checkInPromptTitle')}</MizanText>
-            <MizanText muted>{t('checkInPromptBody')}</MizanText>
-          </View>
-          <Link href="/check-in" asChild>
-            <Pressable
-              accessibilityLabel={t('checkInStart')}
-              accessibilityRole="button"
-              style={({ pressed }) => [
-                styles.primaryAction,
-                {
-                  alignSelf: isWideHome ? 'center' : 'stretch',
-                  backgroundColor: palette.accent,
-                  opacity: pressed ? Interaction.pressed : 1,
-                },
-              ]}>
-              <MizanText variant="label" style={[styles.primaryActionText, { color: palette.onAccent }]}>
-                {t('checkInStart')}
-              </MizanText>
-            </Pressable>
-          </Link>
+        <View style={[styles.checkInRow, { flexDirection: isWideHome ? (isRtl ? 'row-reverse' : 'row') : 'column' }]}>
+          <View style={styles.checkInCopy}><View style={[styles.iconLabelRow, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}><View style={[styles.iconBadge, { backgroundColor: palette.accentSoft }]}><AppIcon name="energy" color={palette.accent} size={20} /></View><MizanText variant="label" muted>{todayCopy.quickCheckIn}</MizanText></View><MizanText variant="title">{t('checkInPromptTitle')}</MizanText><MizanText muted>{t('checkInPromptBody')}</MizanText></View>
+          <Link href="/check-in" asChild><Pressable accessibilityLabel={t('checkInStart')} accessibilityRole="button" style={({ pressed }) => [styles.primaryAction, { alignSelf: isWideHome ? 'center' : 'stretch', backgroundColor: palette.accent, opacity: pressed ? Interaction.pressed : 1 }]}><MizanText variant="label" style={[styles.primaryActionText, { color: palette.onAccent }]}>{t('checkInStart')}</MizanText></Pressable></Link>
         </View>
       </Card>
 
       <View style={styles.section}>
-        <View style={styles.sectionHeading}>
-          <MizanText variant="title">{todayCopy.stateSignals}</MizanText>
-          <MizanText muted>{todayCopy.stateSignalsBody}</MizanText>
-        </View>
+        <View style={styles.sectionHeading}><MizanText variant="title">{todayCopy.stateSignals}</MizanText><MizanText muted>{todayCopy.stateSignalsBody}</MizanText></View>
         {displayedDailyLoadStatus === 'loading' ? <MizanText accessibilityLiveRegion="polite" muted>{t('loading')}</MizanText> : null}
         {displayedDailyLoadStatus === 'error' ? <MizanText accessibilityLiveRegion="polite" muted>{t('currentStateError')}</MizanText> : null}
-        {displayedDailyLoadStatus === 'ready' && visibleState.length === 0 ? (
-          <MizanText accessibilityLiveRegion="polite" muted>{t('currentStateEmpty')}</MizanText>
-        ) : null}
+        {displayedDailyLoadStatus === 'ready' && visibleState.length === 0 ? <MizanText accessibilityLiveRegion="polite" muted>{t('currentStateEmpty')}</MizanText> : null}
         <View style={[styles.signalGrid, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
           {visibleState.map(({ component, labelKey }) => {
             const value = component.value === null ? null : Math.round(component.value);
-            return (
-              <Card key={component.key} style={[styles.signalTile, { backgroundColor: palette.surfaceMuted }]}>
-                <View style={[styles.stateRow, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
-                  <View style={[styles.iconLabelRow, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
-                    <View style={[styles.iconBadge, { backgroundColor: palette.surface }]}>
-                      <AppIcon name={stateIconName(component.key)} color={palette.accent} size={19} />
-                    </View>
-                    <MizanText variant="label">{t(labelKey)}</MizanText>
-                  </View>
-                  <View style={[styles.metricPill, { backgroundColor: palette.surface }]}>
-                    <MizanText variant="label">
-                      {value === null ? todayCopy.unknown : `${formatWhole(value)} / ${formatWhole(100)}`}
-                    </MizanText>
-                  </View>
-                </View>
-                <SignalMeter value={value} trackColor={palette.border} fillColor={palette.accent} isRtl={isRtl} />
-                <View style={[styles.evidenceRow, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
-                  <AppIcon name="evidence" color={palette.textMuted} size={15} />
-                  <MizanText variant="caption" muted style={styles.flexText}>
-                    {t(confidenceLabelKey(component.confidence.level))} · {t('evidenceLabel')}: {formatWhole(component.evidence.length)}
-                  </MizanText>
-                </View>
-              </Card>
-            );
+            return <Card key={component.key} style={[styles.signalTile, { backgroundColor: palette.surfaceMuted }]}><View style={[styles.stateRow, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}><View style={[styles.iconLabelRow, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}><View style={[styles.iconBadge, { backgroundColor: palette.surface }]}><AppIcon name={stateIconName(component.key)} color={palette.accent} size={19} /></View><MizanText variant="label">{t(labelKey)}</MizanText></View><View style={[styles.metricPill, { backgroundColor: palette.surface }]}><MizanText variant="label">{value === null ? todayCopy.unknown : `${formatWhole(value)} / ${formatWhole(100)}`}</MizanText></View></View><SignalMeter value={value} trackColor={palette.border} fillColor={palette.accent} isRtl={isRtl} /><View style={[styles.evidenceRow, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}><AppIcon name="evidence" color={palette.textMuted} size={15} /><MizanText variant="caption" muted style={styles.flexText}>{t(confidenceLabelKey(component.confidence.level))} · {t('evidenceLabel')}: {formatWhole(component.evidence.length)}</MizanText></View></Card>;
           })}
         </View>
       </View>
@@ -744,113 +493,23 @@ export default function TodayScreen() {
         <MizanText variant="title">{todayCopy.summary}</MizanText>
         <View style={[styles.dashboardGrid, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
           <Card style={styles.dashboardCard}>
-            <View style={[styles.iconLabelRow, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
-              <View style={[styles.iconBadge, { backgroundColor: palette.accentSoft }]}>
-                <AppIcon name="lifeMap" color={palette.accent} size={20} />
-              </View>
-              <MizanText variant="title">{dailyCopy.balance}</MizanText>
-            </View>
+            <View style={[styles.iconLabelRow, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}><View style={[styles.iconBadge, { backgroundColor: palette.accentSoft }]}><AppIcon name="lifeMap" color={palette.accent} size={20} /></View><MizanText variant="title">{dailyCopy.balance}</MizanText></View>
             {displayedDailyLoadStatus === 'loading' ? <MizanText accessibilityLiveRegion="polite" muted>{t('loading')}</MizanText> : null}
             {displayedDailyLoadStatus === 'error' ? <MizanText accessibilityLiveRegion="polite" muted>{dailyCopy.error}</MizanText> : null}
-            {displayedDailyLoadStatus === 'ready' ? (
-              dailyOverview?.balance?.score !== null && dailyOverview?.balance?.score !== undefined ? (
-                <View style={styles.summaryContent}>
-                  <View style={[styles.stateRow, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
-                    <MizanText variant="display">{formatWhole(Math.round(dailyOverview.balance.score))}</MizanText>
-                    <MizanText variant="label" muted>/ {formatWhole(100)}</MizanText>
-                  </View>
-                  <SignalMeter
-                    value={Math.round(dailyOverview.balance.score)}
-                    trackColor={palette.border}
-                    fillColor={palette.accent}
-                    isRtl={isRtl}
-                  />
-                  <MizanText variant="caption" muted>
-                    {t(confidenceLabelKey(dailyOverview.balance.confidence.level))} · {t('evidenceLabel')}: {formatWhole(dailyOverview.balance.evidence.length)}
-                  </MizanText>
-                </View>
-              ) : (
-                <MizanText accessibilityLiveRegion="polite" muted>{dailyCopy.balanceEmpty}</MizanText>
-              )
-            ) : null}
+            {displayedDailyLoadStatus === 'ready' ? dailyOverview?.balance?.score !== null && dailyOverview?.balance?.score !== undefined ? <View style={styles.summaryContent}><View style={[styles.stateRow, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}><MizanText variant="display">{formatWhole(Math.round(dailyOverview.balance.score))}</MizanText><MizanText variant="label" muted>/ {formatWhole(100)}</MizanText></View><SignalMeter value={Math.round(dailyOverview.balance.score)} trackColor={palette.border} fillColor={palette.accent} isRtl={isRtl} /><MizanText variant="caption" muted>{t(confidenceLabelKey(dailyOverview.balance.confidence.level))} · {t('evidenceLabel')}: {formatWhole(dailyOverview.balance.evidence.length)}</MizanText></View> : <MizanText accessibilityLiveRegion="polite" muted>{dailyCopy.balanceEmpty}</MizanText> : null}
           </Card>
-
           <Card style={styles.dashboardCard}>
-            <View style={[styles.iconLabelRow, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
-              <View style={[styles.iconBadge, { backgroundColor: palette.accentSoft }]}>
-                <AppIcon name="trendFlat" color={palette.accent} size={20} />
-              </View>
-              <MizanText variant="title">{dailyCopy.momentum}</MizanText>
-            </View>
-            <MizanText muted>{dailyCopy.body}</MizanText>
+            <View style={[styles.iconLabelRow, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}><View style={[styles.iconBadge, { backgroundColor: palette.accentSoft }]}><AppIcon name="trendFlat" color={palette.accent} size={20} /></View><MizanText variant="title">{dailyCopy.momentum}</MizanText></View><MizanText muted>{dailyCopy.body}</MizanText>
             {displayedDailyLoadStatus === 'loading' ? <MizanText accessibilityLiveRegion="polite" muted>{t('loading')}</MizanText> : null}
             {displayedDailyLoadStatus === 'error' ? <MizanText accessibilityLiveRegion="polite" muted>{dailyCopy.error}</MizanText> : null}
-            {displayedDailyLoadStatus === 'ready' ? (
-              <View style={styles.summaryContent}>
-                {(dailyOverview?.momentum.length ?? 0) === 0 ? (
-                  <MizanText accessibilityLiveRegion="polite" muted>{dailyCopy.momentumEmpty}</MizanText>
-                ) : null}
-                {dailyOverview?.momentum.map(({ metric, momentum }) => {
-                  const labelKey = stateLabelKey(metric);
-                  if (!labelKey) return null;
-                  return (
-                    <View key={metric} style={[styles.momentumItem, { borderTopColor: palette.border }]}>
-                      <View style={[styles.stateRow, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
-                        <View style={[styles.iconLabelRow, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
-                          <AppIcon name={stateIconName(metric)} color={palette.textMuted} size={17} />
-                          <MizanText>{t(labelKey)}</MizanText>
-                        </View>
-                        <View
-                          style={[
-                            styles.metricPill,
-                            { backgroundColor: palette.surfaceMuted, flexDirection: isRtl ? 'row-reverse' : 'row' },
-                          ]}>
-                          <AppIcon name={momentumIconName(momentum.direction)} color={palette.accent} size={16} />
-                          <MizanText variant="label">{momentumLabel(momentum.direction, locale)}</MizanText>
-                        </View>
-                      </View>
-                      <MizanText variant="caption" muted>
-                        {t(confidenceLabelKey(momentum.confidence.level))} · {t('evidenceLabel')}: {formatWhole(momentum.evidence.length)}
-                      </MizanText>
-                    </View>
-                  );
-                })}
-              </View>
-            ) : null}
+            {displayedDailyLoadStatus === 'ready' ? <View style={styles.summaryContent}>{(dailyOverview?.momentum.length ?? 0) === 0 ? <MizanText accessibilityLiveRegion="polite" muted>{dailyCopy.momentumEmpty}</MizanText> : null}{dailyOverview?.momentum.map(({ metric, momentum }) => { const labelKey = stateLabelKey(metric); if (!labelKey) return null; return <View key={metric} style={[styles.momentumItem, { borderTopColor: palette.border }]}><View style={[styles.stateRow, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}><View style={[styles.iconLabelRow, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}><AppIcon name={stateIconName(metric)} color={palette.textMuted} size={17} /><MizanText>{t(labelKey)}</MizanText></View><View style={[styles.metricPill, { backgroundColor: palette.surfaceMuted, flexDirection: isRtl ? 'row-reverse' : 'row' }]}><AppIcon name={momentumIconName(momentum.direction)} color={palette.accent} size={16} /><MizanText variant="label">{momentumLabel(momentum.direction, locale)}</MizanText></View></View><MizanText variant="caption" muted>{t(confidenceLabelKey(momentum.confidence.level))} · {t('evidenceLabel')}: {formatWhole(momentum.evidence.length)}</MizanText></View>; })}</View> : null}
           </Card>
         </View>
       </View>
 
-      <Card style={{ backgroundColor: palette.surfaceMuted }}>
-        <View style={[styles.statusRow, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
-          <View style={[styles.iconBadge, { backgroundColor: palette.surface }]}>
-            <AppIcon name="evidence" color={palette.accent} size={18} />
-          </View>
-          <MizanText variant="label" muted>{todayCopy.learningEyebrow}</MizanText>
-        </View>
-        <MizanText variant="title">{t('learningState')}</MizanText>
-        <MizanText muted>{t('learningBody')}</MizanText>
-      </Card>
+      <Card style={{ backgroundColor: palette.surfaceMuted }}><View style={[styles.statusRow, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}><View style={[styles.iconBadge, { backgroundColor: palette.surface }]}><AppIcon name="evidence" color={palette.accent} size={18} /></View><MizanText variant="label" muted>{todayCopy.learningEyebrow}</MizanText></View><MizanText variant="title">{t('learningState')}</MizanText><MizanText muted>{t('learningBody')}</MizanText></Card>
 
-      <View style={styles.section}>
-        <View style={styles.sectionHeading}>
-          <MizanText variant="title">{t('priorities')}</MizanText>
-          <MizanText muted>{todayCopy.prioritiesBody}</MizanText>
-        </View>
-        <View style={[styles.grid, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
-          {enabledDomains.map((domainId: DomainId) => (
-            <Card key={domainId} style={[styles.domainCard, { backgroundColor: palette.surfaceMuted }]}>
-              <View style={[styles.iconLabelRow, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
-                <View style={[styles.iconBadge, { backgroundColor: palette.surface }]}>
-                  <AppIcon name={domainIconName(domainId)} color={palette.accent} size={19} />
-                </View>
-                <MizanText variant="label">{t(domainId)}</MizanText>
-              </View>
-              <MizanText variant="caption" muted>{t('learningState')}</MizanText>
-            </Card>
-          ))}
-        </View>
-      </View>
+      <View style={styles.section}><View style={styles.sectionHeading}><MizanText variant="title">{t('priorities')}</MizanText><MizanText muted>{todayCopy.prioritiesBody}</MizanText></View><View style={[styles.grid, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>{enabledDomains.map((domainId: DomainId) => <Card key={domainId} style={[styles.domainCard, { backgroundColor: palette.surfaceMuted }]}><View style={[styles.iconLabelRow, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}><View style={[styles.iconBadge, { backgroundColor: palette.surface }]}><AppIcon name={domainIconName(domainId)} color={palette.accent} size={19} /></View><MizanText variant="label">{t(domainId)}</MizanText></View><MizanText variant="caption" muted>{t('learningState')}</MizanText></Card>)}</View></View>
     </Screen>
   );
 }
@@ -858,74 +517,33 @@ export default function TodayScreen() {
 const styles = StyleSheet.create({
   topRow: { alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: Spacing.lg },
   heading: { flexGrow: 1, flexShrink: 1, gap: Spacing.xs },
-  dayStrip: {
-    alignItems: 'center',
-    gap: Spacing.sm,
-    marginTop: Spacing.sm,
-    minHeight: Controls.minimumTouchHeight,
-    paddingHorizontal: Spacing.md,
-    borderWidth: Controls.borderWidth,
-    borderRadius: Radius.pill,
-  },
-  settingsButton: {
-    minHeight: Controls.minimumTouchHeight,
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: Spacing.sm,
-    paddingHorizontal: Spacing.lg,
-    borderWidth: Controls.borderWidth,
-    borderRadius: Radius.pill,
-  },
+  dayStrip: { alignItems: 'center', gap: Spacing.sm, marginTop: Spacing.sm, minHeight: Controls.minimumTouchHeight, paddingHorizontal: Spacing.md, borderWidth: Controls.borderWidth, borderRadius: Radius.pill },
+  settingsButton: { minHeight: Controls.minimumTouchHeight, alignItems: 'center', justifyContent: 'center', gap: Spacing.sm, paddingHorizontal: Spacing.lg, borderWidth: Controls.borderWidth, borderRadius: Radius.pill },
   oneMoveHero: { gap: Spacing.xl, overflow: 'hidden' },
   focusHeroRow: { alignItems: 'center', gap: Spacing.xl },
   focusHeroCopy: { flexGrow: 1, flexShrink: 1, minWidth: 0, gap: Spacing.md },
   illustrationSlot: { alignItems: 'center', justifyContent: 'center', flexShrink: 0 },
   iconLabelRow: { alignItems: 'center', gap: Spacing.sm, flexShrink: 1 },
-  iconBadge: {
-    width: 38,
-    height: 38,
-    borderRadius: Radius.pill,
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexShrink: 0,
-  },
+  iconBadge: { width: 38, height: 38, borderRadius: Radius.pill, alignItems: 'center', justifyContent: 'center', flexShrink: 0 },
   reasonRow: { alignItems: 'flex-start', gap: Spacing.sm },
   evidenceRow: { alignItems: 'center', gap: Spacing.sm },
   flexText: { flexGrow: 1, flexShrink: 1 },
   checkInPanel: { gap: Spacing.md },
   checkInRow: { alignItems: 'stretch', justifyContent: 'space-between', gap: Spacing.xl },
   checkInCopy: { flexGrow: 1, flexShrink: 1, gap: Spacing.sm },
-  primaryAction: {
-    minHeight: Controls.standardHeight,
-    borderRadius: Radius.pill,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: Spacing.xl,
-  },
+  primaryAction: { minHeight: Controls.standardHeight, borderRadius: Radius.pill, alignItems: 'center', justifyContent: 'center', paddingHorizontal: Spacing.xl },
   primaryActionText: { textAlign: 'center' },
   section: { gap: Spacing.lg },
   sectionHeading: { gap: Spacing.xs },
   signalGrid: { flexWrap: 'wrap', alignItems: 'stretch', gap: Spacing.md },
   signalTile: { flexGrow: 1, flexShrink: 1, flexBasis: 250, gap: Spacing.md },
-  meterTrack: {
-    width: '100%',
-    height: 8,
-    borderRadius: Radius.pill,
-    overflow: 'hidden',
-  },
+  meterTrack: { width: '100%', height: 8, borderRadius: Radius.pill, overflow: 'hidden' },
   meterFill: { height: '100%', borderRadius: Radius.pill },
   dashboardGrid: { flexWrap: 'wrap', alignItems: 'stretch', gap: Spacing.lg },
   dashboardCard: { flexGrow: 1, flexShrink: 1, flexBasis: 320, gap: Spacing.md },
   summaryContent: { gap: Spacing.md },
   stateRow: { alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: Spacing.md },
-  metricPill: {
-    minHeight: Controls.minimumTouchHeight,
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: Spacing.xs,
-    paddingHorizontal: Spacing.md,
-    borderRadius: Radius.pill,
-  },
+  metricPill: { minHeight: Controls.minimumTouchHeight, alignItems: 'center', justifyContent: 'center', gap: Spacing.xs, paddingHorizontal: Spacing.md, borderRadius: Radius.pill },
   momentumItem: { gap: Spacing.sm, borderTopWidth: Controls.borderWidth, paddingTop: Spacing.md },
   oneMoveContent: { gap: Spacing.md },
   alternativeBlock: { gap: Spacing.sm },
@@ -933,14 +551,7 @@ const styles = StyleSheet.create({
   decisionButtonSlot: { flexGrow: 1, minWidth: 120 },
   feedbackBlock: { gap: Spacing.md, borderTopWidth: Controls.borderWidth, paddingTop: Spacing.lg },
   ratingRow: { flexWrap: 'wrap', gap: Spacing.sm },
-  ratingButton: {
-    minWidth: Controls.actionHeight,
-    minHeight: Controls.minimumTouchHeight,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: Controls.borderWidth,
-    borderRadius: Radius.pill,
-  },
+  ratingButton: { minWidth: Controls.actionHeight, minHeight: Controls.minimumTouchHeight, alignItems: 'center', justifyContent: 'center', borderWidth: Controls.borderWidth, borderRadius: Radius.pill },
   feedbackScaleLabels: { justifyContent: 'space-between', gap: Spacing.md },
   feedbackInput: { minHeight: 88, textAlignVertical: 'top' },
   statusRow: { alignItems: 'center', gap: Spacing.sm },
