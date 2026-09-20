@@ -49,7 +49,7 @@ describe('Playwright live-mutation isolation policy', () => {
     expect(packageJson.scripts?.['test:e2e:production:performance']).toContain('--config=playwright.production.config.ts');
   });
 
-  test('aggregate release baseline is fail-closed for opt-in modes and required live fixtures', () => {
+  test('aggregate release baseline is fail-closed for opt-in modes, live fixtures, and Supabase authority', () => {
     const repoRoot = path.resolve(__dirname, '../../..');
     const packageJson = JSON.parse(fs.readFileSync(path.join(repoRoot, 'package.json'), 'utf8')) as {
       scripts?: Record<string, string>;
@@ -60,6 +60,12 @@ describe('Playwright live-mutation isolation policy', () => {
     expect(runner).toContain("const isWindows = process.platform === 'win32'");
     expect(runner).toContain("const npmCommand = isWindows ? 'npm.cmd' : 'npm'");
     expect(runner).toContain('shell: isWindows');
+    expect(runner).toContain("const authorizedSupabaseProjectRef = 'olfhjnropdrnujgpidfi'");
+    expect(runner).toContain("const hostedSuffix = '.supabase.co'");
+    expect(runner).toContain("configuredUrl.protocol !== 'https:'");
+    expect(runner).toContain('configuredUrl.hostname.endsWith(hostedSuffix)');
+    expect(runner).toContain('configuredProjectRef !== authorizedSupabaseProjectRef');
+    expect(runner).toContain('Release baseline is authorized only for Supabase project');
     expect(runner).toContain("'MIZAN_E2E_MUTATIONS'");
     expect(runner).toContain("'MIZAN_E2E_DESTRUCTIVE'");
     expect(runner).toContain("'MIZAN_E2E_VISUAL_EVIDENCE'");
