@@ -40,6 +40,7 @@ The owner-approved premium reference contract is broadly present in static sourc
 - `846c8c9dc95e5abd3d973e7096386f9d5daa9648` + `8d456f2bb9069d0e88b71eb772e130f652aea56a` — What If now mirrors its bounded 0–100 range band, current marker, and endpoint order in Arabic; focused specification added and not worker-run.
 - `1319dcc59448c2205c1dc71eaf76e08c386f2c25` + `dcda91b6c55c20ea9294ad116444e7e65d5a619d` — Onboarding no longer exposes a silent dead tap on the final enabled life-domain chip; the control is disabled and the minimum-one-domain rule is visible and accessible; focused specification added and not worker-run.
 - `bb3994d3bf3ae546923ede89d9e92b3ec5aaecc6` + `587fd385ce806ea87e2280f8c9223cd2f8b68263` — Today/Home known-value state meters and season-balance meter now fill from the semantic RTL reading edge; focused specification added and not worker-run.
+- `0d7537cadccc19a78c04310352e1fb36726932ba` + `ab6b25a417697a1ba2a0ee734a3a8584427d9e82`, `f2ad18b5ba78fcc2d42c4990863ff67108e8eb89` + `e2e1bcc01159dc7cfc43467ac6d8732ff7a8beaa`, and `e25613ad92316446c5bae678bca284ce54c98075` + `80d4ea1035b0d2186d3593ceb6d05fe8677eda01` — Invisible Wins, Life Seasons, and Experiments no longer fall back to raw ISO/storage date strings when locale formatting fails; they render an explicit unknown em dash instead, with focused source-policy specifications added and intentionally not worker-run.
 
 ### CP9 remaining
 - Continue only concrete residual static defects on still-unreviewed shipped surfaces: untranslated literals, semantic RTL/icon direction, missing accessibility semantics, truncation/dynamic type, keyboard/focus, technical identifiers, or duplicated global visual decisions. Avoid speculative abstraction and do not churn already-reviewed screens without evidence.
@@ -63,7 +64,7 @@ The current production source-level sensitive logging/error-reporting review is 
 - Supabase leaked-password protection remains an owner action in `automation/HUMAN_REQUIRED.md`.
 
 ## Exact next executable action
-1. Continue the final CP9 static sweep only when a demonstrated accessibility/RTL/localization/focus/technical-id defect remains on a still-unreviewed shipped surface; make the smallest production-safe fix and add focused regression coverage when useful.
+1. Continue the final CP9 static sweep only when a demonstrated accessibility/RTL/localization/focus/technical-id defect remains on a still-unreviewed shipped surface; make the smallest production-safe fix and add focused regression coverage when useful. The raw ISO date-fallback family identified on Invisible Wins, Life Seasons, and Experiments is now closed.
 2. If no concrete static defect is found, do not manufacture polish work: leave CP9 runtime screenshot/device validation and final design-swap proof to owner validation under the active execution policy.
 3. Do not reopen the completed CP10 logging audit unless new production logging/error boundaries appear.
 4. Do not run tests, builds, typechecks, database validation suites, GitHub Actions, or cloud CI as a worker under the current task policy.
@@ -83,7 +84,7 @@ Post-baseline:
 - **No worker-run app tests, builds, typechecks, validation database scripts, cloud CI, or GitHub Actions are claimed for CP2–CP10 changes.**
 - Authorized migrations `0009`–`0012` were applied previously; live reads confirmed the hardened Life Season RPC signature/ACL. This is implementation/state evidence, not a behavioral test-suite PASS.
 - `delete-account` version 2 previously reported ACTIVE with JWT verification enabled; no destructive end-to-end deletion validation is claimed.
-- Premium-reference/residual CP9 changes and focused policy specifications, including What If RTL range, Onboarding final-domain affordance, Today RTL meters, and Today account-switch fencing, remain static implementation/specification evidence until owner validation.
+- Premium-reference/residual CP9 changes and focused policy specifications, including What If RTL range, Onboarding final-domain affordance, Today RTL meters, Today account-switch fencing, and the Invisible Wins/Life Seasons/Experiments raw-date fallback hardening, remain static implementation/specification evidence until owner validation; the new focused date-fallback specifications were not worker-run.
 
 ## Known blockers / risks
 - CP1/CP9: true phone/tablet/Web visual interaction evidence still needs an unlocked owner runtime; see `automation/HUMAN_REQUIRED.md`.
@@ -117,6 +118,7 @@ Post-baseline:
 - `apps/app/src/app/recovery.tsx`
 - `apps/app/src/app/onboarding.tsx`
 - `apps/app/src/app/invisible-wins.tsx`
+- `apps/app/src/app/life-seasons.tsx`
 - `apps/app/src/app/personalization.tsx`
 - `apps/app/src/app/settings.tsx`
 - `apps/app/src/app/integrations.tsx`
@@ -130,6 +132,9 @@ Post-baseline:
 - `apps/app/__tests__/onboarding-domain-minimum-policy-test.ts`
 - `apps/app/__tests__/today-rtl-meter-layout-policy-test.ts`
 - `apps/app/__tests__/today-session-fencing-policy-test.ts`
+- `apps/app/__tests__/invisible-wins-date-fallback-policy-test.ts`
+- `apps/app/__tests__/life-seasons-date-fallback-policy-test.ts`
+- `apps/app/__tests__/experiments-date-fallback-policy-test.ts`
 - `supabase/tests/rls_cross_user.sql`
 - `supabase/tests/account_data_export_security.sql`
 - `supabase/migrations/0009_function_execute_hardening.sql`
