@@ -77,13 +77,15 @@ Prepared static verification paths include:
 - `152bd7aeeadad90a4eacbda0b68099685af4f5ec` — `.env.example` documents `MIZAN_E2E_ARABIC_EMAIL` / `MIZAN_E2E_ARABIC_PASSWORD` names only; no credentials are stored.
 - `8cceddac08725f2a0dacacdbcc8be406b9fdac84` — the CP11 release ledger records the Arabic fixture and browser-diagnostic contract.
 - `2d8b4fb98aa165222b05d6c1726a4b77f2a65be9` — the previously missing root `README.md` is now present with clean-install requirements, public environment setup, local Supabase initialization/reset guidance, run/test/E2E commands, destructive-test safety boundaries, Expo export guidance, architecture invariants, and links to the current release ledger.
+- `f4822edeb7f86491ce8284269092683f482796f1` — the stale create-expo-app starter `apps/app/README.md` was replaced with MIZAN workspace-specific run/configuration/quality/export/source-layout guidance; the nonexistent starter `reset-project` instruction is gone.
+- `da486e76f8d6809e046f7a05ca4acf1a8128fc3c` — the CP11 release ledger now records both README surfaces and requires a clean-checkout owner/new-engineer setup run before claiming documentation readiness.
 
 These are static harness/readiness changes only. **No E2E run, destructive delete, test result, typecheck, build, database-policy execution, performance result, or release PASS is claimed by workers under the active policy.**
 
 ## Exact next executable action
 1. Continue CP9 static work only if a concrete accessibility/RTL/localization/focus/technical-id/presentation defect is demonstrated; otherwise leave visual/runtime proof to owner validation.
 2. Continue CP10 source work only if a still-unreviewed account-sensitive async path or new security/logging boundary is demonstrated; avoid reopening already-fenced paths without evidence.
-3. Keep CP11 static harness aligned with the release matrix and close demonstrated coverage/documentation gaps, but leave actual TypeScript/lint/tests, database-policy suites, Web E2E, destructive deletion, production Web export, native checks, performance measurements, screenshot/device validation, and design-swap runtime evidence to owner validation under the current policy.
+3. Keep CP11 static harness aligned with the release matrix and close demonstrated coverage/documentation gaps, but leave actual TypeScript/lint/tests, database-policy suites, Web E2E, destructive deletion, production Web export, native checks, performance measurements, screenshot/device validation, clean-checkout execution, and design-swap runtime evidence to owner validation under the current policy.
 4. When owner execution evidence exists and CP0–CP11 gates are honestly satisfied, proceed to CP12 independent two-worker review; do not mark completion from static implementation alone.
 
 ## Verification record
@@ -104,7 +106,7 @@ Post-baseline:
 - Premium-reference/residual CP9 fixes and account-fencing regression specifications remain static evidence until owner validation.
 - Capacity account-switch coverage and root offline-replay ownership coverage are present but unexecuted under the worker policy.
 - The five-viewport × two-color Playwright matrix, destructive deletion harness, Arabic read-only completed-account path, and browser diagnostic guards are configured but unexecuted.
-- Root setup/release documentation now exists, but its commands are documentation evidence until owner clean-checkout execution confirms them.
+- Root/app setup and release documentation are now MIZAN-specific rather than starter/template documentation, but the documented flow still requires owner clean-checkout execution evidence.
 
 ## Known blockers / risks
 - CP1/CP9: true phone/tablet/Web visual interaction evidence still needs an unlocked owner runtime; see `automation/HUMAN_REQUIRED.md`.
@@ -120,6 +122,7 @@ Post-baseline:
 
 ## Evidence paths
 - `README.md`
+- `apps/app/README.md`
 - `docs/CP8_RELIABILITY.md`
 - `docs/CP9_PRESENTATION_ARCHITECTURE.md`
 - `docs/CP10_SECURITY_PRIVACY.md`
