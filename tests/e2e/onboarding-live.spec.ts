@@ -9,6 +9,7 @@ import {
 } from './live-account';
 
 const liveReason = 'Requires MIZAN_E2E_SUPABASE_URL, MIZAN_E2E_SUPABASE_PUBLISHABLE_KEY, and a dedicated incomplete-onboarding account.';
+const mutationProjectReason = 'Live onboarding mutation runs once in desktop-light so the incomplete account is not consumed concurrently by the responsive matrix.';
 
 async function ensureSelected(control: Locator) {
   if ((await control.getAttribute('aria-selected')) !== 'true') await control.click();
@@ -19,6 +20,7 @@ test.describe('live onboarding journey', () => {
   test.skip(!onboardingAccountConfigured, liveReason);
 
   test('incomplete account reaches the branded onboarding surface without product chrome', async ({ page }) => {
+    test.skip(mutationsEnabled, 'Read-only onboarding matrix is skipped in mutation mode because the dedicated account will be completed once.');
     const pageErrors = collectPageErrors(page);
     await signInOnboardingAccount(page);
 
@@ -28,8 +30,9 @@ test.describe('live onboarding journey', () => {
     expect(pageErrors).toEqual([]);
   });
 
-  test('dedicated onboarding account can complete the essential setup when mutations are explicitly enabled', async ({ page }) => {
+  test('dedicated onboarding account can complete the essential setup when mutations are explicitly enabled', async ({ page }, testInfo) => {
     test.skip(!mutationsEnabled, 'Set MIZAN_E2E_MUTATIONS=1 only for a disposable or dedicated onboarding E2E account.');
+    test.skip(testInfo.project.name !== 'desktop-light', mutationProjectReason);
     const pageErrors = collectPageErrors(page);
     await signInOnboardingAccount(page);
 
