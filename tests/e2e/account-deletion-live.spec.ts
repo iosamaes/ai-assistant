@@ -26,6 +26,7 @@ const protectedFixtureEmails = [
   process.env.MIZAN_E2E_COMPLETED_EMAIL,
   process.env.MIZAN_E2E_ARABIC_EMAIL,
   process.env.MIZAN_E2E_ONBOARDING_EMAIL,
+  process.env.MIZAN_E2E_ONBOARDING_MUTATION_EMAIL,
 ]
   .filter((value): value is string => Boolean(value))
   .map((value) => value.trim().toLowerCase());
@@ -48,7 +49,7 @@ test.describe('destructive account deletion', () => {
     }
     if (protectedFixtureEmails.includes(email.trim().toLowerCase())) {
       throw new Error(
-        'MIZAN_E2E_DELETE_EMAIL must be a dedicated disposable account and must not match a reusable completed, Arabic, or onboarding fixture.',
+        'MIZAN_E2E_DELETE_EMAIL must be a dedicated disposable account and must not match a reusable completed, Arabic, onboarding, or onboarding-mutation fixture.',
       );
     }
     const baseUrl = supabaseUrl.replace(/\/$/, '');
