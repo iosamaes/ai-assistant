@@ -85,18 +85,20 @@ npm run test:e2e:performance
 
 These ceilings are **not product SLOs** and a passing run is not production performance proof. The Playwright command uses the controlled Expo E2E runtime; CP11 still requires owner inspection of the production Web export, real startup/common-interaction measurements, and investigation of any pathological rerender or bundle regression before release.
 
-### 8. Production Web static-export smoke
-The normal Playwright matrix intentionally uses the Expo development server. CP11 now also has a separate production-export path:
+### 8. Production Web static-export smoke and size evidence
+The normal Playwright matrix intentionally uses the Expo development server. CP11 also has a separate production-export path:
 
 ```bash
 npm run test:e2e:production
 ```
 
-`playwright.production.config.ts` first runs `npm run export:web`, serves `apps/app/dist` on port `8092` through `scripts/serve-expo-static.mjs`, then executes `tests/e2e/production-web.spec.ts` against representative **390×844 light** and **1440×900 dark** projects. The repository-owned server has no new package dependency and resolves exact static files plus Expo static route shapes (`route.html` / `route/index.html`) without hiding a missing export behind an SPA fallback.
+`playwright.production.config.ts` first runs `npm run export:web`, then `npm run report:web-size`, and serves `apps/app/dist` on port `8092` through `scripts/serve-expo-static.mjs` before executing `tests/e2e/production-web.spec.ts` against representative **390×844 light** and **1440×900 dark** projects. The repository-owned server has no new package dependency and resolves exact static files plus Expo static route shapes (`route.html` / `route/index.html`) without hiding a missing export behind an SPA fallback.
+
+`scripts/report-expo-static-size.mjs` is dependency-free and reports the exported file count, total static bytes, JavaScript raw/gzip bytes, CSS raw/gzip bytes, aggregate gzip bytes for compressible assets, and the 15 largest files. It deliberately does not invent a product SLO or arbitrary hard ceiling before a reviewed production baseline exists. The owner should retain the report and investigate material growth or a pathological single asset/chunk rather than treating a successful route smoke as bundle evidence.
 
 The signed-out production smoke directly requests `/today`, requires the shipped route guard to land on the bilingual Auth surface, verifies locale switching and overflow, and applies the shared page/console/network/5xx diagnostics. When the normal live Supabase and persisted-English completed-account variables are supplied, the same command also verifies authenticated direct `/life-map` hydration, persisted session continuity across a document navigation, primary shell routes, a direct WHY route, selected-tab semantics, overflow, and critical browser diagnostics.
 
-The harness is static readiness only until it is actually executed. It does not replace the broader responsive development-server matrix, production bundle-size/performance review, or native release validation.
+The harness is static readiness only until it is actually executed. It does not replace the broader responsive development-server matrix, production interaction/startup performance review, or native release validation.
 
 ## Shared static guards
 
@@ -121,7 +123,7 @@ The harness is static readiness only until it is actually executed. It does not 
 | CP9 visual evidence | `tests/e2e/visual-evidence-live.spec.ts` | locale-verified, load-settled, font-settled Today/Life Map/WHY/Check-in screenshots across the responsive/light-dark matrix |
 | Browser diagnostics / keyboard | `tests/e2e/browser-assertions.ts` | shared page/console/network/5xx guard plus bounded real Tab traversal |
 | Performance sanity | `tests/e2e/performance-live.spec.ts` | opt-in read-only desktop sample of authenticated readiness, primary route latency, resource timing, long tasks, overflow, and critical diagnostics |
-| Production Web export | `playwright.production.config.ts` + `tests/e2e/production-web.spec.ts` | actual static export, direct-route serving/hydration, auth guard/locale, optional authenticated direct routes and shell on representative phone-light/desktop-dark projects |
+| Production Web export | `playwright.production.config.ts` + `tests/e2e/production-web.spec.ts` + `scripts/report-expo-static-size.mjs` | actual static export, bundle/static-asset size measurement, direct-route serving/hydration, auth guard/locale, optional authenticated direct routes and shell on representative phone-light/desktop-dark projects |
 | Daily loop | `tests/e2e/product-live.spec.ts` | live check-in write behind mutation opt-in in `desktop-light` |
 | Feedback learning | `tests/e2e/product-live.spec.ts` | evidence → One Move accept → explicit usefulness → Personal Learning |
 | Recovery / What If | `tests/e2e/product-live.spec.ts` | recovery step interaction and scenario switch/assumption visibility |
@@ -135,7 +137,7 @@ The ten main Web projects use the same Chromium engine with explicit viewport an
 
 ## Release documentation
 
-- Root `README.md` documents Node/npm requirements, clean install, public Supabase configuration, local Supabase initialization/reset, app/test/E2E commands, stable CP9 visual evidence collection, opt-in performance sampling, production static-export smoke, destructive-test safety, Expo exports, architecture invariants, and status pointers.
+- Root `README.md` documents Node/npm requirements, clean install, public Supabase configuration, local Supabase initialization/reset, app/test/E2E commands, stable CP9 visual evidence collection, opt-in performance sampling, production static-export smoke and size report, destructive-test safety, Expo exports, architecture invariants, and status pointers.
 - `.env.example` documents variable names only. It explicitly distinguishes the persisted-English and persisted-Arabic completed fixtures and keeps mutation, visual-evidence, performance, and destructive modes opt-in.
 - `apps/app/README.md` is MIZAN-specific rather than the create-expo-app starter and documents the explicit export scripts plus owner-side Expo Doctor step.
 - Documentation is static evidence only until an owner/new-engineer completes a clean-checkout run successfully.
@@ -148,12 +150,12 @@ The ten main Web projects use the same Chromium engine with explicit viewport an
 - Run `npm run test:e2e:mutations` only with dedicated/disposable fixtures, including notification preference persistence/restoration.
 - Run the prepared destructive deletion journey only with its dedicated disposable account.
 - Execute `npm run test:e2e:performance`, inspect its attached measurements and any budget failure.
-- Execute `npm run test:e2e:production`, inspect the static-export browser diagnostics/direct-route behavior, and separately review production bundle-size/performance so a smoke PASS is not mistaken for complete release proof.
+- Execute `npm run test:e2e:production`, inspect the static-export browser diagnostics/direct-route behavior, retain the emitted Web size report as a baseline, and investigate material bundle/static-asset growth separately from interaction/startup performance.
 - Execute Expo diagnostics plus Android/iOS export checks available in the owner environment.
 - Investigate blocking startup work or pathological rerenders if runtime measurements or profiling indicate them.
 - Validate Arabic RTL and English across representative device classes/light-dark states; screenshots do not replace interaction validation or the deliberate CP9 design-swap proof.
 - Perform a clean-checkout setup run using the documented README flow and correct any missing prerequisite/configuration/test/export step.
-- Record exact commands, versions, results, failures/fixes, and owner release actions in `docs/PROJECT_STATE.md` before claiming CP11 complete.
+- Record exact commands, versions, results, failures/fixes, Web size evidence, and owner release actions in `docs/PROJECT_STATE.md` before claiming CP11 complete.
 
 ## Policy note
 
