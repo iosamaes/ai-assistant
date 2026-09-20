@@ -69,20 +69,21 @@ Prepared static verification paths include:
 - Isolated destructive account-deletion E2E using a dedicated disposable account, local user-scoped cache sentinels, two-step confirmation, and post-delete credential rejection; destructive execution is single-project only.
 - Mutation journeys are isolated to `desktop-light` to avoid shared-account write races.
 
-### Latest CP11 harness hardening
+### Latest CP11 harness and release-readiness hardening
 - `b1b3ff43e463fe33e59cc192b4fa0ace72db2ec1` — live product journeys now collect critical browser diagnostics: uncaught page errors, browser `console.error`, failed requests, and HTTP 5xx responses.
 - `b5b1c379e6be8163ea09cf3c7d240d7940a02bc9` — expected Chromium `net::ERR_ABORTED` navigation cancellations are excluded so the diagnostic guard targets real failures instead of route-change noise.
 - `53577c0c557dbea8cf5b7e03db177bfb1d45d9a3` — live-account helpers support a separate completed account whose persisted MIZAN locale is Arabic.
 - `2ed09abe739ac23c846e41f6103ea7d9d61d35f1` — the dedicated Arabic account adds read-only Arabic primary-shell routing/overflow coverage across the full responsive/light-dark matrix without racing persisted locale changes on the normal completed account.
 - `152bd7aeeadad90a4eacbda0b68099685af4f5ec` — `.env.example` documents `MIZAN_E2E_ARABIC_EMAIL` / `MIZAN_E2E_ARABIC_PASSWORD` names only; no credentials are stored.
-- `8cceddac08725f2a0dacacdbcc8be406b9fdac84` — the CP11 release ledger now records the Arabic fixture and browser-diagnostic contract.
+- `8cceddac08725f2a0dacacdbcc8be406b9fdac84` — the CP11 release ledger records the Arabic fixture and browser-diagnostic contract.
+- `2d8b4fb98aa165222b05d6c1726a4b77f2a65be9` — the previously missing root `README.md` is now present with clean-install requirements, public environment setup, local Supabase initialization/reset guidance, run/test/E2E commands, destructive-test safety boundaries, Expo export guidance, architecture invariants, and links to the current release ledger.
 
 These are static harness/readiness changes only. **No E2E run, destructive delete, test result, typecheck, build, database-policy execution, performance result, or release PASS is claimed by workers under the active policy.**
 
 ## Exact next executable action
 1. Continue CP9 static work only if a concrete accessibility/RTL/localization/focus/technical-id/presentation defect is demonstrated; otherwise leave visual/runtime proof to owner validation.
 2. Continue CP10 source work only if a still-unreviewed account-sensitive async path or new security/logging boundary is demonstrated; avoid reopening already-fenced paths without evidence.
-3. Keep CP11 static harness aligned with the release matrix and close demonstrated coverage gaps, but leave actual TypeScript/lint/tests, database-policy suites, Web E2E, destructive deletion, production Web export, native checks, performance measurements, screenshot/device validation, and design-swap runtime evidence to owner validation under the current policy.
+3. Keep CP11 static harness aligned with the release matrix and close demonstrated coverage/documentation gaps, but leave actual TypeScript/lint/tests, database-policy suites, Web E2E, destructive deletion, production Web export, native checks, performance measurements, screenshot/device validation, and design-swap runtime evidence to owner validation under the current policy.
 4. When owner execution evidence exists and CP0–CP11 gates are honestly satisfied, proceed to CP12 independent two-worker review; do not mark completion from static implementation alone.
 
 ## Verification record
@@ -103,6 +104,7 @@ Post-baseline:
 - Premium-reference/residual CP9 fixes and account-fencing regression specifications remain static evidence until owner validation.
 - Capacity account-switch coverage and root offline-replay ownership coverage are present but unexecuted under the worker policy.
 - The five-viewport × two-color Playwright matrix, destructive deletion harness, Arabic read-only completed-account path, and browser diagnostic guards are configured but unexecuted.
+- Root setup/release documentation now exists, but its commands are documentation evidence until owner clean-checkout execution confirms them.
 
 ## Known blockers / risks
 - CP1/CP9: true phone/tablet/Web visual interaction evidence still needs an unlocked owner runtime; see `automation/HUMAN_REQUIRED.md`.
@@ -112,11 +114,12 @@ Post-baseline:
 - Recent Today snapshot native SecureStore behavior/capacity still needs owner runtime validation.
 - CP9 representative screenshots, interaction validation, and the final design-swap proof remain outstanding.
 - Privacy export/delete, local cache purge/warning behavior, account-scoped confirmation, Edge v2 expected-user deletion fencing, Life Season expected-user fencing, and account-switch/session-binding behavior still need Web/native/end-to-end validation.
-- CP11 Web projects, production Web console/network/build inspection, native device/export validation, and performance evidence remain owner-side.
+- CP11 Web projects, production Web console/network/build inspection, native device/export validation, clean-setup confirmation, and performance evidence remain owner-side.
 - The optional Arabic read-only matrix requires a dedicated completed test account with persisted Arabic locale; absent credentials cause the specification to skip rather than mutate another account.
 - No real AI, wearable, calendar, or location credentials are configured; deterministic/unavailable adapters remain the supported fallback path.
 
 ## Evidence paths
+- `README.md`
 - `docs/CP8_RELIABILITY.md`
 - `docs/CP9_PRESENTATION_ARCHITECTURE.md`
 - `docs/CP10_SECURITY_PRIVACY.md`
