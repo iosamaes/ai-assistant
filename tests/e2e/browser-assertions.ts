@@ -1,4 +1,4 @@
-import { expect, type Page } from '@playwright/test';
+import { expect, type Locator, type Page } from '@playwright/test';
 
 export type BrowserDiagnostics = {
   pageErrors: string[];
@@ -46,4 +46,13 @@ export async function expectNoHorizontalOverflow(page: Page) {
     scroll: document.documentElement.scrollWidth,
   }));
   expect(overflow.scroll).toBeLessThanOrEqual(overflow.viewport + 1);
+}
+
+export async function tabTo(page: Page, target: Locator, maxTabs = 24) {
+  await expect(target).toBeVisible();
+  for (let index = 0; index < maxTabs; index += 1) {
+    await page.keyboard.press('Tab');
+    if (await target.evaluate((element) => element === document.activeElement)) return;
+  }
+  throw new Error(`Keyboard focus did not reach the requested control within ${maxTabs} Tab presses.`);
 }
