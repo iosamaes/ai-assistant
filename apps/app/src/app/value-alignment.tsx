@@ -1,5 +1,5 @@
 import { router } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { StyleSheet, useColorScheme, View } from 'react-native';
 
 import {
@@ -118,30 +118,45 @@ export default function ValueAlignmentScreen() {
   const { enabledDomains, isRtl, locale, personalValues, refreshSession, userId } = useAppState();
   const [status, setStatus] = useState<LoadStatus>('loading');
   const [summaries, setSummaries] = useState<PersonalValueAlignment[]>([]);
+  const [summariesUserId, setSummariesUserId] = useState<string | null>(null);
+  const activeUserRef = useRef(userId);
+  activeUserRef.current = userId;
   const labels = copy[locale];
   const scheme = useColorScheme();
   const palette = Palette[scheme === 'dark' ? 'dark' : 'light'];
 
   useEffect(() => {
     let active = true;
+    const requestedUserId = userId;
+    const requestIsCurrent = () => active && activeUserRef.current === requestedUserId;
+
     void (async () => {
       await Promise.resolve();
-      if (!active) return;
-      if (!userId || personalValues.length === 0) {
+      if (!requestIsCurrent()) return;
+      if (!requestedUserId || personalValues.length === 0) {
         setSummaries([]);
+        setSummariesUserId(requestedUserId);
         setStatus('ready');
         return;
       }
 
+      setSummaries([]);
+      setSummariesUserId(requestedUserId);
       setStatus('loading');
-      const result = await loadPersonalValueAlignments(userId, personalValues, enabledDomains);
-      if (!active) return;
+      const result = await loadPersonalValueAlignments(requestedUserId, personalValues, enabledDomains);
+      if (!requestIsCurrent()) return;
       if (!result.ok) {
-        if (result.error.kind === 'session-expired') await refreshSession();
-        if (active) setStatus('error');
+        if (result.error.kind === 'session-expired') {
+          await refreshSession();
+          if (!requestIsCurrent()) return;
+        }
+        setSummaries([]);
+        setSummariesUserId(requestedUserId);
+        setStatus('error');
         return;
       }
       setSummaries(result.value);
+      setSummariesUserId(requestedUserId);
       setStatus('ready');
     })();
 
@@ -149,6 +164,10 @@ export default function ValueAlignmentScreen() {
       active = false;
     };
   }, [enabledDomains, personalValues, refreshSession, userId]);
+
+  const currentSummaries = userId !== null && summariesUserId === userId ? summaries : [];
+  const displayedStatus: LoadStatus =
+    userId === null ? 'ready' : summariesUserId === userId ? status : 'loading';
 
   const statusLabel = (summary: PersonalValueAlignment) => {
     if (summary.status === 'watch') return labels.watch;
@@ -177,25 +196,25 @@ export default function ValueAlignmentScreen() {
         <MizanText variant="caption" muted>{labels.overviewBody}</MizanText>
       </Card>
 
-      {status === 'loading' ? (
+      {displayedStatus === 'loading' ? (
         <Card style={{ backgroundColor: palette.surfaceMuted }}>
           <MizanText accessibilityLiveRegion="polite" muted>{labels.loading}</MizanText>
         </Card>
       ) : null}
-      {status === 'error' ? (
+      {displayedStatus === 'error' ? (
         <Card style={{ backgroundColor: palette.surfaceMuted }}>
           <MizanText accessibilityLiveRegion="polite" muted>{labels.error}</MizanText>
         </Card>
       ) : null}
-      {status === 'ready' && summaries.length === 0 ? (
+      {displayedStatus === 'ready' && currentSummaries.length === 0 ? (
         <Card style={{ backgroundColor: palette.surfaceMuted }}>
           <MizanText accessibilityLiveRegion="polite" muted>{labels.empty}</MizanText>
         </Card>
       ) : null}
 
-      {status === 'ready' && summaries.length > 0 ? (
+      {displayedStatus === 'ready' && currentSummaries.length > 0 ? (
         <View style={[styles.valueGrid, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
-          {summaries.map((summary) => {
+          {currentSummaries.map((summary) => {
             const valueId = summary.valueId as PersonalValue;
             const statusColor =
               summary.status === 'watch'
