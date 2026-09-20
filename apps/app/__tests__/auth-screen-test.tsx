@@ -87,6 +87,21 @@ describe('AuthScreen', () => {
     });
   });
 
+  test('carries the selected interface locale into account signup metadata', async () => {
+    const view = await render(<AuthScreen />);
+    await fireEvent.press(view.getByRole('button', { name: 'Create account' }));
+    await fireEvent.changeText(view.getByLabelText('Email'), 'new@example.com');
+    await fireEvent.changeText(view.getByLabelText('Password'), '12345678');
+    await waitFor(() => expect(actionButton(view, 'Create account').props.accessibilityState)
+      .toMatchObject({ disabled: false }));
+    await fireEvent.press(actionButton(view, 'Create account'));
+
+    await waitFor(() => {
+      expect(signUpMock).toHaveBeenCalledWith('new@example.com', '12345678', 'en');
+    });
+    expect(refreshSession).not.toHaveBeenCalled();
+  });
+
   test('reset mode removes the password field and uses the recovery action', async () => {
     const view = await render(<AuthScreen />);
     await fireEvent.press(view.getByRole('button', { name: 'Forgot password' }));
