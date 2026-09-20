@@ -34,7 +34,7 @@ export async function signInWithCredentials(page: Page, email: string, password:
   await page.goto('/auth');
   await switchAuthToEnglish(page);
   await page.getByRole('textbox', { name: 'Email', exact: true }).fill(email);
-  await page.getByRole('textbox', { name: 'Password', exact: true }).fill(password);
+  await page.getByLabel('Password', { exact: true }).fill(password);
   await page.getByRole('button', { name: 'Sign in', exact: true }).last().click();
   await page.waitForURL(/\/(today|onboarding)$/);
 }
