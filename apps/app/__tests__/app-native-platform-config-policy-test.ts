@@ -5,9 +5,11 @@ const appConfig = JSON.parse(
   readFileSync(resolve(__dirname, '../app.json'), 'utf8'),
 ) as {
   expo?: {
+    icon?: string;
     orientation?: string;
     userInterfaceStyle?: string;
     ios?: {
+      icon?: string;
       supportsTablet?: boolean;
     };
   };
@@ -21,5 +23,10 @@ describe('native platform app configuration', () => {
   test('keeps responsive orientation and system appearance enabled', () => {
     expect(appConfig.expo?.orientation).toBe('default');
     expect(appConfig.expo?.userInterfaceStyle).toBe('automatic');
+  });
+
+  test('uses the branded MIZAN icon for iOS instead of a starter-specific override', () => {
+    expect(appConfig.expo?.icon).toBe('./assets/images/icon.png');
+    expect(appConfig.expo?.ios?.icon).toBeUndefined();
   });
 });
