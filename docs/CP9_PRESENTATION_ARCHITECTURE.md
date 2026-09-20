@@ -21,6 +21,10 @@ The audit deliberately rejects wrapper pyramids, generic component factories, st
 
 Compatibility aliases for the prior max-width/breakpoint exports are temporarily retained so CP9 can migrate screens incrementally instead of forcing an unrelated whole-app rewrite.
 
+### Semantic text-contrast residual
+
+A final static palette audit found a concrete accessibility defect in the light theme: the previous muted-text token `#627067` fell just below the 4.5:1 normal-text threshold on `surfaceMuted` and further below it on `accentSoft`, while the same token is routinely used for 13–16px caption/body copy on those surfaces. The shared light `textMuted` token is now `#5C6A61`, raising those combinations above 4.5:1 without changing feature-specific colors or introducing a second palette. A focused static specification in `apps/app/__tests__/theme-contrast-policy-test.ts` now computes sRGB relative luminance and requires the shipped semantic text/surface combinations to remain at or above 4.5:1 in both light and dark schemes. The specification has not been executed by workers under the active policy, so this is implementation/regression evidence rather than a test PASS.
+
 ## Shared primitives now present
 
 `apps/app/src/components/mizan-ui.tsx` owns only demonstrated recurring semantics:
