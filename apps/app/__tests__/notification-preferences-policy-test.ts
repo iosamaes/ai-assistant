@@ -21,7 +21,7 @@ describe('Notification preferences policy', () => {
     expect(source).toContain('recovery_prompts: next.recoveryPrompts');
   });
 
-  test('Settings exposes respectful categories and truthfully discloses unavailable device delivery', () => {
+  test('Settings exposes respectful categories, contextual accessibility labels, and truthful delivery disclosure', () => {
     const source = sourceFor('src/app/settings.tsx');
 
     expect(source).toContain('useNotificationPreferences(userId)');
@@ -30,6 +30,9 @@ describe('Notification preferences policy', () => {
     expect(source).toContain('notificationPreferences.experimentReminders');
     expect(source).toContain('notificationPreferences.recoveryPrompts');
     expect(source).toContain('<AppIcon name="notification"');
+    expect(source).toContain('accessibilityLabel={`${notificationLabels.dailyTitle}: ${notificationLabels.allow}`}');
+    expect(source).toContain('accessibilityLabel={`${notificationLabels.experimentTitle}: ${notificationLabels.allow}`}');
+    expect(source).toContain('accessibilityLabel={`${notificationLabels.recoveryTitle}: ${notificationLabels.allow}`}');
     expect(source).toContain('never use urgency, streaks, or fear of losing progress');
     expect(source).toContain('لا نستخدم الاستعجال أو السلاسل أو الخوف من فقدان التقدم');
   });
