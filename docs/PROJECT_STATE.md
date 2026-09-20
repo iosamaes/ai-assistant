@@ -3,9 +3,10 @@
 ## Current checkpoint
 - Active engineering checkpoint: **CP9 — Responsive UX, accessibility, localization, polish, and design-swappability** (`IN_PROGRESS`).
 - CP10 security/privacy source hardening is broadly implemented; execution-dependent gates remain owner validation.
-- CP11 static verification/release readiness is prepared and continues to be hardened; execution is pending because current worker policy forbids workers from running product tests, builds, typechecks, database suites, GitHub Actions, or cloud CI.
+- CP11 verification/release-readiness harnesses are prepared; execution is pending because the active worker policy forbids workers from running product tests, builds, typechecks, database suites, GitHub Actions, or cloud CI.
 - Product authority: GitHub `iosamaes/ai-assistant@main`.
 - Task digest: `f2786fbae29a0ee1fa7bf77eb1504fc8fb80c208`.
+- Latest source-hardening commit reviewed in this ledger: `2b56227df4a2df44c39e32f632c2ef8b5a703836`.
 
 ## Checkpoints
 - [x] CP0 — Reconnaissance, product model, executable plan
@@ -20,118 +21,123 @@
 - [ ] CP9 — Responsive UX, accessibility, localization, polish, design-swappability — **IN_PROGRESS**
 - [ ] CP10 — Security, privacy, owner-data control — **IN_PROGRESS / runtime verification pending**
 - [ ] CP11 — Test matrix, performance, release readiness — **static harness prepared; execution pending**
-- [ ] CP12 — Independent final review and handoff
+- [ ] CP12 — Independent final review and handoff — **NOT_STARTED**
 
 ## Latest productive changes
-- `00048202c92e0f2b979ee95940242d5d8e18b22f` + `20fc192ba8c27033dcb03736c9ab7bcd953a0e38` + `ebdb71d99d39b3cb20a070048c2adad803a4d572` + `5b638989b2b89c0cec5a7bb4eeb81863e5aa16f0` — closed a demonstrated CP9 tablet-navigation gap against the blocking premium reference. Navigation chrome now uses a shared semantic `Layout.tabletBreakpoint` (768) for the persistent side rail, so representative tablet portrait (834×1194), tablet landscape, and wider layouts no longer stretch the phone bottom bar; the phone bottom navigation remains below that threshold. The shell and navigation component use the same breakpoint, RTL/LTR rail-divider behavior is preserved, and the navigation regression specification now covers Arabic tablet rail, English tablet rail, and common-phone bottom navigation. These changes are source-reviewed only; workers did not execute tests under the active policy.
-- `70584656d22c8bae22950a167b67eaed080dd226` — strengthened the Western-digit contract with a production-source regression scan across app, core, plugins, and Edge Functions. Arabic-Indic/Eastern Arabic glyphs are permitted only in the numeric-input normalization boundary that must accept localized user input; shipped production source elsewhere must remain Western-digit-only. This specification is unexecuted under the active worker policy.
-- `5e0f27b7a9a40f73ab0d11c231501a26b9345f0b` + `bfba0d3b32591afc7e9ebbb522a7a0619ee37d54` — closed a demonstrated CP9 keyboard-focus gap on Personalization domain switches. The direct `Pressable` switches now use the shared visible Web focus ring while enabled, and the keyboard-focus source policy guards the focus/blur handlers plus disabled-last-domain exclusion. These changes are source-reviewed only; workers did not execute the suite.
-- `8124c8e3c40d8cfacdae93496457a65f7b0a7c17` + `c92b3f9b13ec0d618377e712d10ab1c9d81437e4` — made fixture-separation proof fail closed for mutation and destructive validation. The mutation runner now requires the reusable completed-English, completed-Arabic, and read-only onboarding email identities before it can prove that either mutation fixture is distinct; the destructive runner now requires every protected reusable/mutation fixture identity before Playwright can start. Missing protected identities can no longer masquerade as evidence that a mutation or deletion account is unique.
-- `0b85495210892d9b80ed7a9051966867b609ccfe` + `9c233cd9d2466057b4e0559a4cc3c13be5b721eb` — strengthened source-policy regression guards so the mutation and destructive runner `requiredVariables` blocks themselves must retain the protected-role identity preflight, distinct mutation roles, desktop-only isolation, and baseline separation contracts.
-- `23e0246d2ce6f084a3eb7da3d431c25d8ac0df64` + `4a485db880736fd7dc478e63376c3cde61471499` — aligned the clean-checkout README and CP11 release ledger with the stricter fixture identity contract, including why reusable role emails are required even when their passwords are not needed by mutation journeys and why destructive validation refuses to run without every protected role identity configured.
-- `51b0e0faac08db9430a94b2e250125da60e62381` + `cc8ad025151893ee355d466c5b53b454aec39db0` + `2d2ff055c2fe1da2d01aa7c8a141cf9c3c9c1981` — separated persistent completed-account mutation coverage from the reusable completed-English release fixture. `MIZAN_E2E_COMPLETED_MUTATION_*` now owns check-in writes, feedback-learning evidence, Spiritual Grounding persistence/restoration, and notification-preference persistence/restoration; read-only baseline/visual/performance journeys keep using the reusable completed-English account. This removes cumulative live writes from the reusable release-evidence fixture.
-- `217bc036e0698e900738c7e52450de943a39b1cc` + `5b55b9ce59c5b831ba43c5663177828192f58055` + `a2d8b7f8cd061f7033665fbd34e6d2375fb5715b` + `98de803f422c8179dc272349f2cf04db7c299537` — hardened fixture-role safety around the new completed-mutation account. The mutation runner now requires both dedicated mutation credential pairs, requires them to be distinct from each other, rejects protected reusable/deletion-role reuse, and the public destructive deletion runner now also rejects the completed-mutation fixture. Static policy specifications guard the mutation-runner and deletion-runner contracts.
-- `5e2550a72ec3e4361febc32867b13f2b7f7d6e19` + `1b82faf8c27e798660471534648351d9bb8e2e37` + `30c98f083f5f5c4504303a5e0fda528078279886` — aligned `.env.example`, CP11 release documentation, and the clean-checkout README with the six-role E2E fixture lifecycle: three reusable read-only baseline roles, a dedicated completed-mutation role, a disposable onboarding-mutation role, and an irreversible deletion role. The non-destructive aggregate baseline still deliberately excludes mutation fixtures.
-- `ba8bf9fd5b9eef56ff3137ee2d407bf0522c8f1f` + `5c5fcd87b2935967d472696b8b6cf9bb5cb6ef81` + `224f74f83cced7bf666f53708422da6f6bfad74d` — closed a residual CP9 keyboard-focus gap in screen-specific direct `Pressable` controls that bypassed the already-hardened shared buttons/chips and primary navigation. Today now shows the shared Web focus ring on Settings, each enabled outcome-feedback rating, and the Check-in action; Experiments now shows it on each enabled experiment-template radio. The focused item is tracked explicitly and disabled controls do not receive the custom ring. The source-policy regression specification now guards these direct-screen focus affordances alongside the shared controls/navigation contract. These changes were source-reviewed only; workers did not execute tests under the active policy.
-- `933a400b5083fa3f6d3f82a9e1433e60c7b02af6` + `1b896487e2deee929242fb39707428ca5742fec6` — separated the reusable incomplete onboarding fixture from onboarding-completion mutation coverage. Read-only release evidence continues to use `MIZAN_E2E_ONBOARDING_*`, while completion now requires separate disposable `MIZAN_E2E_ONBOARDING_MUTATION_*` credentials and rejects reuse of the read-only onboarding email before mutation. This prevents a mutation run from permanently consuming the baseline onboarding fixture.
-- `d790ca171c66e5b4d5d74ded1d237b77e7c2092e` + `c2b2f17e47bd5aaa34b18d3b7adeed8fe3f2a8bd` — replaced the permissive mutation Playwright command with `scripts/run-e2e-mutations.mjs`. The runner enables mutation mode itself, fails before Playwright when required public/completed/onboarding-mutation variables are absent, rejects onboarding-mutation reuse of protected reusable fixture emails, and runs the mutation specifications once in `desktop-light`, removing a false-green path where required mutation journeys could all skip.
-- `c9afcbe6d12d7afbf7be41d08254d9c7fbd002f1` + `8a6f2ced5d08abc0821e3d6da0c3f59dbd8b3332` + `9646ebeb3a36c30265ad0d4d027c817b6fa7085e` + `2c4a3ec45c135ff6d939e43ad5466986e490a995` — aligned environment documentation, clean-checkout guidance, CP11 release documentation, and source-policy regression guards with the reusable-vs-disposable onboarding fixture lifecycle, fail-closed mutation runner, and key-plugin reload-persistence contract. These are prepared source/specification changes only; workers did not execute the suites.
-- `b53d76b1488a2ebb3cfed38e306e9bfb9447fdf0` — strengthened the CP11 live key-plugin mutation journey so the optional Spiritual Grounding preference must persist across a full document reload after toggling, then the test restores the original state and reloads again to prove restoration also persisted. The journey remains explicit mutation-mode only and isolated to `desktop-light`; it has not been executed by workers under the active policy.
-- `9d3203211d5e78aecbb7e9f56a0b6c372da38965` — refreshed the CP11 release ledger so the key-plugin gate explicitly requires Spiritual Grounding toggle → reload persistence → original-state restore → reload verification, matching the prepared E2E instead of describing an in-memory-only toggle/restore.
-- `438752bfc04284c86d360b56d4a7afcb1b8cdedd` + `9ce6ba50e6616f4fa879b22e6087b0dec5f90454` — corrected Privacy export truthfulness without adding a new native dependency. Web keeps the existing real `.json` download contract and wording, while native now states that MIZAN opens the system share sheet with JSON content instead of claiming it created a file. Native `Share.dismissedAction` is treated as an explicit cancellation rather than a successful export, and the existing account-switch fence still prevents a stale account payload from being delivered.
-- `bc7f253f1f48e9b6dec1b135989d35d088d0cef6` — extended the PrivacyScreen regression specification so a dismissed native share cannot surface the successful-export message while preserving the stale-account export guard. This is prepared static/component evidence only until owner validation executes the suite.
-- `c15c1f7217fa8126f5502ed0029a3d1ec41d729a` — hardened the aggregate owner release baseline so a configured `MIZAN_E2E_SUPABASE_URL` must be a hosted HTTPS Supabase URL whose project ref is exactly the authorized `olfhjnropdrnujgpidfi` project. A missing/malformed/wrong-project URL now fails before any live quality command can run, without echoing credentials or the supplied URL.
-- `8fd0447be7ee0c2142c3d68fa726bfcd9ea5d5de` + `b5c17f509e50c2dfc8963ed06da667c51a16a3c2` — extended the same project-authority fence into both the normal and production Playwright configurations. Any explicitly configured live E2E backend now fails closed unless it resolves to the named Supabase project, so standalone mutation, performance, visual, destructive, or production commands cannot silently target another project.
-- `25ca9f3722b9c4ee1c2626dd043d17b781aa6a6e` + `6c6712c29d24a1c6dfc277939da13db803afa0a7` — extended the static Playwright release-safety specification to protect the authorized-project fence in the aggregate runner and both Playwright configs alongside the existing mutation/destructive/fixture isolation invariants.
-- `87e77d5a5fe839cc05551c73629a1edd93de07ab` — updated `.env.example` to state the exact authorized hosted E2E project target while keeping all real credentials out of source control.
-- `db173d9dc7ba95f4dc1bd7f88e488ddc43160936` — corrected the default Playwright development matrix so production-only `production-web.spec.ts` and `production-performance.spec.ts` are explicitly ignored there. Those specifications now remain tied to the dedicated production Playwright configuration and static-export server instead of being able to run against the Expo development server and masquerade as production-export evidence.
-- `1427e8d759d19781d82387e91718f239d821a325` — extended the Playwright release-safety policy specification to guard that production/dev isolation and require the explicit production scripts to keep using `playwright.production.config.ts`.
-- `5e1838d97f6fd31945978e44af4733a6397d73c1` — added generated local `supabase/config.toml` to the root ignore policy so following the documented `supabase init` clean-checkout flow does not dirty the repository or invite an environment-specific CLI config into source control.
-- `1124d3bb30dcfa6d83999f83dfa43fb5c185bbe0` — hardened `npm run check:release:baseline` so the completed-English, completed-Arabic, and incomplete-onboarding fixtures must be three distinct accounts. Fixture emails are normalized with trim/lowercase before comparison, and only environment-variable names are reported on conflict so credentials are not exposed. This prevents a reused account from invalidating persisted-locale/onboarding release evidence while still reaching the aggregate runner.
-- `0292b95a586a572ca9bbdfb1f849060a7994166a` — extended the Playwright release-safety policy specification to guard the new distinct-fixture preflight alongside the existing required-variable and fail-closed mutation/destructive protections.
-- `cd0c8f61aa4ef929059a5ae2455a3a00439ed523` — updated `.env.example` to state explicitly that the non-destructive release baseline requires three distinct live accounts and rejects reused fixture emails.
-- `f7e1ee35532da287c80310fb08ef0dcf0d3d3d54` — expanded the rollback-only account-export database specification across all ten current application-owned user data families. The test now seeds distinct caller/private-user rows for domain preferences, observations, action events, feedback outcomes, plugin settings, reflections, experiments, life-season history, and integration connections in addition to profiles; verifies every export section is present and caller-scoped; rejects nested `user_id` leakage across every collection; and retains authenticated-only/anonymous-denied function ACL coverage. This is static specification evidence only until owner validation runs the local database suite.
-- `c71195df5236408f9508ea96cecc5c06c2e0c963` — hardened `npm run check:release:baseline` so it now fails before any quality command when the read-only live E2E fixtures required by the baseline are missing: public Supabase client values, completed-English credentials, completed-Arabic credentials, or the incomplete-onboarding credentials. This prevents required authenticated/RTL/onboarding suites from silently skipping and still producing a misleading aggregate PASS.
-- `9527c697fd56eadcb9310b14d9a9bd38fb468b2d` — extended the Playwright release-safety policy specification to guard that baseline fixture preflight in addition to the existing mutation/destructive opt-in stripping and runner wiring invariants.
-- `da8ab323d216b8d5cf48fca8a421f459f1f5d3c0` + `17d5bdf4fd7f750cd19c2ddecceb6636f219bbb4` — updated the root README and `.env.example` so clean-checkout validation states that individual live specs may skip without credentials but the aggregate release baseline deliberately requires the read-only completed-English, completed-Arabic, and onboarding fixture set; destructive deletion credentials remain outside the non-destructive baseline.
-- `389434f1154cea9fd546512adf523b1319536454` — added a focused locale-number regression specification requiring Western digit rendering (`1234`) in both Arabic and English UI locales while still accepting Arabic-Indic and Eastern Arabic user input and normalizing it to Western digits. The specification is source evidence only until owner validation executes the app test suite.
-- `5d03d0b6d2f933bf9e5b46658bcb82928945068d` + `fa39be250f52f04c8e586829d1a0350d250e8ff9` — gave the shared primary navigation `tablist` an explicit localized accessible name (`التنقل الرئيسي` / `Primary navigation`) instead of relying on a role-only screen-reader announcement, and extended the navigation regression specification to guard both Arabic and English labels alongside the existing RTL rail-divider assertions.
-- `0a8fb1326b8be529ac983b6f6c4f2fbbb5b2e92f` — extended the Playwright mutation-isolation policy specification so the aggregate release baseline must keep its fail-closed safety boundary: root wiring must point to the repository runner, mutation/destructive/visual/performance opt-in flags must be removed from the child environment, and the aggregate command must not invoke mutation or account-deletion runners directly.
-- `563e7494bf58acb751bca6afe185254f2dcc8ef4` + `6bb5b3dc6323b4c4dca997199381032d565791b3` — added the owner-side `npm run check:release:baseline` path through `scripts/run-release-baseline.mjs`. The runner strips `MIZAN_E2E_MUTATIONS`, `MIZAN_E2E_DESTRUCTIVE`, `MIZAN_E2E_VISUAL_EVIDENCE`, and `MIZAN_E2E_PERFORMANCE`, then fail-fast chains workspace checks, local database tests/lint, the normal Web E2E matrix, and production Web smoke/size. This prevents an owner shell with a stale destructive opt-in from silently turning the convenience baseline into a mutating or irreversible run.
-- `7d04a1c4f52b2962d983af65f4c4dab20828edfd` + `b77d640f06a728c07a8256b37ee16c765b987306` — documented the aggregate baseline in the clean-checkout README and CP11 release ledger, while keeping live mutations, visual evidence, performance probes, destructive deletion, Expo Doctor, and Android/iOS exports as explicit separate gates.
-- `fa621532c129eeb85edea8a041d1a1abcfcdd437` — added a static regression guard around the irreversible Playwright contract so future edits must preserve desktop-only isolation, explicit destructive opt-in, dedicated-fixture protection, the v2 `409 account_changed` expected-user fence, and strict post-delete HTTP `400` authentication rejection.
-- `0fa422d3c90db3b381f355f31f35f53e865c948b` — added a fail-closed safety guard to the irreversible deletion harness: `MIZAN_E2E_DELETE_EMAIL` is rejected before any destructive action if it matches the reusable completed, persisted-Arabic, or onboarding fixtures, reducing the risk of owner validation accidentally deleting a shared test account.
-- `249f70164e3042884ffc883f33e0f453080ad205` — extended the destructive account-deletion E2E to exercise the deployed v2 expected-user fence before real deletion: a valid access token paired with a deliberately different `expected_user_id` must return HTTP `409` with `account_changed`, and a fresh password grant must still succeed afterward. The same journey then performs the intended deletion and requires the previously valid credentials to return HTTP `400`, so generic backend failures cannot masquerade as deletion evidence.
-- `2b8f7044c2fff10a252778bde332b7238930595a` — first hardened the destructive deletion proof by replacing a generic non-2xx assertion with explicit post-delete HTTP `400` credential rejection.
-- `6cf2f9136d48960086dd1c68c3199cfb66860835` — added the root owner-side command `npm run test:db`, mapped to `supabase test db --local`, so CP11 database/RLS/security verification has one explicit local-only entry point instead of requiring ad-hoc manual invocation.
-- `982821b080bf6f985e4e8ae179105323f42b2502` — added `npm run lint:db`, mapped to `supabase db lint --local --level warning --fail-on error`, so owner validation can surface warning-level schema/function findings while treating error-level database lint findings as a failing gate.
-- `da0eba574441afb72b9f2050bba820a33e1fca72` + `a0c84725cad3611479ee1e54e3c030f115c86ff2` — updated the clean-checkout README to document the local Supabase reset, pgTAP/RLS/security test, and database lint workflow, with both commands explicitly scoped to the local stack rather than the hosted project.
-- Immediately preceding release hardening remains current: MIZAN-owned app icon/favicon/adaptive/splash artwork replaced Expo starter branding; native iPad support is explicit; production static-Web smoke/performance harnesses exist; Life Seasons local drafts and the shared AppState persistence queue are account-fenced; destructive account deletion has a dedicated isolated E2E harness.
-- These are static implementation/specification changes only. No test, Expo export, typecheck, native build, database suite/lint, E2E, or performance run was executed by workers.
+- `2b56227df4a2df44c39e32f632c2ef8b5a703836` — broadened the CP10 client-secret source policy from only `apps/app/src` to every current client-bundled production source root: `apps/app/src`, `packages/core/src`, and `packages/plugins/src`. The guard rejects the Supabase service-role environment marker, current `sb_secret_` key prefix, and legacy `service_role` marker before those values can be introduced into app/core/plugin source. Server-only Edge Function source is intentionally outside this client-bundle rule. This specification is present but unexecuted under worker policy.
+- `1126ad46ce3965ea943d948acc10634421b3b4fe` — introduced the initial production-app client-secret source guard; the later commit above closes the core/plugin bundle coverage gap.
+- `00048202c92e0f2b979ee95940242d5d8e18b22f` + related navigation commits — closed the demonstrated CP9 tablet-navigation gap by using the shared semantic tablet breakpoint for the persistent side rail while preserving phone bottom navigation and RTL/LTR rail behavior.
+- `70584656d22c8bae22950a167b67eaed080dd226` — strengthened the Western-digit policy with a production-source scan; localized Arabic/Persian digit glyphs remain allowed only at the input-normalization boundary.
+- `5e0f27b7a9a40f73ab0d11c231501a26b9345f0b` + `bfba0d3b32591afc7e9ebbb522a7a0619ee37d54` — added visible Web keyboard focus to Personalization domain switches and guarded it statically.
+- Recent CP11 hardening keeps reusable English/Arabic/onboarding evidence fixtures separate from completed-mutation, onboarding-mutation, and destructive-deletion fixtures; release/mutation/destructive runners fail closed when required identities or authorized Supabase-project checks are missing.
 
 ## CP8 reliability state
 Detailed ledger: `docs/CP8_RELIABILITY.md`.
 
-Static implementation covers durable per-user retry for check-ins and Invisible Wins, duplicate-safe replay, normalized integration idempotency, recent Today snapshot caching, explicit cached/queued presentation, experiment terminal-state conflict protection, atomic Life Season transitions, and restart/reconnect/concurrency specifications. CP8 cannot close until owner/runtime evidence confirms the required offline/reconnect behavior.
+Static implementation covers durable per-user retry for check-ins and Invisible Wins, duplicate-safe replay, normalized integration idempotency, recent Today snapshot caching, explicit cached/queued presentation, experiment terminal-state conflict protection, atomic Life Season transitions, account-fenced drafts/persistence queues, and restart/reconnect/concurrency specifications.
+
+### CP8 remaining
+- Owner/runtime proof for restart/reload and offline/reconnect behavior on Web and native development runtime.
+- Confirm queued writes survive interruption without cross-account replay or duplicate creation.
 
 ## CP9 presentation state
-Detailed architecture: `docs/CP9_PRESENTATION_ARCHITECTURE.md`. Runtime design-swap procedure: `docs/CP9_DESIGN_SWAP_PROOF.md`.
+Detailed architecture: `docs/CP9_PRESENTATION_ARCHITECTURE.md`.
+Design-swap procedure: `docs/CP9_DESIGN_SWAP_PROOF.md`.
 
-The owner-approved premium reference is broadly implemented in static source: adaptive Home/Life Map/One Move/Insights/More navigation with phone bottom navigation and tablet/wide side rail, shared semantic iconography, responsive Life Map radar, premium Today/One Move composition, WHY/Insights evidence language, What If range visualization, Experiments/Recovery/Onboarding/Personalization/Invisible Wins treatments, truthful bounded meters, premium Auth/Privacy/Settings/Integrations and secondary decision surfaces, Western-digit formatting, RTL-aware geometry, reduced-motion handling, dynamic-type/shared-control sizing, semantic light/dark roles, MIZAN-owned native/Web branding, and explicit visible Web keyboard-focus treatment across shared controls, primary navigation, and direct-screen controls in Today, Experiments, and Personalization.
+The blocking premium-reference contract is broadly present in static source: adaptive Home/Life Map/One Move/Insights/More navigation, phone bottom navigation plus tablet/wide rail, shared iconography, responsive Life Map radar, premium Today/One Move hierarchy, WHY/Insights evidence language, What If ranges, Experiments/Recovery/Onboarding/Personalization/Invisible Wins treatments, bounded meters, semantic light/dark roles, MIZAN-owned branding, Western digits in both locales, RTL-aware geometry, reduced-motion handling, responsive/shared control sizing, and explicit visible Web focus treatment on shared and demonstrated direct-screen controls.
 
-Prepared owner/runtime evidence includes:
-- `tests/e2e/visual-evidence-live.spec.ts` for Today/Life Map/WHY/interacted Check-in across the responsive light/dark matrix in persisted English and Arabic RTL.
-- Real Tab/Enter keyboard journeys for Auth and the primary shell, including after Arabic RTL hydration.
-- `apps/app/__tests__/keyboard-focus-visual-policy-test.ts` for the shared focus-ring primitive, primary navigation, Today direct actions/ratings, Experiments template radios, and Personalization domain switches.
-- `apps/app/__tests__/app-navigation-rtl-test.tsx` for Arabic/English tablet-rail divider geometry, common-phone bottom-navigation behavior, localized screen-reader naming, and selected-tab state.
-- `apps/app/__tests__/localized-number-policy-test.ts` for Western-digit rendering in both UI locales, localized numeric-input normalization, and a production-source scan that excludes only the input-normalization boundary.
-- `apps/app/__tests__/theme-contrast-policy-test.ts` for semantic normal-text contrast.
-- `apps/app/__tests__/app-native-platform-config-policy-test.ts` for iPad support, responsive platform configuration, MIZAN-owned native/Web brand assets, starter-asset rejection, and light/dark splash configuration.
-- `docs/CP9_DESIGN_SWAP_PROOF.md` for the deliberate owner-side design-swap proof.
+Prepared evidence includes:
+- `tests/e2e/visual-evidence-live.spec.ts` — Today, Life Map, WHY, and interacted Check-in across the responsive light/dark matrix in persisted English and Arabic RTL.
+- `apps/app/__tests__/keyboard-focus-visual-policy-test.ts` — shared controls/navigation plus demonstrated Today, Experiments, and Personalization direct-control focus treatment.
+- `apps/app/__tests__/app-navigation-rtl-test.tsx` — Arabic/English tablet rail and phone bottom-navigation behavior.
+- `apps/app/__tests__/localized-number-policy-test.ts` and `western-digit-source-policy-test.ts` — Western-digit rendering/source policy while accepting localized numeric input at the normalization boundary.
+- `apps/app/__tests__/theme-contrast-policy-test.ts` and `app-native-platform-config-policy-test.ts` — semantic contrast and native branding/iPad configuration contracts.
 
 ### CP9 remaining
 - Make only demonstrated residual accessibility/RTL/localization/focus/presentation fixes; do not manufacture speculative polish.
-- Execute and inspect the prepared runtime visual matrix across narrow/common phone, tablet portrait/landscape, wide Web, Arabic/English, and light/dark, including verifying the tablet rail in both orientations.
-- Manually inspect keyboard focus indicators and representative interactions.
-- Run representative iPhone/iPad validation and verify the product-owned app icon plus light/dark splash in release-capable native output.
-- Execute and record the deliberate design-swap proof. CP9 remains open until runtime evidence exists.
+- Execute and inspect the prepared visual matrix at 320×568, 390×844, 834×1194, 1194×834, and 1440×900 across Arabic/English and shipped light/dark modes.
+- Manually inspect keyboard focus and representative interactions.
+- Run representative iPhone/iPad validation and verify the production icon and light/dark splash behavior.
+- Execute and record the deliberate design-swap proof for Today, Life Map, WHY, and an interaction-heavy flow.
 
 ## CP10 security/privacy state
 Detailed ledger/threat model: `docs/CP10_SECURITY_PRIVACY.md`.
 
-Implemented source hardening includes user-owned table/RLS review, cross-user policy specifications, function-execute hardening migration `0009`, authenticated portable export migration `0010`, Life Season expected-user fencing migrations `0011`/`0012`, JWT-protected `delete-account` Edge Function v2 with expected-user matching, export/two-step deletion and local-cache purge attempts, consent rechecks around integration sync, safer logging/error boundaries, broad account-switch/session fencing, account-owned Life Seasons drafts, account-bound queued profile/preference persistence, and platform-truthful Privacy export delivery where native share-sheet cancellation cannot be reported as success. The database export specification now seeds and verifies caller isolation/completeness across every current application-owned user data family, while the prepared destructive E2E explicitly covers both the `expected_user_id` mismatch guard and post-delete credential rejection, refuses to run if the destructive fixture reuses a normal E2E account, and has a static policy test protecting those safety invariants.
+Implemented source hardening includes user-owned table/RLS review, cross-user policy specifications, function-execute hardening migration `0009`, authenticated portable export migration `0010`, Life Season expected-user fencing migrations `0011`/`0012`, JWT-protected `delete-account` Edge Function v2 with expected-user matching, export/two-step deletion and local-cache purge attempts, consent rechecks around integration sync, safer logging/error boundaries, broad account-switch/session fencing, account-owned local drafts/queued persistence, platform-truthful native export/share behavior, and a client-bundle secret-marker policy covering app/core/plugin production source.
 
 ### CP10 remaining
-- Owner/runtime validation for cross-user/database specifications, Life Season expected-user/local-draft behavior, queued AppState persistence account switching, export/delete/local purge, destructive Edge deletion v2, consent-revocation races, account-switch/session-binding cases, offline replay ownership, notification-preference isolation/persistence, and native export/share dismissal behavior.
-- Supabase leaked-password protection remains an owner action in `automation/HUMAN_REQUIRED.md`.
+- Owner/runtime validation for cross-user/database specifications, Life Season expected-user/local-draft behavior, queued AppState account switching, export/delete/local purge, Edge deletion v2, consent-revocation races, account-switch/session-binding cases, offline replay ownership, notification-preference isolation/persistence, and native export/share dismissal behavior.
+- Execute the client-secret policy with the normal app test suite; the current worker only prepared/reviewed source and did not claim a PASS.
+- Supabase leaked/compromised-password protection remains an owner action in `automation/HUMAN_REQUIRED.md`.
 
 ## CP11 static readiness
 Detailed ledger: `docs/CP11_RELEASE_READINESS.md`.
 
 Prepared readiness includes:
-- Main Web matrix at **320×568**, **390×844**, **834×1194**, **1194×834**, and **1440×900**, each in light/dark.
-- Auth/route guard/password recovery, reusable read-only onboarding plus separate disposable onboarding-completion mutation fixture, reusable completed-English navigation plus a separate dedicated completed-mutation fixture, persisted Arabic locale coverage, Recovery/What If, privacy export, live daily-loop and feedback-learning mutations, Spiritual Grounding toggle/reload-persistence/restore/reload verification, notification preference persistence/restore, destructive account deletion with a dedicated-only fixture guard, explicit HTTP `409 account_changed` expected-user fencing, explicit HTTP `400` post-delete credential rejection, and source-level policy guards for mutation-fixture isolation and irreversible-test invariants, plus browser diagnostics, production logging policy, semantic contrast policy, and CP9 visual capture.
-- `npm run test:e2e:mutations` uses a fail-closed repository runner that enables mutation mode itself, requires the reusable completed-English/completed-Arabic/read-only-onboarding email identities for collision proof, requires a dedicated completed-mutation account plus a separate disposable onboarding-mutation account, requires those two mutation accounts to be distinct, rejects protected reusable/deletion-fixture reuse, and runs the mutation suite once in `desktop-light`; required mutation evidence can no longer silently disappear behind missing-environment skips, missing protected identities, or contaminate the reusable completed-English fixture.
-- The public destructive deletion runner requires every protected reusable/mutation fixture email identity before Playwright and rejects the deletion account if it matches the reusable completed-English, completed-Arabic, read-only onboarding, completed-mutation, or onboarding-mutation roles. Missing protected identities therefore cannot count as uniqueness evidence.
-- Read-only performance sampling for both the controlled Expo E2E runtime and the served static production Web export.
-- Production static-Web export smoke, direct-route hydration coverage, static-size reporting, and explicit Web/Android/iOS Expo export scripts.
-- All configured live Playwright paths now fail closed unless `MIZAN_E2E_SUPABASE_URL` targets the authorized hosted Supabase project `olfhjnropdrnujgpidfi`; the aggregate release runner independently enforces the same authority before invoking child commands, and the source-policy specification guards both layers.
-- The default development Playwright matrix explicitly excludes the production static-export smoke/performance specifications; those remain bound to `playwright.production.config.ts`, and a source-policy guard protects the separation so development-server runs cannot be mistaken for production-export evidence.
-- Root `npm run test:db` provides an explicit local-only Supabase pgTAP/RLS/security suite entry point, and `npm run lint:db` provides a local database lint gate that reports warnings while failing on errors.
-- Root `npm run check:release:baseline` now gives the owner a single fail-fast baseline after local Supabase reset. Its repository runner removes all mutation/destructive/visual/performance opt-in flags, requires the public Supabase client values plus completed-English, completed-Arabic, and reusable incomplete-onboarding credentials before any child command runs, rejects reuse of any of those three fixture accounts after normalized email comparison, and rejects a hosted live URL for any Supabase project other than `olfhjnropdrnujgpidfi`. Both mutation fixtures are intentionally excluded from this non-destructive baseline. This prevents required authenticated/RTL/onboarding suites from silently skipping, reusing one persisted account under incompatible evidence roles, or targeting an unauthorized backend. The static Playwright policy specification guards the safety boundary, required-variable preflight, distinct-fixture contract, mutation-fixture separation, protected-role identity preflight, and project-authority fence.
-- Generated local `supabase/config.toml` is ignored at the repository root, matching the documented owner-side `supabase init` clean-checkout workflow and keeping environment-specific CLI config out of source control.
-- Native iPad eligibility and MIZAN-owned app icon/favicon/adaptive/splash contracts are guarded statically.
+- Responsive Chromium matrix: **320×568**, **390×844**, **834×1194**, **1194×834**, and **1440×900**, each light/dark.
+- Auth/route guard/password recovery, reusable onboarding evidence, disposable onboarding-completion mutation, completed-account navigation, persisted Arabic, Recovery/What If, privacy export, daily-loop/feedback mutations, Spiritual Grounding persistence/restore, notification-preference persistence/restore, and isolated destructive account deletion.
+- Shared browser diagnostics for uncaught page errors, `console.error`, unexpected failed requests, and HTTP 5xx responses.
+- Development-runtime and production-export performance probes.
+- Production static-Web export smoke/direct-route hydration and static-size reporting.
+- Local-only `npm run test:db` and `npm run lint:db` database gates.
+- Fail-closed `npm run check:release:baseline` that requires the authorized Supabase project and distinct reusable English/Arabic/onboarding fixtures while stripping mutation/destructive/visual/performance opt-ins.
+- Fail-closed dedicated mutation and destructive runners with role-collision protection.
 
 ### CP11 remaining
-- After a disposable local Supabase reset and with the documented read-only baseline fixtures configured for the authorized project, execute `npm run check:release:baseline` from a trustworthy owner checkout and retain the output. The runner covers TypeScript, lint, unit/component/integration, local database test/lint, normal Web E2E, and production Web smoke/size while forcibly disabling opt-in mutation/destructive modes.
-- Execute and inspect keyboard/focus journeys and visual evidence; configure the reusable completed-English/completed-Arabic/read-only-onboarding role email identities plus the dedicated `MIZAN_E2E_COMPLETED_MUTATION_*` fixture and separate disposable `MIZAN_E2E_ONBOARDING_MUTATION_*` fixture, then run the fail-closed live mutation command to verify daily loop/feedback, Spiritual Grounding reload persistence/restoration, notification-preference reload persistence/restoration, and onboarding completion without writing to the reusable completed-English or reusable onboarding fixtures.
-- For destructive validation, keep every protected reusable/mutation role email identity configured, use only the dedicated disposable deletion account, and execute the prepared deletion journey with explicit destructive opt-in.
-- Execute development-runtime performance sampling and production-export performance sampling, retaining both reports and investigating material regressions.
-- Run Expo diagnostics and Android/iOS export checks; include representative iPhone/iPad runtime review and verify branded icon/splash surfaces in release-capable native output.
-- Continue repository hygiene review only for demonstrated dead flags, stale mocks/debug surfaces, console noise, or validated unused dependencies.
-- Perform a clean-checkout setup from the root README and record exact commands, versions, results, failures/fixes, database-test/lint evidence, Web size evidence, performance evidence, and owner release actions.
+- After a disposable local Supabase reset, run `npm run check:release:baseline` from a trustworthy owner checkout and retain output.
+- Run and inspect `npm run test:e2e:visual` with persisted-English and persisted-Arabic fixtures.
+- Run the dedicated mutation journey with completed-mutation and onboarding-mutation fixtures.
+- Run the isolated destructive deletion journey only with its disposable deletion account.
+- Execute development-runtime and production-export performance probes and retain reports.
+- Run Expo diagnostics plus Android/iOS export checks and representative native-device review.
+- Perform a clean-checkout setup using the root README and record exact versions/results/fixes.
+
+## Verification record
+Historical owner-side baseline evidence recorded before the later CP2–CP11 hardening included root typecheck PASS, lint PASS, core/plugin tests PASS, Expo Doctor PASS, and Android/iOS export PASS. Those historical results do **not** validate the later changes.
+
+Post-baseline reality:
+- Workers have not run product tests, builds, typechecks, database suites/lint, E2E, performance probes, or native exports under the active task policy.
+- Migrations `0009`–`0012` and delete-account v2 were previously applied/deployed; behavioral release proof remains pending.
+- The current source/specification work must not be described as runtime PASS until owner execution exists.
+
+## Known blockers / owner actions
+See `automation/HUMAN_REQUIRED.md`. Current open owner actions are:
+- Unlock the Windows user session for owner/runtime visual interaction evidence.
+- Add Supabase Auth redirect allow-list entries for `mizan://**`, `http://localhost:8087/**`, and the exact production Web URL before release.
+- Enable Supabase leaked/compromised-password protection and rerun the Security Advisor.
 
 ## Exact next executable action
-1. Continue CP9 static work only when a concrete residual defect is demonstrated; otherwise preserve the prepared runtime evidence for owner validation.
-2. Keep CP10 source review limited to genuinely new security/account-sensitive boundaries.
-3. Keep CP11 static harness aligned with the release contract; the next owner-side baseline is reproducible as `supabase init` → `supabase start` → `supabase db reset` → configure the documented distinct reusable read-only `MIZAN_E2E_*` fixtures for `https://olfhjnropdrnujgpidfi.supabase.co` → `npm run check:release:baseline`, followed by the protected role-email identity preflight, dedicated completed-mutation and onboarding-mutation fixtures, and explicit opt-in visual/mutation/performance/destructive/native gates documented in `docs/CP11_RELEASE_READINESS.md`.
+1. Continue CP9 source work only if a concrete residual defect is demonstrated; otherwise leave runtime visual/focus/native/design-swap proof to owner validation.
+2. Continue CP10 source review only for genuinely unreviewed client/security/account-sensitive boundaries. The client-secret marker guard now covers every current app/core/plugin source root intended for client bundling.
+3. Keep CP11 static harness aligned with the release contract without running forbidden execution gates. Owner validation should proceed as documented in `docs/CP11_RELEASE_READINESS.md` once the required fixtures/environment are available.
+4. When CP0–CP11 gates have actual evidence, proceed to CP12 independent final review; do not mark `TASK_DONE` from static implementation alone.
+
+## Evidence paths
+- `README.md`
+- `.env.example`
+- `apps/app/README.md`
+- `docs/CP8_RELIABILITY.md`
+- `docs/CP9_PRESENTATION_ARCHITECTURE.md`
+- `docs/CP9_DESIGN_SWAP_PROOF.md`
+- `docs/CP10_SECURITY_PRIVACY.md`
+- `docs/CP11_RELEASE_READINESS.md`
+- `apps/app/__tests__/client-secret-source-policy-test.ts`
+- `apps/app/__tests__/keyboard-focus-visual-policy-test.ts`
+- `apps/app/__tests__/localized-number-policy-test.ts`
+- `apps/app/__tests__/western-digit-source-policy-test.ts`
+- `apps/app/__tests__/playwright-mutation-isolation-policy-test.ts`
+- `tests/e2e/browser-assertions.ts`
+- `tests/e2e/visual-evidence-live.spec.ts`
+- `tests/e2e/product-live.spec.ts`
+- `tests/e2e/onboarding-live.spec.ts`
+- `tests/e2e/account-deletion-live.spec.ts`
+- `playwright.config.ts`
+- `playwright.production.config.ts`
+- `supabase/tests/rls_cross_user.sql`
+- `supabase/tests/account_data_export_security.sql`
+- `supabase/migrations/0009_function_execute_hardening.sql`
+- `supabase/migrations/0010_account_data_export.sql`
+- `supabase/migrations/0011_life_season_expected_user_guard.sql`
+- `supabase/migrations/0012_life_season_execute_hardening.sql`
+- `supabase/functions/delete-account/index.ts`
+- `automation/HUMAN_REQUIRED.md`
