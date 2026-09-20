@@ -37,6 +37,7 @@ const copy = {
     heroBody: 'هذه التهيئة القصيرة تعطي ميزان سياقًا شخصيًا قبل أول يوم: ما الذي يهم الآن، وما الذي تريد حمايته، وما البيانات التي تسمح بها.',
     foundationTitle: 'الأساس',
     foundationBody: 'اختر لغة التجربة والمجالات التي تريد أن تكون حاضرة في ميزانك اليومي. يمكنك تعديلها لاحقًا.',
+    domainMinimum: 'يجب إبقاء مجال واحد على الأقل مفعّلًا حتى يظل ميزان قابلًا للاستخدام.',
     prioritiesTitle: 'السياق والأولويات',
     prioritiesBody: 'أخبر ميزان أين تضع تركيزك الآن بدل افتراض أن كل مجالات الحياة يجب أن تتساوى.',
     safeguardsTitle: 'حدودك أولًا',
@@ -87,6 +88,7 @@ const copy = {
     heroBody: 'This short setup gives MIZAN personal context before day one: what matters now, what you want protected, and what data you allow.',
     foundationTitle: 'Foundation',
     foundationBody: 'Choose the experience language and the areas you want present in your daily MIZAN. You can change them later.',
+    domainMinimum: 'At least one area must stay enabled so MIZAN remains usable.',
     prioritiesTitle: 'Context and priorities',
     prioritiesBody: 'Tell MIZAN where your attention belongs right now instead of assuming every life area should be equal.',
     safeguardsTitle: 'Your boundaries first',
@@ -303,16 +305,22 @@ export default function OnboardingScreen() {
         <View style={styles.controlGroup}>
           <MizanText variant="label" muted>{t('domains')}</MizanText>
           <View style={[styles.wrap, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
-            {domainOrder.map((domainId) => (
-              <ChoiceChip
-                key={domainId}
-                label={t(domainId)}
-                selected={enabledDomains.includes(domainId)}
-                onPress={() => toggleDomain(domainId)}
-                disabled={saving}
-              />
-            ))}
+            {domainOrder.map((domainId) => {
+              const selected = enabledDomains.includes(domainId);
+              const isLastEnabled = selected && enabledDomains.length === 1;
+              return (
+                <ChoiceChip
+                  key={domainId}
+                  accessibilityLabel={isLastEnabled ? `${t(domainId)}. ${labels.domainMinimum}` : t(domainId)}
+                  label={t(domainId)}
+                  selected={selected}
+                  onPress={() => toggleDomain(domainId)}
+                  disabled={saving || isLastEnabled}
+                />
+              );
+            })}
           </View>
+          <MizanText variant="caption" muted>{labels.domainMinimum}</MizanText>
         </View>
       </Card>
 
