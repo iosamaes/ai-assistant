@@ -1,5 +1,5 @@
 import { router } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { StyleSheet, useColorScheme, View } from 'react-native';
 
 import { loadCapacitySnapshot, type CapacitySnapshot } from '@/application/capacity';
@@ -102,30 +102,45 @@ export default function CapacityScreen() {
   const scheme = useColorScheme();
   const palette = Palette[scheme === 'dark' ? 'dark' : 'light'];
   const [snapshot, setSnapshot] = useState<CapacitySnapshot | null>(null);
+  const [snapshotUserId, setSnapshotUserId] = useState<string | null>(null);
   const [status, setStatus] = useState<LoadStatus>('loading');
+  const activeUserRef = useRef(userId);
+  activeUserRef.current = userId;
   const hundred = formatLocalizedNumber(100, locale, 0);
 
   useEffect(() => {
     let active = true;
+    const requestedUserId = userId;
+    const requestIsCurrent = () => active && activeUserRef.current === requestedUserId;
+
     void (async () => {
       await Promise.resolve();
-      if (!active) return;
-      if (!userId) {
+      if (!requestIsCurrent()) return;
+      if (!requestedUserId) {
         setSnapshot(null);
+        setSnapshotUserId(null);
         setStatus('ready');
         return;
       }
 
+      setSnapshot(null);
+      setSnapshotUserId(requestedUserId);
       setStatus('loading');
-      const result = await loadCapacitySnapshot(userId);
-      if (!active) return;
+      const result = await loadCapacitySnapshot(requestedUserId);
+      if (!requestIsCurrent()) return;
       if (result.ok) {
         setSnapshot(result.value);
+        setSnapshotUserId(requestedUserId);
         setStatus('ready');
         return;
       }
-      if (result.error.kind === 'session-expired') await refreshSession();
-      if (active) setStatus('error');
+      if (result.error.kind === 'session-expired') {
+        await refreshSession();
+        if (!requestIsCurrent()) return;
+      }
+      setSnapshot(null);
+      setSnapshotUserId(requestedUserId);
+      setStatus('error');
     })();
 
     return () => {
@@ -133,7 +148,10 @@ export default function CapacityScreen() {
     };
   }, [refreshSession, userId]);
 
-  const bufferBand = snapshot?.buffer.band;
+  const currentSnapshot = userId !== null && snapshotUserId === userId ? snapshot : null;
+  const displayedStatus: LoadStatus =
+    userId === null ? 'ready' : snapshotUserId === userId ? status : 'loading';
+  const bufferBand = currentSnapshot?.buffer.band;
   const bufferBandLabel =
     bufferBand === 'strong'
       ? labels.strong
@@ -142,13 +160,13 @@ export default function CapacityScreen() {
         : bufferBand === 'low'
           ? labels.low
           : labels.unknown;
-  const bufferEvidence = snapshot
-    ? formatLocalizedNumber(snapshot.buffer.confidence.evidenceCount, locale, 0)
+  const bufferEvidence = currentSnapshot
+    ? formatLocalizedNumber(currentSnapshot.buffer.confidence.evidenceCount, locale, 0)
     : '—';
-  const bufferScore = snapshot?.buffer.score;
+  const bufferScore = currentSnapshot?.buffer.score;
   const bufferPercent = bufferScore === null || bufferScore === undefined ? null : clampPercent(bufferScore);
   const bufferPercentText = bufferPercent === null ? null : `${formatLocalizedNumber(bufferPercent, locale, 0)}%`;
-  const fragilityScore = snapshot?.buffer.fragility;
+  const fragilityScore = currentSnapshot?.buffer.fragility;
   const fragilityPercent =
     fragilityScore === null || fragilityScore === undefined ? null : clampPercent(fragilityScore);
   const fragilityPercentText =
@@ -169,7 +187,7 @@ export default function CapacityScreen() {
           <MizanText variant="title">{labels.bufferTitle}</MizanText>
           <MizanText muted>{labels.body}</MizanText>
         </View>
-        {status === 'ready' && bufferScore !== null && bufferScore !== undefined && bufferPercent !== null && bufferPercentText ? (
+        {displayedStatus === 'ready' && bufferScore !== null && bufferScore !== undefined && bufferPercent !== null && bufferPercentText ? (
           <>
             <View style={[styles.heroReading, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
               <View style={styles.heroValueGroup}>
@@ -201,18 +219,18 @@ export default function CapacityScreen() {
         ) : null}
       </Card>
 
-      {status === 'loading' ? (
+      {displayedStatus === 'loading' ? (
         <Card style={{ backgroundColor: palette.surfaceMuted }}>
           <MizanText accessibilityLiveRegion="polite" muted>{labels.loading}</MizanText>
         </Card>
       ) : null}
-      {status === 'error' ? (
+      {displayedStatus === 'error' ? (
         <Card style={{ backgroundColor: palette.surfaceMuted }}>
           <MizanText accessibilityLiveRegion="polite" muted>{labels.error}</MizanText>
         </Card>
       ) : null}
 
-      {status === 'ready' ? (
+      {displayedStatus === 'ready' ? (
         <Card style={styles.bufferCard}>
           <View style={styles.sectionHeader}>
             <MizanText variant="title">{labels.bufferTitle}</MizanText>
@@ -253,7 +271,7 @@ export default function CapacityScreen() {
               </View>
               <View style={[styles.metricTile, { backgroundColor: palette.surfaceMuted }]}>
                 <MizanText variant="caption" muted>{labels.confidence}</MizanText>
-                <MizanText variant="label">{confidenceLabel(snapshot?.buffer.confidence.level ?? 'insufficient', locale)}</MizanText>
+                <MizanText variant="label">{confidenceLabel(currentSnapshot?.buffer.confidence.level ?? 'insufficient', locale)}</MizanText>
               </View>
               <View style={[styles.metricTile, { backgroundColor: palette.surfaceMuted }]}>
                 <MizanText variant="caption" muted>{labels.evidence}</MizanText>
@@ -264,14 +282,14 @@ export default function CapacityScreen() {
         </Card>
       ) : null}
 
-      {status === 'ready' ? (
+      {displayedStatus === 'ready' ? (
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
             <MizanText variant="title">{labels.debtTitle}</MizanText>
             <MizanText muted>{labels.debtBody}</MizanText>
           </View>
           <View style={[styles.debtGrid, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
-            {(snapshot?.debts ?? []).map((debt) => {
+            {(currentSnapshot?.debts ?? []).map((debt) => {
               const direction =
                 debt.direction === 'accumulating'
                   ? labels.accumulating
