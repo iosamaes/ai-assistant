@@ -42,7 +42,7 @@ EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY
 
 For normal Expo development, place the real public values in `apps/app/.env.local` or provide them in the shell that launches Expo. Never place a Supabase service-role key in the app or any `EXPO_PUBLIC_*` variable.
 
-The root `.env.example` also documents optional Playwright live-account variables. The normal completed account, Arabic completed account, incomplete onboarding account, and destructive deletion account are intentionally separate fixtures because their test lifecycles differ. Mutation and destructive modes stay opt-in.
+The root `.env.example` also documents optional Playwright live-account variables. The normal completed account, Arabic completed account, incomplete onboarding account, and destructive deletion account are intentionally separate fixtures because their test lifecycles differ. Mutation, visual-evidence capture, and destructive modes stay opt-in.
 
 ## Run the app
 
@@ -100,6 +100,14 @@ Live account coverage is enabled only when the matching `MIZAN_E2E_*` environmen
 ```bash
 npm run test:e2e:mutations
 ```
+
+CP9 visual-evidence capture is read-only and separately opt-in. Configure both completed-account fixtures, set `MIZAN_E2E_VISUAL_EVIDENCE=1`, then run:
+
+```bash
+npm run test:e2e:visual
+```
+
+That command captures Today, Life Map, WHY, and Check-in for English and persisted-Arabic accounts across every configured phone/tablet/desktop and light/dark Playwright project. Screenshots are attached to the Playwright test output; their presence is evidence only after the run actually succeeds.
 
 The destructive deletion journey requires a dedicated disposable account plus `MIZAN_E2E_DESTRUCTIVE=1`:
 
