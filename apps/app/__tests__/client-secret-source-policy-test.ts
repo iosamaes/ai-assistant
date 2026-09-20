@@ -19,7 +19,7 @@ function collectSourceFiles(target: string): string[] {
 }
 
 describe('client secret source policy', () => {
-  test('all client-bundled production source contains no Supabase service-role or secret-key markers', () => {
+  test('all client-bundled production source and Expo config contain no Supabase service-role or secret-key markers', () => {
     const appRoot = path.resolve(__dirname, '..');
     const repoRoot = path.resolve(appRoot, '..', '..');
     const clientSourceRoots = [
@@ -27,7 +27,14 @@ describe('client secret source policy', () => {
       path.join(repoRoot, 'packages', 'core', 'src'),
       path.join(repoRoot, 'packages', 'plugins', 'src'),
     ];
-    const files = clientSourceRoots.flatMap(collectSourceFiles);
+    const expoConfigCandidates = [
+      path.join(appRoot, 'app.json'),
+      path.join(appRoot, 'app.config.ts'),
+      path.join(appRoot, 'app.config.js'),
+      path.join(appRoot, 'app.config.cjs'),
+      path.join(appRoot, 'app.config.mjs'),
+    ].filter((candidate) => fs.existsSync(candidate));
+    const files = [...clientSourceRoots.flatMap(collectSourceFiles), ...expoConfigCandidates];
 
     const violations = files.flatMap((file) => {
       const content = fs.readFileSync(file, 'utf8');
