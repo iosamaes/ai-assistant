@@ -34,14 +34,16 @@ Real credentials never belong in source control; `.env.example` documents names 
 | --- | --- | --- |
 | Auth / route guard | `tests/e2e/auth.spec.ts` | signed-out guard, locale switch, password-reset mode, overflow |
 | Onboarding | `tests/e2e/onboarding-live.spec.ts` | incomplete account, no product chrome, essential setup completion behind mutation opt-in |
-| Primary product shell | `tests/e2e/product-live.spec.ts` | Home shell plus Life Map, One Move, Insights, More across configured phone/desktop projects |
+| Primary product shell | `tests/e2e/product-live.spec.ts` | Home shell plus Life Map, One Move, Insights, More across configured phone/tablet/desktop projects |
 | Daily loop | `tests/e2e/product-live.spec.ts` | live low-energy check-in persistence behind mutation opt-in |
 | Feedback learning | `tests/e2e/product-live.spec.ts` | repeated evidence → One Move accept → explicit 4/5 feedback → Personal Learning evidence |
 | Recovery | `tests/e2e/product-live.spec.ts` | Recovery surface plus next-step interaction |
 | Scenario / What If | `tests/e2e/product-live.spec.ts` | scenario switch plus assumption visibility |
 | Settings / optional module | `tests/e2e/product-live.spec.ts` | Spiritual Grounding toggle and restore behind mutation opt-in |
 | Privacy | `tests/e2e/product-live.spec.ts` | portable JSON export/download without destructive deletion |
-| Responsive Web | Playwright projects | 390×844 phone and 1440×900 desktop, horizontal-overflow assertions |
+| Responsive Web | Playwright projects | 390×844 phone, 834×1194 tablet portrait, 1194×834 tablet landscape, and 1440×900 desktop, with the existing overflow assertions executed by each applicable specification |
+
+The Playwright project matrix deliberately uses the same Chromium engine with explicit viewport classes so layout regressions can be compared across widths without introducing a browser-engine variable. Native Android/iOS validation remains a separate owner/runtime gate.
 
 ## Still required before CP11 can close
 
