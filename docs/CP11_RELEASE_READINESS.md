@@ -14,13 +14,13 @@ Provide only public client configuration plus a dedicated completed-onboarding t
 - `MIZAN_E2E_COMPLETED_EMAIL`
 - `MIZAN_E2E_COMPLETED_PASSWORD`
 
-This enables non-destructive checks for the adaptive navigation shell, Life Map/One Move/Insights/More routing, Recovery progression, What If scenario switching, Settings reachability, portable Privacy export, overflow checks, and critical browser diagnostics. The live journeys collect uncaught page errors, browser `console.error` messages, failed requests other than expected Chromium navigation aborts, and HTTP 5xx responses. The same diagnostic helper is shared by signed-out auth, completed-account, onboarding, and destructive-deletion journeys so critical browser/runtime failures are judged consistently. This is a verification harness only; it is not a substitute for executing the production Web build and inspecting its console/network behavior.
+This enables non-destructive checks for the adaptive navigation shell, Life Map/One Move/Insights/More routing, the CP9 owner-reference WHY/Personal Learning/Experiments/Integrations surfaces, Recovery progression, What If scenario switching, Settings reachability, portable Privacy export, overflow checks, and critical browser diagnostics. The owner-reference evidence surfaces are intentionally read-only and execute across the full responsive/light-dark project matrix. The live journeys collect uncaught page errors, browser `console.error` messages, failed requests other than expected Chromium navigation aborts, and HTTP 5xx responses. The same diagnostic helper is shared by signed-out auth, completed-account, onboarding, and destructive-deletion journeys so critical browser/runtime failures are judged consistently. This is a verification harness only; it is not a substitute for executing the production Web build and inspecting its console/network behavior.
 
 For Arabic/RTL matrix evidence, configure a second completed account whose saved MIZAN profile locale is already Arabic:
 - `MIZAN_E2E_ARABIC_EMAIL`
 - `MIZAN_E2E_ARABIC_PASSWORD`
 
-The Arabic fixture is deliberately read-only. It signs in through the normal auth path, waits for the persisted Arabic profile locale to hydrate, then verifies Arabic primary navigation and major shell routing across the same responsive/light-dark matrix without changing the shared account locale during the test. This avoids a cross-project persistence race while giving owner validation a deterministic RTL path.
+The Arabic fixture is deliberately read-only. It signs in through the normal auth path, waits for the persisted Arabic profile locale to hydrate, then verifies Arabic primary navigation and major shell routing across the same responsive/light-dark matrix without changing the shared account locale during the test. It now also visits WHY, Personal Learning, Experiments, and Integrations in Arabic across that matrix, asserting their localized production headings plus overflow and critical browser diagnostics. This avoids a cross-project persistence race while giving owner validation a deterministic RTL path.
 
 ### 3. Live mutation E2E
 Set `MIZAN_E2E_MUTATIONS=1` only when the configured account is disposable or dedicated to automation. This additionally enables check-in persistence, the One Move → explicit outcome feedback → Personal Learning loop, and an optional Spiritual Grounding preference toggle that restores its original state.
@@ -44,6 +44,8 @@ Use a separate completed account created only to be permanently deleted:
 
 The generic browser assertions live in `tests/e2e/browser-assertions.ts`, while account configuration/sign-in helpers remain in `tests/e2e/live-account.ts`. This keeps browser/runtime diagnostics independent from fixture/account concerns. Real credentials never belong in source control; `.env.example` documents names only. `apps/app/__tests__/playwright-mutation-isolation-policy-test.ts` statically guards the single-project mutation isolation contract so future E2E edits do not silently reintroduce shared-account races.
 
+`apps/app/__tests__/production-logging-privacy-policy-test.ts` adds a static privacy guard over production app/core/plugin/Edge source: ad-hoc `console.*` sinks are rejected, with only the existing development-only sanitized render-boundary `console.error` allowed. The specification also asserts that this one allowed diagnostic keeps only the fixed event label plus React component stack rather than application-controlled error name/message/stack fields. It has not been executed by workers under the active policy.
+
 ## Current E2E matrix
 
 | CP11 journey | Specification | Current static coverage |
@@ -51,6 +53,7 @@ The generic browser assertions live in `tests/e2e/browser-assertions.ts`, while 
 | Auth / route guard | `tests/e2e/auth.spec.ts` | signed-out guard, locale switch, password-reset mode, overflow, shared critical browser diagnostics |
 | Onboarding | `tests/e2e/onboarding-live.spec.ts` | incomplete-account/no-product-chrome checks across the responsive matrix when mutation mode is off; essential setup completion is mutation-gated and isolated to one `desktop-light` project; both paths use shared critical browser diagnostics |
 | Primary product shell | `tests/e2e/product-live.spec.ts` | English/default completed-account shell plus Life Map, One Move, Insights, More across configured phone/tablet/desktop projects; optional dedicated Arabic completed account repeats the primary shell route/overflow checks with persisted Arabic RTL across the same matrix |
+| CP9 premium reference evidence surfaces | `tests/e2e/product-live.spec.ts` | read-only WHY, Personal Learning, Experiments, and Integrations route/heading/overflow checks across the full responsive/light-dark matrix for the normal completed account and, when configured, the dedicated persisted-Arabic account |
 | Browser diagnostics | `tests/e2e/browser-assertions.ts`, all E2E journey specs | signed-out auth, completed-account, Arabic, onboarding, mutation, and destructive-deletion journeys share one guard for uncaught page errors, console errors, unexpected failed requests, and HTTP 5xx responses; expected Chromium `net::ERR_ABORTED` navigation cancellations are excluded |
 | Daily loop | `tests/e2e/product-live.spec.ts` | live low-energy check-in persistence behind mutation opt-in and isolated to `desktop-light` |
 | Feedback learning | `tests/e2e/product-live.spec.ts` | repeated evidence → One Move accept → explicit 4/5 feedback → Personal Learning evidence, mutation-gated and isolated to `desktop-light` |
