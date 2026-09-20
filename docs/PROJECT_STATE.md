@@ -49,12 +49,14 @@ Recent residual fixes include semantic RTL progress geometry, unknown-safe date/
 - `4cdde370fd067d926470b8bd2174793c948a2870` — the English visual-evidence path now proves the normal completed fixture has a persisted English MIZAN locale before accepting it as English evidence; authentication-screen language alone can no longer silently mislabel an Arabic profile capture.
 - `3d95935188efd8b896c09ef3cb74cf780fbaeeeb` — the CP9 visual capture now waits for each surface's localized ready marker, waits for asynchronous loading text to clear where applicable, rejects known load-error states, and waits for browser fonts before taking the screenshot. This prevents half-loaded or wrongly localized screenshots from counting as evidence.
 - `170acaf0c28bc2c7a7685dac3187d6f0f905ac81` + `f3964eeafd239b7bdfb70b93e9236047c5fdd1ce` — `.env.example` and the root README now document the persisted-English fixture requirement and the stable-capture contract without adding credentials or claiming execution.
+- `7496bb9fa3f80d8859e1d2a6fd307cde2ea133ca` — the visual-evidence harness now enters a real **non-persisting Check-in interaction state** by selecting Energy `3`, verifying the selected state and enabled Save control, then capturing the screen without submitting. The interaction-heavy CP9 proof surface is therefore represented by an actual control state rather than only an untouched form.
+- `ae63bdb335fdf4f83ffc5447945ae756c362f54c` — added `docs/CP9_DESIGN_SWAP_PROOF.md`, an owner-side runtime proof procedure that constrains the temporary alternate direction to the presentation boundary, requires Today/Life Map/WHY/interacted Check-in evidence, requires a diff proving no core/application/data/provider edits, and requires reverting the temporary direction after evidence is recorded.
 
 ### CP9 remaining
 - Fix only demonstrated residual defects on still-unreviewed shipped surfaces; do not manufacture speculative polish.
 - Owner/runtime evidence remains required across narrow/common phone, tablet portrait/landscape, and wide Web, Arabic/English, and shipped light/dark modes.
 - Execute and inspect the prepared visual-evidence matrix plus the keyboard/focus journeys; a successful automated run still does not replace human focus-indicator and interaction review.
-- The TASK-required deliberate runtime **design-swap proof** remains pending for Today, Life Map, WHY, and interaction-heavy Check-in. Screenshot harness presence alone is not that proof.
+- Execute the prepared `docs/CP9_DESIGN_SWAP_PROOF.md` owner procedure and record its evidence. The TASK-required deliberate runtime **design-swap proof** remains pending until that happens.
 
 ## Notifications/preferences surface
 The TASK-required **Notifications/preferences** product surface was previously missing and is now statically implemented without pretending push delivery exists.
@@ -89,14 +91,14 @@ Detailed release ledger: `docs/CP11_RELEASE_READINESS.md`.
 
 The Playwright Web matrix defines **320×568**, **390×844**, **834×1194**, **1194×834**, and **1440×900**, each in light/dark emulated color schemes. Native Android/iOS validation is a separate owner/runtime gate.
 
-Prepared static verification includes auth/route guard/password recovery, real Tab/Enter keyboard navigation of auth controls, accessible-label password targeting, onboarding, completed-account pointer and keyboard navigation, Recovery/What If/Settings/Privacy export, daily-loop mutation paths, One Move → explicit feedback → Personal Learning, Spiritual Grounding preference toggle/restore, notification preference toggle → reload persistence → restore → reload verification, notification-preference stale-load/stale-save account-switch fencing, Arabic persisted-locale read-only coverage including keyboard navigation after RTL hydration, destructive deletion with a dedicated disposable account, shared critical browser diagnostics, production logging policy, semantic text-contrast regression coverage, and a locale-verified/load-settled CP9 visual-evidence capture matrix.
+Prepared static verification includes auth/route guard/password recovery, real Tab/Enter keyboard navigation of auth controls, accessible-label password targeting, onboarding, completed-account pointer and keyboard navigation, Recovery/What If/Settings/Privacy export, daily-loop mutation paths, One Move → explicit feedback → Personal Learning, Spiritual Grounding preference toggle/restore, notification preference toggle → reload persistence → restore → reload verification, notification-preference stale-load/stale-save account-switch fencing, Arabic persisted-locale read-only coverage including keyboard navigation after RTL hydration, destructive deletion with a dedicated disposable account, shared critical browser diagnostics, production logging policy, semantic text-contrast regression coverage, and a locale-verified/load-settled CP9 visual-evidence capture matrix whose Check-in frame uses a real non-persisting selected rating.
 
 These are static harness/readiness changes only. **No E2E run, screenshot capture result, keyboard PASS, contrast-test PASS, destructive delete, notification preference persistence/session-fencing PASS, test result, typecheck, build, database-policy execution, performance result, or release PASS is claimed by workers under the active policy.**
 
 ## Exact next executable action
 1. Continue CP9 static work only when a concrete accessibility/RTL/localization/focus/technical-id/presentation defect is demonstrated; otherwise leave runtime visual/interaction proof to owner validation.
 2. Keep CP10 source review scoped to genuinely new account-sensitive/security boundaries introduced by new work; notification preferences now have live persistence and behavioral account-switch specifications but still need owner execution evidence.
-3. Keep CP11 static harness aligned with the release matrix. Owner validation must execute typecheck/lint/tests, SQL/RLS suites, Web E2E including keyboard/focus and notification-preference mutation journeys, visual capture, destructive deletion, production Web inspection, native/export checks, performance sanity, clean-checkout setup, and deliberate design-swap proof.
+3. Keep CP11 static harness aligned with the release matrix. Owner validation must execute typecheck/lint/tests, SQL/RLS suites, Web E2E including keyboard/focus and notification-preference mutation journeys, visual capture, destructive deletion, production Web inspection, native/export checks, performance sanity, clean-checkout setup, and the prepared deliberate design-swap proof.
 4. When CP0–CP11 gates are honestly satisfied with execution evidence, proceed to CP12 independent two-worker review. Do not claim completion from static implementation alone.
 
 ## Verification record
@@ -114,7 +116,7 @@ Post-baseline:
 - **No worker-run app tests, builds, typechecks, validation database scripts, cloud CI, or GitHub Actions are claimed for CP2–CP11 changes.**
 - Authorized migrations `0009`–`0012` were applied previously; live reads confirmed the hardened Life Season RPC signature/ACL. This is implementation/state evidence, not a behavioral test-suite PASS.
 - `delete-account` version 2 previously reported ACTIVE with JWT verification enabled; destructive end-to-end deletion remains unexecuted.
-- Premium-reference fixes, account-fencing specifications, notification-preference code/specifications, notification-preference live persistence and session-fencing harnesses, locale-verified/load-settled visual-evidence harness, responsive/keyboard E2E matrix, semantic contrast regression specification, and production logging guards remain static evidence until owner validation.
+- Premium-reference fixes, account-fencing specifications, notification-preference code/specifications, notification-preference live persistence and session-fencing harnesses, locale-verified/load-settled visual-evidence harness with non-persisting Check-in interaction, responsive/keyboard E2E matrix, semantic contrast regression specification, and production logging guards remain static evidence until owner validation.
 - Root/app setup and release documentation are MIZAN-specific, but the documented clean-checkout flow still requires owner execution evidence.
 
 ## Known blockers / risks
@@ -123,7 +125,7 @@ Post-baseline:
 - CP10: Supabase leaked-password protection remains disabled pending the recorded owner Auth-setting action.
 - Cross-user/database specifications and all post-baseline runtime/type/build gates require owner execution evidence.
 - Recent Today snapshot native SecureStore behavior/capacity still needs owner runtime validation.
-- CP9 representative screenshots, keyboard/focus interaction validation, and final design-swap proof remain outstanding even though capture and keyboard automation are prepared. English capture now requires a persisted-English completed fixture rather than merely an English auth form.
+- CP9 representative screenshots, keyboard/focus interaction validation, and final design-swap proof remain outstanding even though capture, interaction-state evidence, keyboard automation, and an exact proof procedure are prepared. English capture now requires a persisted-English completed fixture rather than merely an English auth form.
 - Privacy export/delete, local cache purge/warning behavior, account-scoped confirmation, Edge v2 expected-user deletion fencing, Life Season expected-user fencing, and account-switch/session-binding behavior still need Web/native/end-to-end validation.
 - Notification preferences persist safely in existing app-owned storage and now have prepared live persistence/restore plus account-switch regression specifications, but actual device notification scheduling/push delivery is intentionally unavailable and unclaimed.
 - The optional Arabic read-only matrix requires a dedicated completed test account with persisted Arabic locale; absent credentials cause the specification to skip rather than mutate another account.
@@ -134,6 +136,7 @@ Post-baseline:
 - `apps/app/README.md`
 - `docs/CP8_RELIABILITY.md`
 - `docs/CP9_PRESENTATION_ARCHITECTURE.md`
+- `docs/CP9_DESIGN_SWAP_PROOF.md`
 - `docs/CP10_SECURITY_PRIVACY.md`
 - `docs/CP11_RELEASE_READINESS.md`
 - `playwright.config.ts`
