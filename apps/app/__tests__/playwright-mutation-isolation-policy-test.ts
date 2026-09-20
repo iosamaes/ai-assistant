@@ -19,7 +19,7 @@ describe('Playwright live-mutation isolation policy', () => {
     expect(notificationSpec).toContain('test.skip(!mutationsEnabled');
   });
 
-  test('completed and onboarding mutations use dedicated fixtures and the mutation command cannot silently skip them', () => {
+  test('completed and onboarding mutations use dedicated fixtures and the mutation command cannot silently skip or bypass role separation', () => {
     const repoRoot = path.resolve(__dirname, '../../..');
     const packageJson = JSON.parse(fs.readFileSync(path.join(repoRoot, 'package.json'), 'utf8')) as {
       scripts?: Record<string, string>;
@@ -33,6 +33,7 @@ describe('Playwright live-mutation isolation policy', () => {
     const liveAccount = fs.readFileSync(path.join(repoRoot, 'tests', 'e2e', 'live-account.ts'), 'utf8');
     const mutationRunner = fs.readFileSync(path.join(repoRoot, 'scripts', 'run-e2e-mutations.mjs'), 'utf8');
     const baselineRunner = fs.readFileSync(path.join(repoRoot, 'scripts', 'run-release-baseline.mjs'), 'utf8');
+    const requiredVariablesBlock = mutationRunner.match(/const requiredVariables = \[([\s\S]*?)\];/)?.[1] ?? '';
 
     expect(packageJson.scripts?.['test:e2e:mutations']).toBe('node scripts/run-e2e-mutations.mjs');
     expect(liveAccount).toContain('MIZAN_E2E_COMPLETED_MUTATION_EMAIL');
@@ -49,11 +50,13 @@ describe('Playwright live-mutation isolation policy', () => {
       'MIZAN_E2E_ONBOARDING_MUTATION_EMAIL must be separate from the reusable MIZAN_E2E_ONBOARDING_EMAIL fixture.',
     );
     expect(mutationRunner).toContain("MIZAN_E2E_MUTATIONS: '1'");
-    expect(mutationRunner).toContain("'MIZAN_E2E_COMPLETED_MUTATION_EMAIL'");
-    expect(mutationRunner).toContain("'MIZAN_E2E_COMPLETED_MUTATION_PASSWORD'");
-    expect(mutationRunner).toContain("'MIZAN_E2E_ONBOARDING_MUTATION_EMAIL'");
-    expect(mutationRunner).toContain("'MIZAN_E2E_ONBOARDING_MUTATION_PASSWORD'");
-    expect(mutationRunner).toContain("'MIZAN_E2E_COMPLETED_EMAIL'");
+    expect(requiredVariablesBlock).toContain("'MIZAN_E2E_COMPLETED_EMAIL'");
+    expect(requiredVariablesBlock).toContain("'MIZAN_E2E_ARABIC_EMAIL'");
+    expect(requiredVariablesBlock).toContain("'MIZAN_E2E_ONBOARDING_EMAIL'");
+    expect(requiredVariablesBlock).toContain("'MIZAN_E2E_COMPLETED_MUTATION_EMAIL'");
+    expect(requiredVariablesBlock).toContain("'MIZAN_E2E_COMPLETED_MUTATION_PASSWORD'");
+    expect(requiredVariablesBlock).toContain("'MIZAN_E2E_ONBOARDING_MUTATION_EMAIL'");
+    expect(requiredVariablesBlock).toContain("'MIZAN_E2E_ONBOARDING_MUTATION_PASSWORD'");
     expect(mutationRunner).toContain("'MIZAN_E2E_DELETE_EMAIL'");
     expect(mutationRunner).toContain('completedMutationEmail === onboardingMutationEmail');
     expect(mutationRunner).toContain('missingVariables.length > 0');
