@@ -25,7 +25,7 @@ export function AppNavigator() {
     firstSegment !== 'update-password' &&
     firstSegment !== 'onboarding';
   const showProductNavigation = hasUsableSession && onboardingCompleted && isProductChromeRoute;
-  const wideNavigation = showProductNavigation && width >= Layout.wideBreakpoint;
+  const railNavigation = showProductNavigation && width >= Layout.tabletBreakpoint;
 
   useEffect(() => {
     let active = true;
@@ -80,10 +80,10 @@ export function AppNavigator() {
       <View
         style={{
           flex: 1,
-          flexDirection: wideNavigation ? (isRtl ? 'row-reverse' : 'row') : 'column',
+          flexDirection: railNavigation ? (isRtl ? 'row-reverse' : 'row') : 'column',
           backgroundColor: palette.background,
         }}>
-        {wideNavigation ? <AppNavigation activeSegment={firstSegment} /> : null}
+        {railNavigation ? <AppNavigation activeSegment={firstSegment} /> : null}
         <View style={{ flex: 1 }}>
           <Stack
             screenOptions={{
@@ -117,7 +117,7 @@ export function AppNavigator() {
             <Stack.Screen name="settings" />
           </Stack>
         </View>
-        {showProductNavigation && !wideNavigation ? <AppNavigation activeSegment={firstSegment} /> : null}
+        {showProductNavigation && !railNavigation ? <AppNavigation activeSegment={firstSegment} /> : null}
       </View>
     </>
   );
