@@ -90,7 +90,7 @@ export default function AuthScreen() {
     const result =
       mode === 'sign-in'
         ? await signInWithPassword(email, password)
-        : await signUpWithPassword(email, password);
+        : await signUpWithPassword(email, password, locale);
 
     if (!result.ok) {
       setMessage(authErrorText(result.error.kind));
