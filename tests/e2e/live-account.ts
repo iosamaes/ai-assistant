@@ -10,6 +10,12 @@ export const completedAccountConfigured = Boolean(
     process.env.MIZAN_E2E_COMPLETED_PASSWORD,
 );
 
+export const completedMutationAccountConfigured = Boolean(
+  liveSupabaseConfigured &&
+    process.env.MIZAN_E2E_COMPLETED_MUTATION_EMAIL &&
+    process.env.MIZAN_E2E_COMPLETED_MUTATION_PASSWORD,
+);
+
 export const arabicCompletedAccountConfigured = Boolean(
   liveSupabaseConfigured &&
     process.env.MIZAN_E2E_ARABIC_EMAIL &&
@@ -49,6 +55,14 @@ export async function signInCompletedAccount(page: Page) {
   const email = process.env.MIZAN_E2E_COMPLETED_EMAIL;
   const password = process.env.MIZAN_E2E_COMPLETED_PASSWORD;
   if (!email || !password) throw new Error('Completed-account E2E credentials are not configured.');
+  await signInWithCredentials(page, email, password);
+  await expect(page).toHaveURL(/\/today$/);
+}
+
+export async function signInCompletedMutationAccount(page: Page) {
+  const email = process.env.MIZAN_E2E_COMPLETED_MUTATION_EMAIL;
+  const password = process.env.MIZAN_E2E_COMPLETED_MUTATION_PASSWORD;
+  if (!email || !password) throw new Error('Completed-account mutation E2E credentials are not configured.');
   await signInWithCredentials(page, email, password);
   await expect(page).toHaveURL(/\/today$/);
 }
