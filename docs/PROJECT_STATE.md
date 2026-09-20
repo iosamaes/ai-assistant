@@ -23,6 +23,9 @@
 - [ ] CP12 — Independent final review and handoff
 
 ## Latest productive changes
+- `0a8fb1326b8be529ac983b6f6c4f2fbbb5b2e92f` — extended the Playwright mutation-isolation policy specification so the aggregate release baseline must keep its fail-closed safety boundary: root wiring must point to the repository runner, mutation/destructive/visual/performance opt-in flags must be removed from the child environment, and the aggregate command must not invoke mutation or account-deletion runners directly.
+- `563e7494bf58acb751bca6afe185254f2dcc8ef4` + `6bb5b3dc6323b4c4dca997199381032d565791b3` — added the owner-side `npm run check:release:baseline` path through `scripts/run-release-baseline.mjs`. The runner strips `MIZAN_E2E_MUTATIONS`, `MIZAN_E2E_DESTRUCTIVE`, `MIZAN_E2E_VISUAL_EVIDENCE`, and `MIZAN_E2E_PERFORMANCE`, then fail-fast chains workspace checks, local database tests/lint, the normal Web E2E matrix, and production Web smoke/size. This prevents an owner shell with a stale destructive opt-in from silently turning the convenience baseline into a mutating or irreversible run.
+- `7d04a1c4f52b2962d983af65f4c4dab20828edfd` + `b77d640f06a728c07a8256b37ee16c765b987306` — documented the aggregate baseline in the clean-checkout README and CP11 release ledger, while keeping live mutations, visual evidence, performance probes, destructive deletion, Expo Doctor, and Android/iOS exports as explicit separate gates.
 - `fa621532c129eeb85edea8a041d1a1abcfcdd437` — added a static regression guard around the irreversible Playwright contract so future edits must preserve desktop-only isolation, explicit destructive opt-in, dedicated-fixture protection, the v2 `409 account_changed` expected-user fence, and strict post-delete HTTP `400` authentication rejection.
 - `0fa422d3c90db3b381f355f31f35f53e865c948b` — added a fail-closed safety guard to the irreversible deletion harness: `MIZAN_E2E_DELETE_EMAIL` is rejected before any destructive action if it matches the reusable completed, persisted-Arabic, or onboarding fixtures, reducing the risk of owner validation accidentally deleting a shared test account.
 - `249f70164e3042884ffc883f33e0f453080ad205` — extended the destructive account-deletion E2E to exercise the deployed v2 expected-user fence before real deletion: a valid access token paired with a deliberately different `expected_user_id` must return HTTP `409` with `account_changed`, and a fresh password grant must still succeed afterward. The same journey then performs the intended deletion and requires the previously valid credentials to return HTTP `400`, so generic backend failures cannot masquerade as deletion evidence.
@@ -75,11 +78,12 @@ Prepared readiness includes:
 - Read-only performance sampling for both the controlled Expo E2E runtime and the served static production Web export.
 - Production static-Web export smoke, direct-route hydration coverage, static-size reporting, and explicit Web/Android/iOS Expo export scripts.
 - Root `npm run test:db` provides an explicit local-only Supabase pgTAP/RLS/security suite entry point, and `npm run lint:db` provides a local database lint gate that reports warnings while failing on errors.
+- Root `npm run check:release:baseline` now gives the owner a single fail-fast baseline after local Supabase reset. Its repository runner removes all mutation/destructive/visual/performance opt-in flags before chaining workspace checks, local database test/lint, the normal Web E2E matrix, and production Web smoke/size. A static policy specification guards that safety boundary.
 - Native iPad eligibility and MIZAN-owned app icon/favicon/adaptive/splash contracts are guarded statically.
 
 ### CP11 remaining
-- Run TypeScript, lint, unit/component/integration, `npm run test:db`, `npm run lint:db`, and full Web E2E suites from a trustworthy owner checkout.
-- Execute and inspect keyboard/focus journeys, visual evidence, live mutation journeys, development-runtime performance sampling, production-export performance sampling, production Web export/smoke/size reporting, and destructive deletion only with documented fixtures.
+- After a disposable local Supabase reset, execute `npm run check:release:baseline` from a trustworthy owner checkout and retain the output. The runner covers TypeScript, lint, unit/component/integration, local database test/lint, normal Web E2E, and production Web smoke/size while forcibly disabling opt-in mutation/destructive modes.
+- Execute and inspect keyboard/focus journeys, visual evidence, live mutation journeys, development-runtime performance sampling, production-export performance sampling, and destructive deletion only with documented fixtures.
 - Run Expo diagnostics and Android/iOS export checks; include representative iPhone/iPad runtime review and verify branded icon/splash surfaces in release-capable native output.
 - Continue repository hygiene review only for demonstrated dead flags, stale mocks/debug surfaces, console noise, or validated unused dependencies.
 - Perform a clean-checkout setup from the root README and record exact commands, versions, results, failures/fixes, database-test/lint evidence, Web size evidence, performance evidence, and owner release actions.
@@ -87,7 +91,7 @@ Prepared readiness includes:
 ## Exact next executable action
 1. Continue CP9 static work only when a concrete residual defect is demonstrated; otherwise preserve the prepared runtime evidence for owner validation.
 2. Keep CP10 source review limited to genuinely new security/account-sensitive boundaries.
-3. Keep CP11 static harness aligned with the release contract; the next owner-side database step is reproducible as `supabase init` → `supabase start` → `supabase db reset` → `npm run test:db` → `npm run lint:db`.
+3. Keep CP11 static harness aligned with the release contract; the next owner-side baseline is reproducible as `supabase init` → `supabase start` → `supabase db reset` → `npm run check:release:baseline`, followed by the explicit opt-in visual/mutation/performance/destructive/native gates documented in `docs/CP11_RELEASE_READINESS.md`.
 4. After CP0–CP11 gates are honestly satisfied with current execution evidence, begin CP12 independent two-worker verification. Do not claim completion from source presence alone.
 
 ## Verification record
@@ -105,7 +109,7 @@ Post-baseline:
 - **No worker-run app tests, builds, typechecks, validation database scripts/lints, Web E2E, screenshot captures, performance runs, production-export smoke/size runs, GitHub Actions, or cloud CI are claimed for CP2–CP11 changes.**
 - Migrations `0009`–`0012` were applied previously; live ACL/state reads are implementation evidence, not a behavioral suite PASS.
 - `delete-account` v2 was previously deployed ACTIVE with JWT verification; destructive end-to-end deletion remains unverified until the owner-side disposable-account journey runs.
-- Latest owner-executable release-harness additions include the destructive-test safety policy (`fa621532c129eeb85edea8a041d1a1abcfcdd437`), destructive-fixture reuse protection (`0fa422d3c90db3b381f355f31f35f53e865c948b`), expected-user mismatch and strict post-delete authentication proof (`249f70164e3042884ffc883f33e0f453080ad205`, building on `2b8f7044c2fff10a252778bde332b7238930595a`), the local-only database test command (`6cf2f9136d48960086dd1c68c3199cfb66860835`), the database lint command (`982821b080bf6f985e4e8ae179105323f42b2502`), and clean-checkout documentation (`da0eba574441afb72b9f2050bba820a33e1fca72`, `a0c84725cad3611479ee1e54e3c030f115c86ff2`).
+- Latest owner-executable release-harness additions include the fail-closed aggregate baseline runner and safety specification (`6bb5b3dc6323b4c4dca997199381032d565791b3`, `563e7494bf58acb751bca6afe185254f2dcc8ef4`, `0a8fb1326b8be529ac983b6f6c4f2fbbb5b2e92f`), its documentation (`7d04a1c4f52b2962d983af65f4c4dab20828edfd`, `b77d640f06a728c07a8256b37ee16c765b987306`), the destructive-test safety policy (`fa621532c129eeb85edea8a041d1a1abcfcdd437`), destructive-fixture reuse protection (`0fa422d3c90db3b381f355f31f35f53e865c948b`), expected-user mismatch and strict post-delete authentication proof (`249f70164e3042884ffc883f33e0f453080ad205`, building on `2b8f7044c2fff10a252778bde332b7238930595a`), the local-only database test command (`6cf2f9136d48960086dd1c68c3199cfb66860835`), and the database lint command (`982821b080bf6f985e4e8ae179105323f42b2502`).
 
 ## Known blockers / owner actions
 - CP1/CP9 representative physical/runtime visual interaction evidence requires the owner environment to be normally unlocked; see `automation/HUMAN_REQUIRED.md`.
@@ -126,6 +130,7 @@ Post-baseline:
 - `apps/app/__tests__/app-state-persistence-queue-session-fencing-test.tsx`
 - `apps/app/__tests__/playwright-mutation-isolation-policy-test.ts`
 - `playwright.production.config.ts`
+- `scripts/run-release-baseline.mjs`
 - `scripts/serve-expo-static.mjs`
 - `scripts/report-expo-static-size.mjs`
 - `tests/e2e/browser-assertions.ts`
