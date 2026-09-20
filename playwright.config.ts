@@ -15,6 +15,7 @@ const colorSchemes = ['light', 'dark'] as const;
 
 export default defineConfig({
   testDir: './tests/e2e',
+  testIgnore: ['**/production-web.spec.ts', '**/production-performance.spec.ts'],
   fullyParallel: false,
   retries: 0,
   reporter: 'list',
