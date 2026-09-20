@@ -5,6 +5,11 @@ const playwrightCommand = isWindows ? 'playwright.cmd' : 'playwright';
 const requiredVariables = [
   'MIZAN_E2E_SUPABASE_URL',
   'MIZAN_E2E_SUPABASE_PUBLISHABLE_KEY',
+  'MIZAN_E2E_COMPLETED_EMAIL',
+  'MIZAN_E2E_COMPLETED_MUTATION_EMAIL',
+  'MIZAN_E2E_ARABIC_EMAIL',
+  'MIZAN_E2E_ONBOARDING_EMAIL',
+  'MIZAN_E2E_ONBOARDING_MUTATION_EMAIL',
   'MIZAN_E2E_DELETE_EMAIL',
   'MIZAN_E2E_DELETE_PASSWORD',
 ];
@@ -20,7 +25,7 @@ const env = { ...process.env };
 const missingVariables = requiredVariables.filter((name) => !env[name]?.trim());
 if (missingVariables.length > 0) {
   console.error(
-    `Destructive account-deletion E2E cannot provide the required evidence. Missing environment variables: ${missingVariables.join(', ')}`,
+    `Destructive account-deletion E2E cannot prove dedicated-fixture separation. Missing environment variables: ${missingVariables.join(', ')}`,
   );
   process.exit(1);
 }
@@ -42,7 +47,7 @@ if (reusedFixtureVariables.length > 0) {
 }
 
 console.log(
-  'Destructive account-deletion E2E is fail-closed: required configuration is present, explicit destructive opt-in is enabled, and the deletion account is not a protected fixture.',
+  'Destructive account-deletion E2E is fail-closed: all protected fixture role emails are present for collision checks, explicit destructive opt-in is enabled, and the deletion account is dedicated.',
 );
 const result = spawnSync(
   playwrightCommand,
