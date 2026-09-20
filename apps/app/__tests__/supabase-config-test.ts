@@ -39,6 +39,13 @@ describe('Supabase public config', () => {
     expect(readSupabasePublicConfig()).toEqual({ ok: false, reason: 'invalid-key' });
   });
 
+  test('rejects a current Supabase secret key before client construction', () => {
+    process.env.EXPO_PUBLIC_SUPABASE_URL = 'https://example.supabase.co';
+    process.env.EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY = 'sb_secret_test_fixture';
+
+    expect(readSupabasePublicConfig()).toEqual({ ok: false, reason: 'invalid-key' });
+  });
+
   test('rejects a legacy service-role JWT before client construction', () => {
     process.env.EXPO_PUBLIC_SUPABASE_URL = 'https://example.supabase.co';
     process.env.EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY = legacyServiceRoleJwt;
