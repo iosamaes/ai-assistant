@@ -106,8 +106,9 @@ describe('Playwright live-mutation isolation policy', () => {
     }
     expect(packageJson.scripts?.['test:e2e:production']).toContain('production-web.spec.ts');
     expect(packageJson.scripts?.['test:e2e:production']).toContain('--config=playwright.production.config.ts');
-    expect(packageJson.scripts?.['test:e2e:production:performance']).toContain('production-performance.spec.ts');
-    expect(packageJson.scripts?.['test:e2e:production:performance']).toContain('--config=playwright.production.config.ts');
+    expect(packageJson.scripts?.['test:e2e:production:performance']).toBe(
+      'node scripts/run-e2e-production-performance.mjs',
+    );
   });
 
   test('aggregate release baseline is fail-closed for opt-in modes, live fixtures, and Supabase authority', () => {
