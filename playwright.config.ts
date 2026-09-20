@@ -29,20 +29,28 @@ function assertAuthorizedLiveSupabaseUrl(rawUrl: string) {
 function assertUnprivilegedSupabaseClientKey(rawKey: string) {
   const key = rawKey.trim();
   if (!key) return;
+  if (key.startsWith('sb_publishable_')) return;
   if (key.startsWith('sb_secret_')) {
     throw new Error('MIZAN_E2E_SUPABASE_PUBLISHABLE_KEY must not be a Supabase secret key.');
   }
 
   const parts = key.split('.');
-  if (parts.length !== 3) return;
+  if (parts.length !== 3 || !key.startsWith('eyJ')) {
+    throw new Error('MIZAN_E2E_SUPABASE_PUBLISHABLE_KEY must be a Supabase publishable key or legacy anon JWT.');
+  }
+
   try {
     const payload = JSON.parse(Buffer.from(parts[1], 'base64url').toString('utf8')) as { role?: unknown };
+    if (payload.role === 'anon') return;
     if (payload.role === 'service_role') {
       throw new Error('MIZAN_E2E_SUPABASE_PUBLISHABLE_KEY must not be a Supabase service-role key.');
     }
   } catch (error) {
     if (error instanceof Error && error.message.includes('must not be a Supabase service-role key')) throw error;
+    throw new Error('MIZAN_E2E_SUPABASE_PUBLISHABLE_KEY must be a Supabase publishable key or legacy anon JWT.');
   }
+
+  throw new Error('MIZAN_E2E_SUPABASE_PUBLISHABLE_KEY must be a Supabase publishable key or legacy anon JWT.');
 }
 
 assertAuthorizedLiveSupabaseUrl(liveSupabaseUrl);
