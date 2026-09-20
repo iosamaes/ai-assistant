@@ -101,7 +101,7 @@ test.describe('destructive account deletion', () => {
         data: { email, password },
       },
     );
-    expect(reauthentication.ok()).toBe(false);
+    expect(reauthentication.status()).toBe(400);
 
     expectNoCriticalBrowserDiagnostics(diagnostics);
   });
