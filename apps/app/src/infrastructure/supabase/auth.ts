@@ -18,7 +18,7 @@ export type AuthResult<T> =
 function classifyAuthError(error: AuthError): AuthFailureKind {
   const code = error.code ?? '';
   if (code === 'invalid_credentials') return 'invalid-credentials';
-  if (code === 'email_not_confirmirmed') return 'email-not-confirmed';
+  if (code === 'email_not_confirmed') return 'email-not-confirmed';
   if (code.includes('rate') || error.status === 429) return 'rate-limited';
   if (!error.status || error.status >= 500) return 'network';
   return 'unknown';
