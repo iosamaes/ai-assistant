@@ -68,6 +68,10 @@ function StateProbe() {
   );
 }
 
+beforeEach(() => {
+  jest.resetAllMocks();
+});
+
 describe('AppStateProvider session fencing', () => {
   test('discards stale hydration results after the active account changes', async () => {
     const userAProfile = deferred<Awaited<ReturnType<typeof loadProfile>>>();
@@ -167,6 +171,73 @@ describe('AppStateProvider session fencing', () => {
 
     await waitFor(() => {
       expect(view.getByTestId('state').props.children.join('')).toBe('user-b|en|build|minimal');
+    });
+  });
+
+  test('clears account-owned state when hydration reports an expired session', async () => {
+    let authListener: ((event: string, nextSession: Session | null) => void) | null = null;
+    let profileLoads = 0;
+
+    getCurrentSessionMock.mockResolvedValue({ ok: true, value: session('user-a') });
+    subscribeMock.mockImplementation((listener) => {
+      authListener = listener as unknown as (event: string, nextSession: Session | null) => void;
+      return jest.fn();
+    });
+    loadProfileMock.mockImplementation(() => {
+      profileLoads += 1;
+      if (profileLoads === 1) {
+        return Promise.resolve({
+          ok: true,
+          value: {
+            user_id: 'user-a',
+            locale: 'en',
+            timezone: 'Asia/Qatar',
+            onboarding_completed: true,
+            created_at: '2026-09-20T00:00:00Z',
+            updated_at: '2026-09-20T00:00:00Z',
+          },
+        });
+      }
+      return Promise.resolve({
+        ok: false,
+        error: { kind: 'session-expired' as const, code: 'PGRST301' },
+      });
+    });
+    loadPreferencesMock.mockResolvedValue({
+      ok: true,
+      value: [
+        {
+          user_id: 'user-a',
+          domain_id: 'work',
+          enabled: true,
+          priority_weight: 1,
+          custom_label: null,
+        },
+      ],
+    });
+    loadContextMock.mockResolvedValue({
+      ok: true,
+      value: { life_season: 'build', self_values: ['growth'], privacy_mode: 'minimal' },
+    });
+
+    const view = await render(
+      <AppStateProvider>
+        <StateProbe />
+      </AppStateProvider>,
+    );
+
+    await waitFor(() => {
+      expect(view.getByTestId('state').props.children.join('')).toBe('user-a|en|build|minimal');
+    });
+    await waitFor(() => expect(authListener).not.toBeNull());
+
+    await act(async () => {
+      authListener?.('TOKEN_REFRESHED', session('user-a'));
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+
+    await waitFor(() => {
+      expect(view.getByTestId('state').props.children.join('')).toBe('|ar|none|none');
     });
   });
 });
