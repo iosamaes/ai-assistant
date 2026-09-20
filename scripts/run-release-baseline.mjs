@@ -1,6 +1,7 @@
 import { spawnSync } from 'node:child_process';
 
-const npmCommand = process.platform === 'win32' ? 'npm.cmd' : 'npm';
+const isWindows = process.platform === 'win32';
+const npmCommand = isWindows ? 'npm.cmd' : 'npm';
 const scripts = ['check', 'test:db', 'lint:db', 'test:e2e', 'test:e2e:production'];
 const optInFlags = [
   'MIZAN_E2E_MUTATIONS',
@@ -20,6 +21,7 @@ for (const script of scripts) {
     cwd: process.cwd(),
     env,
     stdio: 'inherit',
+    shell: isWindows,
   });
 
   if (result.error) throw result.error;
