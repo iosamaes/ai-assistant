@@ -63,6 +63,20 @@ interface AppIconProps {
   size?: number;
 }
 
+/**
+ * Shared production icons are decorative by default. Their meaning is exposed by the
+ * adjacent text or the labelled parent control, so keeping the glyph itself out of the
+ * accessibility tree prevents duplicate/unlabelled announcements across platforms.
+ */
 export function AppIcon({ name, color, size = 22 }: AppIconProps) {
-  return <SymbolView name={symbols[name]} size={size} tintColor={color} />;
+  return (
+    <SymbolView
+      accessible={false}
+      accessibilityElementsHidden
+      importantForAccessibility="no-hide-descendants"
+      name={symbols[name]}
+      size={size}
+      tintColor={color}
+    />
+  );
 }
