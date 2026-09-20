@@ -25,6 +25,7 @@ const destinations: readonly Destination[] = [
 
 const labels = {
   ar: {
+    navigation: 'التنقل الرئيسي',
     home: 'الرئيسية',
     lifeMap: 'خريطة الحياة',
     oneMove: 'خطوتي',
@@ -32,6 +33,7 @@ const labels = {
     more: 'المزيد',
   },
   en: {
+    navigation: 'Primary navigation',
     home: 'Home',
     lifeMap: 'Life Map',
     oneMove: 'One Move',
@@ -64,6 +66,7 @@ export function AppNavigation({ activeSegment }: AppNavigationProps) {
 
   return (
     <View
+      accessibilityLabel={copy.navigation}
       accessibilityRole="tablist"
       style={[
         wide ? styles.rail : styles.bottomBar,
