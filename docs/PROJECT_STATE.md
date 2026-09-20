@@ -57,17 +57,26 @@ Latest Today hardening:
 - `7c9e49be3f7d8df84a9b82c0d2c30725b80a6ed6` — Today now binds embedded One Move decision completion and explicit outcome-feedback completion to the initiating account. A stale completion after account switch is discarded, session refresh is rechecked against the initiating account, and accepted feedback targets remain account-scoped.
 - `f6b9762977f99973646f00d7f2fb7da478a9bcd4` — focused Today account-switch source-policy specification records the decision/feedback fencing contract; intentionally not worker-run under current policy.
 
+Latest account-switch hardening:
+- `3a214f9d453e660e2a0072ce9d1e06f3168c678c` — Invisible Wins now updates its active-account fence synchronously with render rather than waiting for a passive effect, so a stale load/save completion cannot pass through the render-to-effect account-switch gap. Account switches also reset the local saving state, while stale completions do not mutate the new account's busy state.
+- `775f296b3d4ad6f28021db31bcab451730ed2133` — Recovery now invalidates the previous account's request generation as soon as a different account renders, before passive effects run, closing the same stale-plan completion gap while retaining the existing request-generation fence.
+- `94db2ccd5101ad0d07f4f55d6b151891bd18c856` — Check-in now synchronizes the active-account fence during render, so a previous account's submit or session-refresh completion cannot route or repaint during the render-to-effect window after an account switch.
+- `64b8680a29e539b4db94f7697cfc24f82ad83360` — Privacy export/delete now synchronizes its active-account fence during render. A stale export cannot be delivered after another account becomes active; stale export/delete completions no longer clear the new account's busy state; and deletion rechecks the active account again after `refreshSession()` before redirecting.
+- `31482238ba228599724f9d02004ac6fb29877311` — focused Privacy-screen specification now covers the stale-export account-switch case in addition to requiring a fresh destructive confirmation; intentionally not worker-run under the active policy.
+
 The current production source-level sensitive logging/error-reporting review is complete for the existing tree. Re-open that audit only if a new production sink or boundary is added before release.
 
 ### CP10 remaining
-- Owner/runtime validation for cross-user/database specifications, Life Season expected-user behavior, export/delete/local purge, destructive Edge deletion v2, consent revocation races, and account-switch/session-binding cases including Today decision/feedback fencing.
+- Continue the residual source review of account-sensitive async UI flows for render-to-effect account-switch gaps or stale completion state mutations; fix only demonstrated races and avoid duplicating already-fenced paths.
+- Owner/runtime validation for cross-user/database specifications, Life Season expected-user behavior, export/delete/local purge, destructive Edge deletion v2, consent revocation races, and account-switch/session-binding cases including Today decision/feedback and the render-time Privacy/Recovery/Check-in/Invisible-Wins fences.
 - Supabase leaked-password protection remains an owner action in `automation/HUMAN_REQUIRED.md`.
 
 ## Exact next executable action
 1. Continue the final CP9 static sweep only when a demonstrated accessibility/RTL/localization/focus/technical-id defect remains on a still-unreviewed shipped surface; make the smallest production-safe fix and add focused regression coverage when useful. The raw ISO date-fallback family identified on Invisible Wins, Life Seasons, and Experiments is now closed.
-2. If no concrete static defect is found, do not manufacture polish work: leave CP9 runtime screenshot/device validation and final design-swap proof to owner validation under the active execution policy.
-3. Do not reopen the completed CP10 logging audit unless new production logging/error boundaries appear.
-4. Do not run tests, builds, typechecks, database validation suites, GitHub Actions, or cloud CI as a worker under the current task policy.
+2. Continue the residual CP10 account-switch/session-binding review only where an async presentation flow still relies on passive-effect account identity or can let a stale completion mutate the new account's UI state; do not reopen already-fenced paths without evidence.
+3. If no concrete static defect is found, do not manufacture polish work: leave CP9 runtime screenshot/device validation and final design-swap proof to owner validation under the active execution policy.
+4. Do not reopen the completed CP10 logging audit unless new production logging/error boundaries appear.
+5. Do not run tests, builds, typechecks, database validation suites, GitHub Actions, or cloud CI as a worker under the current task policy.
 
 ## Verification record
 Previously recorded owner-side baseline evidence:
@@ -85,6 +94,7 @@ Post-baseline:
 - Authorized migrations `0009`–`0012` were applied previously; live reads confirmed the hardened Life Season RPC signature/ACL. This is implementation/state evidence, not a behavioral test-suite PASS.
 - `delete-account` version 2 previously reported ACTIVE with JWT verification enabled; no destructive end-to-end deletion validation is claimed.
 - Premium-reference/residual CP9 changes and focused policy specifications, including What If RTL range, Onboarding final-domain affordance, Today RTL meters, Today account-switch fencing, and the Invisible Wins/Life Seasons/Experiments raw-date fallback hardening, remain static implementation/specification evidence until owner validation; the new focused date-fallback specifications were not worker-run.
+- Render-time account-fencing changes `3a214f9d453e660e2a0072ce9d1e06f3168c678c`, `775f296b3d4ad6f28021db31bcab451730ed2133`, `94db2ccd5101ad0d07f4f55d6b151891bd18c856`, and `64b8680a29e539b4db94f7697cfc24f82ad83360`, plus Privacy specification `31482238ba228599724f9d02004ac6fb29877311`, are static implementation/specification evidence only and were not worker-run.
 
 ## Known blockers / risks
 - CP1/CP9: true phone/tablet/Web visual interaction evidence still needs an unlocked owner runtime; see `automation/HUMAN_REQUIRED.md`.
@@ -127,11 +137,14 @@ Post-baseline:
 - `apps/app/__tests__/app-icon-accessibility-test.tsx`
 - `apps/app/__tests__/western-digit-source-policy-test.ts`
 - `apps/app/__tests__/recovery-rtl-layout-policy-test.ts`
+- `apps/app/__tests__/recovery-screen-session-fencing-test.tsx`
 - `apps/app/__tests__/experiments-rtl-layout-policy-test.ts`
 - `apps/app/__tests__/what-if-rtl-range-layout-policy-test.ts`
 - `apps/app/__tests__/onboarding-domain-minimum-policy-test.ts`
 - `apps/app/__tests__/today-rtl-meter-layout-policy-test.ts`
 - `apps/app/__tests__/today-session-fencing-policy-test.ts`
+- `apps/app/__tests__/check-in-session-fencing-test.tsx`
+- `apps/app/__tests__/privacy-screen-session-fencing-test.tsx`
 - `apps/app/__tests__/invisible-wins-date-fallback-policy-test.ts`
 - `apps/app/__tests__/life-seasons-date-fallback-policy-test.ts`
 - `apps/app/__tests__/experiments-date-fallback-policy-test.ts`
