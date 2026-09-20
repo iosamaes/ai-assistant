@@ -87,7 +87,7 @@ export async function deleteMyAccount(
 
   // The authoritative account is gone at this point, so remove app-owned
   // device/browser caches keyed to that user as well. A storage or local
-  // sign-out failure cannot roll back the server deletion, so report cleanup
+  // auth-cleanup failure cannot roll back the server deletion, so report cleanup
   // status explicitly instead of falsely claiming every local trace cleared.
   const [pendingCleanup, snapshotCleanup] = await Promise.all([
     clearPendingUserMutations(expectedUserId),
@@ -97,8 +97,11 @@ export async function deleteMyAccount(
 
   // Clear the local auth session only if the same user is still active; never
   // sign out a new user that may have become active while deletion was in flight.
-  const { data: sessionData } = await supabase.auth.getSession();
-  if (sessionData.session?.user.id === expectedUserId) {
+  // If local session state cannot even be read, cleanup cannot be confirmed.
+  const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+  if (sessionError) {
+    localDataCleared = false;
+  } else if (sessionData.session?.user.id === expectedUserId) {
     const { error: signOutError } = await supabase.auth.signOut({ scope: 'local' });
     if (signOutError) localDataCleared = false;
   }
