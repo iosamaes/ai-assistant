@@ -22,6 +22,13 @@ const liveReason =
   'Requires live Supabase configuration, a dedicated completed deletion account, and MIZAN_E2E_DESTRUCTIVE=1.';
 const destructiveProject = 'desktop-light';
 const mismatchedUserId = '00000000-0000-0000-0000-000000000000';
+const protectedFixtureEmails = [
+  process.env.MIZAN_E2E_COMPLETED_EMAIL,
+  process.env.MIZAN_E2E_ARABIC_EMAIL,
+  process.env.MIZAN_E2E_ONBOARDING_EMAIL,
+]
+  .filter((value): value is string => Boolean(value))
+  .map((value) => value.trim().toLowerCase());
 
 test.describe('destructive account deletion', () => {
   test.skip(!(deletionAccountConfigured && destructiveDeletionEnabled), liveReason);
@@ -38,6 +45,11 @@ test.describe('destructive account deletion', () => {
     const publishableKey = process.env.MIZAN_E2E_SUPABASE_PUBLISHABLE_KEY;
     if (!email || !password || !supabaseUrl || !publishableKey) {
       throw new Error('Destructive deletion E2E configuration is incomplete.');
+    }
+    if (protectedFixtureEmails.includes(email.trim().toLowerCase())) {
+      throw new Error(
+        'MIZAN_E2E_DELETE_EMAIL must be a dedicated disposable account and must not match a reusable completed, Arabic, or onboarding fixture.',
+      );
     }
     const baseUrl = supabaseUrl.replace(/\/$/, '');
     const passwordGrantUrl = `${baseUrl}/auth/v1/token?grant_type=password`;
