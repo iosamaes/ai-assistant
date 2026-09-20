@@ -63,12 +63,14 @@ Latest account-switch hardening:
 - `94db2ccd5101ad0d07f4f55d6b151891bd18c856` — Check-in now synchronizes the active-account fence during render, so a previous account's submit or session-refresh completion cannot route or repaint during the render-to-effect window after an account switch.
 - `64b8680a29e539b4db94f7697cfc24f82ad83360` — Privacy export/delete now synchronizes its active-account fence during render. A stale export cannot be delivered after another account becomes active; stale export/delete completions no longer clear the new account's busy state; and deletion rechecks the active account again after `refreshSession()` before redirecting.
 - `31482238ba228599724f9d02004ac6fb29877311` — focused Privacy-screen specification now covers the stale-export account-switch case in addition to requiring a fresh destructive confirmation; intentionally not worker-run under the active policy.
+- `186cffc217c91c85e6dc7aadde12abe8f2e555b2` — Onboarding now binds baseline loading to the account visible during render, clears prior baseline targets before loading the new account, and checks the account again before applying asynchronous baseline results. This closes a render-to-effect window in which User A baseline targets could otherwise paint into User B after an account switch.
+- `ed7af7a7736c1c2ebc29e3a1ff616e9364d0925e` — focused Onboarding specification records that a late User A baseline result must not replace User B's target state; intentionally not worker-run under the active policy.
 
 The current production source-level sensitive logging/error-reporting review is complete for the existing tree. Re-open that audit only if a new production sink or boundary is added before release.
 
 ### CP10 remaining
 - Continue the residual source review of account-sensitive async UI flows for render-to-effect account-switch gaps or stale completion state mutations; fix only demonstrated races and avoid duplicating already-fenced paths.
-- Owner/runtime validation for cross-user/database specifications, Life Season expected-user behavior, export/delete/local purge, destructive Edge deletion v2, consent revocation races, and account-switch/session-binding cases including Today decision/feedback and the render-time Privacy/Recovery/Check-in/Invisible-Wins fences.
+- Owner/runtime validation for cross-user/database specifications, Life Season expected-user behavior, export/delete/local purge, destructive Edge deletion v2, consent revocation races, and account-switch/session-binding cases including Today decision/feedback and the render-time Privacy/Recovery/Check-in/Invisible-Wins/Onboarding fences.
 - Supabase leaked-password protection remains an owner action in `automation/HUMAN_REQUIRED.md`.
 
 ## Exact next executable action
@@ -94,7 +96,7 @@ Post-baseline:
 - Authorized migrations `0009`–`0012` were applied previously; live reads confirmed the hardened Life Season RPC signature/ACL. This is implementation/state evidence, not a behavioral test-suite PASS.
 - `delete-account` version 2 previously reported ACTIVE with JWT verification enabled; no destructive end-to-end deletion validation is claimed.
 - Premium-reference/residual CP9 changes and focused policy specifications, including What If RTL range, Onboarding final-domain affordance, Today RTL meters, Today account-switch fencing, and the Invisible Wins/Life Seasons/Experiments raw-date fallback hardening, remain static implementation/specification evidence until owner validation; the new focused date-fallback specifications were not worker-run.
-- Render-time account-fencing changes `3a214f9d453e660e2a0072ce9d1e06f3168c678c`, `775f296b3d4ad6f28021db31bcab451730ed2133`, `94db2ccd5101ad0d07f4f55d6b151891bd18c856`, and `64b8680a29e539b4db94f7697cfc24f82ad83360`, plus Privacy specification `31482238ba228599724f9d02004ac6fb29877311`, are static implementation/specification evidence only and were not worker-run.
+- Render-time account-fencing changes `3a214f9d453e660e2a0072ce9d1e06f3168c678c`, `775f296b3d4ad6f28021db31bcab451730ed2133`, `94db2ccd5101ad0d07f4f55d6b151891bd18c856`, `64b8680a29e539b4db94f7697cfc24f82ad83360`, and `186cffc217c91c85e6dc7aadde12abe8f2e555b2`, plus Privacy/Onboarding specifications `31482238ba228599724f9d02004ac6fb29877311` and `ed7af7a7736c1c2ebc29e3a1ff616e9364d0925e`, are static implementation/specification evidence only and were not worker-run.
 
 ## Known blockers / risks
 - CP1/CP9: true phone/tablet/Web visual interaction evidence still needs an unlocked owner runtime; see `automation/HUMAN_REQUIRED.md`.
@@ -141,6 +143,7 @@ Post-baseline:
 - `apps/app/__tests__/experiments-rtl-layout-policy-test.ts`
 - `apps/app/__tests__/what-if-rtl-range-layout-policy-test.ts`
 - `apps/app/__tests__/onboarding-domain-minimum-policy-test.ts`
+- `apps/app/__tests__/onboarding-session-fencing-test.tsx`
 - `apps/app/__tests__/today-rtl-meter-layout-policy-test.ts`
 - `apps/app/__tests__/today-session-fencing-policy-test.ts`
 - `apps/app/__tests__/check-in-session-fencing-test.tsx`
