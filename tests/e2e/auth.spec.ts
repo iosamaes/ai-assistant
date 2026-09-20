@@ -18,7 +18,7 @@ test('signed-out routes are guarded back to auth without runtime exceptions', as
   await page.waitForURL('**/auth');
   await expect(page.getByText('ادخل إلى مساحتك الشخصية')).toBeVisible();
   await expect(page.getByRole('textbox', { name: 'البريد الإلكتروني', exact: true })).toBeVisible();
-  await expect(page.getByRole('textbox', { name: 'كلمة المرور', exact: true })).toBeVisible();
+  await expect(page.getByLabel('كلمة المرور', { exact: true })).toBeVisible();
   expectNoCriticalBrowserDiagnostics(diagnostics);
 });
 
@@ -31,11 +31,11 @@ test('auth layout remains usable at the project viewport and switches locale', a
   await page.getByRole('button', { name: 'English', exact: true }).click();
   await expect(page.getByText('Enter your personal space')).toBeVisible();
   await expect(page.getByRole('textbox', { name: 'Email', exact: true })).toBeVisible();
-  await expect(page.getByRole('textbox', { name: 'Password', exact: true })).toBeVisible();
+  await expect(page.getByLabel('Password', { exact: true })).toBeVisible();
   await expectNoHorizontalOverflow(page);
 
   await page.getByRole('textbox', { name: 'Email', exact: true }).fill('person@example.com');
-  await page.getByRole('textbox', { name: 'Password', exact: true }).fill('123456');
+  await page.getByLabel('Password', { exact: true }).fill('123456');
   await expect(actionButton(page, 'Sign in')).toBeEnabled();
   expectNoCriticalBrowserDiagnostics(diagnostics);
 });
@@ -55,7 +55,7 @@ test('primary auth controls are reachable and operable with keyboard navigation'
   await expect(email).toBeFocused();
   await page.keyboard.type('keyboard@example.com');
 
-  const password = page.getByRole('textbox', { name: 'Password', exact: true });
+  const password = page.getByLabel('Password', { exact: true });
   await tabTo(page, password);
   await expect(password).toBeFocused();
   await page.keyboard.type('123456');
@@ -75,7 +75,7 @@ test('password-reset mode changes the form without navigation or overflow', asyn
   await expect(page.getByText('Enter your personal space')).toBeVisible();
   await page.getByRole('button', { name: 'Forgot password', exact: true }).click();
 
-  await expect(page.getByRole('textbox', { name: 'Password', exact: true })).toHaveCount(0);
+  await expect(page.getByLabel('Password', { exact: true })).toHaveCount(0);
   await expect(actionButton(page, 'Send recovery link')).toBeDisabled();
   await page.getByRole('textbox', { name: 'Email', exact: true }).fill('person@example.com');
   await expect(actionButton(page, 'Send recovery link')).toBeEnabled();
