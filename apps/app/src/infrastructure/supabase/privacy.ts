@@ -69,13 +69,19 @@ export async function deleteMyAccount(
   const sessionBefore = await sessionForUser(expectedUserId);
   if (!sessionBefore) return { ok: false, error: { kind: 'delete-failed' } };
 
-  const { error } = await supabase.functions.invoke('delete-account', {
+  const { data, error } = await supabase.functions.invoke('delete-account', {
     body: {
       confirmation: 'DELETE',
       expected_user_id: expectedUserId,
     },
   });
-  if (error) {
+  if (
+    error ||
+    !data ||
+    typeof data !== 'object' ||
+    Array.isArray(data) ||
+    (data as { ok?: unknown }).ok !== true
+  ) {
     return { ok: false, error: { kind: 'delete-failed' } };
   }
 
