@@ -116,4 +116,29 @@ describe('OnboardingScreen account-switch fencing', () => {
     expect(view.getByRole('button', { name: 'Not set' }).props.accessibilityState.selected).toBe(true);
     expect(view.getByRole('button', { name: '5' }).props.accessibilityState.selected).toBe(false);
   });
+
+  test('clears a loaded baseline draft when the account changes before the new baseline resolves', async () => {
+    const userBLoad = deferred<Awaited<ReturnType<typeof loadDomainBaselineTargets>>>();
+    const completeOnboarding = jest.fn(async () => undefined);
+    loadBaselineMock.mockImplementation((userId) => {
+      if (userId === 'user-a') return Promise.resolve({ ok: true, value: { recovery: 5 } });
+      return userBLoad.promise;
+    });
+    useAppStateMock.mockReturnValue(appState('user-a', completeOnboarding));
+    const view = await render(<OnboardingScreen />);
+
+    await waitFor(() => {
+      expect(view.getByRole('button', { name: '5' }).props.accessibilityState.selected).toBe(true);
+    });
+
+    useAppStateMock.mockReturnValue(appState('user-b', completeOnboarding));
+    await view.rerender(<OnboardingScreen />);
+
+    expect(view.getByRole('button', { name: 'Not set' }).props.accessibilityState.selected).toBe(true);
+    expect(view.getByRole('button', { name: '5' }).props.accessibilityState.selected).toBe(false);
+
+    await act(async () => {
+      userBLoad.resolve({ ok: true, value: {} });
+    });
+  });
 });
