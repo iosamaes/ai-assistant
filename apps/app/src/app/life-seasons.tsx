@@ -109,7 +109,7 @@ function formatDate(value: string, locale: 'ar' | 'en'): string {
       day: 'numeric',
     }).format(date);
   } catch {
-    return date.toISOString().slice(0, 10);
+    return '—';
   }
 }
 
