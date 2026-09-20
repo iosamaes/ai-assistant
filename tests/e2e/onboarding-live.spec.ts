@@ -1,7 +1,8 @@
 import { expect, test, type Locator } from '@playwright/test';
 
 import {
-  collectPageErrors,
+  collectCriticalBrowserDiagnostics,
+  expectNoCriticalBrowserDiagnostics,
   expectNoHorizontalOverflow,
   mutationsEnabled,
   onboardingAccountConfigured,
@@ -21,19 +22,19 @@ test.describe('live onboarding journey', () => {
 
   test('incomplete account reaches the branded onboarding surface without product chrome', async ({ page }) => {
     test.skip(mutationsEnabled, 'Read-only onboarding matrix is skipped in mutation mode because the dedicated account will be completed once.');
-    const pageErrors = collectPageErrors(page);
+    const diagnostics = collectCriticalBrowserDiagnostics(page);
     await signInOnboardingAccount(page);
 
     await expect(page.getByText(/Build a MIZAN that starts with your priorities|ابنِ ميزانًا يبدأ من أولوياتك أنت/, { exact: true })).toBeVisible();
     await expect(page.getByRole('tablist')).toHaveCount(0);
     await expectNoHorizontalOverflow(page);
-    expect(pageErrors).toEqual([]);
+    expectNoCriticalBrowserDiagnostics(diagnostics);
   });
 
   test('dedicated onboarding account can complete the essential setup when mutations are explicitly enabled', async ({ page }, testInfo) => {
     test.skip(!mutationsEnabled, 'Set MIZAN_E2E_MUTATIONS=1 only for a disposable or dedicated onboarding E2E account.');
     test.skip(testInfo.project.name !== 'desktop-light', mutationProjectReason);
-    const pageErrors = collectPageErrors(page);
+    const diagnostics = collectCriticalBrowserDiagnostics(page);
     await signInOnboardingAccount(page);
 
     const english = page.getByRole('button', { name: 'English', exact: true });
@@ -56,6 +57,6 @@ test.describe('live onboarding journey', () => {
     await page.waitForURL(/\/today$/);
     await expect(page.getByRole('tablist')).toBeVisible();
     await expectNoHorizontalOverflow(page);
-    expect(pageErrors).toEqual([]);
+    expectNoCriticalBrowserDiagnostics(diagnostics);
   });
 });
