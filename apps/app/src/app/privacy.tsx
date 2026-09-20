@@ -18,11 +18,12 @@ const privacyCopy = {
     heroBody: 'التصدير والحذف عمليتان واضحتان ومنفصلتان. لا يبدأ أي حذف من هذه الصفحة قبل تأكيدك الصريح.',
     exportEyebrow: 'نسخة محمولة',
     exportTitle: 'تصدير بياناتي',
-    exportBody: 'ينشئ ميزان ملف JSON مقروءًا وقابلًا للنقل يضم بيانات حسابك التي يملكها التطبيق حاليًا.',
+    exportBody: 'يُعدّ ميزان نسخة JSON مقروءة وقابلة للنقل من بيانات الحساب التي يملكها التطبيق حاليًا. على الويب تُنزّل كملف .json، وعلى الهاتف تُفتح ورقة المشاركة للنظام وبداخلها محتوى JSON.',
     exportNote: 'يتم إنشاء النسخة لحسابك الحالي فقط، ولا يغيّر التصدير أي بيانات محفوظة.',
-    exportAction: 'إنشاء ملف JSON',
+    exportAction: 'إعداد تصدير JSON',
     exportWorking: 'جارٍ إعداد النسخة…',
-    exportSuccess: 'تم إعداد نسخة بياناتك.',
+    exportSuccess: 'تم تسليم تصدير JSON إلى وجهته.',
+    exportCancelled: 'تم إلغاء المشاركة. لم تُرسل نسخة التصدير ولم تتغير بياناتك المحفوظة.',
     exportError: 'تعذر إعداد نسخة بياناتك الآن. حاول مرة أخرى لاحقًا.',
     deleteEyebrow: 'إجراء نهائي',
     deleteTitle: 'حذف الحساب',
@@ -47,11 +48,12 @@ const privacyCopy = {
     heroBody: 'Export and deletion are clear, separate actions. Nothing is deleted from this screen until you explicitly confirm it.',
     exportEyebrow: 'Portable copy',
     exportTitle: 'Export my data',
-    exportBody: 'MIZAN creates a readable, portable JSON file containing the account data currently owned by the app.',
+    exportBody: 'MIZAN prepares a readable, portable JSON copy of the account data currently owned by the app. On Web it downloads as a .json file; on mobile the system share sheet opens with the JSON content.',
     exportNote: 'The copy is created only for your current account, and exporting does not change stored data.',
-    exportAction: 'Create JSON file',
+    exportAction: 'Prepare JSON export',
     exportWorking: 'Preparing your copy…',
-    exportSuccess: 'Your data copy is ready.',
+    exportSuccess: 'Your JSON export was handed off to its destination.',
+    exportCancelled: 'Sharing was cancelled. No export copy was sent, and your stored data was not changed.',
     exportError: 'Your data copy could not be prepared right now. Try again later.',
     deleteEyebrow: 'Permanent action',
     deleteTitle: 'Delete account',
@@ -71,8 +73,9 @@ const privacyCopy = {
 } as const;
 
 type BusyAction = 'export' | 'delete' | null;
+type ExportDelivery = 'delivered' | 'dismissed';
 
-async function deliverJsonExport(payload: Record<string, unknown>) {
+async function deliverJsonExport(payload: Record<string, unknown>): Promise<ExportDelivery> {
   const json = JSON.stringify(payload, null, 2);
   const filename = `mizan-data-${new Date().toISOString().slice(0, 10)}.json`;
 
@@ -86,10 +89,11 @@ async function deliverJsonExport(payload: Record<string, unknown>) {
     link.click();
     link.remove();
     URL.revokeObjectURL(url);
-    return;
+    return 'delivered';
   }
 
-  await Share.share({ message: json, title: filename });
+  const result = await Share.share({ message: json, title: filename });
+  return result.action === Share.dismissedAction ? 'dismissed' : 'delivered';
 }
 
 function showLocalCleanupWarning(title: string, body: string) {
@@ -140,8 +144,10 @@ export default function PrivacyScreen() {
     }
 
     try {
-      await deliverJsonExport(result.value);
-      if (activeUserRef.current === targetUserId) setMessage(copy.exportSuccess);
+      const delivery = await deliverJsonExport(result.value);
+      if (activeUserRef.current === targetUserId) {
+        setMessage(delivery === 'dismissed' ? copy.exportCancelled : copy.exportSuccess);
+      }
     } catch {
       if (activeUserRef.current === targetUserId) setMessage(copy.exportError);
     }
