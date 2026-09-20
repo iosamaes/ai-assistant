@@ -3,7 +3,8 @@ import { readFile } from 'node:fs/promises';
 import { expect, test } from '@playwright/test';
 
 import {
-  collectPageErrors,
+  collectCriticalBrowserDiagnostics,
+  expectNoCriticalBrowserDiagnostics,
   expectNoHorizontalOverflow,
   liveSupabaseConfigured,
   signInWithCredentials,
@@ -36,7 +37,7 @@ test.describe('destructive account deletion', () => {
       throw new Error('Destructive deletion E2E configuration is incomplete.');
     }
 
-    const pageErrors = collectPageErrors(page);
+    const diagnostics = collectCriticalBrowserDiagnostics(page);
     const dialogs: string[] = [];
     page.on('dialog', async (dialog) => {
       dialogs.push(dialog.message());
@@ -100,6 +101,6 @@ test.describe('destructive account deletion', () => {
     );
     expect(reauthentication.ok()).toBe(false);
 
-    expect(pageErrors).toEqual([]);
+    expectNoCriticalBrowserDiagnostics(diagnostics);
   });
 });
