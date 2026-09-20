@@ -408,12 +408,14 @@ export default function SettingsScreen() {
               <View style={[styles.row, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
                 <ChoiceChip
                   label={notificationLabels.allow}
+                  accessibilityLabel={`${notificationLabels.dailyTitle}: ${notificationLabels.allow}`}
                   selected={notificationPreferences.dailyCheckIn}
                   onPress={() => void changeNotificationPreference('dailyCheckIn', true)}
                   disabled={notificationControlsDisabled}
                 />
                 <ChoiceChip
                   label={notificationLabels.off}
+                  accessibilityLabel={`${notificationLabels.dailyTitle}: ${notificationLabels.off}`}
                   selected={!notificationPreferences.dailyCheckIn}
                   onPress={() => void changeNotificationPreference('dailyCheckIn', false)}
                   disabled={notificationControlsDisabled}
@@ -429,12 +431,14 @@ export default function SettingsScreen() {
               <View style={[styles.row, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
                 <ChoiceChip
                   label={notificationLabels.allow}
+                  accessibilityLabel={`${notificationLabels.experimentTitle}: ${notificationLabels.allow}`}
                   selected={notificationPreferences.experimentReminders}
                   onPress={() => void changeNotificationPreference('experimentReminders', true)}
                   disabled={notificationControlsDisabled}
                 />
                 <ChoiceChip
                   label={notificationLabels.off}
+                  accessibilityLabel={`${notificationLabels.experimentTitle}: ${notificationLabels.off}`}
                   selected={!notificationPreferences.experimentReminders}
                   onPress={() => void changeNotificationPreference('experimentReminders', false)}
                   disabled={notificationControlsDisabled}
@@ -450,12 +454,14 @@ export default function SettingsScreen() {
               <View style={[styles.row, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
                 <ChoiceChip
                   label={notificationLabels.allow}
+                  accessibilityLabel={`${notificationLabels.recoveryTitle}: ${notificationLabels.allow}`}
                   selected={notificationPreferences.recoveryPrompts}
                   onPress={() => void changeNotificationPreference('recoveryPrompts', true)}
                   disabled={notificationControlsDisabled}
                 />
                 <ChoiceChip
                   label={notificationLabels.off}
+                  accessibilityLabel={`${notificationLabels.recoveryTitle}: ${notificationLabels.off}`}
                   selected={!notificationPreferences.recoveryPrompts}
                   onPress={() => void changeNotificationPreference('recoveryPrompts', false)}
                   disabled={notificationControlsDisabled}
