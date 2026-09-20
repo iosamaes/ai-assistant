@@ -260,6 +260,7 @@ export default function PrivacyScreen() {
               <MizanText variant="label" style={{ color: palette.danger }}>{copy.deleteConfirmTitle}</MizanText>
               <MizanText>{copy.deleteConfirmBody}</MizanText>
               <PrimaryButton
+                tone="danger"
                 label={busy === 'delete' ? copy.deleteWorking : copy.deleteConfirm}
                 onPress={() => void handleDelete()}
                 disabled={busy !== null || !userId || confirmationUserId !== userId}
