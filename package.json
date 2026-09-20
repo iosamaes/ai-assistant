@@ -27,7 +27,7 @@
     "test:e2e:performance": "playwright test tests/e2e/performance-live.spec.ts --project=desktop-light",
     "test:e2e:production": "playwright test tests/e2e/production-web.spec.ts --config=playwright.production.config.ts",
     "test:e2e:production:performance": "playwright test tests/e2e/production-performance.spec.ts --config=playwright.production.config.ts --project=production-desktop-dark",
-    "test:e2e:delete-account": "playwright test tests/e2e/account-deletion-live.spec.ts --project=desktop-light",
+    "test:e2e:delete-account": "node scripts/run-e2e-delete-account.mjs",
     "check:runtime": "npm run check && npm run test:e2e",
     "check:release:baseline": "node scripts/run-release-baseline.mjs"
   },
