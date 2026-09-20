@@ -10,6 +10,12 @@ export const completedAccountConfigured = Boolean(
     process.env.MIZAN_E2E_COMPLETED_PASSWORD,
 );
 
+export const arabicCompletedAccountConfigured = Boolean(
+  liveSupabaseConfigured &&
+    process.env.MIZAN_E2E_ARABIC_EMAIL &&
+    process.env.MIZAN_E2E_ARABIC_PASSWORD,
+);
+
 export const onboardingAccountConfigured = Boolean(
   liveSupabaseConfigured &&
     process.env.MIZAN_E2E_ONBOARDING_EMAIL &&
@@ -53,6 +59,15 @@ export async function signInCompletedAccount(page: Page) {
   if (!email || !password) throw new Error('Completed-account E2E credentials are not configured.');
   await signInWithCredentials(page, email, password);
   await expect(page).toHaveURL(/\/today$/);
+}
+
+export async function signInArabicCompletedAccount(page: Page) {
+  const email = process.env.MIZAN_E2E_ARABIC_EMAIL;
+  const password = process.env.MIZAN_E2E_ARABIC_PASSWORD;
+  if (!email || !password) throw new Error('Arabic completed-account E2E credentials are not configured.');
+  await signInWithCredentials(page, email, password);
+  await expect(page).toHaveURL(/\/today$/);
+  await expect(page.getByRole('tab', { name: 'الرئيسية', exact: true })).toBeVisible();
 }
 
 export async function signInOnboardingAccount(page: Page) {
