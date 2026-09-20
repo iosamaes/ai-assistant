@@ -26,6 +26,14 @@ Use a separate account that is intentionally incomplete:
 
 The read-only onboarding check verifies branded onboarding without product navigation. With `MIZAN_E2E_MUTATIONS=1`, the dedicated account can complete the essential setup and must land on Today with product navigation present.
 
+### 5. Destructive account-deletion E2E
+Use a separate completed account created only to be permanently deleted:
+- `MIZAN_E2E_DELETE_EMAIL`
+- `MIZAN_E2E_DELETE_PASSWORD`
+- `MIZAN_E2E_DESTRUCTIVE=1`
+
+`tests/e2e/account-deletion-live.spec.ts` is intentionally isolated from the normal completed-account fixture. Before deletion it exports the account to obtain the authenticated user id, seeds user-scoped pending-mutation and recent-snapshot cache sentinels, completes the two-step deletion UI, verifies both caches are removed, confirms no local-cleanup warning appeared, and then verifies the deleted credentials can no longer obtain a Supabase password session using only the public publishable key. This specification is irreversible by design and must never run against a reusable account.
+
 Real credentials never belong in source control; `.env.example` documents names only.
 
 ## Current E2E matrix
@@ -40,7 +48,8 @@ Real credentials never belong in source control; `.env.example` documents names 
 | Recovery | `tests/e2e/product-live.spec.ts` | Recovery surface plus next-step interaction |
 | Scenario / What If | `tests/e2e/product-live.spec.ts` | scenario switch plus assumption visibility |
 | Settings / optional module | `tests/e2e/product-live.spec.ts` | Spiritual Grounding toggle and restore behind mutation opt-in |
-| Privacy | `tests/e2e/product-live.spec.ts` | portable JSON export/download without destructive deletion |
+| Privacy export | `tests/e2e/product-live.spec.ts` | portable JSON export/download without destructive deletion |
+| Privacy deletion | `tests/e2e/account-deletion-live.spec.ts` | dedicated completed deletion account, two-step destructive confirmation, user-scoped Web cache cleanup, server-side credential rejection after deletion; separately gated by `MIZAN_E2E_DESTRUCTIVE=1` |
 | Responsive Web | Playwright projects | 320×568 narrow phone, 390×844 common phone, 834×1194 tablet portrait, 1194×834 tablet landscape, and 1440×900 desktop; every viewport runs in both light and dark emulated color schemes, and existing overflow assertions execute in each applicable project |
 
 The Playwright project matrix deliberately uses the same Chromium engine with explicit viewport classes and emulated light/dark color schemes so layout and appearance regressions can be compared without introducing a browser-engine variable. The five viewport classes × two color schemes produce ten static Web projects. Native Android/iOS validation remains a separate owner/runtime gate.
@@ -49,7 +58,7 @@ The Playwright project matrix deliberately uses the same Chromium engine with ex
 
 - Run the full TypeScript, lint, unit/component/integration, database/policy, and Web E2E suites from a trustworthy checkout.
 - Add or execute any missing behavior discovered by those runs; static specifications are not a PASS.
-- Validate destructive account deletion only with an intentionally disposable account and confirm local cleanup behavior; do not reuse the normal completed-account fixture.
+- Execute the prepared destructive deletion specification only with an intentionally disposable dedicated account; do not reuse the normal completed-account fixture.
 - Execute Expo diagnostics plus Android/iOS bundle/export checks available in the owner environment.
 - Inspect production Web console/network behavior and production export output.
 - Measure startup and representative interaction performance enough to catch blocking work, pathological rerenders, or large regressions.
