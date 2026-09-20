@@ -114,13 +114,13 @@ Web E2E uses Playwright and starts the app on port `8091`:
 npm run test:e2e
 ```
 
-Live account coverage is enabled only when the matching `MIZAN_E2E_*` environment variables from `.env.example` are present. The explicit mutation command is fail-closed: it enables `MIZAN_E2E_MUTATIONS=1` itself, requires the public Supabase values plus a dedicated completed-mutation account and a separate disposable onboarding-mutation account, rejects reuse of protected reusable/deletion fixture emails, rejects reuse of the same email for both mutation roles, and then runs the mutation journeys once in `desktop-light`:
+Live account coverage is enabled only when the matching `MIZAN_E2E_*` environment variables from `.env.example` are present. The explicit mutation command is fail-closed: it enables `MIZAN_E2E_MUTATIONS=1` itself, requires the public Supabase values, the three reusable role-email identifiers (`MIZAN_E2E_COMPLETED_EMAIL`, `MIZAN_E2E_ARABIC_EMAIL`, `MIZAN_E2E_ONBOARDING_EMAIL`) for collision checking, a dedicated completed-mutation account, and a separate disposable onboarding-mutation account. It rejects protected reusable/deletion fixture reuse, rejects reuse of the same email for both mutation roles, and then runs the mutation journeys once in `desktop-light`:
 
 ```bash
 npm run test:e2e:mutations
 ```
 
-Do not point `MIZAN_E2E_COMPLETED_MUTATION_EMAIL` at the reusable `MIZAN_E2E_COMPLETED_EMAIL` account, and do not point `MIZAN_E2E_ONBOARDING_MUTATION_EMAIL` at the reusable `MIZAN_E2E_ONBOARDING_EMAIL` account. Daily-loop/feedback journeys persist data, while onboarding completion permanently changes an account from incomplete to complete. The two mutation fixtures are therefore intentionally separate from each other and from reusable release evidence.
+Do not point `MIZAN_E2E_COMPLETED_MUTATION_EMAIL` at the reusable `MIZAN_E2E_COMPLETED_EMAIL` account, and do not point `MIZAN_E2E_ONBOARDING_MUTATION_EMAIL` at the reusable `MIZAN_E2E_ONBOARDING_EMAIL` account. Daily-loop/feedback journeys persist data, while onboarding completion permanently changes an account from incomplete to complete. The two mutation fixtures are therefore intentionally separate from each other and from reusable release evidence. The reusable-role email identifiers are required by the mutation runner even when their passwords are not needed by the mutation journeys, because a fail-closed separation check cannot prove non-reuse if those identities are absent.
 
 CP9 visual-evidence capture is read-only and separately opt-in. Configure the normal completed account with a persisted English MIZAN locale and the separate completed Arabic-profile account, set `MIZAN_E2E_VISUAL_EVIDENCE=1`, then run:
 
@@ -144,7 +144,7 @@ The destructive deletion journey requires a dedicated disposable account plus `M
 npm run test:e2e:delete-account
 ```
 
-Never point that destructive test at a reusable account or either mutation-validation account. The public runner refuses a configured deletion email that matches those protected roles. See `docs/CP11_RELEASE_READINESS.md` for the responsive/light-dark matrix and the exact fixture contract.
+Never point that destructive test at a reusable account or either mutation-validation account. The public runner requires the configured email identity for every protected reusable/mutation fixture before it will enter Playwright, then refuses the deletion email if it matches any of those roles. This makes fixture-separation proof fail closed instead of treating missing protected identities as evidence of uniqueness. See `docs/CP11_RELEASE_READINESS.md` for the responsive/light-dark matrix and the exact fixture contract.
 
 ## Export / build readiness
 
