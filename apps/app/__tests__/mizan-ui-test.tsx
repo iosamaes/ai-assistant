@@ -4,6 +4,7 @@ import { fireEvent, render } from '@testing-library/react-native';
 import { StyleSheet } from 'react-native';
 
 import { ChoiceChip, MizanText, MizanTextInput, PrimaryButton } from '@/components/mizan-ui';
+import { Palette } from '@/constants/theme';
 import { useAppState } from '@/state/app-state';
 
 const useAppStateMock = jest.mocked(useAppState);
@@ -64,6 +65,17 @@ describe('shared presentation primitives', () => {
     expect(button.props.accessibilityState).toEqual({ disabled: true });
     await fireEvent.press(button);
     expect(onPress).not.toHaveBeenCalled();
+  });
+
+  test('PrimaryButton danger tone uses the semantic destructive surface and foreground', async () => {
+    const view = await render(<PrimaryButton label="حذف نهائي" tone="danger" onPress={jest.fn()} />);
+    const button = view.getByRole('button', { name: 'حذف نهائي' });
+    const buttonStyle = StyleSheet.flatten(button.props.style);
+    const label = view.getByText('حذف نهائي');
+    const labelStyle = StyleSheet.flatten(label.props.style);
+
+    expect(buttonStyle.backgroundColor).toBe(Palette.light.danger);
+    expect(labelStyle.color).toBe(Palette.light.onDanger);
   });
 
   test('ChoiceChip exposes selection semantics to assistive technology', async () => {
