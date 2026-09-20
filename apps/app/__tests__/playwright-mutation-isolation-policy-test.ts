@@ -35,7 +35,7 @@ describe('Playwright live-mutation isolation policy', () => {
     expect(deletionSpec).toContain('expect(reauthentication.status()).toBe(400)');
   });
 
-  test('aggregate release baseline cannot inherit opt-in mutation or destructive modes', () => {
+  test('aggregate release baseline is fail-closed for opt-in modes and required live fixtures', () => {
     const repoRoot = path.resolve(__dirname, '../../..');
     const packageJson = JSON.parse(fs.readFileSync(path.join(repoRoot, 'package.json'), 'utf8')) as {
       scripts?: Record<string, string>;
@@ -51,6 +51,16 @@ describe('Playwright live-mutation isolation policy', () => {
     expect(runner).toContain("'MIZAN_E2E_VISUAL_EVIDENCE'");
     expect(runner).toContain("'MIZAN_E2E_PERFORMANCE'");
     expect(runner).toContain('delete env[flag]');
+    expect(runner).toContain("'MIZAN_E2E_SUPABASE_URL'");
+    expect(runner).toContain("'MIZAN_E2E_SUPABASE_PUBLISHABLE_KEY'");
+    expect(runner).toContain("'MIZAN_E2E_COMPLETED_EMAIL'");
+    expect(runner).toContain("'MIZAN_E2E_COMPLETED_PASSWORD'");
+    expect(runner).toContain("'MIZAN_E2E_ARABIC_EMAIL'");
+    expect(runner).toContain("'MIZAN_E2E_ARABIC_PASSWORD'");
+    expect(runner).toContain("'MIZAN_E2E_ONBOARDING_EMAIL'");
+    expect(runner).toContain("'MIZAN_E2E_ONBOARDING_PASSWORD'");
+    expect(runner).toContain('missingBaselineVariables.length > 0');
+    expect(runner).toContain('Release baseline cannot provide required live E2E evidence');
     expect(runner).toContain("const scripts = ['check', 'test:db', 'lint:db', 'test:e2e', 'test:e2e:production'];");
     expect(runner).not.toContain('test:e2e:mutations');
     expect(runner).not.toContain('test:e2e:delete-account');
