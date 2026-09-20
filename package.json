@@ -28,7 +28,8 @@
     "test:e2e:production": "playwright test tests/e2e/production-web.spec.ts --config=playwright.production.config.ts",
     "test:e2e:production:performance": "playwright test tests/e2e/production-performance.spec.ts --config=playwright.production.config.ts --project=production-desktop-dark",
     "test:e2e:delete-account": "playwright test tests/e2e/account-deletion-live.spec.ts --project=desktop-light",
-    "check:runtime": "npm run check && npm run test:e2e"
+    "check:runtime": "npm run check && npm run test:e2e",
+    "check:release:baseline": "npm run check && npm run test:db && npm run lint:db && npm run test:e2e && npm run test:e2e:production"
   },
   "engines": {
     "node": ">=22.13.0"
