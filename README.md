@@ -104,6 +104,8 @@ After `supabase db reset` has completed successfully on the local disposable sta
 npm run check:release:baseline
 ```
 
+Before running that aggregate baseline, configure the **read-only release fixtures** from `.env.example`: the public `MIZAN_E2E_SUPABASE_*` values, the completed English account, the completed Arabic account, and the incomplete onboarding account. The runner fails immediately when any of those variables are missing so required authenticated/RTL/onboarding suites cannot silently skip and still produce a misleading green baseline.
+
 That command chains the workspace typecheck/lint/unit suite, local database tests and lint, the normal Web E2E matrix, and the production static-Web smoke/size path. It intentionally does **not** opt into live mutations, CP9 screenshot capture, performance probes, irreversible account deletion, Expo Doctor, or Android/iOS exports; those remain explicit follow-up gates so an aggregate command cannot accidentally mutate or delete a fixture.
 
 Web E2E uses Playwright and starts the app on port `8091`:
