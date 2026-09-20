@@ -47,6 +47,14 @@ export async function signInCompletedAccount(page: Page) {
   await expect(page).toHaveURL(/\/today$/);
 }
 
+export async function signInEnglishCompletedAccount(page: Page) {
+  await signInCompletedAccount(page);
+  await expect(
+    page.getByRole('tab', { name: 'Home', exact: true }),
+    'The default completed-account fixture must have persisted English locale for English visual evidence.',
+  ).toBeVisible();
+}
+
 export async function signInArabicCompletedAccount(page: Page) {
   const email = process.env.MIZAN_E2E_ARABIC_EMAIL;
   const password = process.env.MIZAN_E2E_ARABIC_PASSWORD;
