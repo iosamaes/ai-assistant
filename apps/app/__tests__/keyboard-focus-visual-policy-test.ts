@@ -45,4 +45,15 @@ describe('keyboard focus visual policy', () => {
     expect(source).toContain('onFocus={() => setFocusedTemplate(id)}');
     expect(source).toContain('focusRingStyle(palette.accent, focusedTemplate === id && !disabled)');
   });
+
+  test('personalization domain switches keep visible focus while enabled', () => {
+    const source = readAppSource('app/personalization.tsx');
+
+    expect(source).toContain('const [focusedDomain, setFocusedDomain]');
+    expect(source).toContain('onBlur={() => setFocusedDomain(null)}');
+    expect(source).toContain('onFocus={() => setFocusedDomain(domainId)}');
+    expect(source).toContain(
+      'focusRingStyle(palette.accent, focusedDomain === domainId && !isLastEnabled)',
+    );
+  });
 });
