@@ -1,13 +1,16 @@
 import { expect, test, type Page } from '@playwright/test';
 
 import {
+  arabicCompletedAccountConfigured,
   completedAccountConfigured,
   expectNoHorizontalOverflow,
   mutationsEnabled,
+  signInArabicCompletedAccount,
   signInCompletedAccount,
 } from './live-account';
 
 const liveReason = 'Requires MIZAN_E2E_SUPABASE_URL, MIZAN_E2E_SUPABASE_PUBLISHABLE_KEY, and completed-account credentials.';
+const arabicLiveReason = 'Requires the live Supabase client configuration plus a completed account whose saved MIZAN locale is Arabic.';
 const mutationProjectReason = 'Live mutation E2E runs once in desktop-light to avoid concurrent writes against one shared account.';
 
 type BrowserDiagnostics = {
@@ -188,6 +191,38 @@ test.describe('live completed-account product journeys', () => {
     await original.click();
     await expect(original).toHaveAttribute('aria-selected', 'true');
     await expect(original).toBeEnabled();
+    await expectNoHorizontalOverflow(page);
+    expectNoCriticalBrowserDiagnostics(diagnostics);
+  });
+});
+
+test.describe('live Arabic completed-account read-only journeys', () => {
+  test.skip(!arabicCompletedAccountConfigured, arabicLiveReason);
+
+  test('Arabic primary shell remains localized and overflow-free across the responsive matrix', async ({ page }) => {
+    const diagnostics = collectCriticalBrowserDiagnostics(page);
+    await signInArabicCompletedAccount(page);
+
+    const navigation = page.getByRole('tablist');
+    await expect(navigation).toBeVisible();
+    await expect(page.getByRole('tab', { name: 'الرئيسية', exact: true })).toHaveAttribute('aria-selected', 'true');
+    await expectNoHorizontalOverflow(page);
+
+    await page.getByRole('tab', { name: 'خريطة الحياة', exact: true }).click();
+    await expect(page).toHaveURL(/\/life-map$/);
+    await expectNoHorizontalOverflow(page);
+
+    await page.getByRole('tab', { name: 'خطوتي', exact: true }).click();
+    await expect(page).toHaveURL(/\/one-move$/);
+    await expectNoHorizontalOverflow(page);
+
+    await page.getByRole('tab', { name: 'الرؤى', exact: true }).click();
+    await expect(page).toHaveURL(/\/insights$/);
+    await expectNoHorizontalOverflow(page);
+
+    await page.getByRole('tab', { name: 'المزيد', exact: true }).click();
+    await expect(page).toHaveURL(/\/settings$/);
+    await expect(page.getByText('اضبط ميزان على حياتك، لا العكس', { exact: true })).toBeVisible();
     await expectNoHorizontalOverflow(page);
     expectNoCriticalBrowserDiagnostics(diagnostics);
   });
