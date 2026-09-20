@@ -38,8 +38,10 @@ function isAllowedPublicSupabaseKey(key: string): boolean {
 
   const parts = key.split('.');
   if (parts.length !== 3 || !key.startsWith('eyJ')) return false;
+  const payloadPart = parts[1];
+  if (!payloadPart) return false;
 
-  const decodedPayload = decodeBase64UrlAscii(parts[1]);
+  const decodedPayload = decodeBase64UrlAscii(payloadPart);
   if (!decodedPayload) return false;
 
   try {

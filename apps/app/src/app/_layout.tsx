@@ -86,6 +86,7 @@ export function AppNavigator() {
         {railNavigation ? <AppNavigation activeSegment={firstSegment} /> : null}
         <View style={{ flex: 1 }}>
           <Stack
+            key={userId ?? 'anonymous'}
             screenOptions={{
               headerShown: false,
               animation: reduceMotionEnabled ? 'none' : 'fade',
