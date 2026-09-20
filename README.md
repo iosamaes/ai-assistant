@@ -72,7 +72,13 @@ supabase start
 supabase db reset
 ```
 
-`supabase db reset` recreates the local database from the ordered files in `supabase/migrations/`. Run authorization/security scripts in `supabase/tests/` only against a disposable/local database; several intentionally create test identities inside rollback-only transactions.
+`supabase db reset` recreates the local database from the ordered files in `supabase/migrations/`. With the local stack running, execute the repository's pgTAP/RLS/security suite from the repository root with:
+
+```bash
+npm run test:db
+```
+
+That command maps to `supabase test db --local`, so it targets the local Supabase database rather than the hosted project. Run authorization/security scripts in `supabase/tests/` only against a disposable/local database; several intentionally create test identities inside rollback-only transactions.
 
 The optional `supabase/dev/vertical_slice_fixture.sql` is development data, not production seed data. Apply it only to a disposable/local database when a representative development fixture is needed.
 
@@ -80,13 +86,14 @@ For hosted work, use the project selected by the deployment environment and appl
 
 ## Quality commands
 
-Static/unit quality from the repository root:
+Static/unit and local-database quality from the repository root:
 
 ```bash
 npm run typecheck
 npm run lint
 npm test
 npm run check
+npm run test:db   # requires the local Supabase stack
 ```
 
 Web E2E uses Playwright and starts the app on port `8091`:
