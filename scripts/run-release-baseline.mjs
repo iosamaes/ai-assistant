@@ -3,6 +3,7 @@ import { spawnSync } from 'node:child_process';
 const isWindows = process.platform === 'win32';
 const npmCommand = isWindows ? 'npm.cmd' : 'npm';
 const scripts = ['check', 'test:db', 'lint:db', 'test:e2e', 'test:e2e:production'];
+const authorizedSupabaseProjectRef = 'olfhjnropdrnujgpidfi';
 const optInFlags = [
   'MIZAN_E2E_MUTATIONS',
   'MIZAN_E2E_DESTRUCTIVE',
@@ -32,6 +33,28 @@ const missingBaselineVariables = requiredBaselineVariables.filter((name) => !env
 if (missingBaselineVariables.length > 0) {
   console.error(
     `Release baseline cannot provide required live E2E evidence. Missing environment variables: ${missingBaselineVariables.join(', ')}`,
+  );
+  process.exit(1);
+}
+
+let configuredProjectRef;
+try {
+  const configuredUrl = new URL(env.MIZAN_E2E_SUPABASE_URL);
+  const hostedSuffix = '.supabase.co';
+  if (configuredUrl.protocol !== 'https:' || !configuredUrl.hostname.endsWith(hostedSuffix)) {
+    throw new Error('not a hosted Supabase HTTPS URL');
+  }
+  configuredProjectRef = configuredUrl.hostname.slice(0, -hostedSuffix.length);
+} catch {
+  console.error(
+    'Release baseline requires MIZAN_E2E_SUPABASE_URL to be the authorized hosted Supabase project URL.',
+  );
+  process.exit(1);
+}
+
+if (configuredProjectRef !== authorizedSupabaseProjectRef) {
+  console.error(
+    `Release baseline is authorized only for Supabase project ${authorizedSupabaseProjectRef}. Check MIZAN_E2E_SUPABASE_URL before running live E2E.`,
   );
   process.exit(1);
 }
