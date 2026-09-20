@@ -1,5 +1,5 @@
 import { router } from 'expo-router';
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { StyleSheet, useColorScheme, View } from 'react-native';
 
 import { assessExplicitHumanROI } from '@/application/human-roi';
@@ -119,7 +119,7 @@ function formatHours(minutes: number | null, locale: 'ar' | 'en'): string {
 }
 
 export default function HumanROIScreen() {
-  const { isRtl, locale } = useAppState();
+  const { isRtl, locale, userId } = useAppState();
   const labels = copy[locale];
   const scheme = useColorScheme();
   const palette = Palette[scheme === 'dark' ? 'dark' : 'light'];
@@ -127,8 +127,17 @@ export default function HumanROIScreen() {
   const [benefitRating, setBenefitRating] = useState<number | null>(null);
   const [effortRating, setEffortRating] = useState<number | null>(null);
   const [timeText, setTimeText] = useState('');
+  const draftUserRef = useRef(userId);
   const observedAt = useMemo(() => new Date().toISOString(), []);
   const ratingDenominator = formatLocalizedNumber(5, locale, 0);
+
+  if (draftUserRef.current !== userId) {
+    draftUserRef.current = userId;
+    setProtectedMeaning(false);
+    setBenefitRating(null);
+    setEffortRating(null);
+    setTimeText('');
+  }
 
   const assessment = useMemo(
     () =>
