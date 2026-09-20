@@ -1,5 +1,5 @@
 import { router } from 'expo-router';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { StyleSheet, useColorScheme, useWindowDimensions, View } from 'react-native';
 
 import { AppIcon } from '@/components/app-icon';
@@ -47,14 +47,16 @@ export default function UpdatePasswordScreen() {
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const activeUserRef = useRef(userId);
-  activeUserRef.current = userId;
+  const draftUserRef = useRef(userId);
 
-  useEffect(() => {
+  if (draftUserRef.current !== userId) {
+    draftUserRef.current = userId;
     setPassword('');
     setConfirmPassword('');
     setBusy(false);
     setMessage(null);
-  }, [userId]);
+  }
+  activeUserRef.current = userId;
 
   const passwordLongEnough = password.length >= 8;
   const passwordsMatch = confirmPassword.length > 0 && password === confirmPassword;
