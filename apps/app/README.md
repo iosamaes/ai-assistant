@@ -47,15 +47,17 @@ The root project also provides aggregate workspace checks and the Playwright rel
 
 ## Export validation
 
-From this directory, Expo export checks can be run with:
+The workspace owns explicit Expo export commands:
 
 ```bash
-npx expo export --platform web
-npx expo export --platform android
-npx expo export --platform ios
+npm run export:web
+npm run export:android
+npm run export:ios
 ```
 
-These commands validate exportability; they are not a replacement for signed store builds, native device validation, or the complete CP11 release gate.
+The root package exposes the same command names and delegates them here, so normal clean-checkout validation can stay at repository root. These commands map directly to `expo export --platform web|android|ios`; they validate exportability but are not a replacement for signed store builds, native device validation, production Web inspection, or the complete CP11 release gate.
+
+For Expo compatibility diagnostics during owner validation, run `npx expo-doctor` from this directory and record the result in the project state ledger.
 
 ## Source layout
 
