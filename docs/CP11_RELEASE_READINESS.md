@@ -23,7 +23,7 @@ For Arabic/RTL matrix evidence, configure a separate completed account whose per
 The Arabic fixture is read-only. It waits for persisted Arabic locale hydration, verifies localized primary navigation and routing, repeats pointer-free keyboard activation after RTL hydration, and checks selected premium-reference routes without mutating another account's locale.
 
 ### 3. Live mutation E2E
-Set `MIZAN_E2E_MUTATIONS=1` only with disposable/dedicated automation accounts. Mutation coverage includes check-in persistence, One Move → explicit outcome feedback → Personal Learning, Spiritual Grounding toggle/restore, notification-preference toggle → reload persistence → original-state restore → reload verification, and onboarding completion with its separate incomplete fixture.
+Set `MIZAN_E2E_MUTATIONS=1` only with disposable/dedicated automation accounts. Mutation coverage includes check-in persistence, One Move → explicit outcome feedback → Personal Learning, Spiritual Grounding toggle → reload persistence → original-state restore → reload verification, notification-preference toggle → reload persistence → original-state restore → reload verification, and onboarding completion with its separate incomplete fixture.
 
 Mutation-enabled product tests self-skip outside `desktop-light` so one shared live account is not written concurrently across the ten responsive/color projects. The explicit runner is:
 
@@ -151,7 +151,7 @@ This is intentionally a **baseline**, not the whole CP11 release proof. Live mut
 | Daily loop | `tests/e2e/product-live.spec.ts` | live check-in write behind mutation opt-in in `desktop-light` |
 | Feedback learning | `tests/e2e/product-live.spec.ts` | evidence → One Move accept → explicit usefulness → Personal Learning |
 | Recovery / What If | `tests/e2e/product-live.spec.ts` | recovery step interaction and scenario switch/assumption visibility |
-| Spiritual Grounding | `tests/e2e/product-live.spec.ts` | optional preference toggle and restoration |
+| Spiritual Grounding | `tests/e2e/product-live.spec.ts` | optional preference toggle → reload persistence → original-state restore → reload verification |
 | Notification preferences | `tests/e2e/notification-preferences-live.spec.ts` + app regression specs | toggle/reload/restore/reload live journey plus source policy and stale-load/stale-save account-switch fencing |
 | Privacy export | `tests/e2e/product-live.spec.ts` | authenticated portable JSON export/download |
 | Privacy deletion | `tests/e2e/account-deletion-live.spec.ts` | dedicated irreversible account, two-step confirmation, local cache cleanup, post-delete credential rejection |
@@ -171,7 +171,7 @@ The ten main Web projects use the same Chromium engine with explicit viewport an
 - With the disposable local Supabase stack reset, configure three distinct read-only baseline fixtures for completed English, completed Arabic, and incomplete onboarding, then run `npm run check:release:baseline` from a trustworthy checkout and retain the full fail-fast result; this covers TypeScript, lint, unit/component/integration, local database tests/lint, the normal Web E2E matrix, and production Web smoke/size while forcibly disabling opt-in mutation/destructive modes.
 - Execute the responsive read-only matrix without mutation mode; inspect assertion output **and** visible keyboard focus/interaction behavior.
 - Run `npm run test:e2e:visual` with the persisted-English and persisted-Arabic completed fixtures, inspect all Today/Life Map/WHY/Check-in attachments, and retain reviewed evidence.
-- Run `npm run test:e2e:mutations` only with dedicated/disposable fixtures, including notification preference persistence/restoration.
+- Run `npm run test:e2e:mutations` only with dedicated/disposable fixtures, including Spiritual Grounding and notification-preference persistence/restoration across reload.
 - Run the prepared destructive deletion journey only with its dedicated disposable account.
 - Execute `npm run test:e2e:performance` and inspect the controlled-runtime measurements and any broad-budget failure.
 - Execute `npm run test:e2e:production:performance`, retain the attached production performance report, compare it with the controlled-runtime sample, and investigate material regressions or pathological main-thread work.
