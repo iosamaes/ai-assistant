@@ -6,7 +6,7 @@ export const Palette = {
     surface: '#FFFEFB',
     surfaceMuted: '#ECEFEA',
     text: '#142019',
-    textMuted: '#627067',
+    textMuted: '#5C6A61',
     border: '#D7DED7',
     accent: '#245E4A',
     onAccent: '#F9FCFA',
