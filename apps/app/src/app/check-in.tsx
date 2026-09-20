@@ -44,6 +44,7 @@ export default function CheckInScreen() {
   const [skippedMetrics, setSkippedMetrics] = useState<DailyCheckInMetric[]>([]);
   const [submitState, setSubmitState] = useState<SubmitState>('idle');
   const activeUserRef = useRef(userId);
+  activeUserRef.current = userId;
   const answeredCount = useMemo(() => Object.keys(ratings).length, [ratings]);
   const completedCount = answeredCount + skippedMetrics.length;
   const interactionsLocked = submitState === 'saving' || submitState === 'queued';
@@ -51,7 +52,6 @@ export default function CheckInScreen() {
   const progressPercent = (completedCount / metricItems.length) * 100;
 
   useEffect(() => {
-    activeUserRef.current = userId;
     let active = true;
     void Promise.resolve().then(() => {
       if (!active) return;
