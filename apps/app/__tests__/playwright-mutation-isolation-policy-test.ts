@@ -19,12 +19,17 @@ describe('Playwright live-mutation isolation policy', () => {
     expect(notificationSpec).toContain('test.skip(!mutationsEnabled');
   });
 
-  test('onboarding mutation uses a disposable fixture instead of consuming release-baseline onboarding evidence', () => {
+  test('onboarding mutation uses a disposable fixture and the mutation command cannot silently skip it', () => {
     const repoRoot = path.resolve(__dirname, '../../..');
+    const packageJson = JSON.parse(fs.readFileSync(path.join(repoRoot, 'package.json'), 'utf8')) as {
+      scripts?: Record<string, string>;
+    };
     const onboardingSpec = fs.readFileSync(path.join(repoRoot, 'tests', 'e2e', 'onboarding-live.spec.ts'), 'utf8');
     const liveAccount = fs.readFileSync(path.join(repoRoot, 'tests', 'e2e', 'live-account.ts'), 'utf8');
+    const mutationRunner = fs.readFileSync(path.join(repoRoot, 'scripts', 'run-e2e-mutations.mjs'), 'utf8');
     const baselineRunner = fs.readFileSync(path.join(repoRoot, 'scripts', 'run-release-baseline.mjs'), 'utf8');
 
+    expect(packageJson.scripts?.['test:e2e:mutations']).toBe('node scripts/run-e2e-mutations.mjs');
     expect(liveAccount).toContain('MIZAN_E2E_ONBOARDING_MUTATION_EMAIL');
     expect(liveAccount).toContain('MIZAN_E2E_ONBOARDING_MUTATION_PASSWORD');
     expect(onboardingSpec).toContain('signInOnboardingMutationAccount');
@@ -32,6 +37,16 @@ describe('Playwright live-mutation isolation policy', () => {
     expect(onboardingSpec).toContain(
       'MIZAN_E2E_ONBOARDING_MUTATION_EMAIL must be separate from the reusable MIZAN_E2E_ONBOARDING_EMAIL fixture.',
     );
+    expect(mutationRunner).toContain("MIZAN_E2E_MUTATIONS: '1'");
+    expect(mutationRunner).toContain("'MIZAN_E2E_ONBOARDING_MUTATION_EMAIL'");
+    expect(mutationRunner).toContain("'MIZAN_E2E_ONBOARDING_MUTATION_PASSWORD'");
+    expect(mutationRunner).toContain("'MIZAN_E2E_COMPLETED_EMAIL'");
+    expect(mutationRunner).toContain("'MIZAN_E2E_COMPLETED_PASSWORD'");
+    expect(mutationRunner).toContain('missingVariables.length > 0');
+    expect(mutationRunner).toContain('protectedReusableEmailVariables');
+    expect(mutationRunner).toContain('reusedFixtureVariables.length > 0');
+    expect(mutationRunner).toContain("'tests/e2e/onboarding-live.spec.ts'");
+    expect(mutationRunner).toContain("'--project=desktop-light'");
     expect(baselineRunner).not.toContain("'MIZAN_E2E_ONBOARDING_MUTATION_EMAIL'");
     expect(baselineRunner).not.toContain("'MIZAN_E2E_ONBOARDING_MUTATION_PASSWORD'");
   });
