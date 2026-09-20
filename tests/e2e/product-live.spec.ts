@@ -9,6 +9,7 @@ import {
 } from './live-account';
 
 const liveReason = 'Requires MIZAN_E2E_SUPABASE_URL, MIZAN_E2E_SUPABASE_PUBLISHABLE_KEY, and completed-account credentials.';
+const mutationProjectReason = 'Live mutation E2E runs once in desktop-light to avoid concurrent writes against one shared account.';
 
 async function recordLowEnergyCheckIn(page: Page) {
   await page.goto('/check-in');
@@ -85,8 +86,9 @@ test.describe('live completed-account product journeys', () => {
     expect(pageErrors).toEqual([]);
   });
 
-  test('daily check-in writes through the live account only when mutations are explicitly enabled', async ({ page }) => {
+  test('daily check-in writes through the live account only when mutations are explicitly enabled', async ({ page }, testInfo) => {
     test.skip(!mutationsEnabled, 'Set MIZAN_E2E_MUTATIONS=1 only for a disposable or dedicated E2E account.');
+    test.skip(testInfo.project.name !== 'desktop-light', mutationProjectReason);
     const pageErrors = collectPageErrors(page);
     await signInCompletedAccount(page);
 
@@ -95,8 +97,9 @@ test.describe('live completed-account product journeys', () => {
     expect(pageErrors).toEqual([]);
   });
 
-  test('explicit outcome feedback reaches Personal Learning through the live daily loop', async ({ page }) => {
+  test('explicit outcome feedback reaches Personal Learning through the live daily loop', async ({ page }, testInfo) => {
     test.skip(!mutationsEnabled, 'Set MIZAN_E2E_MUTATIONS=1 only for a disposable or dedicated E2E account.');
+    test.skip(testInfo.project.name !== 'desktop-light', mutationProjectReason);
     const pageErrors = collectPageErrors(page);
     await signInCompletedAccount(page);
 
@@ -123,8 +126,9 @@ test.describe('live completed-account product journeys', () => {
     expect(pageErrors).toEqual([]);
   });
 
-  test('optional Spiritual Grounding preference can toggle and restore on a dedicated live account', async ({ page }) => {
+  test('optional Spiritual Grounding preference can toggle and restore on a dedicated live account', async ({ page }, testInfo) => {
     test.skip(!mutationsEnabled, 'Set MIZAN_E2E_MUTATIONS=1 only for a disposable or dedicated E2E account.');
+    test.skip(testInfo.project.name !== 'desktop-light', mutationProjectReason);
     const pageErrors = collectPageErrors(page);
     await signInCompletedAccount(page);
     await page.goto('/settings');
