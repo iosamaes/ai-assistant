@@ -9,13 +9,17 @@ import {
 import {
   arabicCompletedAccountConfigured,
   completedAccountConfigured,
+  completedMutationAccountConfigured,
   mutationsEnabled,
   signInArabicCompletedAccount,
   signInCompletedAccount,
+  signInCompletedMutationAccount,
 } from './live-account';
 
 const liveReason = 'Requires MIZAN_E2E_SUPABASE_URL, MIZAN_E2E_SUPABASE_PUBLISHABLE_KEY, and completed-account credentials.';
 const arabicLiveReason = 'Requires the live Supabase client configuration plus a completed account whose saved MIZAN locale is Arabic.';
+const mutationLiveReason = 'Requires the live Supabase client configuration plus the dedicated completed-account mutation credentials.';
+const mutationModeReason = 'Mutation journeys run only through the explicit mutation runner.';
 const mutationProjectReason = 'Live mutation E2E runs once in desktop-light to avoid concurrent writes against one shared account.';
 
 const premiumReferenceSurfaces = [
@@ -149,12 +153,16 @@ test.describe('live completed-account product journeys', () => {
     await expectNoHorizontalOverflow(page);
     expectNoCriticalBrowserDiagnostics(diagnostics);
   });
+});
 
-  test('daily check-in writes through the live account only when mutations are explicitly enabled', async ({ page }, testInfo) => {
-    test.skip(!mutationsEnabled, 'Set MIZAN_E2E_MUTATIONS=1 only for a disposable or dedicated E2E account.');
+test.describe('live dedicated completed-account mutation journeys', () => {
+  test.skip(!completedMutationAccountConfigured, mutationLiveReason);
+  test.skip(!mutationsEnabled, mutationModeReason);
+
+  test('daily check-in writes through the dedicated mutation account', async ({ page }, testInfo) => {
     test.skip(testInfo.project.name !== 'desktop-light', mutationProjectReason);
     const diagnostics = collectCriticalBrowserDiagnostics(page);
-    await signInCompletedAccount(page);
+    await signInCompletedMutationAccount(page);
 
     await recordLowEnergyCheckIn(page);
     await expectNoHorizontalOverflow(page);
@@ -162,10 +170,9 @@ test.describe('live completed-account product journeys', () => {
   });
 
   test('explicit outcome feedback reaches Personal Learning through the live daily loop', async ({ page }, testInfo) => {
-    test.skip(!mutationsEnabled, 'Set MIZAN_E2E_MUTATIONS=1 only for a disposable or dedicated E2E account.');
     test.skip(testInfo.project.name !== 'desktop-light', mutationProjectReason);
     const diagnostics = collectCriticalBrowserDiagnostics(page);
-    await signInCompletedAccount(page);
+    await signInCompletedMutationAccount(page);
 
     for (let index = 0; index < 3; index += 1) await recordLowEnergyCheckIn(page);
 
@@ -190,11 +197,10 @@ test.describe('live completed-account product journeys', () => {
     expectNoCriticalBrowserDiagnostics(diagnostics);
   });
 
-  test('optional Spiritual Grounding preference persists across reload and restores on a dedicated live account', async ({ page }, testInfo) => {
-    test.skip(!mutationsEnabled, 'Set MIZAN_E2E_MUTATIONS=1 only for a disposable or dedicated E2E account.');
+  test('optional Spiritual Grounding preference persists across reload and restores on the dedicated mutation account', async ({ page }, testInfo) => {
     test.skip(testInfo.project.name !== 'desktop-light', mutationProjectReason);
     const diagnostics = collectCriticalBrowserDiagnostics(page);
-    await signInCompletedAccount(page);
+    await signInCompletedMutationAccount(page);
     await page.goto('/settings');
 
     const settingsTitle = page.getByText(/Shape MIZAN around your life|اضبط ميزان على حياتك، لا العكس/, { exact: true });
