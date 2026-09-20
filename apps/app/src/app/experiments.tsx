@@ -15,6 +15,7 @@ import { AppIcon, type AppIconName } from '@/components/app-icon';
 import {
   Card,
   ChoiceChip,
+  focusRingStyle,
   MizanText,
   MizanTextInput,
   PrimaryButton,
@@ -222,6 +223,7 @@ export default function ExperimentsScreen() {
   const scheme = useColorScheme();
   const palette = Palette[scheme === 'dark' ? 'dark' : 'light'];
   const [selected, setSelected] = useState<ExperimentTemplateId>('earlier-bedtime');
+  const [focusedTemplate, setFocusedTemplate] = useState<ExperimentTemplateId | null>(null);
   const [hypothesis, setHypothesis] = useState<string>(labels.templates['earlier-bedtime'].hypothesis);
   const [consented, setConsented] = useState(false);
   const [history, setHistory] = useState<ExperimentWithEvaluation[]>([]);
@@ -239,6 +241,7 @@ export default function ExperimentsScreen() {
     draftUserRef.current = userId;
     mutationRequestRef.current += 1;
     setSelected('earlier-bedtime');
+    setFocusedTemplate(null);
     setHypothesis(labels.templates['earlier-bedtime'].hypothesis);
     setConsented(false);
     setRatingById({});
@@ -607,13 +610,16 @@ export default function ExperimentsScreen() {
             {templateIds.map((id) => {
               const template = experimentTemplates[id];
               const isSelected = selected === id;
+              const disabled = loading || busy;
               return (
                 <Pressable
                   key={id}
                   accessibilityRole="radio"
-                  accessibilityState={{ checked: isSelected, disabled: loading || busy }}
+                  accessibilityState={{ checked: isSelected, disabled }}
                   accessibilityLabel={labels.templates[id].label}
-                  disabled={loading || busy}
+                  disabled={disabled}
+                  onBlur={() => setFocusedTemplate((current) => (current === id ? null : current))}
+                  onFocus={() => setFocusedTemplate(id)}
                   onPress={() => {
                     setSelected(id);
                     setHypothesis(labels.templates[id].hypothesis);
@@ -626,6 +632,7 @@ export default function ExperimentsScreen() {
                       borderColor: isSelected ? palette.accent : palette.border,
                       opacity: pressed ? Interaction.subtlePressed : 1,
                     },
+                    focusRingStyle(palette.accent, focusedTemplate === id && !disabled),
                   ]}
                 >
                   <View style={[styles.templateIdentity, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
