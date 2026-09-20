@@ -2,6 +2,10 @@ import { router } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
 import { StyleSheet, useColorScheme, View } from 'react-native';
 
+import {
+  useNotificationPreferences,
+  type NotificationPreferences,
+} from '@/application/notification-preferences';
 import { useSpiritualGroundingPreference } from '@/application/spiritual-grounding';
 import { AppIcon, type AppIconName } from '@/components/app-icon';
 import { Card, ChoiceChip, MizanText, PrimaryButton, SecondaryButton } from '@/components/mizan-ui';
@@ -24,6 +28,37 @@ const spiritualCopy = {
     enable: 'Enabled',
     disable: 'Off',
     error: 'MIZAN could not save this preference right now.',
+  },
+} as const;
+
+const notificationCopy = {
+  ar: {
+    title: 'الإشعارات والتذكيرات',
+    body: 'اختر فقط ما تسمح لميزان أن يذكّرك به. التذكيرات اختيارية، ولا نستخدم الاستعجال أو السلاسل أو الخوف من فقدان التقدم.',
+    deliveryUnavailable: 'إرسال إشعارات الجهاز غير مهيأ في هذه النسخة بعد. يمكن حفظ اختياراتك الآن، لكن لن يُرسل أي إشعار للجهاز حتى يتم إعداد مزود الإشعارات.',
+    dailyTitle: 'تسجيل يومي سريع',
+    dailyBody: 'تذكير لطيف بالتسجيل الذي يستغرق أقل من دقيقة.',
+    experimentTitle: 'متابعة تجربة شخصية',
+    experimentBody: 'تذكير بالمتابعة فقط عندما تكون لديك تجربة طوعية نشطة.',
+    recoveryTitle: 'تذكير بالتعافي',
+    recoveryBody: 'تذكير اختياري بمساحة أنقذ يومي دون ضغط أو عقوبة.',
+    allow: 'مسموح',
+    off: 'متوقف',
+    error: 'تعذر حفظ تفضيلات الإشعارات الآن.',
+  },
+  en: {
+    title: 'Notifications & reminders',
+    body: 'Choose only what MIZAN may remind you about. Reminders are optional and never use urgency, streaks, or fear of losing progress.',
+    deliveryUnavailable: 'Device notification delivery is not configured in this build yet. Your choices can be saved now, but no device notification is sent until a notification provider is configured.',
+    dailyTitle: 'One-minute check-in',
+    dailyBody: 'A gentle reminder for the check-in designed to take less than a minute.',
+    experimentTitle: 'Personal experiment follow-up',
+    experimentBody: 'A follow-up reminder only while you have a voluntary experiment in progress.',
+    recoveryTitle: 'Recovery reminder',
+    recoveryBody: 'An optional Save My Day reminder with no pressure or penalty.',
+    allow: 'Allowed',
+    off: 'Off',
+    error: 'MIZAN could not save notification preferences right now.',
   },
 } as const;
 
@@ -205,6 +240,11 @@ export default function SettingsScreen() {
     persistChoice: persistSpiritualGroundingChoice,
     status: spiritualStatus,
   } = useSpiritualGroundingPreference(userId);
+  const {
+    persistPreferences: persistNotificationPreferences,
+    preferences: notificationPreferences,
+    status: notificationStatus,
+  } = useNotificationPreferences(userId);
   const scheme = useColorScheme();
   const palette = Palette[scheme === 'dark' ? 'dark' : 'light'];
   const [busy, setBusy] = useState(false);
@@ -221,9 +261,11 @@ export default function SettingsScreen() {
 
   const syncMessage = syncStatus === 'offline' ? t('syncOffline') : syncStatus === 'error' ? t('syncError') : null;
   const spiritualLabels = spiritualCopy[locale];
+  const notificationLabels = notificationCopy[locale];
   const labels = settingsCopy[locale];
   const insightLabels = insightCopy[locale];
   const spiritualControlsDisabled = busy || spiritualStatus === 'loading' || spiritualStatus === 'saving';
+  const notificationControlsDisabled = busy || notificationStatus === 'loading' || notificationStatus === 'saving';
   const priorities = enabledDomains.map((domainId) => t(domainId)).join(' · ');
 
   useEffect(() => {
@@ -255,6 +297,18 @@ export default function SettingsScreen() {
     const saved = await persistSpiritualGroundingChoice(next);
     if (activeUserRef.current !== targetUserId) return;
     if (!saved) setMessage(spiritualLabels.error);
+  };
+
+  const changeNotificationPreference = async (key: keyof NotificationPreferences, next: boolean) => {
+    if (notificationControlsDisabled || !userId) return;
+    const targetUserId = userId;
+    setMessage(null);
+    const saved = await persistNotificationPreferences({
+      ...notificationPreferences,
+      [key]: next,
+    });
+    if (activeUserRef.current !== targetUserId) return;
+    if (!saved) setMessage(notificationLabels.error);
   };
 
   const logout = async () => {
@@ -331,6 +385,85 @@ export default function SettingsScreen() {
             />
           </View>
         </Card>
+
+        <Card style={styles.notificationCard}>
+          <View style={[styles.linkCardHeader, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
+            <View style={[styles.linkIcon, { backgroundColor: palette.accentSoft }]}>
+              <AppIcon name="notification" color={palette.accent} size={22} />
+            </View>
+            <View style={styles.linkCardText}>
+              <MizanText variant="title">{notificationLabels.title}</MizanText>
+              <MizanText muted>{notificationLabels.body}</MizanText>
+            </View>
+          </View>
+
+          <MizanText variant="caption" muted>{notificationLabels.deliveryUnavailable}</MizanText>
+
+          <View style={styles.notificationOptions}>
+            <View style={styles.notificationOption}>
+              <View style={styles.linkCardCopy}>
+                <MizanText variant="label">{notificationLabels.dailyTitle}</MizanText>
+                <MizanText variant="caption" muted>{notificationLabels.dailyBody}</MizanText>
+              </View>
+              <View style={[styles.row, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
+                <ChoiceChip
+                  label={notificationLabels.allow}
+                  selected={notificationPreferences.dailyCheckIn}
+                  onPress={() => void changeNotificationPreference('dailyCheckIn', true)}
+                  disabled={notificationControlsDisabled}
+                />
+                <ChoiceChip
+                  label={notificationLabels.off}
+                  selected={!notificationPreferences.dailyCheckIn}
+                  onPress={() => void changeNotificationPreference('dailyCheckIn', false)}
+                  disabled={notificationControlsDisabled}
+                />
+              </View>
+            </View>
+
+            <View style={styles.notificationOption}>
+              <View style={styles.linkCardCopy}>
+                <MizanText variant="label">{notificationLabels.experimentTitle}</MizanText>
+                <MizanText variant="caption" muted>{notificationLabels.experimentBody}</MizanText>
+              </View>
+              <View style={[styles.row, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
+                <ChoiceChip
+                  label={notificationLabels.allow}
+                  selected={notificationPreferences.experimentReminders}
+                  onPress={() => void changeNotificationPreference('experimentReminders', true)}
+                  disabled={notificationControlsDisabled}
+                />
+                <ChoiceChip
+                  label={notificationLabels.off}
+                  selected={!notificationPreferences.experimentReminders}
+                  onPress={() => void changeNotificationPreference('experimentReminders', false)}
+                  disabled={notificationControlsDisabled}
+                />
+              </View>
+            </View>
+
+            <View style={styles.notificationOption}>
+              <View style={styles.linkCardCopy}>
+                <MizanText variant="label">{notificationLabels.recoveryTitle}</MizanText>
+                <MizanText variant="caption" muted>{notificationLabels.recoveryBody}</MizanText>
+              </View>
+              <View style={[styles.row, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
+                <ChoiceChip
+                  label={notificationLabels.allow}
+                  selected={notificationPreferences.recoveryPrompts}
+                  onPress={() => void changeNotificationPreference('recoveryPrompts', true)}
+                  disabled={notificationControlsDisabled}
+                />
+                <ChoiceChip
+                  label={notificationLabels.off}
+                  selected={!notificationPreferences.recoveryPrompts}
+                  onPress={() => void changeNotificationPreference('recoveryPrompts', false)}
+                  disabled={notificationControlsDisabled}
+                />
+              </View>
+            </View>
+          </View>
+        </Card>
       </View>
 
       <View style={styles.sectionHeading}>
@@ -402,6 +535,9 @@ const styles = StyleSheet.create({
     gap: Spacing.lg,
   },
   preferenceCard: { flexGrow: 1, flexBasis: 260, minWidth: 0 },
+  notificationCard: { flexGrow: 2, flexBasis: 520, minWidth: 0, gap: Spacing.lg },
+  notificationOptions: { gap: Spacing.lg },
+  notificationOption: { gap: Spacing.sm },
   linkCard: { flexGrow: 1, flexBasis: 300, minWidth: 0, justifyContent: 'space-between' },
   linkCardHeader: { alignItems: 'flex-start', gap: Spacing.md },
   linkIcon: {
