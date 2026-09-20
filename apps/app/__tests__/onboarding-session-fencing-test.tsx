@@ -6,7 +6,7 @@ jest.mock('@/infrastructure/supabase/baseline-targets', () => ({
   saveDomainBaselineTargets: jest.fn(),
 }));
 
-import { fireEvent, render, waitFor } from '@testing-library/react-native';
+import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
 import { router } from 'expo-router';
 
 import OnboardingScreen from '@/app/onboarding';
@@ -23,9 +23,9 @@ const spiritualPreferenceMock = jest.mocked(useSpiritualGroundingPreference);
 const loadBaselineMock = jest.mocked(loadDomainBaselineTargets);
 const saveBaselineMock = jest.mocked(saveDomainBaselineTargets);
 
-function deferred() {
-  let resolve!: () => void;
-  const promise = new Promise<void>((next) => {
+function deferred<T>() {
+  let resolve!: (value: T) => void;
+  const promise = new Promise<T>((next) => {
     resolve = next;
   });
   return { promise, resolve };
@@ -67,7 +67,7 @@ beforeEach(() => {
 
 describe('OnboardingScreen account-switch fencing', () => {
   test('does not route a newly active account to Today when the previous account finishes late', async () => {
-    const completion = deferred();
+    const completion = deferred<void>();
     const completeOnboarding = jest.fn(() => completion.promise);
     useAppStateMock.mockReturnValue(appState('user-a', completeOnboarding));
     const view = await render(<OnboardingScreen />);
@@ -88,5 +88,32 @@ describe('OnboardingScreen account-switch fencing', () => {
     await waitFor(() => {
       expect(router.replace).not.toHaveBeenCalledWith('/today');
     });
+  });
+
+  test('does not paint a previous account baseline after the new account has rendered', async () => {
+    const userALoad = deferred<Awaited<ReturnType<typeof loadDomainBaselineTargets>>>();
+    const completeOnboarding = jest.fn(async () => undefined);
+    loadBaselineMock.mockImplementation((userId) => {
+      if (userId === 'user-a') return userALoad.promise;
+      return Promise.resolve({ ok: true, value: {} });
+    });
+    useAppStateMock.mockReturnValue(appState('user-a', completeOnboarding));
+    const view = await render(<OnboardingScreen />);
+
+    await waitFor(() => expect(loadBaselineMock).toHaveBeenCalledWith('user-a'));
+
+    useAppStateMock.mockReturnValue(appState('user-b', completeOnboarding));
+    await view.rerender(<OnboardingScreen />);
+    await waitFor(() => expect(loadBaselineMock).toHaveBeenCalledWith('user-b'));
+    await waitFor(() => {
+      expect(view.getByRole('button', { name: 'Not set' }).props.accessibilityState.selected).toBe(true);
+    });
+
+    await act(async () => {
+      userALoad.resolve({ ok: true, value: { recovery: 5 } });
+    });
+
+    expect(view.getByRole('button', { name: 'Not set' }).props.accessibilityState.selected).toBe(true);
+    expect(view.getByRole('button', { name: '5' }).props.accessibilityState.selected).toBe(false);
   });
 });
