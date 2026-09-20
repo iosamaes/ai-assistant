@@ -31,9 +31,9 @@ Static implementation includes durable per-user retry for check-ins and Invisibl
 ## CP9 presentation state
 Detailed architecture: `docs/CP9_PRESENTATION_ARCHITECTURE.md`.
 
-The owner-reference premium contract is broadly present in static source: adaptive Home/Life Map/One Move/Insights/More navigation, shared semantic iconography, responsive Life Map visualization, premium Today/One Move hierarchy, WHY/Insights evidence language, What If range visualization, Experiments/Recovery/Onboarding/Personalization/Invisible Wins treatments, truthful bounded meters, premium Auth/Privacy/Settings/Integrations/secondary decision surfaces, Western-digit formatting, app-local RTL geometry, reduced-motion navigation, dynamic-type/shared control sizing, and repeated account-switch/session fencing.
+The owner-reference premium contract is broadly present in static source: adaptive Home/Life Map/One Move/Insights/More navigation, shared semantic iconography, responsive Life Map visualization, premium Today/One Move hierarchy, WHY/Insights evidence language, What If range visualization, Experiments/Recovery/Onboarding/Personalization/Invisible Wins treatments, truthful bounded meters, premium Auth/Privacy/Settings/Integrations/secondary decision surfaces, Western-digit formatting, app-local RTL geometry, reduced-motion navigation, dynamic-type/shared control sizing, repeated account-switch/session fencing, and semantic light/dark palette roles.
 
-Recent residual fixes include semantic RTL progress geometry, unknown-safe date/value formatting, onboarding minimum-domain explanation, technical-provider-copy cleanup, shared icon accessibility policy, Western-digit source policy regression specifications, and a new pointer-free keyboard verification path for authentication and the primary product shell.
+Recent residual fixes include semantic RTL progress geometry, unknown-safe date/value formatting, onboarding minimum-domain explanation, technical-provider-copy cleanup, shared icon accessibility policy, Western-digit source policy regression specifications, a pointer-free keyboard verification path for authentication and the primary product shell, accessible-label password selectors for the Web harness, and a demonstrated light-theme muted-text contrast correction.
 
 ### New CP9 runtime-evidence preparation
 - `4649f097024351ee7d288085ae76daa55284eb91` — added opt-in read-only `tests/e2e/visual-evidence-live.spec.ts`. It captures full-page Today, Life Map, WHY, and Check-in screenshots for English/default and persisted-Arabic completed accounts across every configured Playwright viewport/light-dark project, while asserting authenticated product chrome, no horizontal overflow, and shared critical browser diagnostics.
@@ -42,11 +42,15 @@ Recent residual fixes include semantic RTL progress geometry, unknown-safe date/
 - `74c5b59f1ac256f77551dd2459a3bf7fcdaf6e6d` and `99cdd5bc31de68811453e6ad2c3482fd1a8b5d19` — root README and CP11 release ledger document the capture contract and explicitly state that source presence is not runtime proof.
 - `6a64a1bd5b1ff9abc35e60390500a77d5344fa38` + `05162904fba11d8a75e34546c737c492ec28539a` + `693ea427247d252e659cd4b4958e6818cdf192a2` — auth E2E now contains a real Tab/Enter path for locale switching, Email, Password, and the enabled Sign in control, with shared bounded keyboard-focus traversal rather than programmatic `.focus()`.
 - `c6cb14622a5ecefebb3147499af0d18c7af45643` + `91583d9b500e7d90effca63b3a489dc5b74d774b` — completed-account product E2E now proves the primary tab shell is reachable and route-activatable by keyboard in the normal account and again after persisted Arabic RTL hydration. These are static specifications only until owner execution.
+- `f725fbd17954651ab17aac56ad1cdfcabe575d48` + `11ba928363ce3ad80f890781ab822b2017eef019` — password input selection in signed-out and live-account E2E now uses the explicit accessibility label instead of assuming secure HTML password inputs expose the implicit `textbox` role; this keeps the verification path aligned with the product accessibility contract.
+- `eb9c048f3ad774ba14f78c4459c1710b1c2eeaaf` — corrected the light semantic `textMuted` token from `#627067` to `#5C6A61` after static luminance analysis showed the previous token below 4.5:1 on both `surfaceMuted` and `accentSoft`, two shipped backgrounds used with normal-size muted copy.
+- `cc1196c7ecee9aece8fa828b8bceededd09d7cbe` — added `apps/app/__tests__/theme-contrast-policy-test.ts`, which computes sRGB relative luminance and statically requires the shipped semantic normal-text/surface pairs to remain at least 4.5:1 in light and dark. The specification has **not** been executed by workers.
+- `08f19860603b58a5c30e28b224a17a9b597f5673` — CP9 presentation architecture now records the contrast defect, token fix, and static regression contract without claiming a runtime/test PASS.
 
 ### CP9 remaining
 - Fix only demonstrated residual defects on still-unreviewed shipped surfaces; do not manufacture speculative polish.
 - Owner/runtime evidence remains required across narrow/common phone, tablet portrait/landscape, and wide Web, Arabic/English, and shipped light/dark modes.
-- Execute and inspect the prepared visual-evidence matrix plus the new keyboard/focus journeys; a successful automated run still does not replace human focus-indicator and interaction review.
+- Execute and inspect the prepared visual-evidence matrix plus the keyboard/focus journeys; a successful automated run still does not replace human focus-indicator and interaction review.
 - The TASK-required deliberate runtime **design-swap proof** remains pending for Today, Life Map, WHY, and interaction-heavy Check-in. Screenshot harness presence alone is not that proof.
 
 ## Notifications/preferences surface
@@ -67,7 +71,7 @@ Detailed ledger/threat model: `docs/CP10_SECURITY_PRIVACY.md`.
 
 Implemented source hardening includes RLS/ownership review of user-owned client-visible tables, cross-user policy specifications, function-execute hardening migration `0009`, authenticated portable export migration `0010`, Life Season expected-user fencing migrations `0011`/`0012`, JWT-protected `delete-account` Edge Function v2 with expected-user matching, export/two-step deletion UI and local-cache purge attempts, consent rechecks around integration sync, safer error-boundary/logging boundaries, and broad account-switch/session fencing.
 
-Account-sensitive presentation paths hardened or explicitly reviewed include Today decision/feedback, Invisible Wins, Recovery, Check-in, Privacy, Onboarding, Update Password, Settings, Personalization, Life Seasons, Experiments, Cost of Yes, Human ROI, Capacity, Integrations, WHY, What If, Personal Learning, Value Alignment, root offline replay, and now notification-preference persistence. The production sensitive logging/error-reporting source review is complete for the previously reviewed tree and must reopen when a genuinely new production sink/boundary is introduced.
+Account-sensitive presentation paths hardened or explicitly reviewed include Today decision/feedback, Invisible Wins, Recovery, Check-in, Privacy, Onboarding, Update Password, Settings, Personalization, Life Seasons, Experiments, Cost of Yes, Human ROI, Capacity, Integrations, WHY, What If, Personal Learning, Value Alignment, root offline replay, and notification-preference persistence. The production sensitive logging/error-reporting source review is complete for the previously reviewed tree and must reopen when a genuinely new production sink/boundary is introduced.
 
 ### CP10 remaining
 - Owner/runtime validation for cross-user/database specifications, Life Season expected-user behavior, export/delete/local purge, destructive Edge deletion v2, consent-revocation races, account-switch/session-binding cases, offline replay ownership, and new notification-preference account isolation.
@@ -78,9 +82,9 @@ Detailed release ledger: `docs/CP11_RELEASE_READINESS.md`.
 
 The Playwright Web matrix defines **320×568**, **390×844**, **834×1194**, **1194×834**, and **1440×900**, each in light/dark emulated color schemes. Native Android/iOS validation is a separate owner/runtime gate.
 
-Prepared static verification includes auth/route guard/password recovery, real Tab/Enter keyboard navigation of auth controls, onboarding, completed-account pointer and keyboard navigation, Recovery/What If/Settings/Privacy export, daily-loop mutation paths, One Move → explicit feedback → Personal Learning, Spiritual Grounding preference toggle/restore, Arabic persisted-locale read-only coverage including keyboard navigation after RTL hydration, destructive deletion with a dedicated disposable account, shared critical browser diagnostics, production logging policy, the CP9 visual-evidence capture matrix, and read-only notification-preference presence/disclosure coverage.
+Prepared static verification includes auth/route guard/password recovery, real Tab/Enter keyboard navigation of auth controls, accessible-label password targeting, onboarding, completed-account pointer and keyboard navigation, Recovery/What If/Settings/Privacy export, daily-loop mutation paths, One Move → explicit feedback → Personal Learning, Spiritual Grounding preference toggle/restore, Arabic persisted-locale read-only coverage including keyboard navigation after RTL hydration, destructive deletion with a dedicated disposable account, shared critical browser diagnostics, production logging policy, semantic text-contrast regression coverage, the CP9 visual-evidence capture matrix, and read-only notification-preference presence/disclosure coverage.
 
-These are static harness/readiness changes only. **No E2E run, screenshot capture result, keyboard PASS, destructive delete, test result, typecheck, build, database-policy execution, performance result, or release PASS is claimed by workers under the active policy.**
+These are static harness/readiness changes only. **No E2E run, screenshot capture result, keyboard PASS, contrast-test PASS, destructive delete, test result, typecheck, build, database-policy execution, performance result, or release PASS is claimed by workers under the active policy.**
 
 ## Exact next executable action
 1. Continue CP9 static work only when a concrete accessibility/RTL/localization/focus/technical-id/presentation defect is demonstrated; otherwise leave runtime visual/interaction proof to owner validation.
@@ -103,7 +107,7 @@ Post-baseline:
 - **No worker-run app tests, builds, typechecks, validation database scripts, cloud CI, or GitHub Actions are claimed for CP2–CP11 changes.**
 - Authorized migrations `0009`–`0012` were applied previously; live reads confirmed the hardened Life Season RPC signature/ACL. This is implementation/state evidence, not a behavioral test-suite PASS.
 - `delete-account` version 2 previously reported ACTIVE with JWT verification enabled; destructive end-to-end deletion remains unexecuted.
-- Premium-reference fixes, account-fencing specifications, notification-preference code/specifications, visual-evidence harness, responsive/keyboard E2E matrix, and production logging guards remain static evidence until owner validation.
+- Premium-reference fixes, account-fencing specifications, notification-preference code/specifications, visual-evidence harness, responsive/keyboard E2E matrix, semantic contrast regression specification, and production logging guards remain static evidence until owner validation.
 - Root/app setup and release documentation are MIZAN-specific, but the documented clean-checkout flow still requires owner execution evidence.
 
 ## Known blockers / risks
@@ -137,6 +141,7 @@ Post-baseline:
 - `tests/e2e/account-deletion-live.spec.ts`
 - `apps/app/__tests__/notification-preferences-policy-test.ts`
 - `apps/app/__tests__/production-logging-privacy-policy-test.ts`
+- `apps/app/__tests__/theme-contrast-policy-test.ts`
 - `apps/app/src/application/notification-preferences.ts`
 - `apps/app/src/infrastructure/supabase/plugin-settings.ts`
 - `apps/app/src/constants/theme.ts`
