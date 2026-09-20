@@ -18,6 +18,7 @@
     "typecheck": "npm run typecheck --workspaces --if-present",
     "lint": "npm run lint --workspaces --if-present",
     "test": "npm run test --workspaces --if-present",
+    "test:db": "supabase test db --local",
     "check": "npm run typecheck && npm run lint && npm run test",
     "test:e2e": "playwright test",
     "test:e2e:mutations": "playwright test tests/e2e/product-live.spec.ts tests/e2e/onboarding-live.spec.ts tests/e2e/notification-preferences-live.spec.ts --project=desktop-light",
