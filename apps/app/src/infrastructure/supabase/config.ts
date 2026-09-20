@@ -59,7 +59,10 @@ export function readSupabasePublicConfig(): SupabaseConfigResult {
   }
 
   try {
-    new URL(url);
+    const parsedUrl = new URL(url);
+    if (parsedUrl.protocol !== 'http:' && parsedUrl.protocol !== 'https:') {
+      return { ok: false, reason: 'invalid-url' };
+    }
   } catch {
     return { ok: false, reason: 'invalid-url' };
   }
