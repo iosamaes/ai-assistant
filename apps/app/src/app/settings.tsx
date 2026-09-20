@@ -210,6 +210,7 @@ export default function SettingsScreen() {
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const activeUserRef = useRef(userId);
+  activeUserRef.current = userId;
   const syncMessage = syncStatus === 'offline' ? t('syncOffline') : syncStatus === 'error' ? t('syncError') : null;
   const spiritualLabels = spiritualCopy[locale];
   const labels = settingsCopy[locale];
@@ -218,7 +219,6 @@ export default function SettingsScreen() {
   const priorities = enabledDomains.map((domainId) => t(domainId)).join(' · ');
 
   useEffect(() => {
-    activeUserRef.current = userId;
     let active = true;
     void Promise.resolve().then(() => {
       if (!active) return;
