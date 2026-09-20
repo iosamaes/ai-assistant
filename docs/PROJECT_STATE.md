@@ -65,7 +65,7 @@ Detailed ledger: `docs/CP11_RELEASE_READINESS.md`.
 
 The main Playwright Web matrix defines **320×568**, **390×844**, **834×1194**, **1194×834**, and **1440×900**, each in light/dark. Native Android/iOS validation is a separate owner/runtime gate.
 
-Prepared static verification covers auth/route guard/password recovery, real keyboard navigation, onboarding, completed-account product navigation, Arabic persisted-locale coverage, Recovery/What If, privacy export, live daily-loop and feedback-learning mutations, Spiritual Grounding toggle/restore, notification preference persistence/restore, destructive account deletion with a dedicated disposable account, shared browser diagnostics, production logging policy, semantic contrast policy, CP9 visual-evidence capture, opt-in performance sampling, and a production static-Web export smoke path.
+Prepared static verification covers auth/route guard/password recovery, real keyboard navigation, onboarding, completed-account product navigation, Arabic persisted-locale coverage, Recovery/What If, privacy export, live daily-loop and feedback-learning mutations, Spiritual Grounding toggle/restore, notification preference persistence/restore, destructive account deletion with a dedicated disposable account, shared browser diagnostics, production logging policy, semantic contrast policy, CP9 visual-evidence capture, opt-in performance sampling, production static-Web export smoke, and dependency-free exported-size reporting.
 
 ### Latest CP11 performance readiness
 - `35327811a8f8fe07d32b33fac3280ef88526dc14` — added opt-in read-only `tests/e2e/performance-live.spec.ts` for the persisted-English completed account. It records authenticated Home readiness, Home → Life Map → One Move → Insights → More route-readiness durations, browser navigation/resource timing, observed long-task durations, horizontal overflow, and critical browser diagnostics. It attaches `performance-sanity.json` and uses deliberately broad regression tripwires of 15 s authenticated readiness, 5 s per primary route transition, and 1 s maximum observed long task. These are sanity ceilings, not product SLOs.
@@ -81,21 +81,27 @@ Prepared static verification covers auth/route guard/password recovery, real key
 - `53e5857184712f4188030da247458a688b51894b` — root `npm run test:e2e:production` exposes the production-export smoke flow.
 - `7d55235d224b1c55e41693fe8d4cee87b74a906c` + `e5eb15fe5abc0ece74c02066922f9f4328c7571d` — root README and CP11 ledger document the production-export gate and explicitly retain separate bundle/performance/native owner review requirements.
 
-All CP11 additions above are **static harness/readiness evidence only**. Workers did not run the performance spec, production export/smoke, tests, builds, typechecks, or database suites under the active policy.
+### Latest CP11 production-size readiness
+- `42487d8b1302d680a0214da1f2efa7701f122f8a` — added dependency-free `scripts/report-expo-static-size.mjs`, which measures total export bytes, JavaScript/CSS raw and gzip sizes, aggregate gzip size for compressible assets, and the 15 largest exported files.
+- `e2eb9e84425e0af931591fbe9d79ef90cdef4fe4` — root `npm run report:web-size` exposes the measurement against `apps/app/dist`.
+- `587bcc3ad5a165a2ca2607413c90bc561d2f17a0` — the production Web smoke path now emits the size report immediately after export and before serving/browser checks, so production route smoke and static-size evidence come from the same output.
+- `fd3810f55953c8d40e8fb697b99fb230538e7f10` + `b96d19e89bbd90e3544c69f2266012ef4c091305` — root README and CP11 ledger document how to retain the measurement as a release baseline without inventing an arbitrary product SLO before real production evidence exists.
+
+All CP11 additions above are **static harness/readiness evidence only**. Workers did not run the performance spec, production export/smoke, size reporter, tests, builds, typechecks, or database suites under the active policy.
 
 ### CP11 remaining
 - Run TypeScript, lint, unit/component/integration, database/policy, and full Web E2E suites from a trustworthy checkout.
 - Execute and inspect keyboard/focus journeys, visual evidence, live mutation journeys, and destructive deletion only with the documented dedicated fixtures.
 - Execute `npm run test:e2e:performance` and inspect its structured report.
-- Execute `npm run test:e2e:production`, inspect direct-route/static-export browser diagnostics, and separately measure production performance/bundle size so a smoke PASS is not mistaken for complete release evidence.
+- Execute `npm run test:e2e:production`, inspect direct-route/static-export browser diagnostics, retain the emitted Web size report as the first reviewed baseline, and investigate material bundle/static-asset growth separately from startup/interaction performance.
 - Run Expo diagnostics and Android/iOS export checks available in the owner environment.
 - Perform a clean-checkout setup using the root README and correct any missing prerequisite/configuration/test/export step.
-- Record exact commands, versions, results, failures/fixes, and owner release actions before CP11 can close.
+- Record exact commands, versions, results, failures/fixes, Web size evidence, and owner release actions before CP11 can close.
 
 ## Exact next executable action
 1. Continue CP9 static work only when a concrete residual defect is demonstrated; otherwise leave the prepared runtime evidence and design-swap proof to owner validation.
 2. Keep CP10 source review scoped to genuinely new security/account-sensitive boundaries; do not reopen the completed logging audit without a new sink.
-3. Keep CP11 static harness aligned with the release contract. Execution-dependent gates remain owner validation under current policy.
+3. Keep CP11 static harness aligned with the release contract. Execution-dependent gates remain owner validation under current policy; the production smoke now supplies static-size evidence as well as direct-route/browser diagnostics.
 4. After CP0–CP11 gates are honestly satisfied with current execution evidence, begin CP12 independent two-worker verification. Do not claim completion from source presence alone.
 
 ## Verification record
@@ -110,7 +116,7 @@ Previously recorded owner-side baseline evidence:
 - Earlier auth/data-access app typecheck and lint PASS.
 
 Post-baseline:
-- **No worker-run app tests, builds, typechecks, validation database scripts, Web E2E, screenshot captures, performance runs, production-export smoke runs, GitHub Actions, or cloud CI are claimed for CP2–CP11 changes.**
+- **No worker-run app tests, builds, typechecks, validation database scripts, Web E2E, screenshot captures, performance runs, production-export smoke/size runs, GitHub Actions, or cloud CI are claimed for CP2–CP11 changes.**
 - Authorized migrations `0009`–`0012` were applied previously; live ACL/state reads are implementation evidence, not a behavioral suite PASS.
 - `delete-account` v2 was previously deployed ACTIVE with JWT verification; destructive end-to-end deletion remains unverified until the owner-side disposable-account journey runs.
 - The current CP9/CP10/CP11 source and verification harness therefore remain pending the explicit runtime/test/build evidence required by TASK.md.
@@ -129,6 +135,7 @@ Post-baseline:
 - `docs/CP11_RELEASE_READINESS.md`
 - `playwright.production.config.ts`
 - `scripts/serve-expo-static.mjs`
+- `scripts/report-expo-static-size.mjs`
 - `tests/e2e/browser-assertions.ts`
 - `tests/e2e/product-live.spec.ts`
 - `tests/e2e/visual-evidence-live.spec.ts`
