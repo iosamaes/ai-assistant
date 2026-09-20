@@ -20,9 +20,11 @@ const privacyCopy = {
     exportTitle: 'تصدير بياناتي',
     exportBody: 'يُعدّ ميزان نسخة JSON مقروءة وقابلة للنقل من بيانات الحساب التي يملكها التطبيق حاليًا. على الويب تُنزّل كملف .json، وعلى الهاتف تُفتح ورقة المشاركة للنظام وبداخلها محتوى JSON.',
     exportNote: 'يتم إنشاء النسخة لحسابك الحالي فقط، ولا يغيّر التصدير أي بيانات محفوظة.',
-    exportAction: 'إعداد تصدير JSON',
+    exportActionWeb: 'إنشاء ملف JSON',
+    exportActionNative: 'إعداد تصدير JSON',
     exportWorking: 'جارٍ إعداد النسخة…',
-    exportSuccess: 'تم تسليم تصدير JSON إلى وجهته.',
+    exportSuccessWeb: 'تم إعداد نسخة بياناتك.',
+    exportSuccessNative: 'تم تسليم تصدير JSON إلى وجهته.',
     exportCancelled: 'تم إلغاء المشاركة. لم تُرسل نسخة التصدير ولم تتغير بياناتك المحفوظة.',
     exportError: 'تعذر إعداد نسخة بياناتك الآن. حاول مرة أخرى لاحقًا.',
     deleteEyebrow: 'إجراء نهائي',
@@ -50,9 +52,11 @@ const privacyCopy = {
     exportTitle: 'Export my data',
     exportBody: 'MIZAN prepares a readable, portable JSON copy of the account data currently owned by the app. On Web it downloads as a .json file; on mobile the system share sheet opens with the JSON content.',
     exportNote: 'The copy is created only for your current account, and exporting does not change stored data.',
-    exportAction: 'Prepare JSON export',
+    exportActionWeb: 'Create JSON file',
+    exportActionNative: 'Prepare JSON export',
     exportWorking: 'Preparing your copy…',
-    exportSuccess: 'Your JSON export was handed off to its destination.',
+    exportSuccessWeb: 'Your data copy is ready.',
+    exportSuccessNative: 'Your JSON export was handed off to its destination.',
     exportCancelled: 'Sharing was cancelled. No export copy was sent, and your stored data was not changed.',
     exportError: 'Your data copy could not be prepared right now. Try again later.',
     deleteEyebrow: 'Permanent action',
@@ -109,6 +113,9 @@ export default function PrivacyScreen() {
   const copy = privacyCopy[locale];
   const scheme = useColorScheme();
   const palette = Palette[scheme === 'dark' ? 'dark' : 'light'];
+  const isWeb = Platform.OS === 'web';
+  const exportAction = isWeb ? copy.exportActionWeb : copy.exportActionNative;
+  const exportSuccess = isWeb ? copy.exportSuccessWeb : copy.exportSuccessNative;
   const [busy, setBusy] = useState<BusyAction>(null);
   const [confirmingDelete, setConfirmingDelete] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
@@ -146,7 +153,7 @@ export default function PrivacyScreen() {
     try {
       const delivery = await deliverJsonExport(result.value);
       if (activeUserRef.current === targetUserId) {
-        setMessage(delivery === 'dismissed' ? copy.exportCancelled : copy.exportSuccess);
+        setMessage(delivery === 'dismissed' ? copy.exportCancelled : exportSuccess);
       }
     } catch {
       if (activeUserRef.current === targetUserId) setMessage(copy.exportError);
@@ -227,7 +234,7 @@ export default function PrivacyScreen() {
             <MizanText variant="caption" muted>{copy.exportNote}</MizanText>
           </View>
           <PrimaryButton
-            label={busy === 'export' ? copy.exportWorking : copy.exportAction}
+            label={busy === 'export' ? copy.exportWorking : exportAction}
             onPress={() => void handleExport()}
             disabled={busy !== null || !userId}
           />
