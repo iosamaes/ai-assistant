@@ -1,5 +1,5 @@
 import { router } from 'expo-router';
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { StyleSheet, useColorScheme, View } from 'react-native';
 
 import {
@@ -46,13 +46,20 @@ export default function CheckInScreen() {
   const activeUserRef = useRef(userId);
   const draftUserRef = useRef(userId);
 
-  if (draftUserRef.current !== userId) {
+  useEffect(() => {
+    activeUserRef.current = userId;
     draftUserRef.current = userId;
-    setRatings({});
-    setSkippedMetrics([]);
-    setSubmitState('idle');
-  }
-  activeUserRef.current = userId;
+    let active = true;
+    void Promise.resolve().then(() => {
+      if (!active) return;
+      setRatings({});
+      setSkippedMetrics([]);
+      setSubmitState('idle');
+    });
+    return () => {
+      active = false;
+    };
+  }, [userId]);
 
   const answeredCount = useMemo(() => Object.keys(ratings).length, [ratings]);
   const completedCount = answeredCount + skippedMetrics.length;

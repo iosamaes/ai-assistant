@@ -10,18 +10,11 @@ export function useSpiritualGroundingPreference(userId: string | null) {
   const [choice, setChoice] = useState<boolean | null>(null);
   const [status, setStatus] = useState<SpiritualGroundingStatus>('idle');
   const activeUserRef = useRef(userId);
-  const preferenceUserRef = useRef(userId);
-  activeUserRef.current = userId;
-
-  if (preferenceUserRef.current !== userId) {
-    preferenceUserRef.current = userId;
-    setChoice(null);
-    setStatus('idle');
-  }
 
   useEffect(() => {
     let active = true;
     const requestedUserId = userId;
+    activeUserRef.current = requestedUserId;
 
     void (async () => {
       await Promise.resolve();

@@ -13,8 +13,8 @@ describe('Notification preferences policy', () => {
     expect(source).toContain('dailyCheckIn: false');
     expect(source).toContain('experimentReminders: false');
     expect(source).toContain('recoveryPrompts: false');
-    expect(source).toContain('activeUserRef.current = userId;');
-    expect(source).toContain('if (preferenceUserRef.current !== userId) {');
+    expect(source).toContain('activeUserRef.current = requestedUserId;');
+    expect(source).toContain('const requestedUserId = userId;');
     expect(source).toContain('if (activeUserRef.current !== requestedUserId) return false;');
     expect(source).toContain('result.value?.enabled');
     expect(source).toContain(': DEFAULT_NOTIFICATION_PREFERENCES');

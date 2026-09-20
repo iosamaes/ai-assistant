@@ -9,7 +9,7 @@ const todaySource = fs.readFileSync(
 describe('Today RTL quantitative-meter layout policy', () => {
   test('mirrors known-value state and balance meter fills from the app-local RTL state', () => {
     expect(todaySource).toContain("alignSelf: isRtl ? 'flex-end' : 'flex-start'");
-    expect(todaySource).toContain('isRtl: boolean;');
+    expect(todaySource).toContain('isRtl: boolean }');
     expect(todaySource).toContain(
       '<SignalMeter value={value} trackColor={palette.border} fillColor={palette.accent} isRtl={isRtl} />',
     );

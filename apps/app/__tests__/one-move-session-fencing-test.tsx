@@ -47,10 +47,16 @@ function appState(userId: string, refreshSession: () => Promise<void>) {
   } as unknown as ReturnType<typeof useAppState>;
 }
 
-const snapshotResult = {
+const snapshotResult: Awaited<ReturnType<typeof loadDailySnapshot>> = {
   ok: true,
-  value: { humanState: { generatedAt: '2026-09-19T00:00:00.000Z', maturity: 'cold_start', components: [] } },
-} as Awaited<ReturnType<typeof loadDailySnapshot>>;
+  value: {
+    humanState: { generatedAt: '2026-09-19T00:00:00.000Z', maturity: 'cold_start', components: [] },
+    overview: { balance: null, momentum: [] },
+    source: 'live',
+    cachedAt: null,
+    degradedBy: null,
+  },
+};
 
 const recommendation = {
   primary: {

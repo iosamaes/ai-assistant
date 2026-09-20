@@ -216,7 +216,9 @@ export default function TodayScreen() {
   const { enabledDomains, isRtl, locale, refreshSession, syncStatus, t, userId } = useAppState();
   const { width } = useWindowDimensions();
   const activeUserRef = useRef(userId);
-  activeUserRef.current = userId;
+  useEffect(() => {
+    activeUserRef.current = userId;
+  }, [userId]);
   const [dailySnapshot, setDailySnapshot] = useState<DailySnapshot | null>(null);
   const [dailySnapshotUserId, setDailySnapshotUserId] = useState<string | null>(null);
   const [dailyLoadStatus, setDailyLoadStatus] = useState<DailyLoadStatus>('loading');

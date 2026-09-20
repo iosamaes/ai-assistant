@@ -63,7 +63,7 @@ describe('LifeSeasonsScreen local-draft account fencing', () => {
     await waitFor(() => {
       expect(view.getByRole('button', { name: 'Building or intense work' }).props.accessibilityState.selected)
         .toBe(true);
-      expect(view.getByRole('button', { name: 'Recovery: 5' }).props.accessibilityState.selected)
+      expect(view.getByRole('button', { name: 'Recovery & energy: 5' }).props.accessibilityState.selected)
         .toBe(true);
     });
 
@@ -74,9 +74,9 @@ describe('LifeSeasonsScreen local-draft account fencing', () => {
       .toBe(true);
     expect(view.getByRole('button', { name: 'Building or intense work' }).props.accessibilityState.selected)
       .toBe(false);
-    expect(view.getByRole('button', { name: 'Recovery: Not set' }).props.accessibilityState.selected)
+    expect(view.getByRole('button', { name: 'Recovery & energy: Not set' }).props.accessibilityState.selected)
       .toBe(true);
-    expect(view.getByRole('button', { name: 'Recovery: 5' }).props.accessibilityState.selected)
+    expect(view.getByRole('button', { name: 'Recovery & energy: 5' }).props.accessibilityState.selected)
       .toBe(false);
 
     const saveButton = view.getByRole('button', { name: 'Save season & targets' });

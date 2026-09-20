@@ -7,14 +7,12 @@ const source = fs.readFileSync(
 );
 
 describe('Update Password screen account-switch fencing policy', () => {
-  test('synchronizes the active-user fence during render before passive reset effects', () => {
-    const refDeclaration = source.indexOf('const activeUserRef = useRef(userId);');
-    const renderSync = source.indexOf('activeUserRef.current = userId;');
-    const resetEffect = source.indexOf('useEffect(() => {', renderSync);
-
-    expect(refDeclaration).toBeGreaterThanOrEqual(0);
-    expect(renderSync).toBeGreaterThan(refDeclaration);
-    expect(resetEffect).toBeGreaterThan(renderSync);
+  test('synchronizes the active-user fence in a React-safe reset effect', () => {
+    expect(source).toContain('const activeUserRef = useRef(userId);');
+    expect(source).toContain('activeUserRef.current = userId;');
+    expect(source).toContain('draftUserRef.current = userId;');
+    expect(source).toContain('setPassword(\'\');');
+    expect(source).toContain('setConfirmPassword(\'\');');
   });
 
   test('drops a late password-update completion when the initiating account is no longer active', () => {

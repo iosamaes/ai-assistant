@@ -11,12 +11,13 @@ import { render } from '@testing-library/react-native';
 import { AppIcon } from '@/components/app-icon';
 
 describe('AppIcon accessibility', () => {
-  test('keeps decorative glyphs out of the accessibility tree', () => {
-    const view = render(<AppIcon name="home" color="#123456" />);
-    const symbol = view.getByTestId('symbol');
+  test('keeps decorative glyphs out of the accessibility tree', async () => {
+    const view = await render(<AppIcon name="home" color="#123456" />);
+    const symbol = view.root;
+    expect(symbol).not.toBeNull();
 
-    expect(symbol.props.accessible).toBe(false);
-    expect(symbol.props.accessibilityElementsHidden).toBe(true);
-    expect(symbol.props.importantForAccessibility).toBe('no-hide-descendants');
+    expect(symbol!.props.accessible).toBe(false);
+    expect(symbol!.props.accessibilityElementsHidden).toBe(true);
+    expect(symbol!.props.importantForAccessibility).toBe('no-hide-descendants');
   });
 });

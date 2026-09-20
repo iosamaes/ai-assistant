@@ -130,17 +130,6 @@ export default function InvisibleWinsScreen() {
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
 
-  if (draftUserRef.current !== userId) {
-    draftUserRef.current = userId;
-    setCategory('rest');
-    setHistoryFilter('all');
-    setNote('');
-    setLoadError(null);
-    setSaving(false);
-    setMessage(null);
-  }
-  activeUserRef.current = userId;
-
   const visibleItems = itemsOwnerId === userId ? items : [];
   const filteredItems = historyFilter === 'all'
     ? visibleItems
@@ -149,14 +138,21 @@ export default function InvisibleWinsScreen() {
   useEffect(() => {
     let cancelled = false;
     const requestedUserId = userId;
+    activeUserRef.current = requestedUserId;
+    draftUserRef.current = requestedUserId;
 
     void (async () => {
       await Promise.resolve();
       if (cancelled) return;
 
+      setCategory('rest');
+      setHistoryFilter('all');
+      setNote('');
       setItems([]);
       setItemsOwnerId(null);
       setLoadError(null);
+      setSaving(false);
+      setMessage(null);
       setLoading(Boolean(requestedUserId));
 
       if (!requestedUserId) return;

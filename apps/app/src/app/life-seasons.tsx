@@ -139,7 +139,9 @@ export default function LifeSeasonsScreen() {
   const [loadStatus, setLoadStatus] = useState<LoadStatus>('loading');
   const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle');
   const activeUserRef = useRef(userId);
-  activeUserRef.current = userId;
+  useEffect(() => {
+    activeUserRef.current = userId;
+  }, [userId]);
   const loadRequestRef = useRef(0);
   const saveRequestRef = useRef(0);
 

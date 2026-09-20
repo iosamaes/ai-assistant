@@ -1,5 +1,5 @@
 import { router } from 'expo-router';
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { StyleSheet, useColorScheme, View } from 'react-native';
 
 import { assessExplicitCostOfYes } from '@/application/cost-of-yes';
@@ -112,11 +112,18 @@ export default function CostOfYesScreen() {
   const draftUserRef = useRef(userId);
   const observedAt = useMemo(() => new Date().toISOString(), []);
 
-  if (draftUserRef.current !== userId) {
+  useEffect(() => {
     draftUserRef.current = userId;
-    setCommitmentText('');
-    setMarginText('');
-  }
+    let active = true;
+    void Promise.resolve().then(() => {
+      if (!active) return;
+      setCommitmentText('');
+      setMarginText('');
+    });
+    return () => {
+      active = false;
+    };
+  }, [userId]);
 
   const assessment = useMemo(
     () =>

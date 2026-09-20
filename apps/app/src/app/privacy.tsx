@@ -121,7 +121,9 @@ export default function PrivacyScreen() {
   const [message, setMessage] = useState<string | null>(null);
   const [confirmationUserId, setConfirmationUserId] = useState<string | null>(null);
   const activeUserRef = useRef(userId);
-  activeUserRef.current = userId;
+  useEffect(() => {
+    activeUserRef.current = userId;
+  }, [userId]);
 
   useEffect(() => {
     let active = true;

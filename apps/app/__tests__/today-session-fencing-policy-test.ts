@@ -20,12 +20,9 @@ describe('Today account-switch fencing policy', () => {
     expect(todaySource).toContain('recordExplicitActionOutcome(actingUserId, feedbackForUser.actionId');
   });
 
-  test('updates the active-account fence during render rather than waiting for a passive effect', () => {
-    expect(todaySource).toContain(
-      'const activeUserRef = useRef(userId);\n  activeUserRef.current = userId;',
-    );
-    expect(todaySource).not.toContain(
-      "useEffect(() => {\n    activeUserRef.current = userId;\n  }, [userId]);",
-    );
+  test('updates the active-account fence in a React-safe user effect', () => {
+    expect(todaySource).toContain('const activeUserRef = useRef(userId);');
+    expect(todaySource).toMatch(/useEffect\(\(\) => \{[\s\S]*?activeUserRef\.current = userId;[\s\S]*?\}, \[userId\]\);/);
+    expect(todaySource).not.toContain('const activeUserRef = useRef(userId);\n  activeUserRef.current = userId;');
   });
 });

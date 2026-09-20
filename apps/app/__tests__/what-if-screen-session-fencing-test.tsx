@@ -39,11 +39,11 @@ beforeEach(() => {
   loadPersonalEffectsMock.mockResolvedValue({ ok: true, value: [] });
   simulateScenarioMock.mockReturnValue({
     scenarioId: 'earlier-bedtime',
-    labelKey: 'earlier-bedtime',
     assumptions: [],
     effects: [],
     uncertainty: 'high',
-  } as ReturnType<typeof simulateScenario>);
+    generatedAt: '2026-09-20T00:00:00.000Z',
+  });
 });
 
 describe('WhatIfScreen account-switch fencing', () => {

@@ -124,11 +124,12 @@ export default function RecoveryScreen() {
   const [stepIndex, setStepIndex] = useState(0);
   const activeUserRef = useRef(userId);
   const loadRequestRef = useRef(0);
-  if (activeUserRef.current !== userId) {
+  const scheme = useColorScheme();
+
+  useEffect(() => {
     activeUserRef.current = userId;
     loadRequestRef.current += 1;
-  }
-  const scheme = useColorScheme();
+  }, [userId]);
   const palette = Palette[scheme === 'dark' ? 'dark' : 'light'];
 
   const load = useCallback(async () => {

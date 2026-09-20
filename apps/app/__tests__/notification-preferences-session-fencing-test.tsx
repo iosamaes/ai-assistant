@@ -66,7 +66,7 @@ describe('notification preference session fencing', () => {
       return Promise.resolve({ ok: true, value: storedPreference('user-b', true) });
     });
 
-    const view = render(<Harness userId="user-a" />);
+    const view = await render(<Harness userId="user-a" />);
     await waitFor(() => expect(mockLoadPluginSetting).toHaveBeenCalledWith('user-a', NOTIFICATION_PREFERENCES_PLUGIN_ID));
 
     await view.rerender(<Harness userId="user-b" />);
@@ -100,7 +100,7 @@ describe('notification preference session fencing', () => {
       return Promise.resolve({ ok: true, value: null });
     });
 
-    const view = render(<Harness userId="user-a" />);
+    const view = await render(<Harness userId="user-a" />);
     await waitFor(() => expect(view.getByText('ready:off')).toBeTruthy());
 
     fireEvent.press(view.getByRole('button', { name: 'Enable daily reminder' }));

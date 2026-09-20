@@ -120,7 +120,9 @@ export default function ValueAlignmentScreen() {
   const [summaries, setSummaries] = useState<PersonalValueAlignment[]>([]);
   const [summariesUserId, setSummariesUserId] = useState<string | null>(null);
   const activeUserRef = useRef(userId);
-  activeUserRef.current = userId;
+  useEffect(() => {
+    activeUserRef.current = userId;
+  }, [userId]);
   const labels = copy[locale];
   const scheme = useColorScheme();
   const palette = Palette[scheme === 'dark' ? 'dark' : 'light'];

@@ -100,11 +100,11 @@ describe('ExperimentsScreen session fencing', () => {
       });
     });
 
-    const view = render(<ExperimentsScreen />);
+    const view = await render(<ExperimentsScreen />);
     await waitFor(() => expect(loadExperimentHistoryMock).toHaveBeenCalledWith('user-a'));
 
     useAppStateMock.mockReturnValue(appState('user-b'));
-    view.rerender(<ExperimentsScreen />);
+    await view.rerender(<ExperimentsScreen />);
 
     await waitFor(() => {
       expect(view.getByText('Short calm walk')).toBeTruthy();

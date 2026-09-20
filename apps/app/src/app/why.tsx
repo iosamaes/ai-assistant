@@ -205,7 +205,9 @@ export default function WhyScreen() {
   const [explanationUserId, setExplanationUserId] = useState<string | null>(null);
   const [status, setStatus] = useState<LoadStatus>('loading');
   const activeUserRef = useRef(userId);
-  activeUserRef.current = userId;
+  useEffect(() => {
+    activeUserRef.current = userId;
+  }, [userId]);
   const local = copy[locale];
   const scheme = useColorScheme();
   const palette = Palette[scheme === 'dark' ? 'dark' : 'light'];

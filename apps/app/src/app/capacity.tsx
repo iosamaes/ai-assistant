@@ -105,7 +105,9 @@ export default function CapacityScreen() {
   const [snapshotUserId, setSnapshotUserId] = useState<string | null>(null);
   const [status, setStatus] = useState<LoadStatus>('loading');
   const activeUserRef = useRef(userId);
-  activeUserRef.current = userId;
+  useEffect(() => {
+    activeUserRef.current = userId;
+  }, [userId]);
   const hundred = formatLocalizedNumber(100, locale, 0);
 
   useEffect(() => {

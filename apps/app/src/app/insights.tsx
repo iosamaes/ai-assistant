@@ -200,7 +200,9 @@ export default function InsightsScreen() {
   const [status, setStatus] = useState<LoadStatus>('loading');
   const [filter, setFilter] = useState<InsightFilter>('all');
   const activeUserRef = useRef(userId);
-  activeUserRef.current = userId;
+  useEffect(() => {
+    activeUserRef.current = userId;
+  }, [userId]);
   const local = copy[locale];
 
   useEffect(() => {

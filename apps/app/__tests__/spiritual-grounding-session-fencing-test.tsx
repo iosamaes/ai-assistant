@@ -51,10 +51,10 @@ describe('useSpiritualGroundingPreference account-switch fencing', () => {
       return userBLoad.promise;
     });
 
-    const view = render(<Harness userId="user-a" />);
+    const view = await render(<Harness userId="user-a" />);
     await waitFor(() => expect(view.getByTestId('preference-state').props.children).toContain('choice:on'));
 
-    view.rerender(<Harness userId="user-b" />);
+    await view.rerender(<Harness userId="user-b" />);
 
     expect(view.getByTestId('preference-state').props.children).toContain('choice:unset');
     expect(view.getByTestId('preference-state').props.children).not.toContain('choice:on');

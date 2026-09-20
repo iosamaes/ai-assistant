@@ -7,29 +7,15 @@ const source = fs.readFileSync(
 );
 
 describe('Settings account-switch fencing policy', () => {
-  test('synchronizes the active-user fence during render before passive reset effects', () => {
-    const refDeclaration = source.indexOf('const activeUserRef = useRef(userId);');
-    const renderSync = source.indexOf('activeUserRef.current = userId;');
-    const resetEffect = source.indexOf('useEffect(() => {', renderSync);
-
-    expect(refDeclaration).toBeGreaterThanOrEqual(0);
-    expect(renderSync).toBeGreaterThan(refDeclaration);
-    expect(resetEffect).toBeGreaterThan(renderSync);
+  test('synchronizes the active-user fence in a React-safe effect', () => {
+    expect(source).toContain('const activeUserRef = useRef(userId);');
+    expect(source).toMatch(/useEffect\(\(\) => \{[\s\S]*?activeUserRef\.current = userId;[\s\S]*?\}, \[userId\]\);/);
   });
 
-  test('clears account-owned transient UI state during render on account switch', () => {
-    const transientRef = source.indexOf('const transientUserRef = useRef(userId);');
-    const accountGuard = source.indexOf('if (transientUserRef.current !== userId)', transientRef);
-    const clearBusy = source.indexOf('setBusy(false);', accountGuard);
-    const clearMessage = source.indexOf('setMessage(null);', accountGuard);
-    const resetEffect = source.indexOf('useEffect(() => {', accountGuard);
-
-    expect(transientRef).toBeGreaterThanOrEqual(0);
-    expect(accountGuard).toBeGreaterThan(transientRef);
-    expect(clearBusy).toBeGreaterThan(accountGuard);
-    expect(clearMessage).toBeGreaterThan(accountGuard);
-    expect(clearBusy).toBeLessThan(resetEffect);
-    expect(clearMessage).toBeLessThan(resetEffect);
+  test('clears account-owned transient UI state when the active account changes', () => {
+    expect(source).toContain('setBusy(false);');
+    expect(source).toContain('setMessage(null);');
+    expect(source).toMatch(/useEffect\(\(\) => \{[\s\S]*?setBusy\(false\);[\s\S]*?setMessage\(null\);[\s\S]*?\}, \[userId\]\);/);
   });
 
   test('guards async settings completions against an account that became inactive', () => {

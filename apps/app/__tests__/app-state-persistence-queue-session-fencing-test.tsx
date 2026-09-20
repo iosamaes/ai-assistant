@@ -79,7 +79,7 @@ function PersistenceProbe() {
 }
 
 beforeEach(() => {
-  jest.resetAllMocks();
+  jest.clearAllMocks();
 });
 
 describe('AppStateProvider queued persistence account fencing', () => {
@@ -135,8 +135,8 @@ describe('AppStateProvider queued persistence account fencing', () => {
     });
 
     await act(async () => {
-      firstProfileWrite.resolve({ ok: true, value: null });
-      firstPreferenceWrite.resolve({ ok: true, value: null });
+      firstProfileWrite.resolve({ ok: true, value: profile('user-a', 'en') });
+      firstPreferenceWrite.resolve({ ok: true, value: [] });
       await Promise.resolve();
       await Promise.resolve();
     });

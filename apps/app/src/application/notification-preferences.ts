@@ -38,18 +38,11 @@ export function useNotificationPreferences(userId: string | null) {
   const [preferences, setPreferences] = useState<NotificationPreferences>(DEFAULT_NOTIFICATION_PREFERENCES);
   const [status, setStatus] = useState<NotificationPreferenceStatus>('idle');
   const activeUserRef = useRef(userId);
-  const preferenceUserRef = useRef(userId);
-  activeUserRef.current = userId;
-
-  if (preferenceUserRef.current !== userId) {
-    preferenceUserRef.current = userId;
-    setPreferences(DEFAULT_NOTIFICATION_PREFERENCES);
-    setStatus('idle');
-  }
 
   useEffect(() => {
     let active = true;
     const requestedUserId = userId;
+    activeUserRef.current = requestedUserId;
 
     void (async () => {
       await Promise.resolve();

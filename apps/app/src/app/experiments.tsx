@@ -237,20 +237,10 @@ export default function ExperimentsScreen() {
   const loadRequestRef = useRef(0);
   const mutationRequestRef = useRef(0);
 
-  if (draftUserRef.current !== userId) {
-    draftUserRef.current = userId;
-    mutationRequestRef.current += 1;
-    setSelected('earlier-bedtime');
-    setFocusedTemplate(null);
-    setHypothesis(labels.templates['earlier-bedtime'].hypothesis);
-    setConsented(false);
-    setRatingById({});
-    setBusy(false);
-    setMessage(null);
-  }
-  activeUserRef.current = userId;
-
-  const visibleHistory = historyOwnerId === userId ? history : [];
+  const visibleHistory = useMemo(
+    () => (historyOwnerId === userId ? history : []),
+    [history, historyOwnerId, userId],
+  );
 
   const load = useCallback(async () => {
     const requestedUserId = userId;
@@ -284,16 +274,33 @@ export default function ExperimentsScreen() {
   }, [labels.loadError, refreshSession, userId]);
 
   useEffect(() => {
+    activeUserRef.current = userId;
+    draftUserRef.current = userId;
     mutationRequestRef.current += 1;
-    setBusy(false);
-    setMessage(null);
-    setRatingById({});
-    setConsented(false);
-  }, [userId]);
+    let active = true;
+    void Promise.resolve().then(() => {
+      if (!active) return;
+      setSelected('earlier-bedtime');
+      setFocusedTemplate(null);
+      setHypothesis(labels.templates['earlier-bedtime'].hypothesis);
+      setConsented(false);
+      setRatingById({});
+      setBusy(false);
+      setMessage(null);
+    });
+    return () => {
+      active = false;
+    };
+  }, [labels.templates, userId]);
 
   useEffect(() => {
-    void load();
+    let active = true;
+    void Promise.resolve().then(() => {
+      if (active) return load();
+      return undefined;
+    });
     return () => {
+      active = false;
       loadRequestRef.current += 1;
     };
   }, [load]);

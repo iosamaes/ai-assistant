@@ -67,6 +67,14 @@ function shadowStyle(opacity: number, radius: number, offsetY: number, elevation
   };
 }
 
+function textInputFocusStyle(color: string, focused: boolean): TextStyle | null {
+  if (!focused) return null;
+  return {
+    borderColor: color,
+    borderWidth: 2,
+  };
+}
+
 export function focusRingStyle(color: string, focused: boolean): ViewStyle | null {
   if (!focused || Platform.OS !== 'web') return null;
   return { boxShadow: `0 0 0 3px ${color}` };
@@ -166,7 +174,7 @@ export function MizanTextInput({ style, ...props }: MizanTextInputProps) {
         },
         style,
         { writingDirection: forceLtrInput ? 'ltr' : isRtl ? 'rtl' : 'ltr' },
-        focusRingStyle(palette.accent, focused && !disabled),
+        textInputFocusStyle(palette.accent, focused && !disabled),
       ]}
     />
   );

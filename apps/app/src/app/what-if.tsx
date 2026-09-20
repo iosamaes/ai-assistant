@@ -246,7 +246,9 @@ export default function WhatIfScreen() {
   const [projection, setProjection] = useState<ScenarioProjection | null>(null);
   const [projectionUserId, setProjectionUserId] = useState<string | null>(null);
   const activeUserRef = useRef(userId);
-  activeUserRef.current = userId;
+  useEffect(() => {
+    activeUserRef.current = userId;
+  }, [userId]);
   const labels = copy[locale];
   const definitions = useMemo(() => scenarioDefinitions(locale), [locale]);
   const scheme = useColorScheme();

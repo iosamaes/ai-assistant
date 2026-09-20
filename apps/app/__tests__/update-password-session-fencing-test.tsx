@@ -43,11 +43,17 @@ describe('UpdatePasswordScreen account-switch fencing', () => {
     useAppStateMock.mockReturnValue(appState('user-a'));
     const view = await render(<UpdatePasswordScreen />);
 
-    fireEvent.changeText(view.getByLabelText('New password'), 'strong-password');
-    fireEvent.changeText(view.getByLabelText('Confirm password'), 'strong-password');
+    await fireEvent.changeText(view.getByLabelText('New password'), 'strong-password');
+    await fireEvent.changeText(view.getByLabelText('Confirm password'), 'strong-password');
+    await waitFor(() =>
+      expect(view.getByRole('button', { name: 'Save password' }).props.accessibilityState)
+        .toMatchObject({ disabled: false }),
+    );
     await fireEvent.press(view.getByRole('button', { name: 'Save password' }));
 
-    expect(updatePasswordMock).toHaveBeenCalledWith('strong-password', 'user-a');
+    await waitFor(() =>
+      expect(updatePasswordMock).toHaveBeenCalledWith('strong-password', 'user-a'),
+    );
 
     useAppStateMock.mockReturnValue(appState('user-b', false));
     await view.rerender(<UpdatePasswordScreen />);

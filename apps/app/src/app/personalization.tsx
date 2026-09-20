@@ -100,7 +100,9 @@ export default function PersonalizationScreen() {
   const [stateUserId, setStateUserId] = useState<string | null>(null);
   const [focusedDomain, setFocusedDomain] = useState<DomainId | null>(null);
   const activeUserRef = useRef(userId);
-  activeUserRef.current = userId;
+  useEffect(() => {
+    activeUserRef.current = userId;
+  }, [userId]);
   const scheme = useColorScheme();
   const palette = Palette[scheme === 'dark' ? 'dark' : 'light'];
   const labels = copy[locale];

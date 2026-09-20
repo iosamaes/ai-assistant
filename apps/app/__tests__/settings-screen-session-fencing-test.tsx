@@ -57,7 +57,7 @@ describe('SettingsScreen account-switch fencing', () => {
     useAppStateMock.mockReturnValue(appState('user-a', resetOnboarding));
     const view = await render(<SettingsScreen />);
 
-    await fireEvent.press(view.getByRole('button', { name: 'Reset onboarding' }));
+    await fireEvent.press(view.getByRole('button', { name: 'Reset priorities' }));
     expect(resetOnboarding).toHaveBeenCalledTimes(1);
 
     useAppStateMock.mockReturnValue(appState('user-b', resetOnboarding));

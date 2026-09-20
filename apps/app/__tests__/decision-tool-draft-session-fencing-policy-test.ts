@@ -11,7 +11,7 @@ describe('Local decision-tool account draft fencing policy', () => {
 
     expect(source).toContain('const { isRtl, locale, userId } = useAppState();');
     expect(source).toContain('const draftUserRef = useRef(userId);');
-    expect(source).toContain('if (draftUserRef.current !== userId) {');
+    expect(source).toContain('draftUserRef.current = userId;');
     expect(source).toContain("setCommitmentText('');");
     expect(source).toContain("setMarginText('');");
   });
@@ -21,7 +21,7 @@ describe('Local decision-tool account draft fencing policy', () => {
 
     expect(source).toContain('const { isRtl, locale, userId } = useAppState();');
     expect(source).toContain('const draftUserRef = useRef(userId);');
-    expect(source).toContain('if (draftUserRef.current !== userId) {');
+    expect(source).toContain('draftUserRef.current = userId;');
     expect(source).toContain('setProtectedMeaning(false);');
     expect(source).toContain('setBenefitRating(null);');
     expect(source).toContain('setEffortRating(null);');

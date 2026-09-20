@@ -79,7 +79,9 @@ export default function OneMoveScreen() {
   const scheme = useColorScheme();
   const palette = Palette[scheme === 'dark' ? 'dark' : 'light'];
   const activeUserRef = useRef(userId);
-  activeUserRef.current = userId;
+  useEffect(() => {
+    activeUserRef.current = userId;
+  }, [userId]);
   const [loadStatus, setLoadStatus] = useState<LoadStatus>('loading');
   const [recommendation, setRecommendation] = useState<DailyRecommendation | null>(null);
   const [recommendationUserId, setRecommendationUserId] = useState<string | null>(null);

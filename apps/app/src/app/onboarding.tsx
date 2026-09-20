@@ -167,15 +167,9 @@ export default function OnboardingScreen() {
   const [baselineStatus, setBaselineStatus] = useState<BaselineStatus>('idle');
   const [saving, setSaving] = useState(false);
   const activeUserRef = useRef(userId);
-  const baselineUserRef = useRef(userId);
-  activeUserRef.current = userId;
-
-  if (baselineUserRef.current !== userId) {
-    baselineUserRef.current = userId;
-    setBaselineTargets({});
-    setBaselineStatus('idle');
-    setSaving(false);
-  }
+  useEffect(() => {
+    activeUserRef.current = userId;
+  }, [userId]);
 
   const syncMessage = syncStatus === 'offline' ? t('syncOffline') : syncStatus === 'error' ? t('syncError') : null;
   const labels = copy[locale];

@@ -176,7 +176,9 @@ export default function IntegrationsScreen() {
   const [busyTarget, setBusyTarget] = useState<BusyTarget>(null);
   const [message, setMessage] = useState<ScreenMessage>(null);
   const activeUserRef = useRef(userId);
-  activeUserRef.current = userId;
+  useEffect(() => {
+    activeUserRef.current = userId;
+  }, [userId]);
   const loadRequestRef = useRef(0);
   const currentBusyId = busyTarget?.userId === userId ? busyTarget.connectionId : null;
   const currentMessage = message?.userId === userId ? message.text : null;
