@@ -31,7 +31,7 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: 'npm run export:web && node scripts/serve-expo-static.mjs apps/app/dist 8092',
+    command: 'npm run export:web && npm run report:web-size && node scripts/serve-expo-static.mjs apps/app/dist 8092',
     url: 'http://127.0.0.1:8092/auth',
     reuseExistingServer: false,
     timeout: 180_000,
