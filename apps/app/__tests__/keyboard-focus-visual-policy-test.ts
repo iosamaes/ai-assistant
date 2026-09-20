@@ -27,4 +27,22 @@ describe('keyboard focus visual policy', () => {
     expect(source).toContain('onFocus={() => setFocusedDestination(destination.id)}');
     expect(source).toContain('focusRingStyle(palette.accent, focusedDestination === destination.id)');
   });
+
+  test('Today direct Pressables keep visible focus for settings, feedback ratings, and check-in', () => {
+    const source = readAppSource('app/today.tsx');
+
+    expect(source).toContain('focusRingStyle(palette.accent, focusedControl === \'settings\')');
+    expect(source).toContain('onFocus={() => setFocusedControl(focusKey)}');
+    expect(source).toContain('focusRingStyle(palette.accent, focusedControl === focusKey && !disabled)');
+    expect(source).toContain("onFocus={() => setFocusedControl('check-in')}");
+    expect(source).toContain("focusRingStyle(palette.accent, focusedControl === 'check-in')");
+  });
+
+  test('experiment template radios keep visible focus while enabled', () => {
+    const source = readAppSource('app/experiments.tsx');
+
+    expect(source).toContain('const [focusedTemplate, setFocusedTemplate]');
+    expect(source).toContain('onFocus={() => setFocusedTemplate(id)}');
+    expect(source).toContain('focusRingStyle(palette.accent, focusedTemplate === id && !disabled)');
+  });
 });
