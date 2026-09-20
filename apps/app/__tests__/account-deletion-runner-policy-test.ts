@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 describe('destructive account-deletion runner policy', () => {
-  test('the public command is fail-closed before Playwright and protects every reusable mutation fixture', () => {
+  test('the public command is fail-closed before Playwright and protects every reusable or mutation fixture', () => {
     const repoRoot = path.resolve(__dirname, '../../..');
     const packageJson = JSON.parse(fs.readFileSync(path.join(repoRoot, 'package.json'), 'utf8')) as {
       scripts?: Record<string, string>;
@@ -21,6 +21,7 @@ describe('destructive account-deletion runner policy', () => {
     expect(runner).toContain('missingVariables.length > 0');
     expect(runner).toContain("env.MIZAN_E2E_DESTRUCTIVE !== '1'");
     expect(runner).toContain("'MIZAN_E2E_COMPLETED_EMAIL'");
+    expect(runner).toContain("'MIZAN_E2E_COMPLETED_MUTATION_EMAIL'");
     expect(runner).toContain("'MIZAN_E2E_ARABIC_EMAIL'");
     expect(runner).toContain("'MIZAN_E2E_ONBOARDING_EMAIL'");
     expect(runner).toContain("'MIZAN_E2E_ONBOARDING_MUTATION_EMAIL'");
