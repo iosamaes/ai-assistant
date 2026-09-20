@@ -32,7 +32,7 @@ Use a separate completed account created only to be permanently deleted:
 - `MIZAN_E2E_DELETE_PASSWORD`
 - `MIZAN_E2E_DESTRUCTIVE=1`
 
-`tests/e2e/account-deletion-live.spec.ts` is intentionally isolated from the normal completed-account fixture. Before deletion it exports the account to obtain the authenticated user id, seeds user-scoped pending-mutation and recent-snapshot cache sentinels, completes the two-step deletion UI, verifies both caches are removed, confirms no local-cleanup warning appeared, and then verifies the deleted credentials can no longer obtain a Supabase password session using only the public publishable key. This specification is irreversible by design and must never run against a reusable account. It self-skips in every project except `desktop-light`, so the disposable account is deleted exactly once instead of being reused across the ten responsive/color-scheme projects.
+`tests/e2e/account-deletion-live.spec.ts` is intentionally isolated from the normal completed-account fixture. Before deletion it exports the account to obtain the authenticated user id, seeds user-scoped pending-mutation and recent-snapshot cache sentinels, completes the two-step deletion UI, verifies both caches are removed, confirms no local-cleanup warning appeared, and then verifies the deleted credentials can no longer obtain a Supabase password session using only the public publishable key. This specification is irreversible by design and must never run against a reusable account. It self-skips in every project except `desktop-light`, so the disposable account is deleted exactly once instead of being reused across the ten responsive/color-scheme projects. The explicit runner is `npm run test:e2e:delete-account`; it still requires the destructive environment opt-in above.
 
 Real credentials never belong in source control; `.env.example` documents names only.
 
@@ -58,7 +58,7 @@ The Playwright project matrix deliberately uses the same Chromium engine with ex
 
 - Run the full TypeScript, lint, unit/component/integration, database/policy, and Web E2E suites from a trustworthy checkout.
 - Add or execute any missing behavior discovered by those runs; static specifications are not a PASS.
-- Execute the prepared destructive deletion specification only with an intentionally disposable dedicated account; do not reuse the normal completed-account fixture.
+- Execute the prepared destructive deletion specification only with an intentionally disposable dedicated account; do not reuse the normal completed-account fixture. Use `npm run test:e2e:delete-account` after configuring the documented environment and setting `MIZAN_E2E_DESTRUCTIVE=1`.
 - Execute Expo diagnostics plus Android/iOS bundle/export checks available in the owner environment.
 - Inspect production Web console/network behavior and production export output.
 - Measure startup and representative interaction performance enough to catch blocking work, pathological rerenders, or large regressions.
