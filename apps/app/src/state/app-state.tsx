@@ -153,6 +153,7 @@ export function AppStateProvider({ children }: PropsWithChildren) {
       if (failures.includes('session-expired')) {
         activeUserRef.current = null;
         setUserId(null);
+        resetUserState();
         setSyncStatus('expired');
         setSessionStatus('expired');
         return;
@@ -223,11 +224,13 @@ export function AppStateProvider({ children }: PropsWithChildren) {
       }
       activeUserRef.current = null;
       setUserId(null);
+      resetUserState();
+      setSyncStatus('idle');
       setSessionStatus(result.error.kind === 'not-configured' ? 'not-configured' : 'error');
       return;
     }
     await hydrateSession(result.value, revision);
-  }, [hydrateSession]);
+  }, [hydrateSession, resetUserState]);
 
   useEffect(() => {
     let active = true;
@@ -321,6 +324,7 @@ export function AppStateProvider({ children }: PropsWithChildren) {
         if (failures.includes('session-expired')) {
           activeUserRef.current = null;
           setUserId(null);
+          resetUserState();
           setSyncStatus('expired');
           setSessionStatus('expired');
           return;
@@ -344,7 +348,7 @@ export function AppStateProvider({ children }: PropsWithChildren) {
       persistenceQueue.current = persistenceQueue.current.then(persist, persist);
       return persistenceQueue.current;
     },
-    [userId],
+    [resetUserState, userId],
   );
 
   const persistCurrent = useCallback(
