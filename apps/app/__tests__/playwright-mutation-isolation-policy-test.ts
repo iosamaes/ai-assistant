@@ -42,8 +42,9 @@ describe('Playwright live-mutation isolation policy', () => {
     expect(mutationRunner).toContain("'MIZAN_E2E_ONBOARDING_MUTATION_PASSWORD'");
     expect(mutationRunner).toContain("'MIZAN_E2E_COMPLETED_EMAIL'");
     expect(mutationRunner).toContain("'MIZAN_E2E_COMPLETED_PASSWORD'");
+    expect(mutationRunner).toContain("'MIZAN_E2E_DELETE_EMAIL'");
     expect(mutationRunner).toContain('missingVariables.length > 0');
-    expect(mutationRunner).toContain('protectedReusableEmailVariables');
+    expect(mutationRunner).toContain('protectedFixtureEmailVariables');
     expect(mutationRunner).toContain('reusedFixtureVariables.length > 0');
     expect(mutationRunner).toContain("'tests/e2e/onboarding-live.spec.ts'");
     expect(mutationRunner).toContain("'--project=desktop-light'");
