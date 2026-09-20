@@ -1,11 +1,13 @@
 import { expect, test, type Page } from '@playwright/test';
 
 import {
-  arabicCompletedAccountConfigured,
   collectCriticalBrowserDiagnostics,
-  completedAccountConfigured,
   expectNoCriticalBrowserDiagnostics,
   expectNoHorizontalOverflow,
+} from './browser-assertions';
+import {
+  arabicCompletedAccountConfigured,
+  completedAccountConfigured,
   mutationsEnabled,
   signInArabicCompletedAccount,
   signInCompletedAccount,
