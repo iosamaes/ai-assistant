@@ -115,6 +115,8 @@ test.describe('live completed-account product journeys', () => {
 
     await page.goto('/settings');
     await expect(page.getByText(/Shape MIZAN around your life|اضبط ميزان على حياتك، لا العكس/, { exact: true })).toBeVisible();
+    await expect(page.getByText(/Notifications & reminders|الإشعارات والتذكيرات/, { exact: true })).toBeVisible();
+    await expect(page.getByText(/Device notification delivery is not configured in this build yet|إرسال إشعارات الجهاز غير مهيأ في هذه النسخة بعد/)).toBeVisible();
     await expectNoHorizontalOverflow(page);
 
     await page.goto('/privacy');
@@ -226,6 +228,7 @@ test.describe('live Arabic completed-account read-only journeys', () => {
     await page.getByRole('tab', { name: 'المزيد', exact: true }).click();
     await expect(page).toHaveURL(/\/settings$/);
     await expect(page.getByText('اضبط ميزان على حياتك، لا العكس', { exact: true })).toBeVisible();
+    await expect(page.getByText('الإشعارات والتذكيرات', { exact: true })).toBeVisible();
     await expectNoHorizontalOverflow(page);
     expectNoCriticalBrowserDiagnostics(diagnostics);
   });
