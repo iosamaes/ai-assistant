@@ -42,7 +42,7 @@ EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY
 
 For normal Expo development, place the real public values in `apps/app/.env.local` or provide them in the shell that launches Expo. Never place a Supabase service-role key in the app or any `EXPO_PUBLIC_*` variable.
 
-The root `.env.example` also documents optional Playwright live-account variables. The normal completed account, Arabic completed account, incomplete onboarding account, and destructive deletion account are intentionally separate fixtures because their test lifecycles differ. Mutation, visual-evidence capture, performance sampling, and destructive modes stay opt-in.
+The root `.env.example` also documents optional Playwright live-account variables. The reusable completed-English, completed-Arabic, and incomplete-onboarding accounts are separate read-only release fixtures. Onboarding completion uses a fourth, disposable incomplete account through `MIZAN_E2E_ONBOARDING_MUTATION_EMAIL` / `MIZAN_E2E_ONBOARDING_MUTATION_PASSWORD`, so mutation validation cannot consume the reusable release-baseline onboarding fixture. Irreversible deletion uses its own dedicated disposable account. Visual-evidence capture, performance sampling, and destructive deletion remain separately opt-in.
 
 ## Run the app
 
@@ -104,7 +104,7 @@ After `supabase db reset` has completed successfully on the local disposable sta
 npm run check:release:baseline
 ```
 
-Before running that aggregate baseline, configure the **read-only release fixtures** from `.env.example`: the public `MIZAN_E2E_SUPABASE_*` values, the completed English account, the completed Arabic account, and the incomplete onboarding account. The runner fails immediately when any of those variables are missing so required authenticated/RTL/onboarding suites cannot silently skip and still produce a misleading green baseline.
+Before running that aggregate baseline, configure the **read-only release fixtures** from `.env.example`: the public `MIZAN_E2E_SUPABASE_*` values, the completed English account, the completed Arabic account, and the reusable incomplete onboarding account. The runner fails immediately when any of those variables are missing so required authenticated/RTL/onboarding suites cannot silently skip and still produce a misleading green baseline.
 
 That command chains the workspace typecheck/lint/unit suite, local database tests and lint, the normal Web E2E matrix, and the production static-Web smoke/size path. It intentionally does **not** opt into live mutations, CP9 screenshot capture, performance probes, irreversible account deletion, Expo Doctor, or Android/iOS exports; those remain explicit follow-up gates so an aggregate command cannot accidentally mutate or delete a fixture.
 
@@ -114,11 +114,13 @@ Web E2E uses Playwright and starts the app on port `8091`:
 npm run test:e2e
 ```
 
-Live account coverage is enabled only when the matching `MIZAN_E2E_*` environment variables from `.env.example` are present. Mutation journeys require `MIZAN_E2E_MUTATIONS=1` and are deliberately isolated to the `desktop-light` project:
+Live account coverage is enabled only when the matching `MIZAN_E2E_*` environment variables from `.env.example` are present. The explicit mutation command is fail-closed: it enables `MIZAN_E2E_MUTATIONS=1` itself, requires the public Supabase values plus completed-account credentials and the separate disposable onboarding-mutation credentials, rejects reuse of protected reusable fixture emails, and then runs the mutation journeys once in `desktop-light`:
 
 ```bash
 npm run test:e2e:mutations
 ```
+
+Do not point `MIZAN_E2E_ONBOARDING_MUTATION_EMAIL` at the reusable `MIZAN_E2E_ONBOARDING_EMAIL` account. Onboarding completion permanently changes that account from incomplete to complete, so the mutation fixture is intentionally disposable/re-creatable while the read-only release fixture stays reusable.
 
 CP9 visual-evidence capture is read-only and separately opt-in. Configure the normal completed account with a persisted English MIZAN locale and the separate completed Arabic-profile account, set `MIZAN_E2E_VISUAL_EVIDENCE=1`, then run:
 
