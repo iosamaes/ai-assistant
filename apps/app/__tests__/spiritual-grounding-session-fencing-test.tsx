@@ -40,6 +40,7 @@ describe('useSpiritualGroundingPreference account-switch fencing', () => {
         return Promise.resolve({
           ok: true,
           value: {
+            user_id: 'user-a',
             plugin_id: 'spiritual-grounding',
             enabled: true,
             consented_at: null,
