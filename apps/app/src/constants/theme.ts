@@ -78,6 +78,7 @@ export const SurfaceTreatment = {
 export const Layout = {
   maxContentWidth: 880,
   compactWidth: 380,
+  tabletBreakpoint: 768,
   wideBreakpoint: 1024,
   horizontalPadding: {
     compact: Spacing.lg,
