@@ -23,6 +23,7 @@
 - [ ] CP12 — Independent final review and handoff
 
 ## Latest productive changes
+- `5d03d0b6d2f933bf9e5b46658bcb82928945068d` + `fa39be250f52f04c8e586829d1a0350d250e8ff9` — gave the shared primary navigation `tablist` an explicit localized accessible name (`التنقل الرئيسي` / `Primary navigation`) instead of relying on a role-only screen-reader announcement, and extended the navigation regression specification to guard both Arabic and English labels alongside the existing RTL rail-divider assertions.
 - `0a8fb1326b8be529ac983b6f6c4f2fbbb5b2e92f` — extended the Playwright mutation-isolation policy specification so the aggregate release baseline must keep its fail-closed safety boundary: root wiring must point to the repository runner, mutation/destructive/visual/performance opt-in flags must be removed from the child environment, and the aggregate command must not invoke mutation or account-deletion runners directly.
 - `563e7494bf58acb751bca6afe185254f2dcc8ef4` + `6bb5b3dc6323b4c4dca997199381032d565791b3` — added the owner-side `npm run check:release:baseline` path through `scripts/run-release-baseline.mjs`. The runner strips `MIZAN_E2E_MUTATIONS`, `MIZAN_E2E_DESTRUCTIVE`, `MIZAN_E2E_VISUAL_EVIDENCE`, and `MIZAN_E2E_PERFORMANCE`, then fail-fast chains workspace checks, local database tests/lint, the normal Web E2E matrix, and production Web smoke/size. This prevents an owner shell with a stale destructive opt-in from silently turning the convenience baseline into a mutating or irreversible run.
 - `7d04a1c4f52b2962d983af65f4c4dab20828edfd` + `b77d640f06a728c07a8256b37ee16c765b987306` — documented the aggregate baseline in the clean-checkout README and CP11 release ledger, while keeping live mutations, visual evidence, performance probes, destructive deletion, Expo Doctor, and Android/iOS exports as explicit separate gates.
@@ -49,6 +50,7 @@ The owner-approved premium reference is broadly implemented in static source: ad
 Prepared owner/runtime evidence includes:
 - `tests/e2e/visual-evidence-live.spec.ts` for Today/Life Map/WHY/interacted Check-in across the responsive light/dark matrix in persisted English and Arabic RTL.
 - Real Tab/Enter keyboard journeys for Auth and the primary shell, including after Arabic RTL hydration.
+- `apps/app/__tests__/app-navigation-rtl-test.tsx` for app-local Arabic/English rail-divider geometry plus localized screen-reader naming of the shared primary-navigation tablist.
 - `apps/app/__tests__/theme-contrast-policy-test.ts` for semantic normal-text contrast.
 - `apps/app/__tests__/app-native-platform-config-policy-test.ts` for iPad support, responsive platform configuration, MIZAN-owned native/Web brand assets, starter-asset rejection, and light/dark splash configuration.
 - `docs/CP9_DESIGN_SWAP_PROOF.md` for the deliberate owner-side design-swap proof.
