@@ -55,8 +55,13 @@ function deferred<T>(): Deferred<T> {
   return { promise, resolve };
 }
 
-function session(userId: string): Session {
-  return { user: { id: userId } } as unknown as Session;
+function session(userId: string, locale?: 'ar' | 'en'): Session {
+  return {
+    user: {
+      id: userId,
+      user_metadata: locale ? { locale } : {},
+    },
+  } as unknown as Session;
 }
 
 function StateProbe() {
@@ -171,6 +176,24 @@ describe('AppStateProvider session fencing', () => {
 
     await waitFor(() => {
       expect(view.getByTestId('state').props.children.join('')).toBe('user-b|en|build|minimal');
+    });
+  });
+
+  test('uses validated signup locale metadata while a new account has no profile yet', async () => {
+    getCurrentSessionMock.mockResolvedValue({ ok: true, value: session('user-new', 'en') });
+    subscribeMock.mockImplementation(() => jest.fn());
+    loadProfileMock.mockResolvedValue({ ok: true, value: null });
+    loadPreferencesMock.mockResolvedValue({ ok: true, value: [] });
+    loadContextMock.mockResolvedValue({ ok: true, value: null });
+
+    const view = await render(
+      <AppStateProvider>
+        <StateProbe />
+      </AppStateProvider>,
+    );
+
+    await waitFor(() => {
+      expect(view.getByTestId('state').props.children.join('')).toBe('user-new|en|none|none');
     });
   });
 
