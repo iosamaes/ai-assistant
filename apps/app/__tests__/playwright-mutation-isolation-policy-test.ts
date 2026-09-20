@@ -35,6 +35,20 @@ describe('Playwright live-mutation isolation policy', () => {
     expect(deletionSpec).toContain('expect(reauthentication.status()).toBe(400)');
   });
 
+  test('default development matrix does not masquerade production-only specifications as export evidence', () => {
+    const repoRoot = path.resolve(__dirname, '../../..');
+    const defaultConfig = fs.readFileSync(path.join(repoRoot, 'playwright.config.ts'), 'utf8');
+    const packageJson = JSON.parse(fs.readFileSync(path.join(repoRoot, 'package.json'), 'utf8')) as {
+      scripts?: Record<string, string>;
+    };
+
+    expect(defaultConfig).toContain("testIgnore: ['**/production-web.spec.ts', '**/production-performance.spec.ts']");
+    expect(packageJson.scripts?.['test:e2e:production']).toContain('production-web.spec.ts');
+    expect(packageJson.scripts?.['test:e2e:production']).toContain('--config=playwright.production.config.ts');
+    expect(packageJson.scripts?.['test:e2e:production:performance']).toContain('production-performance.spec.ts');
+    expect(packageJson.scripts?.['test:e2e:production:performance']).toContain('--config=playwright.production.config.ts');
+  });
+
   test('aggregate release baseline is fail-closed for opt-in modes and required live fixtures', () => {
     const repoRoot = path.resolve(__dirname, '../../..');
     const packageJson = JSON.parse(fs.readFileSync(path.join(repoRoot, 'package.json'), 'utf8')) as {
