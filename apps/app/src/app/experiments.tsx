@@ -231,8 +231,20 @@ export default function ExperimentsScreen() {
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const activeUserRef = useRef(userId);
+  const draftUserRef = useRef(userId);
   const loadRequestRef = useRef(0);
   const mutationRequestRef = useRef(0);
+
+  if (draftUserRef.current !== userId) {
+    draftUserRef.current = userId;
+    mutationRequestRef.current += 1;
+    setSelected('earlier-bedtime');
+    setHypothesis(labels.templates['earlier-bedtime'].hypothesis);
+    setConsented(false);
+    setRatingById({});
+    setBusy(false);
+    setMessage(null);
+  }
   activeUserRef.current = userId;
 
   const visibleHistory = historyOwnerId === userId ? history : [];
