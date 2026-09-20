@@ -22,4 +22,17 @@ describe('Life Seasons account-switch fencing policy', () => {
     expect(source).toContain('saveRequestRef.current === requestId && activeUserRef.current === requestedUserId');
     expect(source).toContain('if (!requestIsCurrent()) return;');
   });
+
+  test('does not expose or save a previous account draft during the render-to-effect switch window', () => {
+    expect(source).toContain('const [selectedSeasonUserId, setSelectedSeasonUserId] = useState<string | null>(userId);');
+    expect(source).toContain("const visibleTargets = stateUserId === userId ? targets : {};");
+    expect(source).toContain("const visibleSelectedSeason = selectedSeasonUserId === userId ? selectedSeason : (lifeSeason ?? 'balanced');");
+    expect(source).toContain('const draftReadyForActiveUser = Boolean(userId) && stateUserId === userId && selectedSeasonUserId === userId;');
+    expect(source).toContain('const controlsDisabled = !draftReadyForActiveUser || loadStatus === \'loading\' || saveStatus === \'saving\';');
+    expect(source).toContain('stateUserId !== requestedUserId ||');
+    expect(source).toContain('selectedSeasonUserId !== requestedUserId');
+    expect(source).toContain('const seasonToSave = visibleSelectedSeason;');
+    expect(source).toContain('Object.entries(visibleTargets)');
+    expect(source).toContain('selected={visibleSelectedSeason === season}');
+  });
 });
