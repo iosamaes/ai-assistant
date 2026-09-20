@@ -63,10 +63,10 @@ Detailed release ledger: `docs/CP11_RELEASE_READINESS.md`.
 The Playwright Web matrix defines five representative viewport classes — **320×568 narrow phone, 390×844 common phone, 834×1194 tablet portrait, 1194×834 tablet landscape, and 1440×900 desktop** — each in light and dark emulated color schemes. Native Android/iOS validation remains a separate owner/runtime gate.
 
 Prepared static verification paths include:
-- Auth/route-guard and password-recovery coverage.
-- Dedicated onboarding account coverage, with mutation completion isolated to `desktop-light`.
+- Auth/route-guard and password-recovery coverage with shared critical browser diagnostics.
+- Dedicated onboarding account coverage, with mutation completion isolated to `desktop-light` and the same critical browser diagnostics.
 - Completed-account shell, Recovery, What If, Settings, Privacy export, daily check-in, One Move → explicit feedback → Personal Learning, and Spiritual Grounding toggle/restore coverage.
-- Isolated destructive account-deletion E2E using a dedicated disposable account, local user-scoped cache sentinels, two-step confirmation, and post-delete credential rejection; destructive execution is single-project only.
+- Isolated destructive account-deletion E2E using a dedicated disposable account, local user-scoped cache sentinels, two-step confirmation, post-delete credential rejection, and critical browser diagnostics; destructive execution is single-project only.
 - Mutation journeys are isolated to `desktop-light` to avoid shared-account write races.
 
 ### Latest CP11 harness and release-readiness hardening
@@ -79,6 +79,10 @@ Prepared static verification paths include:
 - `2d8b4fb98aa165222b05d6c1726a4b77f2a65be9` — the previously missing root `README.md` is now present with clean-install requirements, public environment setup, local Supabase initialization/reset guidance, run/test/E2E commands, destructive-test safety boundaries, Expo export guidance, architecture invariants, and links to the current release ledger.
 - `f4822edeb7f86491ce8284269092683f482796f1` — the stale create-expo-app starter `apps/app/README.md` was replaced with MIZAN workspace-specific run/configuration/quality/export/source-layout guidance; the nonexistent starter `reset-project` instruction is gone.
 - `da486e76f8d6809e046f7a05ca4acf1a8128fc3c` — the CP11 release ledger now records both README surfaces and requires a clean-checkout owner/new-engineer setup run before claiming documentation readiness.
+- `6976b8e711647da57ee9e0c3fa52329aea5b0f11` — generic overflow and critical browser/runtime assertions moved into `tests/e2e/browser-assertions.ts`, keeping them independent from account-fixture/sign-in concerns.
+- `43fe31ba67ee7e11cf83379381596f12254a9fa6`, `f8fb6d4e1c83fd0e1b0c3a80035f1f51d23c68bd`, and `b10d297e31fa37891b8c1ef9a666833cbf057744` — completed-account, onboarding, and destructive-deletion journeys consume the shared browser assertions rather than maintaining inconsistent local guards.
+- `a713ed3380e1c6190e3c03f64d540e441f414c02` — signed-out auth/route-guard, locale-switch, and password-reset journeys now also fail on browser console errors, unexpected failed requests, and HTTP 5xx responses instead of checking only one page-error path.
+- `a43efda03152cc4232a56981e53c48cdf5d61cd5` — the CP11 release ledger documents the shared browser-assertion boundary and its coverage across signed-out and live journeys.
 
 These are static harness/readiness changes only. **No E2E run, destructive delete, test result, typecheck, build, database-policy execution, performance result, or release PASS is claimed by workers under the active policy.**
 
@@ -105,7 +109,7 @@ Post-baseline:
 - `delete-account` version 2 previously reported ACTIVE with JWT verification enabled; destructive end-to-end deletion remains unexecuted. The dedicated deletion E2E harness prepares owner-side proof only.
 - Premium-reference/residual CP9 fixes and account-fencing regression specifications remain static evidence until owner validation.
 - Capacity account-switch coverage and root offline-replay ownership coverage are present but unexecuted under the worker policy.
-- The five-viewport × two-color Playwright matrix, destructive deletion harness, Arabic read-only completed-account path, and browser diagnostic guards are configured but unexecuted.
+- The five-viewport × two-color Playwright matrix, destructive deletion harness, Arabic read-only completed-account path, and shared browser diagnostic guards across auth/product/onboarding/deletion are configured but unexecuted.
 - Root/app setup and release documentation are now MIZAN-specific rather than starter/template documentation, but the documented flow still requires owner clean-checkout execution evidence.
 
 ## Known blockers / risks
@@ -130,7 +134,9 @@ Post-baseline:
 - `playwright.config.ts`
 - `package.json`
 - `.env.example`
+- `tests/e2e/browser-assertions.ts`
 - `tests/e2e/live-account.ts`
+- `tests/e2e/auth.spec.ts`
 - `tests/e2e/product-live.spec.ts`
 - `tests/e2e/onboarding-live.spec.ts`
 - `tests/e2e/account-deletion-live.spec.ts`
