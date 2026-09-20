@@ -101,13 +101,13 @@ Live account coverage is enabled only when the matching `MIZAN_E2E_*` environmen
 npm run test:e2e:mutations
 ```
 
-CP9 visual-evidence capture is read-only and separately opt-in. Configure both completed-account fixtures, set `MIZAN_E2E_VISUAL_EVIDENCE=1`, then run:
+CP9 visual-evidence capture is read-only and separately opt-in. Configure the normal completed account with a persisted English MIZAN locale and the separate completed Arabic-profile account, set `MIZAN_E2E_VISUAL_EVIDENCE=1`, then run:
 
 ```bash
 npm run test:e2e:visual
 ```
 
-That command captures Today, Life Map, WHY, and Check-in for English and persisted-Arabic accounts across every configured phone/tablet/desktop and light/dark Playwright project. Screenshots are attached to the Playwright test output; their presence is evidence only after the run actually succeeds.
+That command captures Today, Life Map, WHY, and Check-in for English and persisted-Arabic accounts across every configured phone/tablet/desktop and light/dark Playwright project. Before each screenshot, the harness waits for the intended localized surface, waits for its loading state to settle where applicable, rejects known load-error states, and waits for browser fonts so mislabeled or half-loaded captures cannot silently count as evidence. Screenshots are attached to the Playwright test output; their presence is evidence only after the run actually succeeds.
 
 The destructive deletion journey requires a dedicated disposable account plus `MIZAN_E2E_DESTRUCTIVE=1`:
 
