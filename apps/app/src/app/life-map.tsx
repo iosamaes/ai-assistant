@@ -1,6 +1,6 @@
 import type { ConfidenceLevel, MomentumDirection } from '@mizan/core';
 import { router } from 'expo-router';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { StyleSheet, useColorScheme, useWindowDimensions, View } from 'react-native';
 
 import {
@@ -161,7 +161,7 @@ function formatDate(value: string, locale: 'ar' | 'en') {
       month: 'short',
     }).format(new Date(timestamp));
   } catch {
-    return new Date(timestamp).toISOString().slice(0, 10);
+    return '—';
   }
 }
 
@@ -409,7 +409,10 @@ function DomainCard({ domain, locale, isRtl }: { domain: LifeMapDomainHistory; l
 export default function LifeMapScreen() {
   const { enabledDomains, isRtl, locale, refreshSession, userId } = useAppState();
   const [snapshot, setSnapshot] = useState<LifeMapSnapshot | null>(null);
+  const [snapshotUserId, setSnapshotUserId] = useState<string | null>(null);
   const [status, setStatus] = useState<LoadStatus>('loading');
+  const activeUserRef = useRef(userId);
+  activeUserRef.current = userId;
   const local = copy[locale];
   const scheme = useColorScheme();
   const palette = Palette[scheme === 'dark' ? 'dark' : 'light'];
@@ -426,25 +429,37 @@ export default function LifeMapScreen() {
 
   useEffect(() => {
     let active = true;
+    const requestedUserId = userId;
+    const requestIsCurrent = () => active && activeUserRef.current === requestedUserId;
+
     void (async () => {
       await Promise.resolve();
-      if (!active) return;
-      if (!userId) {
+      if (!requestIsCurrent()) return;
+      if (!requestedUserId) {
         setSnapshot(null);
+        setSnapshotUserId(null);
         setStatus('ready');
         return;
       }
 
+      setSnapshot(null);
+      setSnapshotUserId(requestedUserId);
       setStatus('loading');
-      const result = await loadLifeMapSnapshot(userId, enabledDomains);
-      if (!active) return;
+      const result = await loadLifeMapSnapshot(requestedUserId, enabledDomains);
+      if (!requestIsCurrent()) return;
       if (result.ok) {
         setSnapshot(result.value);
+        setSnapshotUserId(requestedUserId);
         setStatus('ready');
         return;
       }
-      if (result.error.kind === 'session-expired') await refreshSession();
-      if (active) setStatus('error');
+      if (result.error.kind === 'session-expired') {
+        await refreshSession();
+        if (!requestIsCurrent()) return;
+      }
+      setSnapshot(null);
+      setSnapshotUserId(requestedUserId);
+      setStatus('error');
     })();
 
     return () => {
@@ -452,12 +467,15 @@ export default function LifeMapScreen() {
     };
   }, [enabledDomains, refreshSession, userId]);
 
-  const evidenceCount = snapshot?.domains.reduce((total, domain) => total + domain.evidenceCount, 0) ?? 0;
-  const knownDomainCount = snapshot?.domains.filter((domain) => domain.score !== null).length ?? 0;
+  const currentSnapshot = userId !== null && snapshotUserId === userId ? snapshot : null;
+  const displayedStatus: LoadStatus =
+    userId === null ? 'ready' : snapshotUserId === userId ? status : 'loading';
+  const evidenceCount = currentSnapshot?.domains.reduce((total, domain) => total + domain.evidenceCount, 0) ?? 0;
+  const knownDomainCount = currentSnapshot?.domains.filter((domain) => domain.score !== null).length ?? 0;
   const mapSignal = useMemo(() => {
-    if (!snapshot || snapshot.domains.length === 0 || knownDomainCount !== snapshot.domains.length) return null;
-    return snapshot.domains.reduce((total, domain) => total + (domain.score ?? 0), 0) / snapshot.domains.length;
-  }, [knownDomainCount, snapshot]);
+    if (!currentSnapshot || currentSnapshot.domains.length === 0 || knownDomainCount !== currentSnapshot.domains.length) return null;
+    return currentSnapshot.domains.reduce((total, domain) => total + (domain.score ?? 0), 0) / currentSnapshot.domains.length;
+  }, [currentSnapshot, knownDomainCount]);
 
   return (
     <Screen>
@@ -477,15 +495,15 @@ export default function LifeMapScreen() {
         <PrimaryButton label={local.startCheckIn} onPress={() => router.push('/check-in')} />
       </Card>
 
-      {status === 'loading' ? <MizanText accessibilityLiveRegion="polite" muted>{local.loading}</MizanText> : null}
-      {status === 'error' ? (
+      {displayedStatus === 'loading' ? <MizanText accessibilityLiveRegion="polite" muted>{local.loading}</MizanText> : null}
+      {displayedStatus === 'error' ? (
         <Card style={{ backgroundColor: palette.surfaceMuted }}><MizanText accessibilityLiveRegion="polite" muted>{local.error}</MizanText></Card>
       ) : null}
-      {status === 'ready' && evidenceCount === 0 ? (
+      {displayedStatus === 'ready' && evidenceCount === 0 ? (
         <Card style={{ backgroundColor: palette.surfaceMuted }}><MizanText accessibilityLiveRegion="polite" muted>{local.allEmpty}</MizanText></Card>
       ) : null}
 
-      {status === 'ready' && snapshot && snapshot.domains.length > 0 ? (
+      {displayedStatus === 'ready' && currentSnapshot && currentSnapshot.domains.length > 0 ? (
         <>
           <Card style={styles.visualCard}>
             <View style={styles.visualHeading}>
@@ -499,11 +517,11 @@ export default function LifeMapScreen() {
                 wide && { flexDirection: isRtl ? 'row-reverse' : 'row' },
               ]}>
               <View style={styles.radarColumn}>
-                <RadarChart domains={snapshot.domains} locale={locale} size={chartSize} />
+                <RadarChart domains={currentSnapshot.domains} locale={locale} size={chartSize} />
                 <View style={[styles.mapSummary, { backgroundColor: palette.surfaceMuted }]}>
                   <MizanText variant="label">
                     {mapSignal === null
-                      ? `${local.supportedDomains}: ${formatLocalizedNumber(knownDomainCount, locale, 0)} / ${formatLocalizedNumber(snapshot.domains.length, locale, 0)}`
+                      ? `${local.supportedDomains}: ${formatLocalizedNumber(knownDomainCount, locale, 0)} / ${formatLocalizedNumber(currentSnapshot.domains.length, locale, 0)}`
                       : `${local.mapSignal}: ${formatLocalizedNumber(Math.round(mapSignal), locale, 0)} / ${formatLocalizedNumber(100, locale, 0)}`}
                   </MizanText>
                   <MizanText variant="caption" muted>
@@ -517,7 +535,7 @@ export default function LifeMapScreen() {
                   <MizanText variant="title">{local.overview}</MizanText>
                   <MizanText muted>{local.overviewBody}</MizanText>
                 </View>
-                {snapshot.domains.map((domain) => (
+                {currentSnapshot.domains.map((domain) => (
                   <DomainCard key={domain.domainId} domain={domain} locale={locale} isRtl={isRtl} />
                 ))}
               </View>
@@ -543,7 +561,7 @@ const styles = StyleSheet.create({
   radar: { alignSelf: 'center', position: 'relative' },
   radarRing: { borderRadius: Radius.pill, borderWidth: Controls.borderWidth, position: 'absolute' },
   radarDot: { borderRadius: Radius.pill, height: 10, position: 'absolute', width: 10 },
-  radarAxisLabel: { alignItems: 'center', gap: 2, pointerEvents: 'none', position: 'absolute' },
+  radarAxisLabel: { alignItems: 'center', gap: 2, position: 'absolute' },
   radarCenter: {
     alignItems: 'center',
     borderRadius: Radius.lg,
@@ -551,7 +569,6 @@ const styles = StyleSheet.create({
     height: 86,
     justifyContent: 'center',
     paddingHorizontal: Spacing.sm,
-    pointerEvents: 'none',
     position: 'absolute',
     width: 116,
   },
