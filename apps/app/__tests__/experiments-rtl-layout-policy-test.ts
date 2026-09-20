@@ -14,4 +14,10 @@ describe('Experiments RTL layout policy', () => {
       );
     }
   });
+
+  test('names the time-progress meter with experiment context', () => {
+    expect(experimentsSource).toContain(
+      'accessibilityLabel={`${templateLabel} — ${labels.progress}`}',
+    );
+  });
 });
