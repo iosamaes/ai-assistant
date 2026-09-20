@@ -1,4 +1,4 @@
-import { PropsWithChildren } from 'react';
+import { PropsWithChildren, useState } from 'react';
 import {
   Platform,
   Pressable,
@@ -67,6 +67,11 @@ function shadowStyle(opacity: number, radius: number, offsetY: number, elevation
   };
 }
 
+export function focusRingStyle(color: string, focused: boolean): ViewStyle | null {
+  if (!focused || Platform.OS !== 'web') return null;
+  return { boxShadow: `0 0 0 3px ${color}` };
+}
+
 export function MizanText({ children, variant = 'body', muted = false, style, ...props }: MizanTextProps) {
   const scheme = useColorScheme();
   const palette = Palette[scheme === 'dark' ? 'dark' : 'light'];
@@ -120,6 +125,7 @@ export function MizanTextInput({ style, ...props }: MizanTextInputProps) {
   const scheme = useColorScheme();
   const palette = Palette[scheme === 'dark' ? 'dark' : 'light'];
   const { isRtl } = useAppState();
+  const [focused, setFocused] = useState(false);
   const disabled = props.editable === false || props.accessibilityState?.disabled === true;
   const isNumericInput =
     props.keyboardType === 'decimal-pad' ||
@@ -135,11 +141,19 @@ export function MizanTextInput({ style, ...props }: MizanTextInputProps) {
       {...props}
       accessibilityState={{ ...props.accessibilityState, disabled }}
       allowFontScaling
+      onBlur={(event) => {
+        setFocused(false);
+        props.onBlur?.(event);
+      }}
       onChangeText={
         props.onChangeText
           ? (value) => props.onChangeText?.(isNumericInput ? normalizeLocalizedNumberInput(value) : value)
           : undefined
       }
+      onFocus={(event) => {
+        setFocused(true);
+        props.onFocus?.(event);
+      }}
       placeholderTextColor={props.placeholderTextColor ?? palette.textMuted}
       selectionColor={props.selectionColor ?? palette.accent}
       style={[
@@ -152,6 +166,7 @@ export function MizanTextInput({ style, ...props }: MizanTextInputProps) {
         },
         style,
         { writingDirection: forceLtrInput ? 'ltr' : isRtl ? 'rtl' : 'ltr' },
+        focusRingStyle(palette.accent, focused && !disabled),
       ]}
     />
   );
@@ -161,6 +176,7 @@ export function PrimaryButton({ label, onPress, disabled = false, tone = 'accent
   const scheme = useColorScheme();
   const palette = Palette[scheme === 'dark' ? 'dark' : 'light'];
   const { isRtl } = useAppState();
+  const [focused, setFocused] = useState(false);
   const isDark = scheme === 'dark';
   const shadowOpacity = isDark ? SurfaceTreatment.controlShadowOpacity * 0.65 : SurfaceTreatment.controlShadowOpacity;
   const backgroundColor = tone === 'danger' ? palette.danger : palette.accent;
@@ -171,6 +187,8 @@ export function PrimaryButton({ label, onPress, disabled = false, tone = 'accent
       accessibilityRole="button"
       accessibilityState={{ disabled }}
       disabled={disabled}
+      onBlur={() => setFocused(false)}
+      onFocus={() => setFocused(true)}
       onPress={onPress}
       style={({ pressed }) => [
         styles.button,
@@ -184,6 +202,7 @@ export function PrimaryButton({ label, onPress, disabled = false, tone = 'accent
           SurfaceTreatment.controlShadowOffsetY,
           SurfaceTreatment.controlElevation,
         ),
+        focusRingStyle(palette.accent, focused && !disabled),
       ]}>
       <Text
         allowFontScaling
@@ -205,12 +224,15 @@ export function SecondaryButton({
 }: ButtonProps & { compact?: boolean }) {
   const scheme = useColorScheme();
   const palette = Palette[scheme === 'dark' ? 'dark' : 'light'];
+  const [focused, setFocused] = useState(false);
   return (
     <Pressable
       accessibilityLabel={label}
       accessibilityRole="button"
       accessibilityState={{ disabled }}
       disabled={disabled}
+      onBlur={() => setFocused(false)}
+      onFocus={() => setFocused(true)}
       onPress={onPress}
       style={({ pressed }) => [
         styles.secondaryButton,
@@ -220,6 +242,7 @@ export function SecondaryButton({
           borderColor: palette.border,
           opacity: disabled ? Interaction.disabled : pressed ? Interaction.subtlePressed : 1,
         },
+        focusRingStyle(palette.accent, focused && !disabled),
       ]}>
       <MizanText variant="label" style={styles.centeredText}>{label}</MizanText>
     </Pressable>
@@ -229,12 +252,15 @@ export function SecondaryButton({
 export function ChoiceChip({ label, accessibilityLabel, selected, onPress, disabled = false }: ChoiceChipProps) {
   const scheme = useColorScheme();
   const palette = Palette[scheme === 'dark' ? 'dark' : 'light'];
+  const [focused, setFocused] = useState(false);
   return (
     <Pressable
       accessibilityLabel={accessibilityLabel ?? label}
       accessibilityRole="button"
       accessibilityState={{ selected, disabled }}
       disabled={disabled}
+      onBlur={() => setFocused(false)}
+      onFocus={() => setFocused(true)}
       onPress={onPress}
       style={({ pressed }) => [
         styles.chip,
@@ -243,6 +269,7 @@ export function ChoiceChip({ label, accessibilityLabel, selected, onPress, disab
           borderColor: selected ? palette.accent : palette.border,
           opacity: disabled ? Interaction.disabled : pressed ? Interaction.chipPressed : 1,
         },
+        focusRingStyle(palette.accent, focused && !disabled),
       ]}>
       <MizanText variant="label" style={styles.centeredText}>{label}</MizanText>
     </Pressable>
