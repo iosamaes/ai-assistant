@@ -4,6 +4,7 @@ import {
   collectCriticalBrowserDiagnostics,
   expectNoCriticalBrowserDiagnostics,
   expectNoHorizontalOverflow,
+  tabTo,
 } from './browser-assertions';
 import {
   arabicCompletedAccountConfigured,
@@ -83,6 +84,25 @@ test.describe('live completed-account product journeys', () => {
     await expectNoHorizontalOverflow(page);
 
     await more.click();
+    await expect(page).toHaveURL(/\/settings$/);
+    await expectNoHorizontalOverflow(page);
+    expectNoCriticalBrowserDiagnostics(diagnostics);
+  });
+
+  test('primary navigation shell is keyboard reachable and activates routes without pointer input', async ({ page }) => {
+    const diagnostics = collectCriticalBrowserDiagnostics(page);
+    await signInCompletedAccount(page);
+
+    const lifeMap = page.getByRole('tab', { name: /Life Map|خريطة الحياة/ });
+    await tabTo(page, lifeMap);
+    await expect(lifeMap).toBeFocused();
+    await page.keyboard.press('Enter');
+    await expect(page).toHaveURL(/\/life-map$/);
+
+    const more = page.getByRole('tab', { name: /More|المزيد/ });
+    await tabTo(page, more);
+    await expect(more).toBeFocused();
+    await page.keyboard.press('Enter');
     await expect(page).toHaveURL(/\/settings$/);
     await expectNoHorizontalOverflow(page);
     expectNoCriticalBrowserDiagnostics(diagnostics);
