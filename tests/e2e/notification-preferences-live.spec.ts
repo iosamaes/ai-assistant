@@ -6,15 +6,15 @@ import {
   expectNoHorizontalOverflow,
 } from './browser-assertions';
 import {
-  completedAccountConfigured,
+  completedMutationAccountConfigured,
   mutationsEnabled,
-  signInCompletedAccount,
+  signInCompletedMutationAccount,
 } from './live-account';
 
 const liveReason =
-  'Requires MIZAN_E2E_SUPABASE_URL, MIZAN_E2E_SUPABASE_PUBLISHABLE_KEY, and completed-account credentials.';
+  'Requires MIZAN_E2E_SUPABASE_URL, MIZAN_E2E_SUPABASE_PUBLISHABLE_KEY, and dedicated completed-account mutation credentials.';
 const mutationReason =
-  'Set MIZAN_E2E_MUTATIONS=1 only for a disposable or dedicated E2E account.';
+  'Notification persistence mutation runs only through the explicit mutation runner.';
 const mutationProjectReason =
   'Live mutation E2E runs once in desktop-light to avoid concurrent writes against one shared account.';
 
@@ -22,14 +22,14 @@ const allowedName = /One-minute check-in: Allowed|تسجيل يومي سريع: 
 const offName = /One-minute check-in: Off|تسجيل يومي سريع: متوقف/;
 
 test.describe('live notification-preference persistence', () => {
-  test.skip(!completedAccountConfigured, liveReason);
+  test.skip(!completedMutationAccountConfigured, liveReason);
   test.skip(!mutationsEnabled, mutationReason);
 
   test('one notification preference persists through reload and is restored', async ({ page }, testInfo) => {
     test.skip(testInfo.project.name !== 'desktop-light', mutationProjectReason);
     const diagnostics = collectCriticalBrowserDiagnostics(page);
 
-    await signInCompletedAccount(page);
+    await signInCompletedMutationAccount(page);
     await page.goto('/settings');
 
     const allowed = page.getByRole('button', { name: allowedName, exact: true });
