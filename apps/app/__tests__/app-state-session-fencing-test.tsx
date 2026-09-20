@@ -69,7 +69,7 @@ function StateProbe() {
 }
 
 beforeEach(() => {
-  jest.resetAllMocks();
+  jest.clearAllMocks();
 });
 
 describe('AppStateProvider session fencing', () => {
