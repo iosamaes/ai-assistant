@@ -19,6 +19,11 @@ const requiredBaselineVariables = [
   'MIZAN_E2E_ONBOARDING_EMAIL',
   'MIZAN_E2E_ONBOARDING_PASSWORD',
 ];
+const distinctBaselineFixtureEmailVariables = [
+  'MIZAN_E2E_COMPLETED_EMAIL',
+  'MIZAN_E2E_ARABIC_EMAIL',
+  'MIZAN_E2E_ONBOARDING_EMAIL',
+];
 
 const env = { ...process.env };
 for (const flag of optInFlags) delete env[flag];
@@ -27,6 +32,25 @@ const missingBaselineVariables = requiredBaselineVariables.filter((name) => !env
 if (missingBaselineVariables.length > 0) {
   console.error(
     `Release baseline cannot provide required live E2E evidence. Missing environment variables: ${missingBaselineVariables.join(', ')}`,
+  );
+  process.exit(1);
+}
+
+const fixtureVariableByNormalizedEmail = new Map();
+const duplicateFixtureVariablePairs = [];
+for (const variableName of distinctBaselineFixtureEmailVariables) {
+  const normalizedEmail = env[variableName].trim().toLowerCase();
+  const previousVariableName = fixtureVariableByNormalizedEmail.get(normalizedEmail);
+  if (previousVariableName) {
+    duplicateFixtureVariablePairs.push(`${previousVariableName} + ${variableName}`);
+  } else {
+    fixtureVariableByNormalizedEmail.set(normalizedEmail, variableName);
+  }
+}
+
+if (duplicateFixtureVariablePairs.length > 0) {
+  console.error(
+    `Release baseline requires distinct completed-English, completed-Arabic, and incomplete-onboarding accounts. Reused fixture variables: ${duplicateFixtureVariablePairs.join(', ')}`,
   );
   process.exit(1);
 }
