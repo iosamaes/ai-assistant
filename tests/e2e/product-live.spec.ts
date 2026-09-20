@@ -1,7 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 
 import {
-  collectPageErrors,
   completedAccountConfigured,
   expectNoHorizontalOverflow,
   mutationsEnabled,
@@ -10,6 +9,43 @@ import {
 
 const liveReason = 'Requires MIZAN_E2E_SUPABASE_URL, MIZAN_E2E_SUPABASE_PUBLISHABLE_KEY, and completed-account credentials.';
 const mutationProjectReason = 'Live mutation E2E runs once in desktop-light to avoid concurrent writes against one shared account.';
+
+type BrowserDiagnostics = {
+  pageErrors: string[];
+  consoleErrors: string[];
+  failedRequests: string[];
+  serverErrors: string[];
+};
+
+function collectCriticalBrowserDiagnostics(page: Page): BrowserDiagnostics {
+  const diagnostics: BrowserDiagnostics = {
+    pageErrors: [],
+    consoleErrors: [],
+    failedRequests: [],
+    serverErrors: [],
+  };
+
+  page.on('pageerror', (error) => diagnostics.pageErrors.push(error.message));
+  page.on('console', (message) => {
+    if (message.type() === 'error') diagnostics.consoleErrors.push(message.text());
+  });
+  page.on('requestfailed', (request) => {
+    const failure = request.failure()?.errorText ?? 'unknown network failure';
+    diagnostics.failedRequests.push(`${request.method()} ${request.url()} :: ${failure}`);
+  });
+  page.on('response', (response) => {
+    if (response.status() >= 500) diagnostics.serverErrors.push(`${response.status()} ${response.url()}`);
+  });
+
+  return diagnostics;
+}
+
+function expectNoCriticalBrowserDiagnostics(diagnostics: BrowserDiagnostics) {
+  expect(diagnostics.pageErrors, 'uncaught page errors').toEqual([]);
+  expect(diagnostics.consoleErrors, 'browser console errors').toEqual([]);
+  expect(diagnostics.failedRequests, 'failed browser requests').toEqual([]);
+  expect(diagnostics.serverErrors, 'HTTP 5xx responses').toEqual([]);
+}
 
 async function recordLowEnergyCheckIn(page: Page) {
   await page.goto('/check-in');
@@ -24,7 +60,7 @@ test.describe('live completed-account product journeys', () => {
   test.skip(!completedAccountConfigured, liveReason);
 
   test('primary navigation shell reaches the owner-reference destinations without overflow', async ({ page }) => {
-    const pageErrors = collectPageErrors(page);
+    const diagnostics = collectCriticalBrowserDiagnostics(page);
     await signInCompletedAccount(page);
 
     const navigation = page.getByRole('tablist');
@@ -51,11 +87,11 @@ test.describe('live completed-account product journeys', () => {
     await more.click();
     await expect(page).toHaveURL(/\/settings$/);
     await expectNoHorizontalOverflow(page);
-    expect(pageErrors).toEqual([]);
+    expectNoCriticalBrowserDiagnostics(diagnostics);
   });
 
   test('recovery and scenario interactions remain usable while privacy export stays non-destructive', async ({ page }) => {
-    const pageErrors = collectPageErrors(page);
+    const diagnostics = collectCriticalBrowserDiagnostics(page);
     await signInCompletedAccount(page);
 
     await page.goto('/recovery');
@@ -83,24 +119,24 @@ test.describe('live completed-account product journeys', () => {
     expect(download.suggestedFilename()).toMatch(/^mizan-data-\d{4}-\d{2}-\d{2}\.json$/);
     await expect(page.getByText(/Your data copy is ready\.|تم إعداد نسخة بياناتك\./, { exact: true })).toBeVisible();
     await expectNoHorizontalOverflow(page);
-    expect(pageErrors).toEqual([]);
+    expectNoCriticalBrowserDiagnostics(diagnostics);
   });
 
   test('daily check-in writes through the live account only when mutations are explicitly enabled', async ({ page }, testInfo) => {
     test.skip(!mutationsEnabled, 'Set MIZAN_E2E_MUTATIONS=1 only for a disposable or dedicated E2E account.');
     test.skip(testInfo.project.name !== 'desktop-light', mutationProjectReason);
-    const pageErrors = collectPageErrors(page);
+    const diagnostics = collectCriticalBrowserDiagnostics(page);
     await signInCompletedAccount(page);
 
     await recordLowEnergyCheckIn(page);
     await expectNoHorizontalOverflow(page);
-    expect(pageErrors).toEqual([]);
+    expectNoCriticalBrowserDiagnostics(diagnostics);
   });
 
   test('explicit outcome feedback reaches Personal Learning through the live daily loop', async ({ page }, testInfo) => {
     test.skip(!mutationsEnabled, 'Set MIZAN_E2E_MUTATIONS=1 only for a disposable or dedicated E2E account.');
     test.skip(testInfo.project.name !== 'desktop-light', mutationProjectReason);
-    const pageErrors = collectPageErrors(page);
+    const diagnostics = collectCriticalBrowserDiagnostics(page);
     await signInCompletedAccount(page);
 
     for (let index = 0; index < 3; index += 1) await recordLowEnergyCheckIn(page);
@@ -123,13 +159,13 @@ test.describe('live completed-account product journeys', () => {
     await expect(page.getByText(/What has MIZAN learned from your experience\?|ما الذي تعلّمناه من تجربتك؟/, { exact: true })).toBeVisible();
     await expect(page.getByText(/Reported usefulness: 4\/5|الفائدة المسجلة: 4\/5/).first()).toBeVisible();
     await expectNoHorizontalOverflow(page);
-    expect(pageErrors).toEqual([]);
+    expectNoCriticalBrowserDiagnostics(diagnostics);
   });
 
   test('optional Spiritual Grounding preference can toggle and restore on a dedicated live account', async ({ page }, testInfo) => {
     test.skip(!mutationsEnabled, 'Set MIZAN_E2E_MUTATIONS=1 only for a disposable or dedicated E2E account.');
     test.skip(testInfo.project.name !== 'desktop-light', mutationProjectReason);
-    const pageErrors = collectPageErrors(page);
+    const diagnostics = collectCriticalBrowserDiagnostics(page);
     await signInCompletedAccount(page);
     await page.goto('/settings');
 
@@ -153,6 +189,6 @@ test.describe('live completed-account product journeys', () => {
     await expect(original).toHaveAttribute('aria-selected', 'true');
     await expect(original).toBeEnabled();
     await expectNoHorizontalOverflow(page);
-    expect(pageErrors).toEqual([]);
+    expectNoCriticalBrowserDiagnostics(diagnostics);
   });
 });
