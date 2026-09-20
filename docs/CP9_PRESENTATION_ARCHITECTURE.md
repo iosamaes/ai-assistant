@@ -98,7 +98,7 @@ Experiments previously duplicated the standard multiline input surface and used 
 
 ### What If / scenarios
 
-The scenario chooser now mirrors its chip row with `row-reverse` in RTL instead of relying on a fixed left-to-right row. Returning to Settings now uses compact `SecondaryButton` rather than a primary action. Scenario definitions, personal-effect loading, uncertainty labels, conservative projection math, and evidence handling remain unchanged.
+The scenario chooser mirrors its chip row with `row-reverse` in RTL instead of relying on a fixed left-to-right row. The residual RTL sweep also found that the bounded 0–100 scenario range itself still used physical-left positioning even when the rest of the Arabic composition was mirrored. The range band, current-value marker, and 0/100 endpoint order now derive from app-local `isRtl`, keeping the feature-specific quantitative visualization consistent with the rest of MIZAN's RTL geometry without changing scenario math. Returning to Settings uses compact `SecondaryButton` rather than a primary action. Scenario definitions, personal-effect loading, uncertainty labels, conservative projection math, and evidence handling remain unchanged.
 
 ### Settings
 
@@ -114,7 +114,7 @@ Personalization keeps its feature-specific stage cards and semantic palette usag
 
 ### Onboarding
 
-A static audit found the onboarding flow already uses the shared `ChoiceChip`, `MizanText`, `PrimaryButton`, and `Screen` boundary. Horizontal language/value/baseline chip groups explicitly mirror with `row-reverse` in RTL, while vertically stacked domain/season/privacy/spiritual groups are intentionally direction-neutral. Arabic and English copy for the onboarding-specific controls is present. No presentation rewrite was justified in this slice, so the existing onboarding composition was left intact.
+Onboarding uses the shared `ChoiceChip`, `MizanText`, `PrimaryButton`, and `Screen` boundary. Language/domain/value/baseline chip groups explicitly mirror with `row-reverse` in RTL, while stacked privacy/spiritual choices are direction-neutral. The residual interaction audit found one concrete affordance defect: the state layer correctly refused to remove the final enabled domain, but the last selected domain chip still appeared enabled and produced a silent no-op when pressed. The final enabled domain is now disabled in the UI, the minimum-one-domain rule is shown in Arabic and English, and its accessibility label explains why it cannot be removed. This aligns the onboarding affordance with the actual domain invariant without changing persistence or domain-selection rules.
 
 ### Navigation shell / reduced motion
 
