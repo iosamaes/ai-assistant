@@ -61,6 +61,11 @@ describe('Playwright live-mutation isolation policy', () => {
     expect(runner).toContain("'MIZAN_E2E_ONBOARDING_PASSWORD'");
     expect(runner).toContain('missingBaselineVariables.length > 0');
     expect(runner).toContain('Release baseline cannot provide required live E2E evidence');
+    expect(runner).toContain('const distinctBaselineFixtureEmailVariables');
+    expect(runner).toContain('fixtureVariableByNormalizedEmail');
+    expect(runner).toContain('.trim().toLowerCase()');
+    expect(runner).toContain('duplicateFixtureVariablePairs.length > 0');
+    expect(runner).toContain('Release baseline requires distinct completed-English, completed-Arabic, and incomplete-onboarding accounts');
     expect(runner).toContain("const scripts = ['check', 'test:db', 'lint:db', 'test:e2e', 'test:e2e:production'];");
     expect(runner).not.toContain('test:e2e:mutations');
     expect(runner).not.toContain('test:e2e:delete-account');
