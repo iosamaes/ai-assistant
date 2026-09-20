@@ -134,7 +134,13 @@ test.describe('destructive account deletion', () => {
 
     await page.getByRole('button', { name: /Start account deletion|بدء حذف الحساب/, exact: true }).click();
     await expect(page.getByText(/Confirm permanent deletion|تأكيد الحذف النهائي/, { exact: true })).toBeVisible();
+    const deletionResponsePromise = page.waitForResponse(
+      (response) => response.request().method() === 'POST' && response.url().endsWith('/functions/v1/delete-account'),
+    );
     await page.getByRole('button', { name: /Delete permanently|حذف نهائي/, exact: true }).click();
+    const deletionResponse = await deletionResponsePromise;
+    expect(deletionResponse.status()).toBe(200);
+    expect(await deletionResponse.json()).toMatchObject({ ok: true });
     await page.waitForURL(/\/auth$/);
 
     const cacheState = await page.evaluate(({ deletedUserId }) => ({
