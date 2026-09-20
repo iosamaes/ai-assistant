@@ -22,6 +22,7 @@ import { AppIcon, type AppIconName } from '@/components/app-icon';
 import { BrandedIllustration } from '@/components/branded-illustration';
 import {
   Card,
+  focusRingStyle,
   MizanText,
   MizanTextInput,
   PrimaryButton,
@@ -228,6 +229,7 @@ export default function TodayScreen() {
   const [feedbackUsefulness, setFeedbackUsefulness] = useState<number | null>(null);
   const [feedbackNote, setFeedbackNote] = useState('');
   const [feedbackStatus, setFeedbackStatus] = useState<FeedbackStatus>('idle');
+  const [focusedControl, setFocusedControl] = useState<string | null>(null);
   const scheme = useColorScheme();
   const palette = Palette[scheme === 'dark' ? 'dark' : 'light'];
   const isWideHome = width >= Math.min(Layout.wideBreakpoint, 760);
@@ -408,7 +410,16 @@ export default function TodayScreen() {
           </View>
         </View>
         <Link href="/settings" asChild>
-          <Pressable accessibilityLabel={t('settings')} accessibilityRole="button" style={({ pressed }) => [styles.settingsButton, { borderColor: palette.border, backgroundColor: palette.surfaceMuted, opacity: pressed ? Interaction.subtlePressed : 1, flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
+          <Pressable
+            accessibilityLabel={t('settings')}
+            accessibilityRole="button"
+            onBlur={() => setFocusedControl((current) => (current === 'settings' ? null : current))}
+            onFocus={() => setFocusedControl('settings')}
+            style={({ pressed }) => [
+              styles.settingsButton,
+              { borderColor: palette.border, backgroundColor: palette.surfaceMuted, opacity: pressed ? Interaction.subtlePressed : 1, flexDirection: isRtl ? 'row-reverse' : 'row' },
+              focusRingStyle(palette.accent, focusedControl === 'settings'),
+            ]}>
             <AppIcon name="more" color={palette.textMuted} size={18} />
             <MizanText variant="label">{t('settings')}</MizanText>
           </Pressable>
@@ -455,7 +466,8 @@ export default function TodayScreen() {
                 const disabled = feedbackStatus === 'saving' || feedbackStatus === 'saved';
                 const formattedValue = formatWhole(value);
                 const formattedTotal = formatWhole(OUTCOME_RATINGS.length);
-                return <Pressable key={value} accessibilityLabel={`${t('feedbackUsefulness')}: ${formattedValue} / ${formattedTotal}`} accessibilityRole="button" accessibilityState={{ selected, disabled }} disabled={disabled} onPress={() => { setFeedbackUsefulness(value); if (feedbackStatus === 'offline' || feedbackStatus === 'error') setFeedbackStatus('idle'); }} style={({ pressed }) => [styles.ratingButton, { borderColor: selected ? palette.accent : palette.border, backgroundColor: selected ? palette.accent : palette.surface, opacity: disabled ? Interaction.disabled : pressed ? Interaction.chipPressed : 1 }]}><MizanText variant="label" style={selected ? [styles.primaryActionText, { color: palette.onAccent }] : undefined}>{formattedValue}</MizanText></Pressable>;
+                const focusKey = `rating-${value}`;
+                return <Pressable key={value} accessibilityLabel={`${t('feedbackUsefulness')}: ${formattedValue} / ${formattedTotal}`} accessibilityRole="button" accessibilityState={{ selected, disabled }} disabled={disabled} onBlur={() => setFocusedControl((current) => (current === focusKey ? null : current))} onFocus={() => setFocusedControl(focusKey)} onPress={() => { setFeedbackUsefulness(value); if (feedbackStatus === 'offline' || feedbackStatus === 'error') setFeedbackStatus('idle'); }} style={({ pressed }) => [styles.ratingButton, { borderColor: selected ? palette.accent : palette.border, backgroundColor: selected ? palette.accent : palette.surface, opacity: disabled ? Interaction.disabled : pressed ? Interaction.chipPressed : 1 }, focusRingStyle(palette.accent, focusedControl === focusKey && !disabled)]}><MizanText variant="label" style={selected ? [styles.primaryActionText, { color: palette.onAccent }] : undefined}>{formattedValue}</MizanText></Pressable>;
               })}
             </View>
             <View style={[styles.feedbackScaleLabels, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}><MizanText variant="caption" muted>{t('feedbackLow')}</MizanText><MizanText variant="caption" muted>{t('feedbackHigh')}</MizanText></View>
@@ -469,7 +481,7 @@ export default function TodayScreen() {
       <Card style={[styles.checkInPanel, { backgroundColor: palette.surface }]}>
         <View style={[styles.checkInRow, { flexDirection: isWideHome ? (isRtl ? 'row-reverse' : 'row') : 'column' }]}>
           <View style={styles.checkInCopy}><View style={[styles.iconLabelRow, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}><View style={[styles.iconBadge, { backgroundColor: palette.accentSoft }]}><AppIcon name="energy" color={palette.accent} size={20} /></View><MizanText variant="label" muted>{todayCopy.quickCheckIn}</MizanText></View><MizanText variant="title">{t('checkInPromptTitle')}</MizanText><MizanText muted>{t('checkInPromptBody')}</MizanText></View>
-          <Link href="/check-in" asChild><Pressable accessibilityLabel={t('checkInStart')} accessibilityRole="button" style={({ pressed }) => [styles.primaryAction, { alignSelf: isWideHome ? 'center' : 'stretch', backgroundColor: palette.accent, opacity: pressed ? Interaction.pressed : 1 }]}><MizanText variant="label" style={[styles.primaryActionText, { color: palette.onAccent }]}>{t('checkInStart')}</MizanText></Pressable></Link>
+          <Link href="/check-in" asChild><Pressable accessibilityLabel={t('checkInStart')} accessibilityRole="button" onBlur={() => setFocusedControl((current) => (current === 'check-in' ? null : current))} onFocus={() => setFocusedControl('check-in')} style={({ pressed }) => [styles.primaryAction, { alignSelf: isWideHome ? 'center' : 'stretch', backgroundColor: palette.accent, opacity: pressed ? Interaction.pressed : 1 }, focusRingStyle(palette.accent, focusedControl === 'check-in')]}><MizanText variant="label" style={[styles.primaryActionText, { color: palette.onAccent }]}>{t('checkInStart')}</MizanText></Pressable></Link>
         </View>
       </Card>
 
