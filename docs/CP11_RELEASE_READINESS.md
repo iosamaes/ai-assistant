@@ -63,6 +63,12 @@ Real credentials never belong in source control; `.env.example` documents names 
 
 The Playwright project matrix deliberately uses the same Chromium engine with explicit viewport classes and emulated light/dark color schemes so layout and appearance regressions can be compared without introducing a browser-engine variable. The five viewport classes × two color schemes produce ten static Web projects. Native Android/iOS validation remains a separate owner/runtime gate. Stateful live mutations and irreversible deletion are deliberate exceptions to the full matrix and run once in `desktop-light`; the other projects remain read-only for those shared-account journeys.
 
+## Release documentation
+
+- Root `README.md` now documents Node/npm requirements, clean install, public Supabase environment configuration, local Supabase initialization/reset, run commands, quality/E2E commands, destructive-test safety, Expo export validation, architecture invariants, and the current status ledger.
+- `apps/app/README.md` no longer contains create-expo-app starter/reset-project instructions. It now documents the actual MIZAN workspace commands, public client configuration, quality/export commands, source layout, and pointers back to the root release documentation.
+- Documentation is static evidence only until an owner/new-engineer clean checkout actually follows it successfully; any mismatch found during that run must be corrected before CP11 can close.
+
 ## Still required before CP11 can close
 
 - Run the full TypeScript, lint, unit/component/integration, database/policy, and Web E2E suites from a trustworthy checkout.
@@ -74,6 +80,7 @@ The Playwright project matrix deliberately uses the same Chromium engine with ex
 - Inspect production Web console/network behavior and production export output. The new Playwright diagnostics make critical runtime noise testable but do not constitute a PASS until executed against the intended build/runtime.
 - Measure startup and representative interaction performance enough to catch blocking work, pathological rerenders, or large regressions.
 - Validate Arabic RTL and English across representative phone/tablet/wide-Web classes, light/dark modes, and the CP9 design-swap evidence set.
+- Perform a clean-checkout setup run using the documented README flow and correct any missing prerequisite, environment, Supabase, test, or export step discovered there.
 - Record exact commands, versions, results, failures/fixes, and any owner release action in `docs/PROJECT_STATE.md` before claiming CP11 complete.
 
 ## Policy note
