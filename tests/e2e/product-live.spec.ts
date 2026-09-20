@@ -253,6 +253,25 @@ test.describe('live Arabic completed-account read-only journeys', () => {
     expectNoCriticalBrowserDiagnostics(diagnostics);
   });
 
+  test('Arabic primary navigation remains keyboard reachable after persisted RTL hydration', async ({ page }) => {
+    const diagnostics = collectCriticalBrowserDiagnostics(page);
+    await signInArabicCompletedAccount(page);
+
+    const lifeMap = page.getByRole('tab', { name: 'خريطة الحياة', exact: true });
+    await tabTo(page, lifeMap);
+    await expect(lifeMap).toBeFocused();
+    await page.keyboard.press('Enter');
+    await expect(page).toHaveURL(/\/life-map$/);
+
+    const more = page.getByRole('tab', { name: 'المزيد', exact: true });
+    await tabTo(page, more);
+    await expect(more).toBeFocused();
+    await page.keyboard.press('Enter');
+    await expect(page).toHaveURL(/\/settings$/);
+    await expectNoHorizontalOverflow(page);
+    expectNoCriticalBrowserDiagnostics(diagnostics);
+  });
+
   test('Arabic premium-reference evidence surfaces stay localized and overflow-free', async ({ page }) => {
     const diagnostics = collectCriticalBrowserDiagnostics(page);
     await signInArabicCompletedAccount(page);
