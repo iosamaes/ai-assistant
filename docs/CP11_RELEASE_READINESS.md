@@ -23,9 +23,9 @@ For Arabic/RTL matrix evidence, configure a second completed account whose saved
 The Arabic fixture is deliberately read-only. It signs in through the normal auth path, waits for the persisted Arabic profile locale to hydrate, then verifies Arabic primary navigation and major shell routing across the same responsive/light-dark matrix without changing the shared account locale during the test. It also repeats the pointer-free keyboard reachability/Enter-activation check after persisted Arabic RTL hydration, then visits WHY, Personal Learning, Experiments, and Integrations in Arabic across that matrix, asserting their localized production headings plus overflow and critical browser diagnostics. This avoids a cross-project persistence race while giving owner validation a deterministic RTL path.
 
 ### 3. Live mutation E2E
-Set `MIZAN_E2E_MUTATIONS=1` only when the configured account is disposable or dedicated to automation. This additionally enables check-in persistence, the One Move → explicit outcome feedback → Personal Learning loop, and an optional Spiritual Grounding preference toggle that restores its original state.
+Set `MIZAN_E2E_MUTATIONS=1` only when the configured account is disposable or dedicated to automation. This additionally enables check-in persistence, the One Move → explicit outcome feedback → Personal Learning loop, an optional Spiritual Grounding preference toggle that restores its original state, and a notification-preference persistence journey that toggles one reminder category, reloads to verify persistence, restores the original value, then reloads again to verify restoration.
 
-Mutation-enabled product tests self-skip outside the single `desktop-light` Playwright project. This keeps the shared live account from receiving the same write journey concurrently across the ten responsive/color-scheme projects while preserving the full matrix for non-destructive coverage. The explicit single-project runner is `npm run test:e2e:mutations`; the tests still require the live-account environment and `MIZAN_E2E_MUTATIONS=1` to perform writes.
+Mutation-enabled product tests self-skip outside the single `desktop-light` Playwright project. This keeps the shared live account from receiving the same write journey concurrently across the ten responsive/color-scheme projects while preserving the full matrix for non-destructive coverage. The explicit single-project runner is `npm run test:e2e:mutations`; it includes `tests/e2e/product-live.spec.ts`, `tests/e2e/onboarding-live.spec.ts`, and `tests/e2e/notification-preferences-live.spec.ts`. The tests still require the live-account environment and `MIZAN_E2E_MUTATIONS=1` to perform writes. The notification journey verifies stored preference behavior only; it does not claim device notification delivery, which is intentionally unavailable in the current build.
 
 ### 4. Live onboarding E2E
 Use a separate account that is intentionally incomplete:
@@ -53,6 +53,8 @@ The generic browser assertions live in `tests/e2e/browser-assertions.ts`, includ
 
 `apps/app/__tests__/production-logging-privacy-policy-test.ts` adds a static privacy guard over production app/core/plugin/Edge source: ad-hoc `console.*` sinks are rejected, with only the existing development-only sanitized render-boundary `console.error` allowed. The specification also asserts that this one allowed diagnostic keeps only the fixed event label plus React component stack rather than application-controlled error name/message/stack fields. It has not been executed by workers under the active policy.
 
+`apps/app/__tests__/notification-preferences-policy-test.ts` statically guards opt-in defaults, account fencing, persisted reminder keys, disabled-row fallback behavior, explicit consent timestamp clearing when all reminder categories are off, contextual accessibility labels, anti-gaming copy, and the truthful no-delivery disclosure. The live persistence journey above complements this source policy but remains unexecuted under worker policy.
+
 ## Current E2E matrix
 
 | CP11 journey | Specification | Current static coverage |
@@ -68,6 +70,7 @@ The generic browser assertions live in `tests/e2e/browser-assertions.ts`, includ
 | Recovery | `tests/e2e/product-live.spec.ts` | Recovery surface plus next-step interaction |
 | Scenario / What If | `tests/e2e/product-live.spec.ts` | scenario switch plus assumption visibility |
 | Settings / optional module | `tests/e2e/product-live.spec.ts` | Spiritual Grounding toggle and restore behind mutation opt-in and isolated to `desktop-light` |
+| Notification preferences | `tests/e2e/notification-preferences-live.spec.ts` | one reminder preference toggle → reload persistence → original-state restore → reload verification, mutation-gated and isolated to `desktop-light`; overflow and shared critical browser diagnostics included; no push-delivery claim |
 | Privacy export | `tests/e2e/product-live.spec.ts` | portable JSON export/download without destructive deletion |
 | Privacy deletion | `tests/e2e/account-deletion-live.spec.ts` | dedicated completed deletion account, two-step destructive confirmation, user-scoped Web cache cleanup, server-side credential rejection after deletion, and shared critical browser diagnostics; separately gated by `MIZAN_E2E_DESTRUCTIVE=1` and executed once in `desktop-light` |
 | Responsive Web | Playwright projects | 320×568 narrow phone, 390×844 common phone, 834×1194 tablet portrait, 1194×834 tablet landscape, and 1440×900 desktop; every viewport runs in both light and dark emulated color schemes, and existing overflow/keyboard assertions execute in each applicable project |
@@ -86,7 +89,7 @@ The Playwright project matrix deliberately uses the same Chromium engine with ex
 - Add or execute any missing behavior discovered by those runs; static specifications are not a PASS.
 - Run the responsive read-only matrix without `MIZAN_E2E_MUTATIONS=1`; for the RTL half of the owner evidence, provide the dedicated completed Arabic-profile account documented above rather than mutating the normal completed account locale across parallel projects. Inspect keyboard focus indication and Tab/Enter behavior as well as assertion results.
 - Run `npm run test:e2e:visual` with `MIZAN_E2E_VISUAL_EVIDENCE=1` and both completed-account fixtures configured, inspect the Today/Life Map/WHY/Check-in attachments across all responsive/light-dark projects, and retain the reviewed evidence with the owner validation record.
-- Enable mutation mode only with dedicated/disposable live accounts and use `npm run test:e2e:mutations` for the isolated `desktop-light` write journeys.
+- Enable mutation mode only with dedicated/disposable live accounts and use `npm run test:e2e:mutations` for the isolated `desktop-light` write journeys, including notification-preference persistence and restoration.
 - Execute the prepared destructive deletion specification only with an intentionally disposable dedicated account; do not reuse the normal completed-account fixture. Use `npm run test:e2e:delete-account` after configuring the documented environment and setting `MIZAN_E2E_DESTRUCTIVE=1`.
 - Execute Expo diagnostics plus Android/iOS bundle/export checks available in the owner environment.
 - Inspect production Web console/network behavior and production export output. The shared Playwright diagnostics make critical runtime noise testable but do not constitute a PASS until executed against the intended build/runtime.
