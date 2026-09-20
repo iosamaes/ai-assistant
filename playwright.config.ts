@@ -14,6 +14,8 @@ export default defineConfig({
   },
   projects: [
     { name: 'phone', use: { ...devices['Desktop Chrome'], viewport: { width: 390, height: 844 } } },
+    { name: 'tablet-portrait', use: { ...devices['Desktop Chrome'], viewport: { width: 834, height: 1194 } } },
+    { name: 'tablet-landscape', use: { ...devices['Desktop Chrome'], viewport: { width: 1194, height: 834 } } },
     { name: 'desktop', use: { ...devices['Desktop Chrome'], viewport: { width: 1440, height: 900 } } },
   ],
   webServer: {
