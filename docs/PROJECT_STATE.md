@@ -24,9 +24,10 @@
 
 ## Latest productive changes
 - `6cf2f9136d48960086dd1c68c3199cfb66860835` — added the root owner-side command `npm run test:db`, mapped to `supabase test db --local`, so CP11 database/RLS/security verification has one explicit local-only entry point instead of requiring ad-hoc manual invocation.
-- `da0eba574441afb72b9f2050bba820a33e1fca72` — updated the clean-checkout README to document the local Supabase reset plus `npm run test:db` flow and to make clear that the database suite targets the local stack, not the hosted project.
+- `982821b080bf6f985e4e8ae179105323f42b2502` — added `npm run lint:db`, mapped to `supabase db lint --local --level warning --fail-on error`, so owner validation can surface warning-level schema/function findings while treating error-level database lint findings as a failing gate.
+- `da0eba574441afb72b9f2050bba820a33e1fca72` + `a0c84725cad3611479ee1e54e3c030f115c86ff2` — updated the clean-checkout README to document the local Supabase reset, pgTAP/RLS/security test, and database lint workflow, with both commands explicitly scoped to the local stack rather than the hosted project.
 - Immediately preceding release hardening remains current: MIZAN-owned app icon/favicon/adaptive/splash artwork replaced Expo starter branding; native iPad support is explicit; production static-Web smoke/performance harnesses exist; Life Seasons local drafts and the shared AppState persistence queue are account-fenced; destructive account deletion has a dedicated isolated E2E harness.
-- These are static implementation/specification changes only. No test, Expo export, typecheck, native build, database suite, E2E, or performance run was executed by workers.
+- These are static implementation/specification changes only. No test, Expo export, typecheck, native build, database suite/lint, E2E, or performance run was executed by workers.
 
 ## CP8 reliability state
 Detailed ledger: `docs/CP8_RELIABILITY.md`.
@@ -69,20 +70,20 @@ Prepared readiness includes:
 - Auth/route guard/password recovery, onboarding, completed-account navigation, persisted Arabic locale coverage, Recovery/What If, privacy export, live daily-loop and feedback-learning mutations, Spiritual Grounding toggle/restore, notification preference persistence/restore, destructive account deletion with a dedicated fixture, browser diagnostics, production logging policy, semantic contrast policy, and CP9 visual capture.
 - Read-only performance sampling for both the controlled Expo E2E runtime and the served static production Web export.
 - Production static-Web export smoke, direct-route hydration coverage, static-size reporting, and explicit Web/Android/iOS Expo export scripts.
-- Root `npm run test:db` now provides an explicit local-only Supabase pgTAP/RLS/security suite entry point after `supabase init/start/db reset`.
+- Root `npm run test:db` provides an explicit local-only Supabase pgTAP/RLS/security suite entry point, and `npm run lint:db` provides a local database lint gate that reports warnings while failing on errors.
 - Native iPad eligibility and MIZAN-owned app icon/favicon/adaptive/splash contracts are guarded statically.
 
 ### CP11 remaining
-- Run TypeScript, lint, unit/component/integration, `npm run test:db`, and full Web E2E suites from a trustworthy owner checkout.
+- Run TypeScript, lint, unit/component/integration, `npm run test:db`, `npm run lint:db`, and full Web E2E suites from a trustworthy owner checkout.
 - Execute and inspect keyboard/focus journeys, visual evidence, live mutation journeys, development-runtime performance sampling, production-export performance sampling, production Web export/smoke/size reporting, and destructive deletion only with documented fixtures.
 - Run Expo diagnostics and Android/iOS export checks; include representative iPhone/iPad runtime review and verify branded icon/splash surfaces in release-capable native output.
 - Continue repository hygiene review only for demonstrated dead flags, stale mocks/debug surfaces, console noise, or validated unused dependencies.
-- Perform a clean-checkout setup from the root README and record exact commands, versions, results, failures/fixes, Web size evidence, performance evidence, and owner release actions.
+- Perform a clean-checkout setup from the root README and record exact commands, versions, results, failures/fixes, database-test/lint evidence, Web size evidence, performance evidence, and owner release actions.
 
 ## Exact next executable action
 1. Continue CP9 static work only when a concrete residual defect is demonstrated; otherwise preserve the prepared runtime evidence for owner validation.
 2. Keep CP10 source review limited to genuinely new security/account-sensitive boundaries.
-3. Keep CP11 static harness aligned with the release contract; the next owner-side database step is now reproducible as `supabase init` → `supabase start` → `supabase db reset` → `npm run test:db`.
+3. Keep CP11 static harness aligned with the release contract; the next owner-side database step is reproducible as `supabase init` → `supabase start` → `supabase db reset` → `npm run test:db` → `npm run lint:db`.
 4. After CP0–CP11 gates are honestly satisfied with current execution evidence, begin CP12 independent two-worker verification. Do not claim completion from source presence alone.
 
 ## Verification record
@@ -97,10 +98,10 @@ Previously recorded owner-side baseline evidence:
 - Earlier auth/data-access app typecheck and lint PASS.
 
 Post-baseline:
-- **No worker-run app tests, builds, typechecks, validation database scripts, Web E2E, screenshot captures, performance runs, production-export smoke/size runs, GitHub Actions, or cloud CI are claimed for CP2–CP11 changes.**
+- **No worker-run app tests, builds, typechecks, validation database scripts/lints, Web E2E, screenshot captures, performance runs, production-export smoke/size runs, GitHub Actions, or cloud CI are claimed for CP2–CP11 changes.**
 - Migrations `0009`–`0012` were applied previously; live ACL/state reads are implementation evidence, not a behavioral suite PASS.
 - `delete-account` v2 was previously deployed ACTIVE with JWT verification; destructive end-to-end deletion remains unverified until the owner-side disposable-account journey runs.
-- Latest owner-executable release-harness additions include the local-only database command (`6cf2f9136d48960086dd1c68c3199cfb66860835`) and its clean-checkout documentation (`da0eba574441afb72b9f2050bba820a33e1fca72`).
+- Latest owner-executable release-harness additions include the local-only database test command (`6cf2f9136d48960086dd1c68c3199cfb66860835`), the database lint command (`982821b080bf6f985e4e8ae179105323f42b2502`), and clean-checkout documentation (`da0eba574441afb72b9f2050bba820a33e1fca72`, `a0c84725cad3611479ee1e54e3c030f115c86ff2`).
 
 ## Known blockers / owner actions
 - CP1/CP9 representative physical/runtime visual interaction evidence requires the owner environment to be normally unlocked; see `automation/HUMAN_REQUIRED.md`.
