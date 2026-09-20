@@ -40,6 +40,7 @@ The owner-approved premium reference contract is broadly present in static sourc
 - `846c8c9dc95e5abd3d973e7096386f9d5daa9648` + `8d456f2bb9069d0e88b71eb772e130f652aea56a` — What If now mirrors its bounded 0–100 range band, current marker, and endpoint order in Arabic; focused specification added and not worker-run.
 - `1319dcc59448c2205c1dc71eaf76e08c386f2c25` + `dcda91b6c55c20ea9294ad116444e7e65d5a619d` — Onboarding no longer exposes a silent dead tap on the final enabled life-domain chip; the control is disabled and the minimum-one-domain rule is visible and accessible; focused specification added and not worker-run.
 - `bb3994d3bf3ae546923ede89d9e92b3ec5aaecc6` + `587fd385ce806ea87e2280f8c9223cd2f8b68263` — Today/Home known-value state meters and season-balance meter now fill from the semantic RTL reading edge; focused specification added and not worker-run.
+- `4069e5310ca1c964154a6e15aa404cf6083ae921` + `3c9fceb276e68cb4c7f676021159b732621d1602` — Life Map domain score meters now fill from the semantic RTL reading edge rather than the physical left edge; focused source-policy specification added and intentionally not worker-run.
 - `0d7537cadccc19a78c04310352e1fb36726932ba` + `ab6b25a417697a1ba2a0ee734a3a8584427d9e82`, `f2ad18b5ba78fcc2d42c4990863ff67108e8eb89` + `e2e1bcc01159dc7cfc43467ac6d8732ff7a8beaa`, and `e25613ad92316446c5bae678bca284ce54c98075` + `80d4ea1035b0d2186d3593ceb6d05fe8677eda01` — Invisible Wins, Life Seasons, and Experiments no longer fall back to raw ISO/storage date strings when locale formatting fails; they render an explicit unknown em dash instead, with focused source-policy specifications added and intentionally not worker-run.
 
 ### CP9 remaining
@@ -51,7 +52,7 @@ The owner-approved premium reference contract is broadly present in static sourc
 ## CP10 current implementation
 Detailed ledger/threat model: `docs/CP10_SECURITY_PRIVACY.md`.
 
-Implemented security/privacy work includes RLS/ownership review of the ten current user-owned client-visible tables, cross-user policy specifications, function-execute hardening migration `0009`, authenticated portable data export migration `0010`, Life Season expected-user fencing migrations `0011`/`0012`, JWT-protected `delete-account` Edge Function v2 with expected-user matching, client export/two-step deletion and local cache purge attempts, safer error-boundary logging, consent rechecks around integration sync, and account-switch/session fencing across integrations, app-state hydration, Invisible Wins, Recovery, Check-in, Life Seasons, Settings, Onboarding, password recovery, Privacy destructive confirmation/deletion, and Today embedded One Move/outcome feedback.
+Implemented security/privacy work includes RLS/ownership review of the ten current user-owned client-visible tables, cross-user policy specifications, function-execute hardening migration `0009`, authenticated portable data export migration `0010`, Life Season expected-user fencing migrations `0011`/`0012`, JWT-protected `delete-account` Edge Function v2 with expected-user matching, client export/two-step deletion and local cache purge attempts, safer error-boundary logging, consent rechecks around integration sync, and account-switch/session fencing across integrations, app-state hydration, Invisible Wins, Recovery, Check-in, Life Seasons, Settings, Onboarding, Personalization, password recovery, Privacy destructive confirmation/deletion, and Today embedded One Move/outcome feedback.
 
 Latest Today hardening:
 - `7c9e49be3f7d8df84a9b82c0d2c30725b80a6ed6` — Today now binds embedded One Move decision completion and explicit outcome-feedback completion to the initiating account. A stale completion after account switch is discarded, session refresh is rechecked against the initiating account, and accepted feedback targets remain account-scoped.
@@ -65,16 +66,20 @@ Latest account-switch hardening:
 - `31482238ba228599724f9d02004ac6fb29877311` — focused Privacy-screen specification now covers the stale-export account-switch case in addition to requiring a fresh destructive confirmation; intentionally not worker-run under the active policy.
 - `186cffc217c91c85e6dc7aadde12abe8f2e555b2` — Onboarding now binds baseline loading to the account visible during render, clears prior baseline targets before loading the new account, and checks the account again before applying asynchronous baseline results. This closes a render-to-effect window in which User A baseline targets could otherwise paint into User B after an account switch.
 - `ed7af7a7736c1c2ebc29e3a1ff616e9364d0925e` — focused Onboarding specification records that a late User A baseline result must not replace User B's target state; intentionally not worker-run under the active policy.
+- `a9a23c4adfe1de7be76b3b5372541d320645af42` + `2eca1ff5876ef6cd53a01d19d93ab607e4ea2a1b` — Update Password now synchronizes its active-account fence during render before passive reset effects, so a stale password-update completion from User A cannot update message/busy state or route after User B becomes active; focused source-policy specification added and intentionally not worker-run.
+- `d5545d0266ded23fb8f9023997fe5e43ecd963e4` + `cdc18ef8f589474585accec97d557ce6c203ae5f` — Settings now synchronizes active-account identity during render, closing the render-to-effect gap for onboarding reset, spiritual-preference persistence, and sign-out/session-refresh completions; focused source-policy specification added and intentionally not worker-run.
+- `e9674e3b665d63b1fb5b900564303ad9b3ded5ad` + `83fa31901ee4eb13bf6fdffbde0fe68f680260d1` — Personalization now owns loaded human-state data by user id and uses a render-synchronous active-account fence, preventing User A maturity data or a late load/session-refresh completion from painting into User B; focused source-policy specification added and intentionally not worker-run.
+- `34562b81964ceae9d47471065d770e627d7c291d` + `8d38040f86fb43e224f6a8ba979537120df5c5d4` — Life Seasons now synchronizes active-account identity during render in addition to its request-generation guards, closing the remaining render-to-effect save/load completion window; focused source-policy specification added and intentionally not worker-run.
 
 The current production source-level sensitive logging/error-reporting review is complete for the existing tree. Re-open that audit only if a new production sink or boundary is added before release.
 
 ### CP10 remaining
 - Continue the residual source review of account-sensitive async UI flows for render-to-effect account-switch gaps or stale completion state mutations; fix only demonstrated races and avoid duplicating already-fenced paths.
-- Owner/runtime validation for cross-user/database specifications, Life Season expected-user behavior, export/delete/local purge, destructive Edge deletion v2, consent revocation races, and account-switch/session-binding cases including Today decision/feedback and the render-time Privacy/Recovery/Check-in/Invisible-Wins/Onboarding fences.
+- Owner/runtime validation for cross-user/database specifications, Life Season expected-user behavior, export/delete/local purge, destructive Edge deletion v2, consent revocation races, and account-switch/session-binding cases including Today decision/feedback and the render-time Privacy/Recovery/Check-in/Invisible-Wins/Onboarding/Settings/Personalization/Update-Password/Life-Seasons fences.
 - Supabase leaked-password protection remains an owner action in `automation/HUMAN_REQUIRED.md`.
 
 ## Exact next executable action
-1. Continue the final CP9 static sweep only when a demonstrated accessibility/RTL/localization/focus/technical-id defect remains on a still-unreviewed shipped surface; make the smallest production-safe fix and add focused regression coverage when useful. The raw ISO date-fallback family identified on Invisible Wins, Life Seasons, and Experiments is now closed.
+1. Continue the final CP9 static sweep only when a demonstrated accessibility/RTL/localization/focus/technical-id defect remains on a still-unreviewed shipped surface; make the smallest production-safe fix and add focused regression coverage when useful. The raw ISO date-fallback family identified on Invisible Wins, Life Seasons, and Experiments is now closed; Life Map bounded domain meters now mirror from the semantic RTL edge.
 2. Continue the residual CP10 account-switch/session-binding review only where an async presentation flow still relies on passive-effect account identity or can let a stale completion mutate the new account's UI state; do not reopen already-fenced paths without evidence.
 3. If no concrete static defect is found, do not manufacture polish work: leave CP9 runtime screenshot/device validation and final design-swap proof to owner validation under the active execution policy.
 4. Do not reopen the completed CP10 logging audit unless new production logging/error boundaries appear.
@@ -95,8 +100,8 @@ Post-baseline:
 - **No worker-run app tests, builds, typechecks, validation database scripts, cloud CI, or GitHub Actions are claimed for CP2–CP10 changes.**
 - Authorized migrations `0009`–`0012` were applied previously; live reads confirmed the hardened Life Season RPC signature/ACL. This is implementation/state evidence, not a behavioral test-suite PASS.
 - `delete-account` version 2 previously reported ACTIVE with JWT verification enabled; no destructive end-to-end deletion validation is claimed.
-- Premium-reference/residual CP9 changes and focused policy specifications, including What If RTL range, Onboarding final-domain affordance, Today RTL meters, Today account-switch fencing, and the Invisible Wins/Life Seasons/Experiments raw-date fallback hardening, remain static implementation/specification evidence until owner validation; the new focused date-fallback specifications were not worker-run.
-- Render-time account-fencing changes `3a214f9d453e660e2a0072ce9d1e06f3168c678c`, `775f296b3d4ad6f28021db31bcab451730ed2133`, `94db2ccd5101ad0d07f4f55d6b151891bd18c856`, `64b8680a29e539b4db94f7697cfc24f82ad83360`, and `186cffc217c91c85e6dc7aadde12abe8f2e555b2`, plus Privacy/Onboarding specifications `31482238ba228599724f9d02004ac6fb29877311` and `ed7af7a7736c1c2ebc29e3a1ff616e9364d0925e`, are static implementation/specification evidence only and were not worker-run.
+- Premium-reference/residual CP9 changes and focused policy specifications, including What If RTL range, Onboarding final-domain affordance, Today RTL meters, Life Map RTL meters, Today account-switch fencing, and the Invisible Wins/Life Seasons/Experiments raw-date fallback hardening, remain static implementation/specification evidence until owner validation; the focused policy specifications were not worker-run.
+- Render-time account-fencing changes `3a214f9d453e660e2a0072ce9d1e06f3168c678c`, `775f296b3d4ad6f28021db31bcab451730ed2133`, `94db2ccd5101ad0d07f4f55d6b151891bd18c856`, `64b8680a29e539b4db94f7697cfc24f82ad83360`, `186cffc217c91c85e6dc7aadde12abe8f2e555b2`, `a9a23c4adfe1de7be76b3b5372541d320645af42`, `d5545d0266ded23fb8f9023997fe5e43ecd963e4`, `e9674e3b665d63b1fb5b900564303ad9b3ded5ad`, and `34562b81964ceae9d47471065d770e627d7c291d`, plus their focused specifications, are static implementation/specification evidence only and were not worker-run.
 
 ## Known blockers / risks
 - CP1/CP9: true phone/tablet/Web visual interaction evidence still needs an unlocked owner runtime; see `automation/HUMAN_REQUIRED.md`.
@@ -146,8 +151,13 @@ Post-baseline:
 - `apps/app/__tests__/onboarding-session-fencing-test.tsx`
 - `apps/app/__tests__/today-rtl-meter-layout-policy-test.ts`
 - `apps/app/__tests__/today-session-fencing-policy-test.ts`
+- `apps/app/__tests__/life-map-rtl-meter-layout-policy-test.ts`
 - `apps/app/__tests__/check-in-session-fencing-test.tsx`
 - `apps/app/__tests__/privacy-screen-session-fencing-test.tsx`
+- `apps/app/__tests__/update-password-screen-session-fencing-test.tsx`
+- `apps/app/__tests__/settings-session-fencing-test.tsx`
+- `apps/app/__tests__/personalization-session-fencing-test.tsx`
+- `apps/app/__tests__/life-seasons-session-fencing-test.tsx`
 - `apps/app/__tests__/invisible-wins-date-fallback-policy-test.ts`
 - `apps/app/__tests__/life-seasons-date-fallback-policy-test.ts`
 - `apps/app/__tests__/experiments-date-fallback-policy-test.ts`
