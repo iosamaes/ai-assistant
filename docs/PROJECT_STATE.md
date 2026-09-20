@@ -6,7 +6,7 @@
 - CP11 verification/release-readiness harnesses are prepared; execution is pending because the active worker policy forbids workers from running product tests, builds, typechecks, database suites, GitHub Actions, or cloud CI.
 - Product authority: GitHub `iosamaes/ai-assistant@main`.
 - Task digest: `f2786fbae29a0ee1fa7bf77eb1504fc8fb80c208`.
-- Latest source-hardening commit reviewed in this ledger: `92332a1d965e79fcee482d4fa5f21ba745959a88`.
+- Latest source-hardening commit reviewed in this ledger: `8760ca31850e3d9a17e510761f31dd64417b9318`.
 
 ## Checkpoints
 - [x] CP0 — Reconnaissance, product model, executable plan
@@ -24,9 +24,9 @@
 - [ ] CP12 — Independent final review and handoff — **NOT_STARTED**
 
 ## Latest productive changes
+- `89d72d6f7e24b264c2eb2c5283a8b472d861b76a` + `8760ca31850e3d9a17e510761f31dd64417b9318` — made both normal and production Playwright live-backend configurations fail closed on malformed/non-public Supabase client keys. A configured live key must now be either a current `sb_publishable_` key or a legacy JWT whose role is exactly `anon`; current `sb_secret_` keys and legacy `service_role` JWTs remain explicitly rejected. This removes a preflight gap where arbitrary malformed keys could reach the app server instead of being rejected at the E2E boundary. No Playwright run was executed by the worker.
 - `2b56227df4a2df44c39e32f632c2ef8b5a703836` + `78780be624b866377da9ea4fd7b041018be3fbd0` — expanded the CP10 client-secret source policy from only `apps/app/src` to all current client-bundled production roots (`apps/app/src`, `packages/core/src`, `packages/plugins/src`) and Expo manifest/config candidates (`app.json`, `app.config.*` when present). The guard rejects Supabase service-role/secret-key markers before they can be introduced into source or shipped Expo configuration. Server-only Edge Function source is intentionally outside this client-bundle rule. The specification is present but unexecuted under worker policy.
-- `cdf3884f23e02c5ffd3900f4c0203712d3e2c1ba` + `92332a1d965e79fcee482d4fa5f21ba745959a88` — hardened public Supabase client configuration so only `http:`/`https:` URLs are accepted before client construction, while preserving local HTTP Supabase development and hosted HTTPS use. The existing public-key guard continues to accept current publishable keys or legacy `anon` JWTs and reject current `sb_secret_` keys plus legacy service-role JWTs. A focused regression specification covers the new non-HTTP rejection; it was not executed by the worker.
-- `1126ad46ce3965ea943d948acc10634421b3b4fe` — introduced the initial production-app client-secret source guard that the later commits above broadened.
+- `cdf3884f23e02c5ffd3900f4c0203712d3e2c1ba` + `92332a1d965e79fcee482d4fa5f21ba745959a88` — hardened public Supabase client configuration so only `http:`/`https:` URLs are accepted before client construction, while preserving local HTTP Supabase development and hosted HTTPS use. The public-key guard accepts current publishable keys or legacy `anon` JWTs and rejects current `sb_secret_` keys plus legacy service-role JWTs. A focused regression specification covers the non-HTTP rejection; it was not executed by the worker.
 - `00048202c92e0f2b979ee95940242d5d8e18b22f` + related navigation commits — closed the demonstrated CP9 tablet-navigation gap by using the shared semantic tablet breakpoint for the persistent side rail while preserving phone bottom navigation and RTL/LTR rail behavior.
 - `70584656d22c8bae22950a167b67eaed080dd226` — strengthened the Western-digit policy with a production-source scan; localized Arabic/Persian digit glyphs remain allowed only at the input-normalization boundary.
 - `5e0f27b7a9a40f73ab0d11c231501a26b9345f0b` + `bfba0d3b32591afc7e9ebbb522a7a0619ee37d54` — added visible Web keyboard focus to Personalization domain switches and guarded it statically.
@@ -45,7 +45,7 @@ Static implementation covers durable per-user retry for check-ins and Invisible 
 Detailed architecture: `docs/CP9_PRESENTATION_ARCHITECTURE.md`.
 Design-swap procedure: `docs/CP9_DESIGN_SWAP_PROOF.md`.
 
-The blocking premium-reference contract is broadly present in static source: adaptive Home/Life Map/One Move/Insights/More navigation, phone bottom navigation plus tablet/wide rail, shared iconography, responsive Life Map radar, premium Today/One Move hierarchy, WHY/Insights evidence language, What If ranges, Experiments/Recovery/Onboarding/Personalization/Invisible Wins treatments, bounded meters, semantic light/dark roles, MIZAN-owned branding, Western digits in both locales, RTL-aware geometry, reduced-motion handling, responsive/shared control sizing, and explicit visible Web focus treatment on shared and demonstrated direct-screen controls.
+The blocking premium-reference contract is broadly present in static source: adaptive Home/Life Map/One Move/Insights/More navigation, phone bottom navigation plus tablet/wide rail, shared iconography, responsive Life Map radar, premium Today/One Move hierarchy, WHY/Insights evidence language, What If ranges, Experiments/Recovery/Onboarding/Personalization/Invisible Wins treatments, bounded meters, semantic light/dark roles, MIZAN-owned branding, Western digits in both locales, RTL-aware geometry, reduced-motion handling, responsive/shared control sizing, and visible Web focus treatment on shared and demonstrated direct-screen controls.
 
 ### CP9 remaining
 - Make only demonstrated residual accessibility/RTL/localization/focus/presentation fixes; do not manufacture speculative polish.
@@ -74,6 +74,7 @@ Prepared readiness includes:
 - Development-runtime and production-export performance probes.
 - Production static-Web export smoke/direct-route hydration and static-size reporting.
 - Local-only `npm run test:db` and `npm run lint:db` database gates.
+- Normal and production Playwright configs fail closed to the authorized hosted Supabase project and now also require a real public/publishable client-key shape when live credentials are supplied.
 - Fail-closed `npm run check:release:baseline` requiring the authorized Supabase project and distinct reusable English/Arabic/onboarding fixtures while stripping mutation/destructive/visual/performance opt-ins.
 - Fail-closed dedicated mutation and destructive runners with role-collision protection.
 
@@ -122,13 +123,13 @@ See `automation/HUMAN_REQUIRED.md`. Current open owner actions are:
 - `apps/app/__tests__/localized-number-policy-test.ts`
 - `apps/app/__tests__/western-digit-source-policy-test.ts`
 - `apps/app/__tests__/playwright-mutation-isolation-policy-test.ts`
+- `playwright.config.ts`
+- `playwright.production.config.ts`
 - `tests/e2e/browser-assertions.ts`
 - `tests/e2e/visual-evidence-live.spec.ts`
 - `tests/e2e/product-live.spec.ts`
 - `tests/e2e/onboarding-live.spec.ts`
 - `tests/e2e/account-deletion-live.spec.ts`
-- `playwright.config.ts`
-- `playwright.production.config.ts`
 - `supabase/tests/rls_cross_user.sql`
 - `supabase/tests/account_data_export_security.sql`
 - `supabase/migrations/0009_function_execute_hardening.sql`
