@@ -59,9 +59,9 @@ const copy = {
   en: {
     eyebrow: 'Integrations',
     title: 'External sources',
-    body: 'MIZAN shows only integrations that were actually connected. The deterministic core keeps working without any provider, and provider secrets are never stored in this lifecycle state.',
+    body: 'MIZAN shows only integrations that were actually connected. Its core features keep working without any provider, and this screen never stores provider secrets.',
     heroTitle: 'Your sources stay under your control',
-    heroBody: 'Every connection is optional and can be disabled without breaking MIZAN’s deterministic core.',
+    heroBody: 'Every connection is optional and can be disabled without breaking MIZAN’s core features.',
     loading: 'Loading integrations…',
     loadError: 'Integration state could not be loaded right now.',
     emptyTitle: 'No integrations connected',
@@ -109,13 +109,13 @@ const providerLabels: Record<'ar' | 'en', Record<string, string>> = {
   },
   en: {
     'unavailable-time-context': 'Time context unavailable',
-    'deterministic-time-primary': 'Deterministic time — primary',
-    'deterministic-time-alternate': 'Deterministic time — alternate',
-    'deterministic-time-context': 'Deterministic time context',
+    'deterministic-time-primary': 'Sample time context — primary',
+    'deterministic-time-alternate': 'Sample time context — alternate',
+    'deterministic-time-context': 'Sample time context',
     'unavailable-health-data': 'Health data unavailable',
-    'deterministic-health-data': 'Deterministic health data',
+    'deterministic-health-data': 'Sample health data',
     'unavailable-location-context': 'Location context unavailable',
-    'deterministic-location-context': 'Deterministic location context',
+    'deterministic-location-context': 'Sample location context',
   },
 };
 
