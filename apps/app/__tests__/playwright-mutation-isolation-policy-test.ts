@@ -19,35 +19,52 @@ describe('Playwright live-mutation isolation policy', () => {
     expect(notificationSpec).toContain('test.skip(!mutationsEnabled');
   });
 
-  test('onboarding mutation uses a disposable fixture and the mutation command cannot silently skip it', () => {
+  test('completed and onboarding mutations use dedicated fixtures and the mutation command cannot silently skip them', () => {
     const repoRoot = path.resolve(__dirname, '../../..');
     const packageJson = JSON.parse(fs.readFileSync(path.join(repoRoot, 'package.json'), 'utf8')) as {
       scripts?: Record<string, string>;
     };
+    const productSpec = fs.readFileSync(path.join(repoRoot, 'tests', 'e2e', 'product-live.spec.ts'), 'utf8');
     const onboardingSpec = fs.readFileSync(path.join(repoRoot, 'tests', 'e2e', 'onboarding-live.spec.ts'), 'utf8');
+    const notificationSpec = fs.readFileSync(
+      path.join(repoRoot, 'tests', 'e2e', 'notification-preferences-live.spec.ts'),
+      'utf8',
+    );
     const liveAccount = fs.readFileSync(path.join(repoRoot, 'tests', 'e2e', 'live-account.ts'), 'utf8');
     const mutationRunner = fs.readFileSync(path.join(repoRoot, 'scripts', 'run-e2e-mutations.mjs'), 'utf8');
     const baselineRunner = fs.readFileSync(path.join(repoRoot, 'scripts', 'run-release-baseline.mjs'), 'utf8');
 
     expect(packageJson.scripts?.['test:e2e:mutations']).toBe('node scripts/run-e2e-mutations.mjs');
+    expect(liveAccount).toContain('MIZAN_E2E_COMPLETED_MUTATION_EMAIL');
+    expect(liveAccount).toContain('MIZAN_E2E_COMPLETED_MUTATION_PASSWORD');
+    expect(liveAccount).toContain('signInCompletedMutationAccount');
     expect(liveAccount).toContain('MIZAN_E2E_ONBOARDING_MUTATION_EMAIL');
     expect(liveAccount).toContain('MIZAN_E2E_ONBOARDING_MUTATION_PASSWORD');
+    expect(productSpec).toContain("test.describe('live dedicated completed-account mutation journeys'");
+    expect(productSpec).toContain('signInCompletedMutationAccount');
+    expect(notificationSpec).toContain('signInCompletedMutationAccount');
     expect(onboardingSpec).toContain('signInOnboardingMutationAccount');
     expect(onboardingSpec).toContain('mutationEmail === readOnlyEmail');
     expect(onboardingSpec).toContain(
       'MIZAN_E2E_ONBOARDING_MUTATION_EMAIL must be separate from the reusable MIZAN_E2E_ONBOARDING_EMAIL fixture.',
     );
     expect(mutationRunner).toContain("MIZAN_E2E_MUTATIONS: '1'");
+    expect(mutationRunner).toContain("'MIZAN_E2E_COMPLETED_MUTATION_EMAIL'");
+    expect(mutationRunner).toContain("'MIZAN_E2E_COMPLETED_MUTATION_PASSWORD'");
     expect(mutationRunner).toContain("'MIZAN_E2E_ONBOARDING_MUTATION_EMAIL'");
     expect(mutationRunner).toContain("'MIZAN_E2E_ONBOARDING_MUTATION_PASSWORD'");
     expect(mutationRunner).toContain("'MIZAN_E2E_COMPLETED_EMAIL'");
-    expect(mutationRunner).toContain("'MIZAN_E2E_COMPLETED_PASSWORD'");
     expect(mutationRunner).toContain("'MIZAN_E2E_DELETE_EMAIL'");
+    expect(mutationRunner).toContain('completedMutationEmail === onboardingMutationEmail');
     expect(mutationRunner).toContain('missingVariables.length > 0');
     expect(mutationRunner).toContain('protectedFixtureEmailVariables');
     expect(mutationRunner).toContain('reusedFixtureVariables.length > 0');
+    expect(mutationRunner).toContain("'tests/e2e/product-live.spec.ts'");
     expect(mutationRunner).toContain("'tests/e2e/onboarding-live.spec.ts'");
+    expect(mutationRunner).toContain("'tests/e2e/notification-preferences-live.spec.ts'");
     expect(mutationRunner).toContain("'--project=desktop-light'");
+    expect(baselineRunner).not.toContain("'MIZAN_E2E_COMPLETED_MUTATION_EMAIL'");
+    expect(baselineRunner).not.toContain("'MIZAN_E2E_COMPLETED_MUTATION_PASSWORD'");
     expect(baselineRunner).not.toContain("'MIZAN_E2E_ONBOARDING_MUTATION_EMAIL'");
     expect(baselineRunner).not.toContain("'MIZAN_E2E_ONBOARDING_MUTATION_PASSWORD'");
   });
@@ -57,10 +74,11 @@ describe('Playwright live-mutation isolation policy', () => {
     const productSpec = fs.readFileSync(path.join(repoRoot, 'tests', 'e2e', 'product-live.spec.ts'), 'utf8');
 
     expect(productSpec).toContain(
-      'optional Spiritual Grounding preference persists across reload and restores on a dedicated live account',
+      'optional Spiritual Grounding preference persists across reload and restores on the dedicated mutation account',
     );
     expect(productSpec).toContain("testInfo.project.name !== 'desktop-light'");
     expect(productSpec).toContain('test.skip(!mutationsEnabled');
+    expect(productSpec).toContain('signInCompletedMutationAccount');
     expect(productSpec).toContain(
       "await page.reload();\n    await expect(settingsTitle).toBeVisible();\n    await expect(target).toHaveAttribute('aria-selected', 'true');",
     );
