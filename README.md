@@ -135,7 +135,17 @@ npm run export:android
 npm run export:ios
 ```
 
-These map directly to `expo export --platform web|android|ios` in the app workspace. For Expo compatibility diagnostics, run `npx expo-doctor` from `apps/app` during owner validation. The Web export should be served as static output and browser-verified for fatal console/network errors, representative responsive layouts, and production performance/bundle sanity. Android/iOS exports validate the JavaScript/native bundle graph available without owner signing credentials; store-signed artifacts and publication remain owner release operations.
+These map directly to `expo export --platform web|android|ios` in the app workspace. For Expo compatibility diagnostics, run `npx expo-doctor` from `apps/app` during owner validation.
+
+A separate production-Web smoke command first creates the static Web export, serves `apps/app/dist` through the repository-owned dependency-free static server, then runs representative phone-light and desktop-dark Playwright checks against the exported files rather than the Expo development server:
+
+```bash
+npm run test:e2e:production
+```
+
+The signed-out production smoke runs without live credentials; when the normal `MIZAN_E2E_SUPABASE_*` plus persisted-English completed-account credentials are present, the same command also verifies authenticated direct-route hydration and primary-shell navigation from the static export. It checks shared browser page/console/network/5xx diagnostics and horizontal overflow. This harness must still be executed and its output inspected before it counts as release evidence.
+
+The Web export should also be inspected for representative responsive layouts, production performance, and obvious bundle-size regressions. Android/iOS exports validate the JavaScript/native bundle graph available without owner signing credentials; store-signed artifacts and publication remain owner release operations.
 
 Before release, also run the complete matrix described in `docs/CP11_RELEASE_READINESS.md`, including database/RLS checks, representative Arabic RTL and English layouts, light/dark modes, privacy export/deletion, offline/reconnect behavior, and performance sanity checks.
 
