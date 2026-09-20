@@ -14,7 +14,7 @@ Provide public client configuration plus a dedicated completed-onboarding accoun
 - `MIZAN_E2E_COMPLETED_EMAIL`
 - `MIZAN_E2E_COMPLETED_PASSWORD`
 
-This enables non-destructive checks for the adaptive navigation shell, Life Map/One Move/Insights/More routing, CP9 owner-reference WHY/Personal Learning/Experiments/Integrations surfaces, Recovery, What If, Settings, portable Privacy export, overflow, keyboard reachability, and critical browser diagnostics. The keyboard path uses real sequential focus and Enter activation rather than programmatic focus/click.
+This enables non-destructive checks for the adaptive navigation shell, Life Map/One Move/Insights/More routing, CP9 owner-reference WHY/Personal Learning/Experiments/Integrations surfaces, Recovery, What If, Settings, portable Privacy export, overflow, keyboard reachability, and critical browser diagnostics. The keyboard path uses real sequential focus and Enter activation rather than programmatic focus/click. This completed-English fixture is deliberately read-only and is not used by the persistent mutation command.
 
 For Arabic/RTL matrix evidence, configure a separate completed account whose persisted MIZAN locale is Arabic:
 - `MIZAN_E2E_ARABIC_EMAIL`
@@ -25,13 +25,21 @@ The Arabic fixture is read-only. It waits for persisted Arabic locale hydration,
 ### 3. Live mutation E2E
 Mutation coverage includes check-in persistence, One Move → explicit outcome feedback → Personal Learning, Spiritual Grounding toggle → reload persistence → original-state restore → reload verification, notification-preference toggle → reload persistence → original-state restore → reload verification, and onboarding completion with a separate disposable incomplete fixture.
 
+Persistent completed-account mutations use their own dedicated completed fixture:
+- `MIZAN_E2E_COMPLETED_MUTATION_EMAIL`
+- `MIZAN_E2E_COMPLETED_MUTATION_PASSWORD`
+
+Onboarding completion uses a different disposable incomplete fixture:
+- `MIZAN_E2E_ONBOARDING_MUTATION_EMAIL`
+- `MIZAN_E2E_ONBOARDING_MUTATION_PASSWORD`
+
 The explicit runner is:
 
 ```bash
 npm run test:e2e:mutations
 ```
 
-`test:e2e:mutations` delegates to `scripts/run-e2e-mutations.mjs`. The runner is fail-closed: it sets `MIZAN_E2E_MUTATIONS=1` itself, requires the public Supabase values plus completed-account credentials and separate onboarding-mutation credentials, rejects reuse of the reusable completed-English, completed-Arabic, or read-only onboarding fixture email for onboarding completion, and then runs the three mutation specifications once in `desktop-light`. Missing required mutation evidence therefore cannot silently become a green command through Playwright skips.
+`test:e2e:mutations` delegates to `scripts/run-e2e-mutations.mjs`. The runner is fail-closed: it sets `MIZAN_E2E_MUTATIONS=1` itself, requires the public Supabase values plus both dedicated mutation-account credential pairs, requires the completed-mutation and onboarding-mutation accounts to be different from each other, and rejects either mutation email when it reuses the completed-English, completed-Arabic, reusable read-only onboarding, or dedicated deletion fixture. The runner then executes the three mutation specifications once in `desktop-light`. Missing or role-conflicting mutation evidence therefore cannot silently become a green command through Playwright skips, and repeated check-in/feedback writes cannot contaminate the reusable completed-English release-baseline fixture.
 
 The notification preference journey verifies stored preference behavior only; device notification delivery is intentionally unavailable and not claimed.
 
@@ -52,7 +60,7 @@ Use a dedicated completed account created only to be permanently deleted:
 - `MIZAN_E2E_DELETE_PASSWORD`
 - `MIZAN_E2E_DESTRUCTIVE=1`
 
-`tests/e2e/account-deletion-live.spec.ts` exports the authenticated user id, seeds user-scoped pending-mutation and recent-snapshot cache sentinels, completes two-step deletion, verifies local caches are removed, checks no cleanup warning appeared, then verifies deleted credentials can no longer obtain a password session using the public publishable key. The irreversible journey executes only in `desktop-light`.
+`tests/e2e/account-deletion-live.spec.ts` exports the authenticated user id, seeds user-scoped pending-mutation and recent-snapshot cache sentinels, completes two-step deletion, verifies local caches are removed, checks no cleanup warning appeared, then verifies deleted credentials can no longer obtain a password session using the public publishable key. The irreversible journey executes only in `desktop-light`. The public deletion runner additionally refuses to start when the deletion email matches the completed-mutation fixture, alongside the existing reusable/read-only/onboarding mutation protections.
 
 Run explicitly with:
 
@@ -60,7 +68,7 @@ Run explicitly with:
 npm run test:e2e:delete-account
 ```
 
-Never use a reusable account.
+Never use a reusable or mutation-validation account.
 
 ### 6. CP9 visual-evidence capture
 Set `MIZAN_E2E_VISUAL_EVIDENCE=1` only when intentionally collecting owner/runtime presentation evidence, then run:
@@ -124,7 +132,7 @@ After the owner has started and reset the disposable local Supabase stack, the n
 npm run check:release:baseline
 ```
 
-The root command delegates to `scripts/run-release-baseline.mjs`. Before invoking any quality command, that runner removes `MIZAN_E2E_MUTATIONS`, `MIZAN_E2E_DESTRUCTIVE`, `MIZAN_E2E_VISUAL_EVIDENCE`, and `MIZAN_E2E_PERFORMANCE` from the child environment, even if the owner shell already has one of those opt-ins set. It also fails before running any child command unless the public Supabase values plus completed-English, completed-Arabic, and reusable incomplete-onboarding credentials are present. The three role-bearing fixture emails are trimmed, compared case-insensitively, and must be distinct; conflict output identifies environment-variable names rather than exposing credential values. The separate onboarding-mutation fixture is intentionally not required by this non-destructive baseline. The runner then executes, in order, `npm run check`, `npm run test:db`, `npm run lint:db`, `npm run test:e2e`, and `npm run test:e2e:production`, stopping at the first failure.
+The root command delegates to `scripts/run-release-baseline.mjs`. Before invoking any quality command, that runner removes `MIZAN_E2E_MUTATIONS`, `MIZAN_E2E_DESTRUCTIVE`, `MIZAN_E2E_VISUAL_EVIDENCE`, and `MIZAN_E2E_PERFORMANCE` from the child environment, even if the owner shell already has one of those opt-ins set. It also fails before running any child command unless the public Supabase values plus completed-English, completed-Arabic, and reusable incomplete-onboarding credentials are present. The three role-bearing fixture emails are trimmed, compared case-insensitively, and must be distinct; conflict output identifies environment-variable names rather than exposing credential values. The separate completed-mutation and onboarding-mutation fixtures are intentionally not required by this non-destructive baseline. The runner then executes, in order, `npm run check`, `npm run test:db`, `npm run lint:db`, `npm run test:e2e`, and `npm run test:e2e:production`, stopping at the first failure.
 
 This is intentionally a **baseline**, not the whole CP11 release proof. Live mutations, visual evidence, performance probes, irreversible deletion, Expo Doctor, Android/iOS exports, and representative native-device review remain separate explicit gates. Keeping them separate prevents a convenience command from silently mutating a shared fixture or permanently deleting an account.
 
@@ -132,7 +140,9 @@ This is intentionally a **baseline**, not the whole CP11 release proof. Live mut
 
 `tests/e2e/browser-assertions.ts` provides a common guard for uncaught page errors, browser `console.error`, unexpected failed requests, and HTTP 5xx responses. Expected Chromium `net::ERR_ABORTED` navigation cancellations are excluded. The shared bounded `tabTo` helper proves keyboard reachability using actual sequential focus.
 
-`apps/app/__tests__/playwright-mutation-isolation-policy-test.ts` guards the single-project mutation isolation contract, Spiritual Grounding reload persistence/restoration, the fail-closed mutation runner and disposable onboarding-mutation fixture separation, the dedicated irreversible-deletion contract, and the fail-closed release-baseline invariants. In particular, mutation mode cannot silently skip onboarding completion because its runner requires the mutation fixture before Playwright starts, while the non-destructive release baseline deliberately does not depend on or consume that fixture.
+`apps/app/__tests__/playwright-mutation-isolation-policy-test.ts` guards the single-project mutation isolation contract, dedicated completed-mutation and onboarding-mutation fixture separation, Spiritual Grounding reload persistence/restoration, the fail-closed mutation runner, the dedicated irreversible-deletion contract, and the fail-closed release-baseline invariants. In particular, persistent daily-loop/feedback/plugin/notification writes are routed away from the reusable completed-English fixture, onboarding completion cannot silently skip because its runner requires a separate mutation fixture before Playwright starts, and the non-destructive release baseline deliberately does not depend on or consume either mutation fixture.
+
+`apps/app/__tests__/account-deletion-runner-policy-test.ts` guards the public destructive runner so it cannot delete any configured reusable fixture or either dedicated mutation fixture.
 
 `apps/app/__tests__/production-logging-privacy-policy-test.ts` rejects ad-hoc production `console.*` sinks across app/core/plugin/Edge source except the existing development-only sanitized render diagnostic.
 
@@ -154,21 +164,21 @@ This is intentionally a **baseline**, not the whole CP11 release proof. Live mut
 | Production Web export | `playwright.production.config.ts` + `tests/e2e/production-web.spec.ts` + `scripts/report-expo-static-size.mjs` | actual static export, bundle/static-asset size measurement, direct-route serving/hydration, auth guard/locale, optional authenticated direct routes and shell on representative phone-light/desktop-dark projects |
 | Production-export performance | `tests/e2e/production-performance.spec.ts` | opt-in read-only performance sample against served `apps/app/dist`, including authenticated readiness, primary route latency, production resource timing, long tasks, overflow, and critical diagnostics |
 | Release baseline aggregation | `scripts/run-release-baseline.mjs` + policy test | fail-fast check/database/E2E/production-smoke sequence with opt-in modes removed, required fixture presence enforced, and English/Arabic/read-only-onboarding fixture-role reuse rejected before child commands |
-| Daily loop | `tests/e2e/product-live.spec.ts` | live check-in write behind mutation opt-in in `desktop-light` |
-| Feedback learning | `tests/e2e/product-live.spec.ts` | evidence → One Move accept → explicit usefulness → Personal Learning |
+| Daily loop | `tests/e2e/product-live.spec.ts` | live check-in write only on the dedicated completed-mutation fixture in `desktop-light` |
+| Feedback learning | `tests/e2e/product-live.spec.ts` | dedicated mutation fixture: evidence → One Move accept → explicit usefulness → Personal Learning |
 | Recovery / What If | `tests/e2e/product-live.spec.ts` | recovery step interaction and scenario switch/assumption visibility |
-| Spiritual Grounding | `tests/e2e/product-live.spec.ts` | optional preference toggle → reload persistence → original-state restore → reload verification |
-| Notification preferences | `tests/e2e/notification-preferences-live.spec.ts` + app regression specs | toggle/reload/restore/reload live journey plus source policy and stale-load/stale-save account-switch fencing |
+| Spiritual Grounding | `tests/e2e/product-live.spec.ts` | dedicated mutation fixture: optional preference toggle → reload persistence → original-state restore → reload verification |
+| Notification preferences | `tests/e2e/notification-preferences-live.spec.ts` + app regression specs | dedicated mutation fixture: toggle/reload/restore/reload live journey plus source policy and stale-load/stale-save account-switch fencing |
 | Privacy export | `tests/e2e/product-live.spec.ts` | authenticated portable JSON export/download |
-| Privacy deletion | `tests/e2e/account-deletion-live.spec.ts` | dedicated irreversible account, two-step confirmation, local cache cleanup, post-delete credential rejection |
+| Privacy deletion | `tests/e2e/account-deletion-live.spec.ts` + public runner | dedicated irreversible account, public-runner fixture protection, two-step confirmation, local cache cleanup, post-delete credential rejection |
 | Responsive Web | Playwright projects | 320×568, 390×844, 834×1194, 1194×834, 1440×900; each in light and dark |
 
-The ten main Web projects use the same Chromium engine with explicit viewport and color-scheme variation so layout/theme regressions are comparable without adding a browser-engine variable. Native Android/iOS remains a separate owner/runtime gate. Shared-account mutations, onboarding completion, development-runtime performance sampling, and irreversible deletion run once in `desktop-light`; onboarding completion uses its own disposable fixture rather than the reusable read-only onboarding account. Read-only visual evidence intentionally uses the full matrix. Production static-export smoke has its own two-project config; production-export performance is isolated to one production desktop project so the heavier build/runtime measurement is not multiplied unnecessarily.
+The ten main Web projects use the same Chromium engine with explicit viewport and color-scheme variation so layout/theme regressions are comparable without adding a browser-engine variable. Native Android/iOS remains a separate owner/runtime gate. Persistent completed-account mutations use a dedicated completed-mutation fixture and onboarding completion uses a different disposable incomplete fixture; both execute once in `desktop-light`, while development-runtime performance sampling and irreversible deletion also remain single-project gates. The reusable completed-English and onboarding fixtures therefore remain available for non-destructive baseline evidence. Read-only visual evidence intentionally uses the full matrix. Production static-export smoke has its own two-project config; production-export performance is isolated to one production desktop project so the heavier build/runtime measurement is not multiplied unnecessarily.
 
 ## Release documentation
 
 - Root `README.md` documents Node/npm requirements, clean install, public Supabase configuration, local Supabase initialization/reset, the fail-closed `check:release:baseline` and `test:e2e:mutations` commands, reusable-vs-disposable onboarding fixture separation, app/test/E2E commands, stable CP9 visual evidence collection, opt-in performance sampling, production static-export smoke and size report, destructive-test safety, Expo exports, architecture invariants, and status pointers.
-- `.env.example` documents variable names only. It explicitly distinguishes the persisted-English, persisted-Arabic, reusable incomplete-onboarding, disposable onboarding-mutation, and destructive-deletion fixtures. The three release-baseline role accounts must be distinct; onboarding mutation must not consume the reusable onboarding account.
+- `.env.example` documents variable names only. It explicitly distinguishes the persisted-English read-only fixture, dedicated completed-mutation fixture, persisted-Arabic fixture, reusable incomplete-onboarding fixture, disposable onboarding-mutation fixture, and destructive-deletion fixture. The three release-baseline role accounts must be distinct; the two mutation fixtures must be separate from each other and from protected reusable/deletion roles.
 - `apps/app/README.md` is MIZAN-specific rather than the create-expo-app starter and documents the explicit export scripts plus owner-side Expo Doctor step.
 - Documentation is static evidence only until an owner/new-engineer completes a clean-checkout run successfully.
 
@@ -177,8 +187,8 @@ The ten main Web projects use the same Chromium engine with explicit viewport an
 - With the disposable local Supabase stack reset, configure three distinct reusable read-only baseline fixtures for completed English, completed Arabic, and incomplete onboarding, then run `npm run check:release:baseline` from a trustworthy checkout and retain the full fail-fast result; this covers TypeScript, lint, unit/component/integration, local database tests/lint, the normal Web E2E matrix, and production Web smoke/size while forcibly disabling opt-in mutation/destructive modes.
 - Execute the responsive read-only matrix without mutation mode; inspect assertion output **and** visible keyboard focus/interaction behavior.
 - Run `npm run test:e2e:visual` with the persisted-English and persisted-Arabic completed fixtures, inspect all Today/Life Map/WHY/Check-in attachments, and retain reviewed evidence.
-- Configure the separate disposable `MIZAN_E2E_ONBOARDING_MUTATION_*` account, then run `npm run test:e2e:mutations`; the runner enables mutation mode itself and must complete daily-loop/feedback, Spiritual Grounding reload persistence/restoration, notification-preference reload persistence/restoration, and onboarding completion without consuming the reusable read-only onboarding fixture.
-- Run the prepared destructive deletion journey only with its dedicated disposable account.
+- Configure a dedicated completed `MIZAN_E2E_COMPLETED_MUTATION_*` account plus the separate disposable `MIZAN_E2E_ONBOARDING_MUTATION_*` account, then run `npm run test:e2e:mutations`; the runner enables mutation mode itself and must complete daily-loop/feedback, Spiritual Grounding reload persistence/restoration, notification-preference reload persistence/restoration, and onboarding completion without writing to the reusable completed-English or reusable onboarding fixtures.
+- Run the prepared destructive deletion journey only with its dedicated disposable account and keep it distinct from both mutation fixtures and every reusable fixture.
 - Execute `npm run test:e2e:performance` and inspect the controlled-runtime measurements and any broad-budget failure.
 - Execute `npm run test:e2e:production:performance`, retain the attached production performance report, compare it with the controlled-runtime sample, and investigate material regressions or pathological main-thread work.
 - Execute Expo diagnostics plus Android/iOS export checks available in the owner environment.
