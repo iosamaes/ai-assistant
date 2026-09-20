@@ -48,6 +48,7 @@ describe('AppNavigation wide RTL edge', () => {
     const tablist = view.getByRole('tablist');
     const style = StyleSheet.flatten(tablist.props.style);
 
+    expect(tablist.props.accessibilityLabel).toBe('التنقل الرئيسي');
     expect(style.borderLeftWidth).toBe(1);
     expect(style.borderRightWidth).toBe(0);
     expect(view.getByRole('tab', { name: 'الرئيسية' }).props.accessibilityState)
@@ -58,8 +59,10 @@ describe('AppNavigation wide RTL edge', () => {
     useAppStateMock.mockReturnValue(appState(false, 'en'));
 
     const view = render(<AppNavigation activeSegment="today" />);
-    const style = StyleSheet.flatten(view.getByRole('tablist').props.style);
+    const tablist = view.getByRole('tablist');
+    const style = StyleSheet.flatten(tablist.props.style);
 
+    expect(tablist.props.accessibilityLabel).toBe('Primary navigation');
     expect(style.borderLeftWidth).toBe(0);
     expect(style.borderRightWidth).toBe(1);
   });
