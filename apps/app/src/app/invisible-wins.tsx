@@ -119,7 +119,7 @@ export default function InvisibleWinsScreen() {
   const scheme = useColorScheme();
   const palette = Palette[scheme === 'dark' ? 'dark' : 'light'];
   const activeUserRef = useRef(userId);
-  activeUserRef.current = userId;
+  const draftUserRef = useRef(userId);
   const [category, setCategory] = useState<InvisibleWinCategory>('rest');
   const [historyFilter, setHistoryFilter] = useState<HistoryFilter>('all');
   const [note, setNote] = useState('');
@@ -129,6 +129,18 @@ export default function InvisibleWinsScreen() {
   const [loadError, setLoadError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
+
+  if (draftUserRef.current !== userId) {
+    draftUserRef.current = userId;
+    setCategory('rest');
+    setHistoryFilter('all');
+    setNote('');
+    setLoadError(null);
+    setSaving(false);
+    setMessage(null);
+  }
+  activeUserRef.current = userId;
+
   const visibleItems = itemsOwnerId === userId ? items : [];
   const filteredItems = historyFilter === 'all'
     ? visibleItems
@@ -145,11 +157,6 @@ export default function InvisibleWinsScreen() {
       setItems([]);
       setItemsOwnerId(null);
       setLoadError(null);
-      setMessage(null);
-      setNote('');
-      setCategory('rest');
-      setHistoryFilter('all');
-      setSaving(false);
       setLoading(Boolean(requestedUserId));
 
       if (!requestedUserId) return;
