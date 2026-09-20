@@ -1,6 +1,6 @@
 import { simulateScenario, type Confidence, type ScenarioDefinition, type ScenarioProjection } from '@mizan/core';
 import { router } from 'expo-router';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { StyleSheet, useColorScheme, View } from 'react-native';
 
 import { loadCurrentHumanState } from '@/application/daily-intelligence';
@@ -244,6 +244,9 @@ export default function WhatIfScreen() {
   const [status, setStatus] = useState<LoadStatus>('loading');
   const [selected, setSelected] = useState<ScenarioId>('earlier-bedtime');
   const [projection, setProjection] = useState<ScenarioProjection | null>(null);
+  const [projectionUserId, setProjectionUserId] = useState<string | null>(null);
+  const activeUserRef = useRef(userId);
+  activeUserRef.current = userId;
   const labels = copy[locale];
   const definitions = useMemo(() => scenarioDefinitions(locale), [locale]);
   const scheme = useColorScheme();
@@ -251,39 +254,50 @@ export default function WhatIfScreen() {
 
   useEffect(() => {
     let active = true;
+    const requestedUserId = userId;
+    const requestedScenario = selected;
+    const requestIsCurrent = () =>
+      active && activeUserRef.current === requestedUserId;
+
     void (async () => {
       await Promise.resolve();
-      if (!active) return;
-      if (!userId) {
-        setStatus('error');
+      if (!requestIsCurrent()) return;
+      if (!requestedUserId) {
         setProjection(null);
+        setProjectionUserId(null);
+        setStatus('error');
         return;
       }
 
+      setProjection(null);
+      setProjectionUserId(requestedUserId);
       setStatus('loading');
       const [stateResult, personalResult] = await Promise.all([
-        loadCurrentHumanState(userId),
-        loadPersonalScenarioEffects(userId, selected),
+        loadCurrentHumanState(requestedUserId),
+        loadPersonalScenarioEffects(requestedUserId, requestedScenario),
       ]);
-      if (!active) return;
+      if (!requestIsCurrent()) return;
       if (!stateResult.ok) {
-        if (stateResult.error.kind === 'session-expired') await refreshSession();
-        if (active) {
-          setStatus('error');
-          setProjection(null);
+        if (stateResult.error.kind === 'session-expired') {
+          await refreshSession();
+          if (!requestIsCurrent()) return;
         }
+        setProjection(null);
+        setProjectionUserId(requestedUserId);
+        setStatus('error');
         return;
       }
 
       if (!personalResult.ok && personalResult.error.kind === 'session-expired') {
         await refreshSession();
+        if (!requestIsCurrent()) return;
       }
-      if (!active) return;
       setProjection(simulateScenario({
-        definition: definitions[selected],
+        definition: definitions[requestedScenario],
         currentState: stateResult.value,
         personalEffects: personalResult.ok ? personalResult.value : [],
       }));
+      setProjectionUserId(requestedUserId);
       setStatus('ready');
     })();
 
@@ -292,10 +306,15 @@ export default function WhatIfScreen() {
     };
   }, [definitions, refreshSession, selected, userId]);
 
+  const currentProjection = userId !== null && projectionUserId === userId ? projection : null;
+  const displayedStatus: LoadStatus =
+    userId === null ? 'error' : projectionUserId === userId ? status : 'loading';
+
   const chooseScenario = (id: ScenarioId) => {
-    if (status === 'loading') return;
+    if (displayedStatus === 'loading') return;
     setStatus('loading');
     setProjection(null);
+    setProjectionUserId(userId);
     setSelected(id);
   };
 
@@ -333,24 +352,24 @@ export default function WhatIfScreen() {
               label={labels.scenarios[id].label}
               selected={selected === id}
               onPress={() => chooseScenario(id)}
-              disabled={status === 'loading'}
+              disabled={displayedStatus === 'loading'}
             />
           ))}
         </View>
       </Card>
 
-      {status === 'loading' ? (
+      {displayedStatus === 'loading' ? (
         <Card style={{ backgroundColor: palette.surfaceMuted }}>
           <MizanText accessibilityLiveRegion="polite" muted>{labels.loading}</MizanText>
         </Card>
       ) : null}
-      {status === 'error' ? (
+      {displayedStatus === 'error' ? (
         <Card style={{ backgroundColor: palette.surfaceMuted }}>
           <MizanText accessibilityLiveRegion="polite" muted>{labels.error}</MizanText>
         </Card>
       ) : null}
 
-      {status === 'ready' && projection ? (
+      {displayedStatus === 'ready' && currentProjection ? (
         <>
           <Card style={styles.projectionCard}>
             <View style={[styles.projectionHeader, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
@@ -361,14 +380,14 @@ export default function WhatIfScreen() {
               <View style={[styles.uncertaintyPill, { backgroundColor: palette.accentSoft, flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
                 <AppIcon name="hypothesis" color={palette.accent} size={16} />
                 <MizanText variant="caption">
-                  {labels.uncertainty}: {labels.uncertaintyLevels[projection.uncertainty]}
+                  {labels.uncertainty}: {labels.uncertaintyLevels[currentProjection.uncertainty]}
                 </MizanText>
               </View>
             </View>
 
             <View style={[styles.assumptions, { borderTopColor: palette.border }]}>
               <MizanText variant="label">{labels.assumptions}</MizanText>
-              {projection.assumptions.map((assumption) => (
+              {currentProjection.assumptions.map((assumption) => (
                 <MizanText key={assumption} muted>• {assumption}</MizanText>
               ))}
             </View>
@@ -377,7 +396,7 @@ export default function WhatIfScreen() {
           <View style={styles.section}>
             <MizanText variant="title">{labels.effects}</MizanText>
             <View style={[styles.effectsGrid, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
-              {projection.effects.map((effect) => {
+              {currentProjection.effects.map((effect) => {
                 const componentLabel = (labels.components as Record<string, string>)[effect.componentKey] ?? labels.componentOther;
                 const sourceLabel = effect.source === 'personal' ? labels.sourcePersonal : labels.sourcePrior;
                 return (
