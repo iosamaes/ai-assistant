@@ -250,7 +250,11 @@ export default function RecoveryScreen() {
               </View>
             </View>
 
-            <View style={[styles.planStats, { borderTopColor: palette.border }]}>
+            <View
+              style={[
+                styles.planStats,
+                { borderTopColor: palette.border, flexDirection: isRtl ? 'row-reverse' : 'row' },
+              ]}>
               <View style={styles.statBlock}>
                 <MizanText variant="caption" muted>{labels.evidence}</MizanText>
                 <MizanText variant="title">{formatLocalizedNumber(visiblePlan.confidence.evidenceCount, locale, 0)}</MizanText>
@@ -283,7 +287,10 @@ export default function RecoveryScreen() {
                   </MizanText>
                   <MizanText variant="caption" muted>{labels.resetLabel}</MizanText>
                 </View>
-                <View style={styles.progressTrack} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
+                <View
+                  style={[styles.progressTrack, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}
+                  accessibilityElementsHidden
+                  importantForAccessibility="no-hide-descendants">
                   {visiblePlan.steps.map((step, index) => (
                     <View
                       key={step.id}
@@ -365,7 +372,6 @@ const styles = StyleSheet.create({
   planStats: {
     borderTopWidth: Controls.borderWidth,
     paddingTop: Spacing.lg,
-    flexDirection: 'row',
     flexWrap: 'wrap',
     gap: Spacing.xl,
   },
@@ -390,7 +396,7 @@ const styles = StyleSheet.create({
     gap: Spacing.md,
     flexWrap: 'wrap',
   },
-  progressTrack: { flexDirection: 'row', gap: Spacing.sm },
+  progressTrack: { gap: Spacing.sm },
   progressSegment: { flex: 1, height: Spacing.xs, borderRadius: Radius.pill },
   stepCopy: { gap: Spacing.md },
   actions: { gap: Spacing.md },
