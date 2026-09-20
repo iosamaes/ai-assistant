@@ -98,6 +98,14 @@ npm run test:db   # requires the local Supabase stack
 npm run lint:db   # requires the local Supabase stack
 ```
 
+After `supabase db reset` has completed successfully on the local disposable stack, the owner can run the non-destructive CP11 baseline in one fail-fast command:
+
+```bash
+npm run check:release:baseline
+```
+
+That command chains the workspace typecheck/lint/unit suite, local database tests and lint, the normal Web E2E matrix, and the production static-Web smoke/size path. It intentionally does **not** opt into live mutations, CP9 screenshot capture, performance probes, irreversible account deletion, Expo Doctor, or Android/iOS exports; those remain explicit follow-up gates so an aggregate command cannot accidentally mutate or delete a fixture.
+
 Web E2E uses Playwright and starts the app on port `8091`:
 
 ```bash
