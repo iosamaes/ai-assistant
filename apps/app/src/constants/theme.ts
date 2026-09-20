@@ -12,6 +12,7 @@ export const Palette = {
     onAccent: '#F9FCFA',
     accentSoft: '#DCE9E2',
     danger: '#A84444',
+    onDanger: '#FFF8F8',
   },
   dark: {
     background: '#0C1210',
@@ -24,6 +25,7 @@ export const Palette = {
     onAccent: '#0A1A13',
     accentSoft: '#20382D',
     danger: '#E59696',
+    onDanger: '#241010',
   },
 } as const;
 
