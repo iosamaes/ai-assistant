@@ -63,25 +63,32 @@ The production sensitive logging/error-reporting source review is complete for t
 ## CP11 static readiness
 Detailed ledger: `docs/CP11_RELEASE_READINESS.md`.
 
-The Playwright Web matrix defines **320×568**, **390×844**, **834×1194**, **1194×834**, and **1440×900**, each in light/dark. Native Android/iOS validation is a separate owner/runtime gate.
+The main Playwright Web matrix defines **320×568**, **390×844**, **834×1194**, **1194×834**, and **1440×900**, each in light/dark. Native Android/iOS validation is a separate owner/runtime gate.
 
-Prepared static verification covers auth/route guard/password recovery, real keyboard navigation, onboarding, completed-account product navigation, Arabic persisted-locale coverage, Recovery/What If, privacy export, live daily-loop and feedback-learning mutations, Spiritual Grounding toggle/restore, notification preference persistence/restore, destructive account deletion with a dedicated disposable account, shared browser diagnostics, production logging policy, semantic contrast policy, and CP9 visual-evidence capture.
+Prepared static verification covers auth/route guard/password recovery, real keyboard navigation, onboarding, completed-account product navigation, Arabic persisted-locale coverage, Recovery/What If, privacy export, live daily-loop and feedback-learning mutations, Spiritual Grounding toggle/restore, notification preference persistence/restore, destructive account deletion with a dedicated disposable account, shared browser diagnostics, production logging policy, semantic contrast policy, CP9 visual-evidence capture, opt-in performance sampling, and a production static-Web export smoke path.
 
 ### Latest CP11 performance readiness
 - `35327811a8f8fe07d32b33fac3280ef88526dc14` — added opt-in read-only `tests/e2e/performance-live.spec.ts` for the persisted-English completed account. It records authenticated Home readiness, Home → Life Map → One Move → Insights → More route-readiness durations, browser navigation/resource timing, observed long-task durations, horizontal overflow, and critical browser diagnostics. It attaches `performance-sanity.json` and uses deliberately broad regression tripwires of 15 s authenticated readiness, 5 s per primary route transition, and 1 s maximum observed long task. These are sanity ceilings, not product SLOs.
 - `ab34901be58c893090c2f01326c08f28cc6d87ac` — root script `npm run test:e2e:performance` runs the performance sample once in `desktop-light`.
 - `bb72ae16428dc90e2b463cb362aa00cc92dcf996` — `.env.example` adds explicit `MIZAN_E2E_PERFORMANCE=0` opt-in without credentials.
-- `9dc3cd0dc4444f00f4a9b3f5eadac740a368127d` — root README documents how to run and interpret the performance sample and explicitly distinguishes controlled E2E runtime measurements from production-export performance proof.
-- `fe24046ed606f58119284a140098efcc318f673d` — CP11 release ledger records the performance contract and remaining production measurement requirement.
+- `9dc3cd0dc4444f00f4a9b3f5eadac740a368127d` + `fe24046ed606f58119284a140098efcc318f673d` — root README and CP11 ledger document interpretation and explicitly distinguish controlled E2E runtime measurements from production-export performance proof.
 
-All performance changes above are **static harness/readiness evidence only**. Workers did not run the new performance specification or any product test/build/typecheck under the active policy.
+### Latest CP11 production-export readiness
+- `834ad443380636a6868a85548943a9239b166315` + `8f122852dcd788cbb3331178a161fc352bf5c1cf` — explicit Web/Android/iOS Expo export commands now exist in the app workspace and at repository root for clean-checkout validation.
+- `d25c518c564185b8c9ec2380c56b72d0f30ae2d6` — added dependency-free `scripts/serve-expo-static.mjs` to serve the actual Expo static export with exact route-file resolution rather than an SPA fallback.
+- `f403e38144038389a55066fde7679b5615fac10f` — added `playwright.production.config.ts`, which builds the Web export and serves `apps/app/dist` on a separate port for representative phone-light and desktop-dark production smoke checks.
+- `c36e2df4b6e01d88c5873234c1c670425fb14733` — added `tests/e2e/production-web.spec.ts`: signed-out direct-route/auth hydration always runs; with the normal live completed account it also checks authenticated direct-route/session hydration, shell routing, WHY, overflow, and shared page/console/network/5xx diagnostics.
+- `53e5857184712f4188030da247458a688b51894b` — root `npm run test:e2e:production` exposes the production-export smoke flow.
+- `7d55235d224b1c55e41693fe8d4cee87b74a906c` + `e5eb15fe5abc0ece74c02066922f9f4328c7571d` — root README and CP11 ledger document the production-export gate and explicitly retain separate bundle/performance/native owner review requirements.
+
+All CP11 additions above are **static harness/readiness evidence only**. Workers did not run the performance spec, production export/smoke, tests, builds, typechecks, or database suites under the active policy.
 
 ### CP11 remaining
 - Run TypeScript, lint, unit/component/integration, database/policy, and full Web E2E suites from a trustworthy checkout.
 - Execute and inspect keyboard/focus journeys, visual evidence, live mutation journeys, and destructive deletion only with the documented dedicated fixtures.
-- Execute `npm run test:e2e:performance`, inspect its structured report, then separately measure/inspect the **production Web export** so dev-server timing is not mistaken for release performance.
-- Inspect production Web console/network and obvious bundle-size regressions; investigate blocking startup work or pathological rerenders if measurements indicate them.
-- Run Expo diagnostics and Android/iOS bundle/export checks available in the owner environment.
+- Execute `npm run test:e2e:performance` and inspect its structured report.
+- Execute `npm run test:e2e:production`, inspect direct-route/static-export browser diagnostics, and separately measure production performance/bundle size so a smoke PASS is not mistaken for complete release evidence.
+- Run Expo diagnostics and Android/iOS export checks available in the owner environment.
 - Perform a clean-checkout setup using the root README and correct any missing prerequisite/configuration/test/export step.
 - Record exact commands, versions, results, failures/fixes, and owner release actions before CP11 can close.
 
@@ -103,7 +110,7 @@ Previously recorded owner-side baseline evidence:
 - Earlier auth/data-access app typecheck and lint PASS.
 
 Post-baseline:
-- **No worker-run app tests, builds, typechecks, validation database scripts, Web E2E, screenshot captures, performance runs, GitHub Actions, or cloud CI are claimed for CP2–CP11 changes.**
+- **No worker-run app tests, builds, typechecks, validation database scripts, Web E2E, screenshot captures, performance runs, production-export smoke runs, GitHub Actions, or cloud CI are claimed for CP2–CP11 changes.**
 - Authorized migrations `0009`–`0012` were applied previously; live ACL/state reads are implementation evidence, not a behavioral suite PASS.
 - `delete-account` v2 was previously deployed ACTIVE with JWT verification; destructive end-to-end deletion remains unverified until the owner-side disposable-account journey runs.
 - The current CP9/CP10/CP11 source and verification harness therefore remain pending the explicit runtime/test/build evidence required by TASK.md.
@@ -120,10 +127,13 @@ Post-baseline:
 - `docs/CP9_DESIGN_SWAP_PROOF.md`
 - `docs/CP10_SECURITY_PRIVACY.md`
 - `docs/CP11_RELEASE_READINESS.md`
+- `playwright.production.config.ts`
+- `scripts/serve-expo-static.mjs`
 - `tests/e2e/browser-assertions.ts`
 - `tests/e2e/product-live.spec.ts`
 - `tests/e2e/visual-evidence-live.spec.ts`
 - `tests/e2e/performance-live.spec.ts`
+- `tests/e2e/production-web.spec.ts`
 - `tests/e2e/notification-preferences-live.spec.ts`
 - `tests/e2e/account-deletion-live.spec.ts`
 - `automation/HUMAN_REQUIRED.md`
