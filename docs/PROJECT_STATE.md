@@ -51,6 +51,8 @@ The owner-approved premium reference contract is now broadly present in static s
 - `8d456f2bb9069d0e88b71eb772e130f652aea56a` — focused What If RTL range-layout source-policy specification records the mirrored band/marker/endpoint contract; intentionally not worker-run under policy.
 - `1319dcc59448c2205c1dc71eaf76e08c386f2c25` — Onboarding no longer exposes a silent dead tap on the final enabled life-domain chip: the last domain is visibly disabled, the minimum-one-domain rule is shown in Arabic/English, and the accessibility label explains why the control cannot be removed.
 - `dcda91b6c55c20ea9294ad116444e7e65d5a619d` — focused Onboarding minimum-domain source-policy specification records the disabled final-domain affordance and accessible explanation; intentionally not worker-run under policy.
+- `bb3994d3bf3ae546923ede89d9e92b3ec5aaecc6` — Today/Home now mirrors its bounded known-value state meters and season-balance meter from the app-local RTL state, so Arabic quantitative fills begin at the semantic reading edge rather than the physical left edge.
+- `587fd385ce806ea87e2280f8c9223cd2f8b68263` — focused Today RTL quantitative-meter source-policy specification records the mirrored fill-origin contract; intentionally not worker-run under policy.
 
 ### CP9 remaining
 - Continue only concrete residual static defects on still-unreviewed shipped surfaces: untranslated literals, semantic RTL/icon direction, missing accessibility semantics, truncation/dynamic type, keyboard/focus, technical identifiers, or duplicated global visual decisions. Avoid speculative abstraction and do not churn already-reviewed screens without evidence.
@@ -90,7 +92,7 @@ Post-baseline:
 - **No worker-run app tests, builds, typechecks, validation database scripts, cloud CI, or GitHub Actions are claimed for CP2–CP10 changes.**
 - Authorized migrations `0009`–`0012` were applied previously; live reads confirmed the hardened Life Season RPC signature/ACL. This is implementation/state evidence, not a behavioral test-suite PASS.
 - `delete-account` version 2 previously reported ACTIVE with JWT verification enabled; no destructive end-to-end deletion validation is claimed.
-- All premium-reference and residual CP9 commits, including the latest accessibility/numeric-policy, RTL-layout, and onboarding interaction specifications above, remain static implementation/specification evidence until owner validation.
+- All premium-reference and residual CP9 commits, including the latest accessibility/numeric-policy, RTL-layout, onboarding interaction, and Today meter specifications above, remain static implementation/specification evidence until owner validation.
 
 ## Known blockers / risks
 - CP1/CP9: true phone/tablet/Web visual interaction evidence still needs an unlocked owner runtime; see `automation/HUMAN_REQUIRED.md`.
@@ -135,6 +137,7 @@ Post-baseline:
 - `apps/app/__tests__/experiments-rtl-layout-policy-test.ts`
 - `apps/app/__tests__/what-if-rtl-range-layout-policy-test.ts`
 - `apps/app/__tests__/onboarding-domain-minimum-policy-test.ts`
+- `apps/app/__tests__/today-rtl-meter-layout-policy-test.ts`
 - `supabase/tests/rls_cross_user.sql`
 - `supabase/tests/account_data_export_security.sql`
 - `supabase/migrations/0009_function_execute_hardening.sql`
