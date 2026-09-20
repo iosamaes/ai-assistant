@@ -21,6 +21,7 @@ const destructiveDeletionEnabled = process.env.MIZAN_E2E_DESTRUCTIVE === '1';
 const liveReason =
   'Requires live Supabase configuration, a dedicated completed deletion account, and MIZAN_E2E_DESTRUCTIVE=1.';
 const destructiveProject = 'desktop-light';
+const mismatchedUserId = '00000000-0000-0000-0000-000000000000';
 
 test.describe('destructive account deletion', () => {
   test.skip(!(deletionAccountConfigured && destructiveDeletionEnabled), liveReason);
@@ -38,6 +39,8 @@ test.describe('destructive account deletion', () => {
     if (!email || !password || !supabaseUrl || !publishableKey) {
       throw new Error('Destructive deletion E2E configuration is incomplete.');
     }
+    const baseUrl = supabaseUrl.replace(/\/$/, '');
+    const passwordGrantUrl = `${baseUrl}/auth/v1/token?grant_type=password`;
 
     const diagnostics = collectCriticalBrowserDiagnostics(page);
     const dialogs: string[] = [];
@@ -60,6 +63,44 @@ test.describe('destructive account deletion', () => {
     const exported = JSON.parse(await readFile(downloadedPath, 'utf8')) as { user_id?: unknown };
     expect(typeof exported.user_id).toBe('string');
     const userId = exported.user_id as string;
+
+    const preDeletionAuthentication = await request.post(passwordGrantUrl, {
+      headers: {
+        apikey: publishableKey,
+        'Content-Type': 'application/json',
+      },
+      data: { email, password },
+    });
+    expect(preDeletionAuthentication.ok()).toBe(true);
+    const authPayload = (await preDeletionAuthentication.json()) as {
+      access_token?: unknown;
+      user?: { id?: unknown };
+    };
+    expect(typeof authPayload.access_token).toBe('string');
+    expect(authPayload.user?.id).toBe(userId);
+
+    const mismatchDeletion = await request.post(`${baseUrl}/functions/v1/delete-account`, {
+      headers: {
+        apikey: publishableKey,
+        Authorization: `Bearer ${authPayload.access_token as string}`,
+        'Content-Type': 'application/json',
+      },
+      data: {
+        confirmation: 'DELETE',
+        expected_user_id: mismatchedUserId,
+      },
+    });
+    expect(mismatchDeletion.status()).toBe(409);
+    expect(await mismatchDeletion.json()).toMatchObject({ error: 'account_changed' });
+
+    const authenticationAfterMismatch = await request.post(passwordGrantUrl, {
+      headers: {
+        apikey: publishableKey,
+        'Content-Type': 'application/json',
+      },
+      data: { email, password },
+    });
+    expect(authenticationAfterMismatch.ok()).toBe(true);
 
     await page.evaluate(({ activeUserId }) => {
       const createdAt = new Date().toISOString();
@@ -91,16 +132,13 @@ test.describe('destructive account deletion', () => {
     expect(cacheState).toEqual({ pending: null, snapshot: null });
     expect(dialogs).toEqual([]);
 
-    const reauthentication = await request.post(
-      `${supabaseUrl.replace(/\/$/, '')}/auth/v1/token?grant_type=password`,
-      {
-        headers: {
-          apikey: publishableKey,
-          'Content-Type': 'application/json',
-        },
-        data: { email, password },
+    const reauthentication = await request.post(passwordGrantUrl, {
+      headers: {
+        apikey: publishableKey,
+        'Content-Type': 'application/json',
       },
-    );
+      data: { email, password },
+    });
     expect(reauthentication.status()).toBe(400);
 
     expectNoCriticalBrowserDiagnostics(diagnostics);
