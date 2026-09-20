@@ -69,7 +69,11 @@ export function useNotificationPreferences(userId: string | null) {
         return;
       }
 
-      setPreferences(preferencesFromSetting(result.value?.settings));
+      setPreferences(
+        result.value?.enabled
+          ? preferencesFromSetting(result.value.settings)
+          : DEFAULT_NOTIFICATION_PREFERENCES,
+      );
       setStatus('ready');
     })();
 
