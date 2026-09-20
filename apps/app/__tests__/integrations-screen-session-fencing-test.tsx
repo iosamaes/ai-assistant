@@ -18,6 +18,7 @@ const refreshSession = jest.fn(async () => undefined);
 
 function appState(userId: string | null) {
   return {
+    isRtl: false,
     locale: 'en',
     refreshSession,
     userId,
@@ -81,6 +82,44 @@ describe('IntegrationsScreen session fencing', () => {
     resolveUserA?.({
       ok: true,
       value: [connection('user-a', 'health_data', 'deterministic-health-data')],
+    });
+
+    await waitFor(() => {
+      expect(view.getByText('Approximate location context')).toBeTruthy();
+      expect(view.queryByText('Health & wearable data')).toBeNull();
+    });
+  });
+
+  test('hides already loaded integrations immediately while the new account is still loading', async () => {
+    let resolveUserB:
+      | ((value: Awaited<ReturnType<typeof loadIntegrationSettings>>) => void)
+      | undefined;
+
+    loadIntegrationSettingsMock.mockImplementation((userId) => {
+      if (userId === 'user-a') {
+        return Promise.resolve({
+          ok: true,
+          value: [connection('user-a', 'health_data', 'deterministic-health-data')],
+        });
+      }
+      return new Promise((resolve) => {
+        resolveUserB = resolve;
+      });
+    });
+
+    const view = await render(<IntegrationsScreen />);
+    await waitFor(() => expect(view.getByText('Health & wearable data')).toBeTruthy());
+
+    useAppStateMock.mockReturnValue(appState('user-b'));
+    await view.rerender(<IntegrationsScreen />);
+
+    expect(view.queryByText('Health & wearable data')).toBeNull();
+    expect(view.getByText('Loading integrations…')).toBeTruthy();
+    await waitFor(() => expect(loadIntegrationSettingsMock).toHaveBeenCalledWith('user-b'));
+
+    resolveUserB?.({
+      ok: true,
+      value: [connection('user-b', 'location_context', 'deterministic-location-context')],
     });
 
     await waitFor(() => {
