@@ -9,9 +9,27 @@ const optInFlags = [
   'MIZAN_E2E_VISUAL_EVIDENCE',
   'MIZAN_E2E_PERFORMANCE',
 ];
+const requiredBaselineVariables = [
+  'MIZAN_E2E_SUPABASE_URL',
+  'MIZAN_E2E_SUPABASE_PUBLISHABLE_KEY',
+  'MIZAN_E2E_COMPLETED_EMAIL',
+  'MIZAN_E2E_COMPLETED_PASSWORD',
+  'MIZAN_E2E_ARABIC_EMAIL',
+  'MIZAN_E2E_ARABIC_PASSWORD',
+  'MIZAN_E2E_ONBOARDING_EMAIL',
+  'MIZAN_E2E_ONBOARDING_PASSWORD',
+];
 
 const env = { ...process.env };
 for (const flag of optInFlags) delete env[flag];
+
+const missingBaselineVariables = requiredBaselineVariables.filter((name) => !env[name]?.trim());
+if (missingBaselineVariables.length > 0) {
+  console.error(
+    `Release baseline cannot provide required live E2E evidence. Missing environment variables: ${missingBaselineVariables.join(', ')}`,
+  );
+  process.exit(1);
+}
 
 console.log(`Release baseline is fail-closed: ${optInFlags.join(', ')} are disabled for this run.`);
 
