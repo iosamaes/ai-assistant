@@ -62,7 +62,7 @@ export function AppNavigation({ activeSegment }: AppNavigationProps) {
   const { width } = useWindowDimensions();
   const insets = useSafeAreaInsets();
   const [focusedDestination, setFocusedDestination] = useState<DestinationId | null>(null);
-  const wide = width >= Layout.wideBreakpoint;
+  const rail = width >= Layout.tabletBreakpoint;
   const active = activeDestination(activeSegment);
   const copy = labels[locale];
 
@@ -71,17 +71,17 @@ export function AppNavigation({ activeSegment }: AppNavigationProps) {
       accessibilityLabel={copy.navigation}
       accessibilityRole="tablist"
       style={[
-        wide ? styles.rail : styles.bottomBar,
+        rail ? styles.rail : styles.bottomBar,
         {
           backgroundColor: palette.surface,
           borderColor: palette.border,
-          borderLeftWidth: wide && isRtl ? Controls.borderWidth : 0,
-          borderRightWidth: wide && !isRtl ? Controls.borderWidth : 0,
-          paddingBottom: wide ? Spacing.lg : Math.max(insets.bottom, Spacing.sm),
-          paddingTop: wide ? Math.max(insets.top, Spacing.xl) : Spacing.sm,
+          borderLeftWidth: rail && isRtl ? Controls.borderWidth : 0,
+          borderRightWidth: rail && !isRtl ? Controls.borderWidth : 0,
+          paddingBottom: rail ? Spacing.lg : Math.max(insets.bottom, Spacing.sm),
+          paddingTop: rail ? Math.max(insets.top, Spacing.xl) : Spacing.sm,
         },
       ]}>
-      {wide ? (
+      {rail ? (
         <View style={[styles.brandBlock, { alignItems: isRtl ? 'flex-end' : 'flex-start' }]}>
           <View style={[styles.brandMark, { backgroundColor: palette.accentSoft }]}>
             <AppIcon name="oneMove" color={palette.accent} size={24} />
@@ -92,8 +92,8 @@ export function AppNavigation({ activeSegment }: AppNavigationProps) {
 
       <View
         style={[
-          wide ? styles.railItems : styles.bottomItems,
-          !wide && { flexDirection: isRtl ? 'row-reverse' : 'row' },
+          rail ? styles.railItems : styles.bottomItems,
+          !rail && { flexDirection: isRtl ? 'row-reverse' : 'row' },
         ]}>
         {destinations.map((destination) => {
           const selected = active === destination.id;
@@ -110,8 +110,8 @@ export function AppNavigation({ activeSegment }: AppNavigationProps) {
               onFocus={() => setFocusedDestination(destination.id)}
               onPress={() => router.replace(destination.href)}
               style={({ pressed }) => [
-                wide ? styles.railItem : styles.bottomItem,
-                wide && { flexDirection: isRtl ? 'row-reverse' : 'row' },
+                rail ? styles.railItem : styles.bottomItem,
+                rail && { flexDirection: isRtl ? 'row-reverse' : 'row' },
                 {
                   backgroundColor: selected ? palette.accentSoft : 'transparent',
                   opacity: pressed ? Interaction.subtlePressed : 1,
@@ -121,7 +121,7 @@ export function AppNavigation({ activeSegment }: AppNavigationProps) {
               <AppIcon
                 name={destination.icon}
                 color={selected ? palette.accent : palette.textMuted}
-                size={wide ? 23 : 21}
+                size={rail ? 23 : 21}
               />
               <MizanText
                 variant="caption"
