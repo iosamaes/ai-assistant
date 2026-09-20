@@ -4,6 +4,8 @@ import {
   collectCriticalBrowserDiagnostics,
   expectNoCriticalBrowserDiagnostics,
   expectNoHorizontalOverflow,
+} from './browser-assertions';
+import {
   mutationsEnabled,
   onboardingAccountConfigured,
   signInOnboardingAccount,
