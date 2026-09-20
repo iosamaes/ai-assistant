@@ -158,7 +158,7 @@ const styles = StyleSheet.create({
   },
   rail: {
     gap: Spacing.xl,
-    minWidth: 188,
+    minWidth: Layout.navigationRailWidth,
     paddingBottom: Spacing.lg,
     paddingHorizontal: Spacing.md,
   },
