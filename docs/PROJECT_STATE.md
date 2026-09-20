@@ -51,7 +51,7 @@ Detailed ledger/threat model: `docs/CP10_SECURITY_PRIVACY.md`.
 
 Implemented source hardening includes RLS/ownership review of current user-owned client-visible tables, cross-user policy specifications, function-execute hardening migration `0009`, authenticated portable export migration `0010`, Life Season expected-user fencing migrations `0011`/`0012`, JWT-protected `delete-account` Edge Function v2 with expected-user matching, export/two-step deletion UI and local cache purge attempts, consent rechecks around integration sync, safer error-boundary/logging boundaries, and broad account-switch/session fencing.
 
-Account-sensitive presentation paths hardened or explicitly reviewed include Today decision/feedback, Invisible Wins, Recovery, Check-in, Privacy, Onboarding, Update Password, Settings, Personalization, Life Seasons, Experiments, Cost of Yes, Human ROI, Capacity, Integrations, WHY, What If, Personal Learning, Value Alignment, and root offline replay. The production sensitive logging/error-reporting source review is complete for the current tree and should reopen only if a new production sink/boundary is introduced.
+Account-sensitive presentation paths hardened or explicitly reviewed include Today decision/feedback, Invisible Wins, Recovery, Check-in, Privacy, Onboarding, Update Password, Settings, Personalization, Life Seasons, Experiments, Cost of Yes, Human ROI, Capacity, Integrations, WHY, What If, Personal Learning, Value Alignment, and root offline replay. The production sensitive logging/error-reporting source review is complete for the current tree and should reopen only if a new production sink/boundary is introduced. A focused source-policy specification now scans production app/core/plugin/Edge source and rejects new ad-hoc `console.*` sinks while preserving only the existing development-only sanitized render diagnostic.
 
 ### CP10 remaining
 - Owner/runtime validation for cross-user/database specifications, Life Season expected-user behavior, export/delete/local purge, destructive Edge deletion v2, consent-revocation races, account-switch/session-binding cases, and offline replay ownership.
@@ -66,8 +66,10 @@ Prepared static verification paths include:
 - Auth/route-guard and password-recovery coverage with shared critical browser diagnostics.
 - Dedicated onboarding account coverage, with mutation completion isolated to `desktop-light` and the same critical browser diagnostics.
 - Completed-account shell, Recovery, What If, Settings, Privacy export, daily check-in, One Move → explicit feedback → Personal Learning, and Spiritual Grounding toggle/restore coverage.
+- Read-only CP9 owner-reference evidence checks for WHY, Personal Learning, Experiments, and Integrations across the full responsive/light-dark matrix, including the dedicated persisted-Arabic account when configured.
 - Isolated destructive account-deletion E2E using a dedicated disposable account, local user-scoped cache sentinels, two-step confirmation, post-delete credential rejection, and critical browser diagnostics; destructive execution is single-project only.
 - Mutation journeys are isolated to `desktop-light` to avoid shared-account write races.
+- A static production-logging privacy policy rejects new ad-hoc console sinks across app/core/plugin/Edge production source and constrains the one allowed development render diagnostic to a fixed label plus React component stack.
 
 ### Latest CP11 harness and release-readiness hardening
 - `b1b3ff43e463fe33e59cc192b4fa0ace72db2ec1` — live product journeys now collect critical browser diagnostics: uncaught page errors, browser `console.error`, failed requests, and HTTP 5xx responses.
@@ -83,6 +85,9 @@ Prepared static verification paths include:
 - `43fe31ba67ee7e11cf83379381596f12254a9fa6`, `f8fb6d4e1c83fd0e1b0c3a80035f1f51d23c68bd`, and `b10d297e31fa37891b8c1ef9a666833cbf057744` — completed-account, onboarding, and destructive-deletion journeys consume the shared browser assertions rather than maintaining inconsistent local guards.
 - `a713ed3380e1c6190e3c03f64d540e441f414c02` — signed-out auth/route-guard, locale-switch, and password-reset journeys now also fail on browser console errors, unexpected failed requests, and HTTP 5xx responses instead of checking only one page-error path.
 - `a43efda03152cc4232a56981e53c48cdf5d61cd5` — the CP11 release ledger documents the shared browser-assertion boundary and its coverage across signed-out and live journeys.
+- `71cae9a7d538a7469f2a8004aff8d0b8b991fc59` — a production-source logging/privacy policy specification now rejects ad-hoc console sinks across app/core/plugin/Edge source and constrains the sanitized development render diagnostic; it is unexecuted under worker policy.
+- `47dc7796b44780a041655c87ca90318dd174818b` — completed-account Web E2E now adds read-only WHY, Personal Learning, Experiments, and Integrations route/heading/overflow evidence across the full responsive/light-dark matrix for both normal and dedicated persisted-Arabic fixtures.
+- `bb2f02b2bf46a8ea4c8d81ac020ca8cb09038b9e` — the CP11 release ledger records the expanded owner-reference surface matrix and production logging-policy specification without claiming execution.
 
 These are static harness/readiness changes only. **No E2E run, destructive delete, test result, typecheck, build, database-policy execution, performance result, or release PASS is claimed by workers under the active policy.**
 
@@ -109,7 +114,8 @@ Post-baseline:
 - `delete-account` version 2 previously reported ACTIVE with JWT verification enabled; destructive end-to-end deletion remains unexecuted. The dedicated deletion E2E harness prepares owner-side proof only.
 - Premium-reference/residual CP9 fixes and account-fencing regression specifications remain static evidence until owner validation.
 - Capacity account-switch coverage and root offline-replay ownership coverage are present but unexecuted under the worker policy.
-- The five-viewport × two-color Playwright matrix, destructive deletion harness, Arabic read-only completed-account path, and shared browser diagnostic guards across auth/product/onboarding/deletion are configured but unexecuted.
+- The five-viewport × two-color Playwright matrix, destructive deletion harness, Arabic read-only completed-account path, expanded WHY/Personal Learning/Experiments/Integrations evidence surfaces, and shared browser diagnostic guards are configured but unexecuted.
+- The production logging/privacy source-policy specification is present but unexecuted; it must not be treated as runtime telemetry proof.
 - Root/app setup and release documentation are now MIZAN-specific rather than starter/template documentation, but the documented flow still requires owner clean-checkout execution evidence.
 
 ## Known blockers / risks
@@ -140,6 +146,7 @@ Post-baseline:
 - `tests/e2e/product-live.spec.ts`
 - `tests/e2e/onboarding-live.spec.ts`
 - `tests/e2e/account-deletion-live.spec.ts`
+- `apps/app/__tests__/production-logging-privacy-policy-test.ts`
 - `apps/app/src/constants/theme.ts`
 - `apps/app/src/components/mizan-ui.tsx`
 - `apps/app/src/components/screen.tsx`
