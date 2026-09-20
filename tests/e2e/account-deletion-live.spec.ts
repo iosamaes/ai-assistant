@@ -17,11 +17,17 @@ const deletionAccountConfigured = Boolean(
 const destructiveDeletionEnabled = process.env.MIZAN_E2E_DESTRUCTIVE === '1';
 const liveReason =
   'Requires live Supabase configuration, a dedicated completed deletion account, and MIZAN_E2E_DESTRUCTIVE=1.';
+const destructiveProject = 'desktop-light';
 
 test.describe('destructive account deletion', () => {
   test.skip(!(deletionAccountConfigured && destructiveDeletionEnabled), liveReason);
 
-  test('deletes only the dedicated account and clears its app-owned Web caches', async ({ page, request }) => {
+  test('deletes only the dedicated account and clears its app-owned Web caches', async ({ page, request }, testInfo) => {
+    test.skip(
+      testInfo.project.name !== destructiveProject,
+      `Destructive deletion runs once in ${destructiveProject} so the disposable account is not reused across responsive projects.`,
+    );
+
     const email = process.env.MIZAN_E2E_DELETE_EMAIL;
     const password = process.env.MIZAN_E2E_DELETE_PASSWORD;
     const supabaseUrl = process.env.MIZAN_E2E_SUPABASE_URL;
