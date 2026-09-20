@@ -1,6 +1,6 @@
 import type { ConfidenceLevel } from '@mizan/core';
 import { router } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { StyleSheet, useColorScheme, View } from 'react-native';
 
 import {
@@ -121,31 +121,45 @@ export default function PersonalLearningScreen() {
   const { isRtl, locale, refreshSession, userId } = useAppState();
   const [status, setStatus] = useState<LoadStatus>('loading');
   const [actions, setActions] = useState<readonly PersonalLearningAction[]>([]);
+  const [actionsUserId, setActionsUserId] = useState<string | null>(null);
+  const activeUserRef = useRef(userId);
+  activeUserRef.current = userId;
   const scheme = useColorScheme();
   const palette = Palette[scheme === 'dark' ? 'dark' : 'light'];
   const labels = copy[locale];
 
   useEffect(() => {
     let active = true;
+    const requestedUserId = userId;
+    const requestIsCurrent = () => active && activeUserRef.current === requestedUserId;
+
     void (async () => {
       await Promise.resolve();
-      if (!active) return;
-      if (!userId) {
+      if (!requestIsCurrent()) return;
+      if (!requestedUserId) {
         setActions([]);
+        setActionsUserId(null);
         setStatus('ready');
         return;
       }
 
       setActions([]);
+      setActionsUserId(requestedUserId);
       setStatus('loading');
-      const result = await loadPersonalLearning(userId);
-      if (!active) return;
+      const result = await loadPersonalLearning(requestedUserId);
+      if (!requestIsCurrent()) return;
       if (!result.ok) {
-        if (result.error.kind === 'session-expired') await refreshSession();
-        if (active) setStatus('error');
+        if (result.error.kind === 'session-expired') {
+          await refreshSession();
+          if (!requestIsCurrent()) return;
+        }
+        setActions([]);
+        setActionsUserId(requestedUserId);
+        setStatus('error');
         return;
       }
       setActions(result.value);
+      setActionsUserId(requestedUserId);
       setStatus('ready');
     })();
 
@@ -154,7 +168,10 @@ export default function PersonalLearningScreen() {
     };
   }, [refreshSession, userId]);
 
-  const visible = actions.filter((action) => action.estimate.feedbackCount > 0 || action.outcomes.length > 0);
+  const currentActions = userId !== null && actionsUserId === userId ? actions : [];
+  const displayedStatus: LoadStatus =
+    userId === null ? 'ready' : actionsUserId === userId ? status : 'loading';
+  const visible = currentActions.filter((action) => action.estimate.feedbackCount > 0 || action.outcomes.length > 0);
   const totalReports = visible.reduce((sum, action) => sum + action.estimate.feedbackCount, 0);
 
   return (
@@ -180,36 +197,36 @@ export default function PersonalLearningScreen() {
           <View style={[styles.heroStat, { backgroundColor: palette.surface }]}>
             <MizanText variant="caption" muted>{labels.learnedActions}</MizanText>
             <MizanText variant="title">
-              {status === 'ready' ? formatLocalizedNumber(visible.length, locale, 0) : '—'}
+              {displayedStatus === 'ready' ? formatLocalizedNumber(visible.length, locale, 0) : '—'}
             </MizanText>
           </View>
           <View style={[styles.heroStat, { backgroundColor: palette.surface }]}>
             <MizanText variant="caption" muted>{labels.totalReports}</MizanText>
             <MizanText variant="title">
-              {status === 'ready' ? formatLocalizedNumber(totalReports, locale, 0) : '—'}
+              {displayedStatus === 'ready' ? formatLocalizedNumber(totalReports, locale, 0) : '—'}
             </MizanText>
           </View>
         </View>
       </Card>
 
-      {status === 'loading' ? (
+      {displayedStatus === 'loading' ? (
         <Card style={[styles.stateCard, { backgroundColor: palette.surfaceMuted }]}>
           <MizanText accessibilityLiveRegion="polite" muted>{labels.loading}</MizanText>
         </Card>
       ) : null}
-      {status === 'error' ? (
+      {displayedStatus === 'error' ? (
         <Card style={[styles.stateCard, { backgroundColor: palette.surfaceMuted }]}>
           <MizanText accessibilityLiveRegion="polite" muted>{labels.error}</MizanText>
         </Card>
       ) : null}
-      {status === 'ready' && visible.length === 0 ? (
+      {displayedStatus === 'ready' && visible.length === 0 ? (
         <Card style={[styles.stateCard, { backgroundColor: palette.surfaceMuted }]}>
           <MizanText accessibilityLiveRegion="polite" muted>{labels.empty}</MizanText>
           <MizanText variant="caption" muted>{labels.adherenceRule}</MizanText>
         </Card>
       ) : null}
 
-      {status === 'ready' ? (
+      {displayedStatus === 'ready' ? (
         <View style={[styles.actionGrid, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
           {visible.map((action) => {
             const estimateLabel = responseLabel(action.estimate.usefulness, locale);
