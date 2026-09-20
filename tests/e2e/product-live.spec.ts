@@ -2,7 +2,9 @@ import { expect, test, type Page } from '@playwright/test';
 
 import {
   arabicCompletedAccountConfigured,
+  collectCriticalBrowserDiagnostics,
   completedAccountConfigured,
+  expectNoCriticalBrowserDiagnostics,
   expectNoHorizontalOverflow,
   mutationsEnabled,
   signInArabicCompletedAccount,
@@ -12,46 +14,6 @@ import {
 const liveReason = 'Requires MIZAN_E2E_SUPABASE_URL, MIZAN_E2E_SUPABASE_PUBLISHABLE_KEY, and completed-account credentials.';
 const arabicLiveReason = 'Requires the live Supabase client configuration plus a completed account whose saved MIZAN locale is Arabic.';
 const mutationProjectReason = 'Live mutation E2E runs once in desktop-light to avoid concurrent writes against one shared account.';
-
-type BrowserDiagnostics = {
-  pageErrors: string[];
-  consoleErrors: string[];
-  failedRequests: string[];
-  serverErrors: string[];
-};
-
-function collectCriticalBrowserDiagnostics(page: Page): BrowserDiagnostics {
-  const diagnostics: BrowserDiagnostics = {
-    pageErrors: [],
-    consoleErrors: [],
-    failedRequests: [],
-    serverErrors: [],
-  };
-
-  page.on('pageerror', (error) => diagnostics.pageErrors.push(error.message));
-  page.on('console', (message) => {
-    if (message.type() === 'error') diagnostics.consoleErrors.push(message.text());
-  });
-  page.on('requestfailed', (request) => {
-    const failure = request.failure()?.errorText ?? 'unknown network failure';
-    // Route changes can cancel an in-flight browser request by design. Keep the
-    // CP11 guard focused on actual network/runtime failures rather than navigation aborts.
-    if (failure === 'net::ERR_ABORTED') return;
-    diagnostics.failedRequests.push(`${request.method()} ${request.url()} :: ${failure}`);
-  });
-  page.on('response', (response) => {
-    if (response.status() >= 500) diagnostics.serverErrors.push(`${response.status()} ${response.url()}`);
-  });
-
-  return diagnostics;
-}
-
-function expectNoCriticalBrowserDiagnostics(diagnostics: BrowserDiagnostics) {
-  expect(diagnostics.pageErrors, 'uncaught page errors').toEqual([]);
-  expect(diagnostics.consoleErrors, 'browser console errors').toEqual([]);
-  expect(diagnostics.failedRequests, 'failed browser requests').toEqual([]);
-  expect(diagnostics.serverErrors, 'HTTP 5xx responses').toEqual([]);
-}
 
 async function recordLowEnergyCheckIn(page: Page) {
   await page.goto('/check-in');
