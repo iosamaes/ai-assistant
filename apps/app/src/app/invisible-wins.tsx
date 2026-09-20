@@ -119,6 +119,7 @@ export default function InvisibleWinsScreen() {
   const scheme = useColorScheme();
   const palette = Palette[scheme === 'dark' ? 'dark' : 'light'];
   const activeUserRef = useRef(userId);
+  activeUserRef.current = userId;
   const [category, setCategory] = useState<InvisibleWinCategory>('rest');
   const [historyFilter, setHistoryFilter] = useState<HistoryFilter>('all');
   const [note, setNote] = useState('');
@@ -136,7 +137,6 @@ export default function InvisibleWinsScreen() {
   useEffect(() => {
     let cancelled = false;
     const requestedUserId = userId;
-    activeUserRef.current = requestedUserId;
 
     void (async () => {
       await Promise.resolve();
@@ -149,6 +149,7 @@ export default function InvisibleWinsScreen() {
       setNote('');
       setCategory('rest');
       setHistoryFilter('all');
+      setSaving(false);
       setLoading(Boolean(requestedUserId));
 
       if (!requestedUserId) return;
@@ -176,10 +177,7 @@ export default function InvisibleWinsScreen() {
     setSaving(true);
     setMessage(null);
     const result = await saveInvisibleWin(savingUserId, { category, note: trimmed });
-    if (activeUserRef.current !== savingUserId) {
-      setSaving(false);
-      return;
-    }
+    if (activeUserRef.current !== savingUserId) return;
     if (result.ok) {
       setItems((current) => [result.value.item, ...(itemsOwnerId === savingUserId ? current : [])]);
       setItemsOwnerId(savingUserId);
@@ -301,7 +299,7 @@ export default function InvisibleWinsScreen() {
         ) : null}
         <View style={[styles.reflectionGrid, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
           {filteredItems.map((item) => (
-            <Card key={item.id} style={[styles.reflectionCard, { borderColor: palette.border }]}>
+            <Card key={item.id} style={[styles.reflectionCard, { borderColor: palette.border }]}> 
               <View style={[styles.reflectionHeader, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
                 <View style={[styles.categoryIcon, { backgroundColor: palette.accentSoft }]}>
                   <AppIcon name={categoryIcon(item.category)} color={palette.accent} size={19} />
