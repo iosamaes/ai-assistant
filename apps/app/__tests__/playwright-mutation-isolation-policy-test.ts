@@ -60,9 +60,12 @@ describe('Playwright live-mutation isolation policy', () => {
     );
     expect(productSpec).toContain("testInfo.project.name !== 'desktop-light'");
     expect(productSpec).toContain('test.skip(!mutationsEnabled');
-    expect(productSpec).toContain("await expect(target).toHaveAttribute('aria-selected', 'true')");
-    expect(productSpec).toContain("await expect(original).toHaveAttribute('aria-selected', 'true')");
-    expect(productSpec.match(/await page\.reload\(\);/g) ?? []).toHaveLength(2);
+    expect(productSpec).toContain(
+      "await page.reload();\n    await expect(settingsTitle).toBeVisible();\n    await expect(target).toHaveAttribute('aria-selected', 'true');",
+    );
+    expect(productSpec).toContain(
+      "await page.reload();\n    await expect(settingsTitle).toBeVisible();\n    await expect(original).toHaveAttribute('aria-selected', 'true');",
+    );
   });
 
   test('irreversible deletion remains isolated, explicitly opted in, dedicated-fixture only, and contract-confirming', () => {
