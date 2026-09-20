@@ -1,6 +1,6 @@
 import type { ConfidenceLevel, MomentumDirection } from '@mizan/core';
 import { Link } from 'expo-router';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Pressable, StyleSheet, useColorScheme, useWindowDimensions, View } from 'react-native';
 
 import {
@@ -233,6 +233,7 @@ function SignalMeter({
 export default function TodayScreen() {
   const { enabledDomains, isRtl, locale, refreshSession, syncStatus, t, userId } = useAppState();
   const { width } = useWindowDimensions();
+  const activeUserRef = useRef(userId);
   const [dailySnapshot, setDailySnapshot] = useState<DailySnapshot | null>(null);
   const [dailySnapshotUserId, setDailySnapshotUserId] = useState<string | null>(null);
   const [dailyLoadStatus, setDailyLoadStatus] = useState<DailyLoadStatus>('loading');
@@ -259,6 +260,10 @@ export default function TodayScreen() {
   const dailyOverview = currentDailySnapshot?.overview ?? null;
   const snapshotMessage = cachedSnapshotMessage(currentDailySnapshot, locale);
   const activeFeedbackTarget = feedbackTarget?.userId === userId ? feedbackTarget : null;
+
+  useEffect(() => {
+    activeUserRef.current = userId;
+  }, [userId]);
 
   useEffect(() => {
     let active = true;
@@ -395,15 +400,20 @@ export default function TodayScreen() {
 
   const handleDecision = async (decision: OneMoveDecision) => {
     if (!userId || !recommendation || !activeRecommendation || decisionStatus === 'saving' || decisionFinished) return;
+    const actingUserId = userId;
     setDecisionStatus('saving');
     const result = await recordOneMoveDecision(
-      userId,
+      actingUserId,
       activeRecommendation,
       decision,
       activeRecommendation.actionId !== recommendation.primary.actionId,
     );
+    if (activeUserRef.current !== actingUserId) return;
     if (!result.ok) {
-      if (result.error.kind === 'session-expired') await refreshSession();
+      if (result.error.kind === 'session-expired') {
+        await refreshSession();
+        if (activeUserRef.current !== actingUserId) return;
+      }
       setDecisionStatus(
         result.error.kind === 'unavailable' || result.error.kind === 'not-configured' ? 'offline' : 'error',
       );
@@ -413,7 +423,7 @@ export default function TodayScreen() {
     setDecisionStatus(decision);
     if (decision === 'accepted') {
       setFeedbackTarget({
-        userId,
+        userId: actingUserId,
         actionEventId: result.value,
         actionId: activeRecommendation.actionId,
         acceptedAt: new Date().toISOString(),
@@ -432,16 +442,22 @@ export default function TodayScreen() {
       return;
     }
 
+    const actingUserId = userId;
+    const feedbackForUser = activeFeedbackTarget;
     setFeedbackStatus('saving');
     const result = await recordExplicitActionOutcome(
-      userId,
-      activeFeedbackTarget.actionId,
-      activeFeedbackTarget.actionEventId,
+      actingUserId,
+      feedbackForUser.actionId,
+      feedbackForUser.actionEventId,
       feedbackUsefulness,
       feedbackNote,
     );
+    if (activeUserRef.current !== actingUserId) return;
     if (!result.ok) {
-      if (result.error.kind === 'session-expired') await refreshSession();
+      if (result.error.kind === 'session-expired') {
+        await refreshSession();
+        if (activeUserRef.current !== actingUserId) return;
+      }
       setFeedbackStatus(
         result.error.kind === 'unavailable' || result.error.kind === 'not-configured' ? 'offline' : 'error',
       );
