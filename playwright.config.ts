@@ -1,7 +1,31 @@
 import { defineConfig, devices } from '@playwright/test';
 
+const authorizedSupabaseProjectRef = 'olfhjnropdrnujgpidfi';
 const liveSupabaseUrl = process.env.MIZAN_E2E_SUPABASE_URL ?? '';
 const liveSupabasePublishableKey = process.env.MIZAN_E2E_SUPABASE_PUBLISHABLE_KEY ?? '';
+
+function assertAuthorizedLiveSupabaseUrl(rawUrl: string) {
+  if (!rawUrl) return;
+
+  let configuredUrl: URL;
+  try {
+    configuredUrl = new URL(rawUrl);
+  } catch {
+    throw new Error('MIZAN_E2E_SUPABASE_URL must be a valid hosted Supabase URL.');
+  }
+
+  const hostedSuffix = '.supabase.co';
+  if (configuredUrl.protocol !== 'https:' || !configuredUrl.hostname.endsWith(hostedSuffix)) {
+    throw new Error('MIZAN_E2E_SUPABASE_URL must be a hosted Supabase HTTPS URL.');
+  }
+
+  const configuredProjectRef = configuredUrl.hostname.slice(0, -hostedSuffix.length);
+  if (configuredProjectRef !== authorizedSupabaseProjectRef) {
+    throw new Error(`Live E2E is authorized only for Supabase project ${authorizedSupabaseProjectRef}.`);
+  }
+}
+
+assertAuthorizedLiveSupabaseUrl(liveSupabaseUrl);
 
 const responsiveViewports = [
   { name: 'narrow-phone', viewport: { width: 320, height: 568 } },
