@@ -19,7 +19,7 @@ This enables non-destructive checks for the adaptive navigation shell, Life Map/
 ### 3. Live mutation E2E
 Set `MIZAN_E2E_MUTATIONS=1` only when the configured account is disposable or dedicated to automation. This additionally enables check-in persistence, the One Move → explicit outcome feedback → Personal Learning loop, and an optional Spiritual Grounding preference toggle that restores its original state.
 
-Mutation-enabled product tests self-skip outside the single `desktop-light` Playwright project. This keeps the shared live account from receiving the same write journey concurrently across the ten responsive/color-scheme projects while preserving the full matrix for non-destructive coverage.
+Mutation-enabled product tests self-skip outside the single `desktop-light` Playwright project. This keeps the shared live account from receiving the same write journey concurrently across the ten responsive/color-scheme projects while preserving the full matrix for non-destructive coverage. The explicit single-project runner is `npm run test:e2e:mutations`; the tests still require the live-account environment and `MIZAN_E2E_MUTATIONS=1` to perform writes.
 
 ### 4. Live onboarding E2E
 Use a separate account that is intentionally incomplete:
@@ -36,7 +36,7 @@ Use a separate completed account created only to be permanently deleted:
 
 `tests/e2e/account-deletion-live.spec.ts` is intentionally isolated from the normal completed-account fixture. Before deletion it exports the account to obtain the authenticated user id, seeds user-scoped pending-mutation and recent-snapshot cache sentinels, completes the two-step deletion UI, verifies both caches are removed, confirms no local-cleanup warning appeared, and then verifies the deleted credentials can no longer obtain a Supabase password session using only the public publishable key. This specification is irreversible by design and must never run against a reusable account. It self-skips in every project except `desktop-light`, so the disposable account is deleted exactly once instead of being reused across the ten responsive/color-scheme projects. The explicit runner is `npm run test:e2e:delete-account`; it still requires the destructive environment opt-in above.
 
-Real credentials never belong in source control; `.env.example` documents names only.
+Real credentials never belong in source control; `.env.example` documents names only. `apps/app/__tests__/playwright-mutation-isolation-policy-test.ts` statically guards the single-project mutation isolation contract so future E2E edits do not silently reintroduce shared-account races.
 
 ## Current E2E matrix
 
@@ -60,7 +60,7 @@ The Playwright project matrix deliberately uses the same Chromium engine with ex
 
 - Run the full TypeScript, lint, unit/component/integration, database/policy, and Web E2E suites from a trustworthy checkout.
 - Add or execute any missing behavior discovered by those runs; static specifications are not a PASS.
-- Run the responsive read-only matrix without `MIZAN_E2E_MUTATIONS=1`; enable mutation mode only with dedicated/disposable live accounts and expect those write journeys to execute once in `desktop-light`.
+- Run the responsive read-only matrix without `MIZAN_E2E_MUTATIONS=1`; enable mutation mode only with dedicated/disposable live accounts and use `npm run test:e2e:mutations` for the isolated `desktop-light` write journeys.
 - Execute the prepared destructive deletion specification only with an intentionally disposable dedicated account; do not reuse the normal completed-account fixture. Use `npm run test:e2e:delete-account` after configuring the documented environment and setting `MIZAN_E2E_DESTRUCTIVE=1`.
 - Execute Expo diagnostics plus Android/iOS bundle/export checks available in the owner environment.
 - Inspect production Web console/network behavior and production export output.
