@@ -40,7 +40,7 @@ function formatReflectionDate(value: string, locale: 'ar' | 'en'): string {
   try {
     return date.toLocaleDateString(locale === 'ar' ? 'ar-QA-u-nu-latn' : 'en-QA-u-nu-latn');
   } catch {
-    return date.toISOString().slice(0, 10);
+    return '—';
   }
 }
 
