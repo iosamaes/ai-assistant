@@ -16,6 +16,7 @@
     "test": "npm run test --workspaces --if-present",
     "check": "npm run typecheck && npm run lint && npm run test",
     "test:e2e": "playwright test",
+    "test:e2e:mutations": "playwright test tests/e2e/product-live.spec.ts tests/e2e/onboarding-live.spec.ts --project=desktop-light",
     "test:e2e:delete-account": "playwright test tests/e2e/account-deletion-live.spec.ts --project=desktop-light",
     "check:runtime": "npm run check && npm run test:e2e"
   },
