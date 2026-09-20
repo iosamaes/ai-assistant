@@ -43,6 +43,9 @@ describe('Playwright live-mutation isolation policy', () => {
     const runner = fs.readFileSync(path.join(repoRoot, 'scripts', 'run-release-baseline.mjs'), 'utf8');
 
     expect(packageJson.scripts?.['check:release:baseline']).toBe('node scripts/run-release-baseline.mjs');
+    expect(runner).toContain("const isWindows = process.platform === 'win32'");
+    expect(runner).toContain("const npmCommand = isWindows ? 'npm.cmd' : 'npm'");
+    expect(runner).toContain('shell: isWindows');
     expect(runner).toContain("'MIZAN_E2E_MUTATIONS'");
     expect(runner).toContain("'MIZAN_E2E_DESTRUCTIVE'");
     expect(runner).toContain("'MIZAN_E2E_VISUAL_EVIDENCE'");
