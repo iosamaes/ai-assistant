@@ -1,0 +1,23 @@
+import fs from 'node:fs';
+import path from 'node:path';
+
+const experimentsSource = fs.readFileSync(
+  path.resolve(__dirname, '../src/app/experiments.tsx'),
+  'utf8',
+);
+
+describe('Experiments account-switch fencing policy', () => {
+  test('clears account-owned experiment drafts before another account can render them', () => {
+    expect(experimentsSource).toContain('const draftUserRef = useRef(userId);');
+    expect(experimentsSource).toContain('if (draftUserRef.current !== userId) {');
+    expect(experimentsSource).toContain("setSelected('earlier-bedtime');");
+    expect(experimentsSource).toContain("setHypothesis(labels.templates['earlier-bedtime'].hypothesis);");
+    expect(experimentsSource).toContain('mutationRequestRef.current += 1;');
+  });
+
+  test('keeps loaded experiment history scoped to the active account', () => {
+    expect(experimentsSource).toContain(
+      'const visibleHistory = historyOwnerId === userId ? history : [];',
+    );
+  });
+});
