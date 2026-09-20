@@ -420,7 +420,7 @@ export default function ExperimentsScreen() {
 
         <MizanText>{experiment.hypothesis}</MizanText>
 
-        <View style={styles.metadataGrid}>
+        <View style={[styles.metadataGrid, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
           <View style={[styles.metadataTile, { backgroundColor: palette.surfaceMuted }]}>
             <View style={[styles.metadataLabelRow, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
               <AppIcon name="margin" color={palette.textMuted} size={16} />
@@ -515,7 +515,7 @@ export default function ExperimentsScreen() {
             </View>
 
             <MizanText variant="label">{labels.comparison}</MizanText>
-            <View style={styles.comparisonGrid}>
+            <View style={[styles.comparisonGrid, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
               <View style={styles.comparisonBlock}>
                 <MizanText variant="caption" muted>{labels.baseline}</MizanText>
                 <MizanText variant="title">{formatValue(evaluation.baselineMedian, locale)}</MizanText>
@@ -590,7 +590,7 @@ export default function ExperimentsScreen() {
             </View>
           </View>
 
-          <View style={styles.templateGrid}>
+          <View style={[styles.templateGrid, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
             {templateIds.map((id) => {
               const template = experimentTemplates[id];
               const isSelected = selected === id;
@@ -639,7 +639,7 @@ export default function ExperimentsScreen() {
             <MizanText variant="label">{labels.chooseBody}</MizanText>
           </View>
 
-          <View style={styles.planStats}>
+          <View style={[styles.planStats, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
             <View style={[styles.planStat, { backgroundColor: palette.surfaceMuted }]}>
               <View style={[styles.metadataLabelRow, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
                 <AppIcon name="margin" color={palette.textMuted} size={16} />
@@ -753,7 +753,6 @@ const styles = StyleSheet.create({
   sectionIntro: { gap: Spacing.xs },
   chips: { flexWrap: 'wrap', gap: Spacing.sm },
   templateGrid: {
-    flexDirection: 'row',
     flexWrap: 'wrap',
     gap: Spacing.md,
   },
@@ -777,7 +776,6 @@ const styles = StyleSheet.create({
     flexShrink: 0,
   },
   planStats: {
-    flexDirection: 'row',
     flexWrap: 'wrap',
     gap: Spacing.md,
   },
@@ -815,7 +813,6 @@ const styles = StyleSheet.create({
     gap: Spacing.xs,
   },
   metadataGrid: {
-    flexDirection: 'row',
     flexWrap: 'wrap',
     gap: Spacing.sm,
   },
@@ -855,7 +852,6 @@ const styles = StyleSheet.create({
     gap: Spacing.sm,
   },
   comparisonGrid: {
-    flexDirection: 'row',
     flexWrap: 'wrap',
     gap: Spacing.md,
   },
