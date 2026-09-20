@@ -5,7 +5,7 @@ Status: static verification harness is being prepared while CP9/CP10 runtime gat
 ## Verification modes
 
 ### 1. Deterministic signed-out Web E2E
-`npm run test:e2e` keeps Supabase client configuration blank by default and runs the existing auth/guard coverage without requiring credentials. Live-account specifications skip themselves when their explicit environment is absent.
+`npm run test:e2e` keeps Supabase client configuration blank by default and runs the existing auth/guard coverage without requiring credentials. Live-account specifications skip themselves when their explicit environment is absent. Signed-out route-guard, locale-switch, and password-reset journeys now use the same shared critical browser-diagnostic guard as the live-account journeys, in addition to their layout/overflow assertions.
 
 ### 2. Live completed-account Web E2E
 Provide only public client configuration plus a dedicated completed-onboarding test account:
@@ -14,7 +14,7 @@ Provide only public client configuration plus a dedicated completed-onboarding t
 - `MIZAN_E2E_COMPLETED_EMAIL`
 - `MIZAN_E2E_COMPLETED_PASSWORD`
 
-This enables non-destructive checks for the adaptive navigation shell, Life Map/One Move/Insights/More routing, Recovery progression, What If scenario switching, Settings reachability, portable Privacy export, overflow checks, and critical browser diagnostics. The live journeys collect uncaught page errors, browser `console.error` messages, failed requests other than expected Chromium navigation aborts, and HTTP 5xx responses. The same diagnostic helper is now shared by completed-account, onboarding, and destructive-deletion live journeys so critical browser/runtime failures are judged consistently. This is a verification harness only; it is not a substitute for executing the production Web build and inspecting its console/network behavior.
+This enables non-destructive checks for the adaptive navigation shell, Life Map/One Move/Insights/More routing, Recovery progression, What If scenario switching, Settings reachability, portable Privacy export, overflow checks, and critical browser diagnostics. The live journeys collect uncaught page errors, browser `console.error` messages, failed requests other than expected Chromium navigation aborts, and HTTP 5xx responses. The same diagnostic helper is shared by signed-out auth, completed-account, onboarding, and destructive-deletion journeys so critical browser/runtime failures are judged consistently. This is a verification harness only; it is not a substitute for executing the production Web build and inspecting its console/network behavior.
 
 For Arabic/RTL matrix evidence, configure a second completed account whose saved MIZAN profile locale is already Arabic:
 - `MIZAN_E2E_ARABIC_EMAIL`
@@ -32,7 +32,7 @@ Use a separate account that is intentionally incomplete:
 - `MIZAN_E2E_ONBOARDING_EMAIL`
 - `MIZAN_E2E_ONBOARDING_PASSWORD`
 
-The read-only onboarding check verifies branded onboarding without product navigation. With `MIZAN_E2E_MUTATIONS=1`, the dedicated account can complete the essential setup and must land on Today with product navigation present. Because completion consumes the account's incomplete-onboarding state, mutation mode skips the read-only onboarding matrix and runs the completion journey once in `desktop-light`; this avoids racing a one-time state transition against parallel responsive projects. Both onboarding modes now use the shared critical browser-diagnostic guard, so uncaught page errors, console errors, unexpected request failures, or HTTP 5xx responses are surfaced alongside layout/assertion failures.
+The read-only onboarding check verifies branded onboarding without product navigation. With `MIZAN_E2E_MUTATIONS=1`, the dedicated account can complete the essential setup and must land on Today with product navigation present. Because completion consumes the account's incomplete-onboarding state, mutation mode skips the read-only onboarding matrix and runs the completion journey once in `desktop-light`; this avoids racing a one-time state transition against parallel responsive projects. Both onboarding modes use the shared critical browser-diagnostic guard, so uncaught page errors, console errors, unexpected request failures, or HTTP 5xx responses are surfaced alongside layout/assertion failures.
 
 ### 5. Destructive account-deletion E2E
 Use a separate completed account created only to be permanently deleted:
@@ -42,16 +42,16 @@ Use a separate completed account created only to be permanently deleted:
 
 `tests/e2e/account-deletion-live.spec.ts` is intentionally isolated from the normal completed-account fixture. Before deletion it exports the account to obtain the authenticated user id, seeds user-scoped pending-mutation and recent-snapshot cache sentinels, completes the two-step deletion UI, verifies both caches are removed, confirms no local-cleanup warning appeared, and then verifies the deleted credentials can no longer obtain a Supabase password session using only the public publishable key. The journey also uses the shared critical browser-diagnostic guard, so destructive validation cannot pass while hiding uncaught page errors, console errors, unexpected request failures, or HTTP 5xx responses. This specification is irreversible by design and must never run against a reusable account. It self-skips in every project except `desktop-light`, so the disposable account is deleted exactly once instead of being reused across the ten responsive/color-scheme projects. The explicit runner is `npm run test:e2e:delete-account`; it still requires the destructive environment opt-in above.
 
-Real credentials never belong in source control; `.env.example` documents names only. `apps/app/__tests__/playwright-mutation-isolation-policy-test.ts` statically guards the single-project mutation isolation contract so future E2E edits do not silently reintroduce shared-account races.
+The generic browser assertions live in `tests/e2e/browser-assertions.ts`, while account configuration/sign-in helpers remain in `tests/e2e/live-account.ts`. This keeps browser/runtime diagnostics independent from fixture/account concerns. Real credentials never belong in source control; `.env.example` documents names only. `apps/app/__tests__/playwright-mutation-isolation-policy-test.ts` statically guards the single-project mutation isolation contract so future E2E edits do not silently reintroduce shared-account races.
 
 ## Current E2E matrix
 
 | CP11 journey | Specification | Current static coverage |
 | --- | --- | --- |
-| Auth / route guard | `tests/e2e/auth.spec.ts` | signed-out guard, locale switch, password-reset mode, overflow |
+| Auth / route guard | `tests/e2e/auth.spec.ts` | signed-out guard, locale switch, password-reset mode, overflow, shared critical browser diagnostics |
 | Onboarding | `tests/e2e/onboarding-live.spec.ts` | incomplete-account/no-product-chrome checks across the responsive matrix when mutation mode is off; essential setup completion is mutation-gated and isolated to one `desktop-light` project; both paths use shared critical browser diagnostics |
 | Primary product shell | `tests/e2e/product-live.spec.ts` | English/default completed-account shell plus Life Map, One Move, Insights, More across configured phone/tablet/desktop projects; optional dedicated Arabic completed account repeats the primary shell route/overflow checks with persisted Arabic RTL across the same matrix |
-| Browser diagnostics | `tests/e2e/live-account.ts`, live specifications | completed-account, Arabic, onboarding, mutation, and destructive-deletion live journeys share one guard for uncaught page errors, console errors, unexpected failed requests, and HTTP 5xx responses; expected Chromium `net::ERR_ABORTED` navigation cancellations are excluded |
+| Browser diagnostics | `tests/e2e/browser-assertions.ts`, all E2E journey specs | signed-out auth, completed-account, Arabic, onboarding, mutation, and destructive-deletion journeys share one guard for uncaught page errors, console errors, unexpected failed requests, and HTTP 5xx responses; expected Chromium `net::ERR_ABORTED` navigation cancellations are excluded |
 | Daily loop | `tests/e2e/product-live.spec.ts` | live low-energy check-in persistence behind mutation opt-in and isolated to `desktop-light` |
 | Feedback learning | `tests/e2e/product-live.spec.ts` | repeated evidence → One Move accept → explicit 4/5 feedback → Personal Learning evidence, mutation-gated and isolated to `desktop-light` |
 | Recovery | `tests/e2e/product-live.spec.ts` | Recovery surface plus next-step interaction |
