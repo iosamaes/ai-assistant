@@ -118,7 +118,7 @@ After the owner has started and reset the disposable local Supabase stack, the n
 npm run check:release:baseline
 ```
 
-The root command delegates to `scripts/run-release-baseline.mjs`. Before invoking any quality command, that runner removes `MIZAN_E2E_MUTATIONS`, `MIZAN_E2E_DESTRUCTIVE`, `MIZAN_E2E_VISUAL_EVIDENCE`, and `MIZAN_E2E_PERFORMANCE` from the child environment, even if the owner shell already has one of those opt-ins set. It then runs, in order, `npm run check`, `npm run test:db`, `npm run lint:db`, `npm run test:e2e`, and `npm run test:e2e:production`, stopping at the first failure.
+The root command delegates to `scripts/run-release-baseline.mjs`. Before invoking any quality command, that runner removes `MIZAN_E2E_MUTATIONS`, `MIZAN_E2E_DESTRUCTIVE`, `MIZAN_E2E_VISUAL_EVIDENCE`, and `MIZAN_E2E_PERFORMANCE` from the child environment, even if the owner shell already has one of those opt-ins set. It also fails before running any child command unless the public Supabase values plus completed-English, completed-Arabic, and incomplete-onboarding credentials are present. The three role-bearing fixture emails are trimmed, compared case-insensitively, and must be distinct; conflict output identifies environment-variable names rather than exposing credential values. The runner then executes, in order, `npm run check`, `npm run test:db`, `npm run lint:db`, `npm run test:e2e`, and `npm run test:e2e:production`, stopping at the first failure.
 
 This is intentionally a **baseline**, not the whole CP11 release proof. Live mutations, visual evidence, performance probes, irreversible deletion, Expo Doctor, Android/iOS exports, and representative native-device review remain separate explicit gates. Keeping them separate prevents a convenience command from silently mutating a shared fixture or permanently deleting an account.
 
@@ -126,7 +126,7 @@ This is intentionally a **baseline**, not the whole CP11 release proof. Live mut
 
 `tests/e2e/browser-assertions.ts` provides a common guard for uncaught page errors, browser `console.error`, unexpected failed requests, and HTTP 5xx responses. Expected Chromium `net::ERR_ABORTED` navigation cancellations are excluded. The shared bounded `tabTo` helper proves keyboard reachability using actual sequential focus.
 
-`apps/app/__tests__/playwright-mutation-isolation-policy-test.ts` guards the single-project mutation isolation contract, the dedicated irreversible-deletion contract, and the fail-closed release-baseline invariant that inherited opt-in mutation/destructive flags are stripped before aggregate validation.
+`apps/app/__tests__/playwright-mutation-isolation-policy-test.ts` guards the single-project mutation isolation contract, the dedicated irreversible-deletion contract, and the fail-closed release-baseline invariants: inherited opt-in mutation/destructive flags are stripped, required fixture variables cannot silently skip release evidence, and the completed-English/completed-Arabic/incomplete-onboarding roles cannot reuse one normalized fixture email.
 
 `apps/app/__tests__/production-logging-privacy-policy-test.ts` rejects ad-hoc production `console.*` sinks across app/core/plugin/Edge source except the existing development-only sanitized render diagnostic.
 
@@ -147,7 +147,7 @@ This is intentionally a **baseline**, not the whole CP11 release proof. Live mut
 | Development-runtime performance | `tests/e2e/performance-live.spec.ts` | opt-in read-only desktop sample of authenticated readiness, primary route latency, resource timing, long tasks, overflow, and critical diagnostics |
 | Production Web export | `playwright.production.config.ts` + `tests/e2e/production-web.spec.ts` + `scripts/report-expo-static-size.mjs` | actual static export, bundle/static-asset size measurement, direct-route serving/hydration, auth guard/locale, optional authenticated direct routes and shell on representative phone-light/desktop-dark projects |
 | Production-export performance | `tests/e2e/production-performance.spec.ts` | opt-in read-only performance sample against served `apps/app/dist`, including authenticated readiness, primary route latency, production resource timing, long tasks, overflow, and critical diagnostics |
-| Release baseline aggregation | `scripts/run-release-baseline.mjs` + policy test | fail-fast check/database/E2E/production-smoke sequence with mutation/destructive/visual/performance opt-ins forcibly removed from child environment |
+| Release baseline aggregation | `scripts/run-release-baseline.mjs` + policy test | fail-fast check/database/E2E/production-smoke sequence with opt-in modes removed, required fixture presence enforced, and English/Arabic/onboarding fixture-role reuse rejected before child commands |
 | Daily loop | `tests/e2e/product-live.spec.ts` | live check-in write behind mutation opt-in in `desktop-light` |
 | Feedback learning | `tests/e2e/product-live.spec.ts` | evidence → One Move accept → explicit usefulness → Personal Learning |
 | Recovery / What If | `tests/e2e/product-live.spec.ts` | recovery step interaction and scenario switch/assumption visibility |
@@ -162,13 +162,13 @@ The ten main Web projects use the same Chromium engine with explicit viewport an
 ## Release documentation
 
 - Root `README.md` documents Node/npm requirements, clean install, public Supabase configuration, local Supabase initialization/reset, the fail-closed `check:release:baseline` command, app/test/E2E commands, stable CP9 visual evidence collection, opt-in performance sampling, production static-export smoke and size report, destructive-test safety, Expo exports, architecture invariants, and status pointers.
-- `.env.example` documents variable names only. It explicitly distinguishes the persisted-English and persisted-Arabic completed fixtures and keeps mutation, visual-evidence, performance, and destructive modes opt-in.
+- `.env.example` documents variable names only. It explicitly distinguishes the persisted-English, persisted-Arabic, and incomplete-onboarding fixtures, states that those three release-baseline accounts must be distinct, and keeps mutation, visual-evidence, performance, and destructive modes opt-in.
 - `apps/app/README.md` is MIZAN-specific rather than the create-expo-app starter and documents the explicit export scripts plus owner-side Expo Doctor step.
 - Documentation is static evidence only until an owner/new-engineer completes a clean-checkout run successfully.
 
 ## Still required before CP11 can close
 
-- With the disposable local Supabase stack reset, run `npm run check:release:baseline` from a trustworthy checkout and retain the full fail-fast result; this covers TypeScript, lint, unit/component/integration, local database tests/lint, the normal Web E2E matrix, and production Web smoke/size while forcibly disabling opt-in mutation/destructive modes.
+- With the disposable local Supabase stack reset, configure three distinct read-only baseline fixtures for completed English, completed Arabic, and incomplete onboarding, then run `npm run check:release:baseline` from a trustworthy checkout and retain the full fail-fast result; this covers TypeScript, lint, unit/component/integration, local database tests/lint, the normal Web E2E matrix, and production Web smoke/size while forcibly disabling opt-in mutation/destructive modes.
 - Execute the responsive read-only matrix without mutation mode; inspect assertion output **and** visible keyboard focus/interaction behavior.
 - Run `npm run test:e2e:visual` with the persisted-English and persisted-Arabic completed fixtures, inspect all Today/Life Map/WHY/Check-in attachments, and retain reviewed evidence.
 - Run `npm run test:e2e:mutations` only with dedicated/disposable fixtures, including notification preference persistence/restoration.
