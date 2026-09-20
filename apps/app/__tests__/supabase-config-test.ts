@@ -32,6 +32,13 @@ describe('Supabase public config', () => {
     expect(readSupabasePublicConfig()).toEqual({ ok: false, reason: 'invalid-url' });
   });
 
+  test('rejects non-http URLs before client construction', () => {
+    process.env.EXPO_PUBLIC_SUPABASE_URL = 'file:///tmp/fake-supabase';
+    process.env.EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_test';
+
+    expect(readSupabasePublicConfig()).toEqual({ ok: false, reason: 'invalid-url' });
+  });
+
   test('rejects keys that are not public Supabase client keys', () => {
     process.env.EXPO_PUBLIC_SUPABASE_URL = 'https://example.supabase.co';
     process.env.EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY = 'secret-looking-value';
