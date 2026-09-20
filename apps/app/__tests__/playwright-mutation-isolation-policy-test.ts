@@ -34,4 +34,22 @@ describe('Playwright live-mutation isolation policy', () => {
     expect(deletionSpec).toContain("toMatchObject({ error: 'account_changed' })");
     expect(deletionSpec).toContain('expect(reauthentication.status()).toBe(400)');
   });
+
+  test('aggregate release baseline cannot inherit opt-in mutation or destructive modes', () => {
+    const repoRoot = path.resolve(__dirname, '../../..');
+    const packageJson = JSON.parse(fs.readFileSync(path.join(repoRoot, 'package.json'), 'utf8')) as {
+      scripts?: Record<string, string>;
+    };
+    const runner = fs.readFileSync(path.join(repoRoot, 'scripts', 'run-release-baseline.mjs'), 'utf8');
+
+    expect(packageJson.scripts?.['check:release:baseline']).toBe('node scripts/run-release-baseline.mjs');
+    expect(runner).toContain("'MIZAN_E2E_MUTATIONS'");
+    expect(runner).toContain("'MIZAN_E2E_DESTRUCTIVE'");
+    expect(runner).toContain("'MIZAN_E2E_VISUAL_EVIDENCE'");
+    expect(runner).toContain("'MIZAN_E2E_PERFORMANCE'");
+    expect(runner).toContain('delete env[flag]');
+    expect(runner).toContain("const scripts = ['check', 'test:db', 'lint:db', 'test:e2e', 'test:e2e:production'];");
+    expect(runner).not.toContain('test:e2e:mutations');
+    expect(runner).not.toContain('test:e2e:delete-account');
+  });
 });
