@@ -1,5 +1,5 @@
 import { router } from 'expo-router';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { StyleSheet, useColorScheme, View } from 'react-native';
 
 import {
@@ -44,25 +44,21 @@ export default function CheckInScreen() {
   const [skippedMetrics, setSkippedMetrics] = useState<DailyCheckInMetric[]>([]);
   const [submitState, setSubmitState] = useState<SubmitState>('idle');
   const activeUserRef = useRef(userId);
+  const draftUserRef = useRef(userId);
+
+  if (draftUserRef.current !== userId) {
+    draftUserRef.current = userId;
+    setRatings({});
+    setSkippedMetrics([]);
+    setSubmitState('idle');
+  }
   activeUserRef.current = userId;
+
   const answeredCount = useMemo(() => Object.keys(ratings).length, [ratings]);
   const completedCount = answeredCount + skippedMetrics.length;
   const interactionsLocked = submitState === 'saving' || submitState === 'queued';
   const progressLabel = `${formatLocalizedNumber(completedCount, locale, 0)} / ${formatLocalizedNumber(metricItems.length, locale, 0)}`;
   const progressPercent = (completedCount / metricItems.length) * 100;
-
-  useEffect(() => {
-    let active = true;
-    void Promise.resolve().then(() => {
-      if (!active) return;
-      setRatings({});
-      setSkippedMetrics([]);
-      setSubmitState('idle');
-    });
-    return () => {
-      active = false;
-    };
-  }, [userId]);
 
   const setRating = (metric: DailyCheckInMetric, rating: DailyCheckInRating) => {
     if (interactionsLocked) return;
