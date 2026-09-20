@@ -167,6 +167,7 @@ export default function OnboardingScreen() {
   const [baselineStatus, setBaselineStatus] = useState<BaselineStatus>('idle');
   const [saving, setSaving] = useState(false);
   const activeUserRef = useRef(userId);
+  activeUserRef.current = userId;
   const syncMessage = syncStatus === 'offline' ? t('syncOffline') : syncStatus === 'error' ? t('syncError') : null;
   const labels = copy[locale];
   const baselineChoicesLocked = saving || baselineStatus === 'loading';
@@ -181,21 +182,22 @@ export default function OnboardingScreen() {
     spiritualGroundingEnabled !== null;
 
   useEffect(() => {
-    activeUserRef.current = userId;
+    const requestedUserId = userId;
     let active = true;
     void (async () => {
       await Promise.resolve();
-      if (!active) return;
+      if (!active || activeUserRef.current !== requestedUserId) return;
       setSaving(false);
-      if (!userId) {
+      if (!requestedUserId) {
         setBaselineTargets({});
         setBaselineStatus('idle');
         return;
       }
 
+      setBaselineTargets({});
       setBaselineStatus('loading');
-      const result = await loadDomainBaselineTargets(userId);
-      if (!active) return;
+      const result = await loadDomainBaselineTargets(requestedUserId);
+      if (!active || activeUserRef.current !== requestedUserId) return;
       if (result.ok) {
         setBaselineTargets(result.value);
         setBaselineStatus('idle');
