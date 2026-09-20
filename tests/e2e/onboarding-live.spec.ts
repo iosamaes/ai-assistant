@@ -8,22 +8,25 @@ import {
 import {
   mutationsEnabled,
   onboardingAccountConfigured,
+  onboardingMutationAccountConfigured,
   signInOnboardingAccount,
+  signInOnboardingMutationAccount,
 } from './live-account';
 
-const liveReason = 'Requires MIZAN_E2E_SUPABASE_URL, MIZAN_E2E_SUPABASE_PUBLISHABLE_KEY, and a dedicated incomplete-onboarding account.';
-const mutationProjectReason = 'Live onboarding mutation runs once in desktop-light so the incomplete account is not consumed concurrently by the responsive matrix.';
+const liveReason = 'Requires MIZAN_E2E_SUPABASE_URL, MIZAN_E2E_SUPABASE_PUBLISHABLE_KEY, and a dedicated incomplete read-only onboarding account.';
+const mutationLiveReason = 'Requires the live Supabase client configuration plus a separate disposable incomplete onboarding mutation account.';
+const mutationProjectReason = 'Live onboarding mutation runs once in desktop-light so its disposable account is not consumed concurrently by the responsive matrix.';
 
 async function ensureSelected(control: Locator) {
   if ((await control.getAttribute('aria-selected')) !== 'true') await control.click();
   await expect(control).toHaveAttribute('aria-selected', 'true');
 }
 
-test.describe('live onboarding journey', () => {
+test.describe('live onboarding read-only journey', () => {
   test.skip(!onboardingAccountConfigured, liveReason);
 
   test('incomplete account reaches the branded onboarding surface without product chrome', async ({ page }) => {
-    test.skip(mutationsEnabled, 'Read-only onboarding matrix is skipped in mutation mode because the dedicated account will be completed once.');
+    test.skip(mutationsEnabled, 'Read-only onboarding matrix is skipped in mutation mode; its reusable incomplete fixture is never consumed by mutation coverage.');
     const diagnostics = collectCriticalBrowserDiagnostics(page);
     await signInOnboardingAccount(page);
 
@@ -32,12 +35,25 @@ test.describe('live onboarding journey', () => {
     await expectNoHorizontalOverflow(page);
     expectNoCriticalBrowserDiagnostics(diagnostics);
   });
+});
 
-  test('dedicated onboarding account can complete the essential setup when mutations are explicitly enabled', async ({ page }, testInfo) => {
-    test.skip(!mutationsEnabled, 'Set MIZAN_E2E_MUTATIONS=1 only for a disposable or dedicated onboarding E2E account.');
+test.describe('live onboarding mutation journey', () => {
+  test.skip(!onboardingMutationAccountConfigured, mutationLiveReason);
+
+  test('separate disposable onboarding account can complete the essential setup when mutations are explicitly enabled', async ({ page }, testInfo) => {
+    test.skip(!mutationsEnabled, 'Set MIZAN_E2E_MUTATIONS=1 only with the separate disposable onboarding mutation account configured.');
     test.skip(testInfo.project.name !== 'desktop-light', mutationProjectReason);
+
+    const mutationEmail = process.env.MIZAN_E2E_ONBOARDING_MUTATION_EMAIL?.trim().toLowerCase();
+    const readOnlyEmail = process.env.MIZAN_E2E_ONBOARDING_EMAIL?.trim().toLowerCase();
+    if (mutationEmail && readOnlyEmail && mutationEmail === readOnlyEmail) {
+      throw new Error(
+        'MIZAN_E2E_ONBOARDING_MUTATION_EMAIL must be separate from the reusable MIZAN_E2E_ONBOARDING_EMAIL fixture.',
+      );
+    }
+
     const diagnostics = collectCriticalBrowserDiagnostics(page);
-    await signInOnboardingAccount(page);
+    await signInOnboardingMutationAccount(page);
 
     const english = page.getByRole('button', { name: 'English', exact: true });
     await ensureSelected(english);
