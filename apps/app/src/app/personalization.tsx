@@ -1,6 +1,6 @@
 import type { HumanStateVector, PersonalizationMaturity } from '@mizan/core';
 import { router } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Pressable, StyleSheet, useColorScheme, View } from 'react-native';
 
 import { loadCurrentHumanState } from '@/application/daily-intelligence';
@@ -97,31 +97,45 @@ export default function PersonalizationScreen() {
   const { enabledDomains, isRtl, locale, refreshSession, t, toggleDomain, userId } = useAppState();
   const [status, setStatus] = useState<LoadStatus>('loading');
   const [state, setState] = useState<HumanStateVector | null>(null);
+  const [stateUserId, setStateUserId] = useState<string | null>(null);
+  const activeUserRef = useRef(userId);
+  activeUserRef.current = userId;
   const scheme = useColorScheme();
   const palette = Palette[scheme === 'dark' ? 'dark' : 'light'];
   const labels = copy[locale];
 
   useEffect(() => {
     let active = true;
+    const requestedUserId = userId;
+    const requestIsCurrent = () => active && activeUserRef.current === requestedUserId;
+
     void (async () => {
       await Promise.resolve();
-      if (!active) return;
-      if (!userId) {
+      if (!requestIsCurrent()) return;
+      if (!requestedUserId) {
         setState(null);
+        setStateUserId(null);
         setStatus('ready');
         return;
       }
 
       setState(null);
+      setStateUserId(requestedUserId);
       setStatus('loading');
-      const result = await loadCurrentHumanState(userId);
-      if (!active) return;
+      const result = await loadCurrentHumanState(requestedUserId);
+      if (!requestIsCurrent()) return;
       if (!result.ok) {
-        if (result.error.kind === 'session-expired') await refreshSession();
-        if (active) setStatus('error');
+        if (result.error.kind === 'session-expired') {
+          await refreshSession();
+          if (!requestIsCurrent()) return;
+        }
+        setState(null);
+        setStateUserId(requestedUserId);
+        setStatus('error');
         return;
       }
       setState(result.value);
+      setStateUserId(requestedUserId);
       setStatus('ready');
     })();
 
@@ -130,7 +144,10 @@ export default function PersonalizationScreen() {
     };
   }, [refreshSession, userId]);
 
-  const currentStageIndex = state ? stageOrder.indexOf(state.maturity) : -1;
+  const currentState = userId !== null && stateUserId === userId ? state : null;
+  const displayedStatus: LoadStatus =
+    userId === null ? 'ready' : stateUserId === userId ? status : 'loading';
+  const currentStageIndex = currentState ? stageOrder.indexOf(currentState.maturity) : -1;
 
   return (
     <Screen>
@@ -143,9 +160,9 @@ export default function PersonalizationScreen() {
       </View>
 
       <Card style={[styles.heroCard, { backgroundColor: palette.accentSoft, borderColor: palette.accent }]}>
-        <MizanText variant="title">{state ? stageTitle(state.maturity, locale) : labels.current}</MizanText>
+        <MizanText variant="title">{currentState ? stageTitle(currentState.maturity, locale) : labels.current}</MizanText>
         <MizanText>{labels.body}</MizanText>
-        {status === 'ready' && state ? (
+        {displayedStatus === 'ready' && currentState ? (
           <View style={[styles.currentPill, { backgroundColor: palette.surface, alignSelf: isRtl ? 'flex-end' : 'flex-start' }]}>
             <MizanText variant="caption">{labels.activeStage}</MizanText>
           </View>
@@ -206,23 +223,23 @@ export default function PersonalizationScreen() {
         </View>
       </Card>
 
-      {status === 'loading' ? (
+      {displayedStatus === 'loading' ? (
         <Card style={{ backgroundColor: palette.surfaceMuted }}>
           <MizanText accessibilityLiveRegion="polite" muted>{labels.loading}</MizanText>
         </Card>
       ) : null}
-      {status === 'error' ? (
+      {displayedStatus === 'error' ? (
         <Card style={{ backgroundColor: palette.surfaceMuted }}>
           <MizanText accessibilityLiveRegion="polite" muted>{labels.error}</MizanText>
         </Card>
       ) : null}
-      {status === 'ready' && !state ? (
+      {displayedStatus === 'ready' && !currentState ? (
         <Card style={{ backgroundColor: palette.surfaceMuted }}>
           <MizanText accessibilityLiveRegion="polite" muted>{labels.empty}</MizanText>
         </Card>
       ) : null}
 
-      {status === 'ready' && state ? (
+      {displayedStatus === 'ready' && currentState ? (
         <>
           <View style={styles.sectionHeader}>
             <MizanText variant="title">{labels.progression}</MizanText>
@@ -231,7 +248,7 @@ export default function PersonalizationScreen() {
 
           <View style={[styles.progression, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
             {stageOrder.map((stage, index) => {
-              const active = stage === state.maturity;
+              const active = stage === currentState.maturity;
               const passed = index < currentStageIndex;
               const stageStateLabel = active ? labels.activeStage : passed ? labels.pastStage : labels.futureStage;
               return (
