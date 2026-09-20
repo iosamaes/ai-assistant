@@ -215,6 +215,7 @@ export default function TodayScreen() {
   const { enabledDomains, isRtl, locale, refreshSession, syncStatus, t, userId } = useAppState();
   const { width } = useWindowDimensions();
   const activeUserRef = useRef(userId);
+  activeUserRef.current = userId;
   const [dailySnapshot, setDailySnapshot] = useState<DailySnapshot | null>(null);
   const [dailySnapshotUserId, setDailySnapshotUserId] = useState<string | null>(null);
   const [dailyLoadStatus, setDailyLoadStatus] = useState<DailyLoadStatus>('loading');
@@ -243,10 +244,6 @@ export default function TodayScreen() {
   const currentRecommendation = userId !== null && recommendationUserId === userId ? recommendation : null;
   const displayedRecommendationLoadStatus: RecommendationLoadStatus = userId !== null && humanState && recommendationLoadStatus === 'ready' && recommendationUserId !== userId ? 'loading' : recommendationLoadStatus;
   const activeFeedbackTarget = feedbackTarget?.userId === userId ? feedbackTarget : null;
-
-  useEffect(() => {
-    activeUserRef.current = userId;
-  }, [userId]);
 
   useEffect(() => {
     let active = true;
