@@ -190,15 +190,17 @@ test.describe('live completed-account product journeys', () => {
     expectNoCriticalBrowserDiagnostics(diagnostics);
   });
 
-  test('optional Spiritual Grounding preference can toggle and restore on a dedicated live account', async ({ page }, testInfo) => {
+  test('optional Spiritual Grounding preference persists across reload and restores on a dedicated live account', async ({ page }, testInfo) => {
     test.skip(!mutationsEnabled, 'Set MIZAN_E2E_MUTATIONS=1 only for a disposable or dedicated E2E account.');
     test.skip(testInfo.project.name !== 'desktop-light', mutationProjectReason);
     const diagnostics = collectCriticalBrowserDiagnostics(page);
     await signInCompletedAccount(page);
     await page.goto('/settings');
 
+    const settingsTitle = page.getByText(/Shape MIZAN around your life|اضبط ميزان على حياتك، لا العكس/, { exact: true });
     const enabled = page.getByRole('button', { name: /Enabled|مفعّلة/, exact: true });
     const disabled = page.getByRole('button', { name: /Off|متوقفة/, exact: true });
+    await expect(settingsTitle).toBeVisible();
     await expect(enabled).toBeVisible();
     await expect(disabled).toBeVisible();
     await expect.poll(async () =>
@@ -213,9 +215,18 @@ test.describe('live completed-account product journeys', () => {
     await target.click();
     await expect(target).toHaveAttribute('aria-selected', 'true');
     await expect(target).toBeEnabled();
+
+    await page.reload();
+    await expect(settingsTitle).toBeVisible();
+    await expect(target).toHaveAttribute('aria-selected', 'true');
+
     await original.click();
     await expect(original).toHaveAttribute('aria-selected', 'true');
     await expect(original).toBeEnabled();
+
+    await page.reload();
+    await expect(settingsTitle).toBeVisible();
+    await expect(original).toHaveAttribute('aria-selected', 'true');
     await expectNoHorizontalOverflow(page);
     expectNoCriticalBrowserDiagnostics(diagnostics);
   });
