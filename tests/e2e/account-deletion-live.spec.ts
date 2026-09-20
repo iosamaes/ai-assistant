@@ -6,6 +6,8 @@ import {
   collectCriticalBrowserDiagnostics,
   expectNoCriticalBrowserDiagnostics,
   expectNoHorizontalOverflow,
+} from './browser-assertions';
+import {
   liveSupabaseConfigured,
   signInWithCredentials,
 } from './live-account';
