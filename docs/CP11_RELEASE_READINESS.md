@@ -74,6 +74,17 @@ The normal completed fixture used for the **English** half must have persisted E
 
 Attachments retain stable `locale/project/surface` names. The harness only prepares reliable evidence collection; CP9 still requires a successful owner-side run, human inspection, interaction/focus review, and the explicit deliberate design-swap proof required by `automation/TASK.md`.
 
+### 7. Read-only Web performance sanity
+Set `MIZAN_E2E_PERFORMANCE=1` with the persisted-English completed account and run:
+
+```bash
+npm run test:e2e:performance
+```
+
+`tests/e2e/performance-live.spec.ts` runs only in `desktop-light` and does not mutate product data. It records authenticated Home readiness and successive Home → Life Map → One Move → Insights → More route-readiness durations, captures browser navigation/resource timing plus observed long-task durations, applies deliberately broad regression tripwires (15 s authenticated readiness, 5 s per primary route transition, 1 s maximum observed long task), checks overflow and critical browser diagnostics, and attaches a structured `performance-sanity.json` report.
+
+These ceilings are **not product SLOs** and a passing run is not production performance proof. The Playwright command uses the controlled Expo E2E runtime; CP11 still requires owner inspection of the production Web export, real startup/common-interaction measurements, and investigation of any pathological rerender or bundle regression before release.
+
 ## Shared static guards
 
 `tests/e2e/browser-assertions.ts` provides a common guard for uncaught page errors, browser `console.error`, unexpected failed requests, and HTTP 5xx responses. Expected Chromium `net::ERR_ABORTED` navigation cancellations are excluded. The shared bounded `tabTo` helper proves keyboard reachability using actual sequential focus.
@@ -96,6 +107,7 @@ Attachments retain stable `locale/project/surface` names. The harness only prepa
 | Premium reference evidence surfaces | `tests/e2e/product-live.spec.ts` | WHY, Personal Learning, Experiments, Integrations read-only localized/overflow coverage |
 | CP9 visual evidence | `tests/e2e/visual-evidence-live.spec.ts` | locale-verified, load-settled, font-settled Today/Life Map/WHY/Check-in screenshots across the responsive/light-dark matrix |
 | Browser diagnostics / keyboard | `tests/e2e/browser-assertions.ts` | shared page/console/network/5xx guard plus bounded real Tab traversal |
+| Performance sanity | `tests/e2e/performance-live.spec.ts` | opt-in read-only desktop sample of authenticated readiness, primary route latency, resource timing, long tasks, overflow, and critical diagnostics |
 | Daily loop | `tests/e2e/product-live.spec.ts` | live check-in write behind mutation opt-in in `desktop-light` |
 | Feedback learning | `tests/e2e/product-live.spec.ts` | evidence → One Move accept → explicit usefulness → Personal Learning |
 | Recovery / What If | `tests/e2e/product-live.spec.ts` | recovery step interaction and scenario switch/assumption visibility |
@@ -105,12 +117,12 @@ Attachments retain stable `locale/project/surface` names. The harness only prepa
 | Privacy deletion | `tests/e2e/account-deletion-live.spec.ts` | dedicated irreversible account, two-step confirmation, local cache cleanup, post-delete credential rejection |
 | Responsive Web | Playwright projects | 320×568, 390×844, 834×1194, 1194×834, 1440×900; each in light and dark |
 
-The ten Web projects use the same Chromium engine with explicit viewport and color-scheme variation so layout/theme regressions are comparable without adding a browser-engine variable. Native Android/iOS remains a separate owner/runtime gate. Shared-account mutations and irreversible deletion run once in `desktop-light`; read-only visual evidence intentionally uses the full matrix.
+The ten Web projects use the same Chromium engine with explicit viewport and color-scheme variation so layout/theme regressions are comparable without adding a browser-engine variable. Native Android/iOS remains a separate owner/runtime gate. Shared-account mutations, performance sampling, and irreversible deletion run once in `desktop-light`; read-only visual evidence intentionally uses the full matrix.
 
 ## Release documentation
 
-- Root `README.md` documents Node/npm requirements, clean install, public Supabase configuration, local Supabase initialization/reset, app/test/E2E commands, stable CP9 visual evidence collection, destructive-test safety, Expo exports, architecture invariants, and status pointers.
-- `.env.example` documents variable names only. It now explicitly notes that the normal completed account must remain persisted-English for CP9 English evidence, while Arabic evidence uses the separate persisted-Arabic account.
+- Root `README.md` documents Node/npm requirements, clean install, public Supabase configuration, local Supabase initialization/reset, app/test/E2E commands, stable CP9 visual evidence collection, opt-in performance sampling, destructive-test safety, Expo exports, architecture invariants, and status pointers.
+- `.env.example` documents variable names only. It explicitly distinguishes the persisted-English and persisted-Arabic completed fixtures and keeps mutation, visual-evidence, performance, and destructive modes opt-in.
 - `apps/app/README.md` is MIZAN-specific rather than the create-expo-app starter.
 - Documentation is static evidence only until an owner/new-engineer completes a clean-checkout run successfully.
 
@@ -121,9 +133,10 @@ The ten Web projects use the same Chromium engine with explicit viewport and col
 - Run `npm run test:e2e:visual` with the persisted-English and persisted-Arabic completed fixtures, inspect all Today/Life Map/WHY/Check-in attachments, and retain reviewed evidence.
 - Run `npm run test:e2e:mutations` only with dedicated/disposable fixtures, including notification preference persistence/restoration.
 - Run the prepared destructive deletion journey only with its dedicated disposable account.
+- Execute `npm run test:e2e:performance`, inspect its attached measurements and any budget failure, then measure the production Web export and representative interactions separately so dev-server timings are not mistaken for release metrics.
 - Execute Expo diagnostics plus Android/iOS bundle/export checks available in the owner environment.
-- Inspect production Web console/network behavior and production export output.
-- Measure startup and representative interaction performance for blocking work, pathological rerenders, and large regressions.
+- Inspect production Web console/network behavior and production export output, including obvious bundle-size regressions.
+- Investigate blocking startup work or pathological rerenders if runtime measurements or profiling indicate them.
 - Validate Arabic RTL and English across representative device classes/light-dark states; screenshots do not replace interaction validation or the deliberate CP9 design-swap proof.
 - Perform a clean-checkout setup run using the documented README flow and correct any missing prerequisite/configuration/test/export step.
 - Record exact commands, versions, results, failures/fixes, and owner release actions in `docs/PROJECT_STATE.md` before claiming CP11 complete.
