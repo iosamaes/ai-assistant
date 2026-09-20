@@ -14,6 +14,8 @@ import type { StoredIntegrationConnection } from '@/infrastructure/supabase/inte
 import { useAppState } from '@/state/app-state';
 
 type LoadStatus = 'loading' | 'ready' | 'error';
+type BusyTarget = { userId: string; connectionId: string } | null;
+type ScreenMessage = { userId: string; text: string } | null;
 
 const copy = {
   ar: {
@@ -169,15 +171,19 @@ export default function IntegrationsScreen() {
   const scheme = useColorScheme();
   const palette = Palette[scheme === 'dark' ? 'dark' : 'light'];
   const [connections, setConnections] = useState<StoredIntegrationConnection[]>([]);
+  const [connectionsUserId, setConnectionsUserId] = useState<string | null>(null);
   const [status, setStatus] = useState<LoadStatus>('loading');
-  const [busyId, setBusyId] = useState<string | null>(null);
-  const [message, setMessage] = useState<string | null>(null);
+  const [busyTarget, setBusyTarget] = useState<BusyTarget>(null);
+  const [message, setMessage] = useState<ScreenMessage>(null);
   const activeUserRef = useRef(userId);
+  activeUserRef.current = userId;
   const loadRequestRef = useRef(0);
-
-  useEffect(() => {
-    activeUserRef.current = userId;
-  }, [userId]);
+  const currentBusyId = busyTarget?.userId === userId ? busyTarget.connectionId : null;
+  const currentMessage = message?.userId === userId ? message.text : null;
+  const visibleConnections =
+    userId !== null && connectionsUserId === userId ? connections : [];
+  const visibleStatus: LoadStatus =
+    userId === null ? 'ready' : connectionsUserId === userId ? status : 'loading';
 
   const reload = useCallback(async () => {
     const requestedUserId = userId;
@@ -188,11 +194,15 @@ export default function IntegrationsScreen() {
     if (!requestedUserId) {
       if (!requestIsCurrent()) return;
       setConnections([]);
+      setConnectionsUserId(null);
       setStatus('ready');
       return;
     }
 
-    if (requestIsCurrent()) setStatus('loading');
+    if (requestIsCurrent()) {
+      setConnectionsUserId(requestedUserId);
+      setStatus('loading');
+    }
     const result = await loadIntegrationSettings(requestedUserId);
     if (!requestIsCurrent()) return;
 
@@ -202,11 +212,13 @@ export default function IntegrationsScreen() {
         if (!requestIsCurrent()) return;
       }
       setConnections([]);
+      setConnectionsUserId(requestedUserId);
       setStatus('error');
       return;
     }
 
     setConnections(result.value);
+    setConnectionsUserId(requestedUserId);
     setStatus('ready');
   }, [refreshSession, userId]);
 
@@ -214,7 +226,7 @@ export default function IntegrationsScreen() {
     let active = true;
     void Promise.resolve().then(() => {
       if (!active) return;
-      setBusyId(null);
+      setBusyTarget(null);
       setMessage(null);
       return reload();
     });
@@ -225,9 +237,9 @@ export default function IntegrationsScreen() {
   }, [reload]);
 
   const disable = async (connection: StoredIntegrationConnection) => {
-    if (!userId || busyId) return;
+    if (!userId || currentBusyId || activeUserRef.current !== userId || connection.userId !== userId) return;
     const requestedUserId = userId;
-    setBusyId(connection.id);
+    setBusyTarget({ userId: requestedUserId, connectionId: connection.id });
     setMessage(null);
     const result = await disableIntegrationConnection(
       requestedUserId,
@@ -237,13 +249,13 @@ export default function IntegrationsScreen() {
     if (activeUserRef.current !== requestedUserId) return;
 
     if (!result.ok) {
-      setMessage(labels.disconnectError);
-      setBusyId(null);
+      setMessage({ userId: requestedUserId, text: labels.disconnectError });
+      setBusyTarget(null);
       return;
     }
 
     await reload();
-    if (activeUserRef.current === requestedUserId) setBusyId(null);
+    if (activeUserRef.current === requestedUserId) setBusyTarget(null);
   };
 
   return (
@@ -267,27 +279,27 @@ export default function IntegrationsScreen() {
         <MizanText variant="caption" muted>{labels.heroBody}</MizanText>
       </Card>
 
-      {status === 'loading' ? (
+      {visibleStatus === 'loading' ? (
         <Card style={{ backgroundColor: palette.surfaceMuted }}>
           <MizanText accessibilityLiveRegion="polite" muted>{labels.loading}</MizanText>
         </Card>
       ) : null}
 
-      {status === 'error' ? (
+      {visibleStatus === 'error' ? (
         <Card style={{ backgroundColor: palette.surfaceMuted }}>
           <MizanText accessibilityLiveRegion="polite" variant="title">{labels.loadError}</MizanText>
         </Card>
       ) : null}
 
-      {status === 'ready' && connections.length === 0 ? (
+      {visibleStatus === 'ready' && visibleConnections.length === 0 ? (
         <Card style={{ backgroundColor: palette.surfaceMuted }}>
           <MizanText accessibilityLiveRegion="polite" variant="title">{labels.emptyTitle}</MizanText>
           <MizanText muted>{labels.emptyBody}</MizanText>
         </Card>
       ) : null}
 
-      {status === 'ready'
-        ? connections.map((connection) => {
+      {visibleStatus === 'ready'
+        ? visibleConnections.map((connection) => {
             const statusLabel =
               connection.status === 'connected'
                 ? labels.connected
@@ -380,8 +392,8 @@ export default function IntegrationsScreen() {
 
                 {connection.status !== 'disabled' ? (
                   <SecondaryButton
-                    label={busyId === connection.id ? labels.disconnecting : labels.disconnect}
-                    disabled={Boolean(busyId)}
+                    label={currentBusyId === connection.id ? labels.disconnecting : labels.disconnect}
+                    disabled={Boolean(currentBusyId)}
                     onPress={() => void disable(connection)}
                   />
                 ) : null}
@@ -390,9 +402,9 @@ export default function IntegrationsScreen() {
           })
         : null}
 
-      {message ? (
+      {currentMessage ? (
         <Card style={{ backgroundColor: palette.surfaceMuted }}>
-          <MizanText accessibilityLiveRegion="polite" muted>{message}</MizanText>
+          <MizanText accessibilityLiveRegion="polite" muted>{currentMessage}</MizanText>
         </Card>
       ) : null}
 
