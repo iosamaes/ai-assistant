@@ -1,9 +1,10 @@
 import { router } from 'expo-router';
+import { useState } from 'react';
 import { Pressable, StyleSheet, useColorScheme, useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AppIcon, type AppIconName } from '@/components/app-icon';
-import { MizanText } from '@/components/mizan-ui';
+import { focusRingStyle, MizanText } from '@/components/mizan-ui';
 import { Controls, Interaction, Layout, Palette, Radius, Spacing } from '@/constants/theme';
 import { useAppState } from '@/state/app-state';
 
@@ -60,6 +61,7 @@ export function AppNavigation({ activeSegment }: AppNavigationProps) {
   const palette = Palette[scheme === 'dark' ? 'dark' : 'light'];
   const { width } = useWindowDimensions();
   const insets = useSafeAreaInsets();
+  const [focusedDestination, setFocusedDestination] = useState<DestinationId | null>(null);
   const wide = width >= Layout.wideBreakpoint;
   const active = activeDestination(activeSegment);
   const copy = labels[locale];
@@ -102,6 +104,10 @@ export function AppNavigation({ activeSegment }: AppNavigationProps) {
               accessibilityLabel={label}
               accessibilityRole="tab"
               accessibilityState={{ selected }}
+              onBlur={() => {
+                setFocusedDestination((current) => current === destination.id ? null : current);
+              }}
+              onFocus={() => setFocusedDestination(destination.id)}
               onPress={() => router.replace(destination.href)}
               style={({ pressed }) => [
                 wide ? styles.railItem : styles.bottomItem,
@@ -110,6 +116,7 @@ export function AppNavigation({ activeSegment }: AppNavigationProps) {
                   backgroundColor: selected ? palette.accentSoft : 'transparent',
                   opacity: pressed ? Interaction.subtlePressed : 1,
                 },
+                focusRingStyle(palette.accent, focusedDestination === destination.id),
               ]}>
               <AppIcon
                 name={destination.icon}
