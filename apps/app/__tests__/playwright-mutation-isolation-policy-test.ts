@@ -35,14 +35,21 @@ describe('Playwright live-mutation isolation policy', () => {
     expect(deletionSpec).toContain('expect(reauthentication.status()).toBe(400)');
   });
 
-  test('default development matrix does not masquerade production-only specifications as export evidence', () => {
+  test('development and production matrices keep export evidence isolated and target only the authorized Supabase project', () => {
     const repoRoot = path.resolve(__dirname, '../../..');
     const defaultConfig = fs.readFileSync(path.join(repoRoot, 'playwright.config.ts'), 'utf8');
+    const productionConfig = fs.readFileSync(path.join(repoRoot, 'playwright.production.config.ts'), 'utf8');
     const packageJson = JSON.parse(fs.readFileSync(path.join(repoRoot, 'package.json'), 'utf8')) as {
       scripts?: Record<string, string>;
     };
 
     expect(defaultConfig).toContain("testIgnore: ['**/production-web.spec.ts', '**/production-performance.spec.ts']");
+    for (const config of [defaultConfig, productionConfig]) {
+      expect(config).toContain("const authorizedSupabaseProjectRef = 'olfhjnropdrnujgpidfi'");
+      expect(config).toContain('assertAuthorizedLiveSupabaseUrl(liveSupabaseUrl)');
+      expect(config).toContain("configuredUrl.protocol !== 'https:'");
+      expect(config).toContain('configuredProjectRef !== authorizedSupabaseProjectRef');
+    }
     expect(packageJson.scripts?.['test:e2e:production']).toContain('production-web.spec.ts');
     expect(packageJson.scripts?.['test:e2e:production']).toContain('--config=playwright.production.config.ts');
     expect(packageJson.scripts?.['test:e2e:production:performance']).toContain('production-performance.spec.ts');
