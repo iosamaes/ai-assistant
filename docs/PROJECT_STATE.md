@@ -3,7 +3,7 @@
 ## Current checkpoint
 - Active engineering checkpoint: **CP9 — Responsive UX, accessibility, localization, polish, and design-swappability** (`IN_PROGRESS`).
 - CP10 security/privacy source hardening is broadly implemented; execution-dependent gates remain owner validation.
-- CP11 static verification/release readiness is prepared; execution is pending because current worker policy forbids workers from running product tests, builds, typechecks, database suites, GitHub Actions, or cloud CI.
+- CP11 static verification/release readiness is prepared and continues to be hardened; execution is pending because current worker policy forbids workers from running product tests, builds, typechecks, database suites, GitHub Actions, or cloud CI.
 - Product authority: GitHub `iosamaes/ai-assistant@main`.
 - Task digest: `f2786fbae29a0ee1fa7bf77eb1504fc8fb80c208`.
 
@@ -22,12 +22,13 @@
 - [ ] CP11 — Test matrix, performance, release readiness — **static harness prepared; execution pending**
 - [ ] CP12 — Independent final review and handoff
 
-## Latest productive change
-A concrete native tablet release gap was found in Expo configuration: `apps/app/app.json` did not set `ios.supportsTablet`, whose Expo default is `false`, despite MIZAN's explicit phone/tablet/desktop product contract.
+## Latest productive changes
+CP11 now has performance evidence prepared for the **actual Expo static Web export**, not only the development-server runtime.
 
-- `0d3b0251d02c69c92b84b1c382cbeff1901ccc9f` — set `expo.ios.supportsTablet: true` so native iOS builds actually advertise iPad support instead of relying only on responsive source/layout work.
-- `e7bfedb051d9796171addb55693cb36b5355f647` — added `apps/app/__tests__/app-native-platform-config-policy-test.ts` to guard iPad support plus the existing responsive-orientation and automatic light/dark configuration.
-- These are **static implementation/specification changes only**. No test, Expo export, typecheck, or native build was run by the worker.
+- `852b7600d3f5a272872479d154c6d3093737b0f2` — added `tests/e2e/production-performance.spec.ts`, an opt-in read-only performance sanity journey that runs against `playwright.production.config.ts` and the exported files served from `apps/app/dist`. It measures authenticated Home readiness plus Home → Life Map → One Move → Insights → More transitions, captures production resource timing and long tasks, checks horizontal overflow/browser diagnostics, and attaches `production-performance-sanity.json`. Broad timing limits remain regression tripwires rather than product SLOs.
+- `66a36372f76334aa4b4b54eb4eef77cb9f385379` — added the owner-side command `npm run test:e2e:production:performance`, isolated to one production desktop project so the measurement is not multiplied across smoke viewports.
+- The immediately preceding native-readiness hardening remains relevant: `0d3b0251d02c69c92b84b1c382cbeff1901ccc9f` enabled `expo.ios.supportsTablet: true`, and `e7bfedb051d9796171addb55693cb36b5355f647` added a static platform-config policy specification.
+- These are **static implementation/specification changes only**. No test, Expo export, typecheck, native build, or performance run was executed by the worker.
 
 ## CP8 reliability state
 Detailed ledger: `docs/CP8_RELIABILITY.md`.
@@ -50,7 +51,7 @@ Prepared owner/runtime evidence includes:
 - Make only demonstrated residual accessibility/RTL/localization/focus/presentation fixes; do not manufacture speculative polish.
 - Execute and inspect the prepared runtime visual matrix across narrow/common phone, tablet portrait/landscape, wide Web, Arabic/English, and light/dark.
 - Manually inspect keyboard focus indicators and representative interactions.
-- Run native iPad/iPhone validation after pulling current `main`; the iPad capability is now explicitly enabled in Expo config.
+- Run native iPad/iPhone validation after pulling current `main`; the iPad capability is explicitly enabled in Expo config.
 - Execute and record the deliberate design-swap proof. CP9 remains open until runtime evidence exists.
 
 ## CP10 security/privacy state
@@ -67,20 +68,21 @@ Detailed ledger: `docs/CP11_RELEASE_READINESS.md`.
 
 Prepared static readiness includes:
 - Main Web matrix at **320×568**, **390×844**, **834×1194**, **1194×834**, and **1440×900**, each in light/dark.
-- Auth/route guard/password recovery, onboarding, completed-account navigation, Arabic persisted-locale coverage, Recovery/What If, privacy export, live daily-loop and feedback-learning mutations, Spiritual Grounding toggle/restore, notification preference persistence/restore, destructive account deletion with a dedicated fixture, browser diagnostics, production logging policy, semantic contrast policy, CP9 visual capture, opt-in performance sampling, production static-Web export smoke, and static-size reporting.
-- Explicit Web/Android/iOS Expo export scripts plus production Web smoke and size reporting.
-- Native iPad eligibility is now explicit in app config and guarded by source policy.
+- Auth/route guard/password recovery, onboarding, completed-account navigation, Arabic persisted-locale coverage, Recovery/What If, privacy export, live daily-loop and feedback-learning mutations, Spiritual Grounding toggle/restore, notification preference persistence/restore, destructive account deletion with a dedicated fixture, browser diagnostics, production logging policy, semantic contrast policy, and CP9 visual capture.
+- Read-only performance sampling for both the controlled Expo E2E runtime (`tests/e2e/performance-live.spec.ts`) and the real static production Web export (`tests/e2e/production-performance.spec.ts`).
+- Production static-Web export smoke, direct-route hydration coverage, static-size reporting, and explicit Web/Android/iOS Expo export scripts.
+- Native iPad eligibility is explicit in app config and guarded by source policy.
 
 ### CP11 remaining
 - Run TypeScript, lint, unit/component/integration, database/policy, and full Web E2E suites from a trustworthy owner checkout.
-- Execute and inspect keyboard/focus journeys, visual evidence, live mutation journeys, performance sampling, production Web export/smoke/size reporting, and destructive deletion only with documented fixtures.
+- Execute and inspect keyboard/focus journeys, visual evidence, live mutation journeys, development-runtime performance sampling, **production-export performance sampling**, production Web export/smoke/size reporting, and destructive deletion only with documented fixtures.
 - Run Expo diagnostics and Android/iOS export checks; include representative iPhone and iPad runtime review.
-- Perform a clean-checkout setup from the root README and record exact commands, versions, results, failures/fixes, Web size evidence, and owner release actions.
+- Perform a clean-checkout setup from the root README and record exact commands, versions, results, failures/fixes, Web size evidence, performance evidence, and owner release actions.
 
 ## Exact next executable action
 1. Continue CP9 static work only when a concrete residual defect is demonstrated; otherwise preserve the prepared runtime evidence for owner validation.
 2. Keep CP10 source review limited to genuinely new security/account-sensitive boundaries.
-3. Keep CP11 static harness aligned with the release contract; native iPad support is now explicitly configured, but execution-dependent gates remain owner validation.
+3. Keep CP11 static harness aligned with the release contract; owner validation now has both development-runtime and actual static-export performance probes, while execution-dependent gates remain pending.
 4. After CP0–CP11 gates are honestly satisfied with current execution evidence, begin CP12 independent two-worker verification. Do not claim completion from source presence alone.
 
 ## Verification record
@@ -98,7 +100,7 @@ Post-baseline:
 - **No worker-run app tests, builds, typechecks, validation database scripts, Web E2E, screenshot captures, performance runs, production-export smoke/size runs, GitHub Actions, or cloud CI are claimed for CP2–CP11 changes.**
 - Migrations `0009`–`0012` were applied previously; live ACL/state reads are implementation evidence, not a behavioral suite PASS.
 - `delete-account` v2 was previously deployed ACTIVE with JWT verification; destructive end-to-end deletion remains unverified until the owner-side disposable-account journey runs.
-- Latest product commits in this run: `0d3b0251d02c69c92b84b1c382cbeff1901ccc9f`, `e7bfedb051d9796171addb55693cb36b5355f647`.
+- Latest product commits in this run: `852b7600d3f5a272872479d154c6d3093737b0f2`, `66a36372f76334aa4b4b54eb4eef77cb9f385379`.
 
 ## Known blockers / owner actions
 - CP1/CP9 representative physical/runtime visual interaction evidence requires the owner environment to be normally unlocked; see `automation/HUMAN_REQUIRED.md`.
@@ -121,6 +123,7 @@ Post-baseline:
 - `tests/e2e/product-live.spec.ts`
 - `tests/e2e/visual-evidence-live.spec.ts`
 - `tests/e2e/performance-live.spec.ts`
+- `tests/e2e/production-performance.spec.ts`
 - `tests/e2e/production-web.spec.ts`
 - `tests/e2e/notification-preferences-live.spec.ts`
 - `tests/e2e/account-deletion-live.spec.ts`
