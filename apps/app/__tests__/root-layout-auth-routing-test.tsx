@@ -142,4 +142,18 @@ describe('root auth routing', () => {
     expect(screen.getByTestId('app-navigation')).toBeTruthy();
     expect(mockReplace).not.toHaveBeenCalled();
   });
+
+  test('starts offline replay with the newly active account id after an account switch', async () => {
+    mockUseSegments.mockReturnValue(['today']);
+    useAppStateMock.mockReturnValue(appState('signed-in', 'user-a', true));
+
+    const screen = await render(<AppNavigator />);
+    await waitFor(() => expect(mockFlushPendingUserMutations).toHaveBeenCalledWith('user-a'));
+
+    useAppStateMock.mockReturnValue(appState('signed-in', 'user-b', true));
+    await screen.rerender(<AppNavigator />);
+
+    await waitFor(() => expect(mockFlushPendingUserMutations).toHaveBeenCalledWith('user-b'));
+    expect(mockFlushPendingUserMutations).not.toHaveBeenCalledWith(null);
+  });
 });
