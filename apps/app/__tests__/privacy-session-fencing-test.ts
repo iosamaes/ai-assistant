@@ -138,11 +138,24 @@ describe('privacy session fencing', () => {
     expect(mockSignOut).not.toHaveBeenCalled();
   });
 
+  test('does not purge local data when deletion returns a non-confirming success payload', async () => {
+    mockGetSession.mockResolvedValueOnce(sessionResult('user-a'));
+    mockInvoke.mockResolvedValue({ data: { ok: false }, error: null });
+
+    await expect(deleteMyAccount('user-a')).resolves.toEqual({
+      ok: false,
+      error: { kind: 'delete-failed' },
+    });
+    expect(mockClearPendingUserMutations).not.toHaveBeenCalled();
+    expect(mockClearRecentDailySnapshot).not.toHaveBeenCalled();
+    expect(mockSignOut).not.toHaveBeenCalled();
+  });
+
   test('binds deletion to the expected user and purges only that user local cache', async () => {
     mockGetSession
       .mockResolvedValueOnce(sessionResult('user-a'))
       .mockResolvedValueOnce(sessionResult('user-b'));
-    mockInvoke.mockResolvedValue({ data: null, error: null });
+    mockInvoke.mockResolvedValue({ data: { ok: true }, error: null });
 
     await expect(deleteMyAccount('user-a')).resolves.toEqual({
       ok: true,
@@ -163,7 +176,7 @@ describe('privacy session fencing', () => {
     mockGetSession
       .mockResolvedValueOnce(sessionResult('user-a'))
       .mockResolvedValueOnce(sessionResult('user-a'));
-    mockInvoke.mockResolvedValue({ data: null, error: null });
+    mockInvoke.mockResolvedValue({ data: { ok: true }, error: null });
     mockSignOut.mockResolvedValue({ error: null });
 
     await expect(deleteMyAccount('user-a')).resolves.toEqual({
@@ -179,7 +192,7 @@ describe('privacy session fencing', () => {
     mockGetSession
       .mockResolvedValueOnce(sessionResult('user-a'))
       .mockResolvedValueOnce(sessionResult('user-a'));
-    mockInvoke.mockResolvedValue({ data: null, error: null });
+    mockInvoke.mockResolvedValue({ data: { ok: true }, error: null });
     mockClearPendingUserMutations.mockResolvedValue({ ok: false, error: 'storage-unavailable' });
     mockSignOut.mockResolvedValue({ error: null });
 
