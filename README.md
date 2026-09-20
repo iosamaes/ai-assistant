@@ -127,16 +127,15 @@ Never point that destructive test at a reusable account. See `docs/CP11_RELEASE_
 
 ## Export / build readiness
 
-Expo development commands above do not create signed store binaries. For production export validation, run Expo from the app workspace, for example:
+Expo development commands above do not create signed store binaries. Production export validation is exposed from the repository root so clean-checkout instructions do not depend on changing directories:
 
 ```bash
-cd apps/app
-npx expo export --platform web
-npx expo export --platform android
-npx expo export --platform ios
+npm run export:web
+npm run export:android
+npm run export:ios
 ```
 
-Web export should be browser-verified for fatal console/network errors and representative responsive layouts. Android/iOS exports validate the JavaScript/native bundle graph available without owner signing credentials; store-signed artifacts and publication remain owner release operations.
+These map directly to `expo export --platform web|android|ios` in the app workspace. For Expo compatibility diagnostics, run `npx expo-doctor` from `apps/app` during owner validation. The Web export should be served as static output and browser-verified for fatal console/network errors, representative responsive layouts, and production performance/bundle sanity. Android/iOS exports validate the JavaScript/native bundle graph available without owner signing credentials; store-signed artifacts and publication remain owner release operations.
 
 Before release, also run the complete matrix described in `docs/CP11_RELEASE_READINESS.md`, including database/RLS checks, representative Arabic RTL and English layouts, light/dark modes, privacy export/deletion, offline/reconnect behavior, and performance sanity checks.
 
