@@ -19,7 +19,7 @@
 - [ ] CP8 — Reliability, offline tolerance, sync — statically reviewed complete; owner/runtime validation pending
 - [ ] CP9 — Responsive UX, accessibility, localization, polish, design-swappability — **IN_PROGRESS**
 - [ ] CP10 — Security, privacy, owner-data control — **IN_PROGRESS in parallel**
-- [ ] CP11 — Test matrix, performance, release readiness
+- [ ] CP11 — Test matrix, performance, release readiness — static verification harness expanded; execution pending
 - [ ] CP12 — Independent final review and handoff
 
 ## CP8 current implementation
@@ -89,15 +89,17 @@ The current production source-level sensitive logging/error-reporting review is 
 ## CP11 static readiness
 Detailed release ledger: `docs/CP11_RELEASE_READINESS.md`.
 
-- `3d4f6f07ef0d660aa331f3ebd5c58b4235ec8dad` expands the Playwright responsive project matrix to the TASK-required representative classes: 390×844 phone, 834×1194 tablet portrait, 1194×834 tablet landscape, and 1440×900 desktop.
-- `b9d13daf0b90764b962ca69583bccf34f8a17b00` updates the CP11 release ledger to match that four-viewport matrix and keeps native Android/iOS validation separate from Chromium viewport coverage.
-- These are static harness/readiness changes only. No E2E run, test result, typecheck, build, or release PASS is claimed by workers under the active policy.
+- The Playwright responsive project matrix now covers **320×568 narrow phone, 390×844 common phone, 834×1194 tablet portrait, 1194×834 tablet landscape, and 1440×900 desktop**, each in light and dark emulated color schemes. Native Android/iOS validation remains a separate owner/runtime gate.
+- `40ae0f1199dc8a967739b8c11f069444aca9a529` adds an isolated destructive account-deletion Web E2E. It uses a dedicated disposable completed account, exports its user id, seeds user-scoped pending-mutation/recent-snapshot sentinels, performs the two-step delete flow, verifies those app-owned caches are removed, and checks that the deleted credentials can no longer establish a Supabase password session.
+- `67c701d62b0a018bba3e9c9c2eea3fe519c66cd3` restricts that irreversible specification to the single `desktop-light` Playwright project so one disposable account cannot be consumed repeatedly by the ten-project responsive matrix.
+- `.env.example` now documents separate `MIZAN_E2E_DELETE_EMAIL`, `MIZAN_E2E_DELETE_PASSWORD`, and `MIZAN_E2E_DESTRUCTIVE` controls without storing credentials; root `package.json` exposes `npm run test:e2e:delete-account` as the explicit single-project runner. The CP11 ledger records the same safety boundary.
+- These are static harness/readiness changes only. No E2E run, destructive delete, test result, typecheck, build, or release PASS is claimed by workers under the active policy.
 
 ## Exact next executable action
 1. Continue the final CP9 static sweep only when a demonstrated accessibility/RTL/localization/focus/technical-id defect remains on a still-unreviewed shipped surface; make the smallest production-safe fix and add focused regression coverage when useful. The raw ISO date-fallback family identified on Invisible Wins, Life Seasons, and Experiments is closed; Life Map bounded domain meters mirror from the semantic RTL edge.
 2. Continue the residual CP10 account-switch/session-binding review only where an async presentation flow still relies on passive-effect account identity, can let a stale completion mutate the new account's UI state, or keeps account-owned local draft text across account identity changes. Capacity and root offline replay now have explicit regression coverage for their existing ownership boundaries; do not duplicate already-fenced paths.
 3. If no concrete static defect is found, do not manufacture polish work: leave CP9 runtime screenshot/device validation and final design-swap proof to owner validation under the active execution policy.
-4. Keep CP11 static harness aligned with the release matrix, but leave execution of the four Playwright viewport projects, native validation, tests, builds, typechecks, and performance checks to owner validation under the active policy.
+4. Keep CP11 static harness aligned with the release matrix, but leave execution of the five Playwright viewport classes × light/dark projects, destructive deletion E2E, native validation, tests, builds, typechecks, database/policy checks, and performance measurements to owner validation under the active policy.
 5. Do not reopen the completed CP10 logging audit unless new production logging/error boundaries appear.
 
 ## Verification record
@@ -114,12 +116,12 @@ Previously recorded owner-side baseline evidence:
 Post-baseline:
 - **No worker-run app tests, builds, typechecks, validation database scripts, cloud CI, or GitHub Actions are claimed for CP2–CP11 changes.**
 - Authorized migrations `0009`–`0012` were applied previously; live reads confirmed the hardened Life Season RPC signature/ACL. This is implementation/state evidence, not a behavioral test-suite PASS.
-- `delete-account` version 2 previously reported ACTIVE with JWT verification enabled; no destructive end-to-end deletion validation is claimed.
+- `delete-account` version 2 previously reported ACTIVE with JWT verification enabled; no destructive end-to-end deletion validation is claimed. The new destructive E2E harness prepares that owner-side proof but has not been executed.
 - Premium-reference/residual CP9 changes and focused policy specifications, including What If RTL range, Onboarding final-domain affordance, Today RTL meters, Life Map RTL meters, Today account-switch fencing, and the Invisible Wins/Life Seasons/Experiments raw-date fallback hardening, remain static implementation/specification evidence until owner validation; the focused policy specifications were not worker-run.
 - Render-time/account-owned state fencing changes `3a214f9d453e660e2a0072ce9d1e06f3168c678c`, `775f296b3d4ad6f28021db31bcab451730ed2133`, `94db2ccd5101ad0d07f4f55d6b151891bd18c856`, `64b8680a29e539b4db94f7697cfc24f82ad83360`, `186cffc217c91c85e6dc7aadde12abe8f2e555b2`, `a9a23c4adfe1de7be76b3b5372541d320645af42`, `d5545d0266ded23fb8f9023997fe5e43ecd963e4`, `e9674e3b665d63b1fb5b900564303ad9b3ded5ad`, `34562b81964ceae9d47471065d770e627d7c291d`, `ef6e046ee198f947dd411ea6d8f2a99c61edd6de`, `edbb1b45db7bfc6c8f5827d877e25e847dc0499f`, `8dda68b2cdad12e2c3968f282f0008291eda48b1`, `90a42eb9fa091b41ff734a0948a60e59f6a191bb`, and `85b6109696c6b58af43d73dd4e803f85264703a2`, plus focused specifications where present, are static implementation/specification evidence only and were not worker-run.
 - Capacity account-switch regression specification `d0ec5c1ac28cc078e4216d1cb570be8ccac20daf` records that User A snapshot data is hidden immediately when User B becomes active and remains hidden while User B loads; it was added but not worker-run under the active execution policy.
 - Root offline-replay regression coverage `053d4b070b75fcad988d2f0faf41af5cc35ffca5` records that replay is restarted with the newly active account id after an authenticated account switch; it was added but not worker-run under the active execution policy.
-- Playwright responsive harness `3d4f6f07ef0d660aa331f3ebd5c58b4235ec8dad` plus release-ledger update `b9d13daf0b90764b962ca69583bccf34f8a17b00` provide static phone/tablet-portrait/tablet-landscape/desktop coverage definitions; none of those projects were executed by workers.
+- Playwright responsive harness plus the destructive-deletion readiness commits `40ae0f1199dc8a967739b8c11f069444aca9a529`, `67c701d62b0a018bba3e9c9c2eea3fe519c66cd3`, `d727719100581e564f190d024270bf74bffc3919`, `c417cd4f7700c9321d1356d63f42e1f2fc3e3d6f`, and CP11 ledger updates provide static verification definitions only; none were executed by workers.
 
 ## Known blockers / risks
 - CP1/CP9: true phone/tablet/Web visual interaction evidence still needs an unlocked owner runtime; see `automation/HUMAN_REQUIRED.md`.
@@ -128,8 +130,8 @@ Post-baseline:
 - Cross-user/database specifications and all post-baseline runtime/type/build gates require owner execution evidence.
 - Recent Today snapshot native SecureStore behavior/capacity needs owner runtime validation.
 - CP9 major structural slices are statically present, but representative runtime screenshots, interaction validation, and the final design-swap proof remain outstanding.
-- Privacy export/delete, local cache purge/warning behavior, account-scoped confirmation, Edge v2 expected-user deletion fencing, Life Season expected-user fencing, and account-switch/session-binding behavior need owner Web/native/end-to-end validation before CP10 can close.
-- CP11 four-viewport Web projects are configured but unexecuted; native device/export and performance evidence also remain owner-side.
+- Privacy export/delete, local cache purge/warning behavior, account-scoped confirmation, Edge v2 expected-user deletion fencing, Life Season expected-user fencing, and account-switch/session-binding behavior need owner Web/native/end-to-end validation before CP10 can close. A dedicated destructive deletion E2E harness is now prepared but intentionally unexecuted.
+- CP11 five-viewport × two-color Web projects are configured but unexecuted; native device/export and performance evidence also remain owner-side.
 - No real AI, wearable, calendar, or location credentials are configured; deterministic/unavailable adapters remain the supported fallback path.
 
 ## Evidence paths
@@ -138,6 +140,9 @@ Post-baseline:
 - `docs/CP10_SECURITY_PRIVACY.md`
 - `docs/CP11_RELEASE_READINESS.md`
 - `playwright.config.ts`
+- `package.json`
+- `.env.example`
+- `tests/e2e/account-deletion-live.spec.ts`
 - `apps/app/src/constants/theme.ts`
 - `apps/app/src/components/mizan-ui.tsx`
 - `apps/app/src/components/screen.tsx`
