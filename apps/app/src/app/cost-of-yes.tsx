@@ -1,5 +1,5 @@
 import { router } from 'expo-router';
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { StyleSheet, useColorScheme, View } from 'react-native';
 
 import { assessExplicitCostOfYes } from '@/application/cost-of-yes';
@@ -103,13 +103,20 @@ function formatHours(minutes: number | null, locale: 'ar' | 'en'): string {
 }
 
 export default function CostOfYesScreen() {
-  const { isRtl, locale } = useAppState();
+  const { isRtl, locale, userId } = useAppState();
   const labels = copy[locale];
   const scheme = useColorScheme();
   const palette = Palette[scheme === 'dark' ? 'dark' : 'light'];
   const [commitmentText, setCommitmentText] = useState('');
   const [marginText, setMarginText] = useState('');
+  const draftUserRef = useRef(userId);
   const observedAt = useMemo(() => new Date().toISOString(), []);
+
+  if (draftUserRef.current !== userId) {
+    draftUserRef.current = userId;
+    setCommitmentText('');
+    setMarginText('');
+  }
 
   const assessment = useMemo(
     () =>
