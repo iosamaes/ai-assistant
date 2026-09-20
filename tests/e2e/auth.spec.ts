@@ -1,22 +1,14 @@
-import { expect, test, type Locator, type Page } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
 
 import {
   collectCriticalBrowserDiagnostics,
   expectNoCriticalBrowserDiagnostics,
   expectNoHorizontalOverflow,
+  tabTo,
 } from './browser-assertions';
 
 function actionButton(page: Page, name: string) {
   return page.getByRole('button', { name, exact: true }).last();
-}
-
-async function tabTo(page: Page, target: Locator, maxTabs = 24) {
-  await expect(target).toBeVisible();
-  for (let index = 0; index < maxTabs; index += 1) {
-    await page.keyboard.press('Tab');
-    if (await target.evaluate((element) => element === document.activeElement)) return;
-  }
-  throw new Error(`Keyboard focus did not reach the requested auth control within ${maxTabs} Tab presses.`);
 }
 
 test('signed-out routes are guarded back to auth without runtime exceptions', async ({ page }) => {
