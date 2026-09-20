@@ -200,12 +200,31 @@ function formattedDayContext(locale: 'ar' | 'en'): string {
   }).format(new Date());
 }
 
-function SignalMeter({ value, trackColor, fillColor }: { value: number | null; trackColor: string; fillColor: string }) {
+function SignalMeter({
+  value,
+  trackColor,
+  fillColor,
+  isRtl,
+}: {
+  value: number | null;
+  trackColor: string;
+  fillColor: string;
+  isRtl: boolean;
+}) {
   const clamped = value === null ? null : Math.max(0, Math.min(100, value));
   return (
     <View style={[styles.meterTrack, { backgroundColor: trackColor }]}>
       {clamped !== null ? (
-        <View style={[styles.meterFill, { backgroundColor: fillColor, width: `${clamped}%` as `${number}%` }]} />
+        <View
+          style={[
+            styles.meterFill,
+            {
+              alignSelf: isRtl ? 'flex-end' : 'flex-start',
+              backgroundColor: fillColor,
+              width: `${clamped}%` as `${number}%`,
+            },
+          ]}
+        />
       ) : null}
     </View>
   );
@@ -692,7 +711,7 @@ export default function TodayScreen() {
                     </MizanText>
                   </View>
                 </View>
-                <SignalMeter value={value} trackColor={palette.border} fillColor={palette.accent} />
+                <SignalMeter value={value} trackColor={palette.border} fillColor={palette.accent} isRtl={isRtl} />
                 <View style={[styles.evidenceRow, { flexDirection: isRtl ? 'row-reverse' : 'row' }]}>
                   <AppIcon name="evidence" color={palette.textMuted} size={15} />
                   <MizanText variant="caption" muted style={styles.flexText}>
@@ -728,6 +747,7 @@ export default function TodayScreen() {
                     value={Math.round(dailyOverview.balance.score)}
                     trackColor={palette.border}
                     fillColor={palette.accent}
+                    isRtl={isRtl}
                   />
                   <MizanText variant="caption" muted>
                     {t(confidenceLabelKey(dailyOverview.balance.confidence.level))} · {t('evidenceLabel')}: {formatWhole(dailyOverview.balance.evidence.length)}
