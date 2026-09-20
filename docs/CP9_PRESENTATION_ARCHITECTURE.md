@@ -126,6 +126,8 @@ The root Expo Router stack previously always used a fade transition. The navigat
 
 The wide rail also now places its inner divider explicitly from the app-local `isRtl` state instead of relying on React Native's device-global logical `borderEndWidth`. This matters because MIZAN can change its own Arabic/English locale without assuming the host runtime direction changed with it. A focused regression specification in `apps/app/__tests__/app-navigation-rtl-test.tsx` records the Arabic-left-edge and English-right-edge requirements; it is intentionally not worker-run under the active execution policy.
 
+The same shared navigation `tablist` now has an explicit localized accessible name (`التنقل الرئيسي` / `Primary navigation`) rather than relying on role-only announcement. The existing navigation regression specification also records both labels, so Arabic and English screen-reader context stay coupled to the same primary navigation shell without changing route behavior.
+
 ### Entry redirect and root error fallback
 
 The entry redirect route was statically audited and already uses the shared `Screen`/`MizanText` boundary plus the translated loading key before routing to Auth, Onboarding, or Today; no rewrite was justified.
