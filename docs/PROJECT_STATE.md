@@ -76,17 +76,18 @@ Latest account-switch hardening:
 - `edbb1b45db7bfc6c8f5827d877e25e847dc0499f` + `8dda68b2cdad12e2c3968f282f0008291eda48b1` + `856fc173306eaaebc73805c6ff483c2aab21b361` — Cost of Yes and Human ROI now bind their explicit local planning inputs to the active account and synchronously clear those drafts on account switch; a focused source-policy specification records both contracts and was not worker-run.
 - `90a42eb9fa091b41ff734a0948a60e59f6a191bb` + `16aaa100d26efcf97dd88f832b31193ac3700da9` — Invisible Wins now clears the account-owned reflection note, category/filter state, busy state, and message synchronously when account identity changes instead of waiting for the passive load effect; focused source-policy specification added and intentionally not worker-run.
 - `85b6109696c6b58af43d73dd4e803f85264703a2` — Check-in now clears account-owned rating/skip drafts synchronously during account identity change rather than waiting for a passive microtask effect, while retaining stale-submit completion fencing. The existing behavioral session-fencing specification remains the regression contract and was not worker-run in this run.
+- `d0ec5c1ac28cc078e4216d1cb570be8ccac20daf` — Capacity was independently reviewed for the same account-switch class. Its render-synchronous active-user ref plus snapshot ownership gating already prevent User A capacity data from painting into User B; a focused behavioral regression specification now covers immediate hiding while the replacement account is loading. It was intentionally not worker-run under the active policy.
 
 The current production source-level sensitive logging/error-reporting review is complete for the existing tree. Re-open that audit only if a new production sink or boundary is added before release.
 
 ### CP10 remaining
-- Continue the residual source review of account-sensitive async UI flows for render-to-effect account-switch gaps, stale completion state mutations, or account-owned local draft leakage; fix only demonstrated races and avoid duplicating already-fenced paths.
-- Owner/runtime validation for cross-user/database specifications, Life Season expected-user behavior, export/delete/local purge, destructive Edge deletion v2, consent revocation races, and account-switch/session-binding cases including Today decision/feedback, Experiments draft/history fencing, Invisible Wins reflection drafts, Check-in rating drafts, Cost of Yes/Human ROI local drafts, and the render-time Privacy/Recovery/Onboarding/Settings/Personalization/Update-Password/Life-Seasons fences.
+- Continue the residual source review of account-sensitive async UI flows for render-to-effect account-switch gaps, stale completion state mutations, or account-owned local draft leakage; fix only demonstrated races and avoid duplicating already-fenced paths. Capacity is now statically reviewed and covered by focused regression specification.
+- Owner/runtime validation for cross-user/database specifications, Life Season expected-user behavior, export/delete/local purge, destructive Edge deletion v2, consent revocation races, and account-switch/session-binding cases including Today decision/feedback, Experiments draft/history fencing, Invisible Wins reflection drafts, Check-in rating drafts, Cost of Yes/Human ROI local drafts, Capacity snapshot ownership, and the render-time Privacy/Recovery/Onboarding/Settings/Personalization/Update-Password/Life-Seasons fences.
 - Supabase leaked-password protection remains an owner action in `automation/HUMAN_REQUIRED.md`.
 
 ## Exact next executable action
 1. Continue the final CP9 static sweep only when a demonstrated accessibility/RTL/localization/focus/technical-id defect remains on a still-unreviewed shipped surface; make the smallest production-safe fix and add focused regression coverage when useful. The raw ISO date-fallback family identified on Invisible Wins, Life Seasons, and Experiments is closed; Life Map bounded domain meters mirror from the semantic RTL edge.
-2. Continue the residual CP10 account-switch/session-binding review only where an async presentation flow still relies on passive-effect account identity, can let a stale completion mutate the new account's UI state, or keeps account-owned local draft text across account identity changes. The demonstrated local-draft leaks in Experiments, Invisible Wins, Check-in, Cost of Yes, and Human ROI are now closed in static source.
+2. Continue the residual CP10 account-switch/session-binding review only where an async presentation flow still relies on passive-effect account identity, can let a stale completion mutate the new account's UI state, or keeps account-owned local draft text across account identity changes. Capacity now has explicit behavioral regression coverage for its existing snapshot ownership fence; do not duplicate already-fenced paths.
 3. If no concrete static defect is found, do not manufacture polish work: leave CP9 runtime screenshot/device validation and final design-swap proof to owner validation under the active execution policy.
 4. Do not reopen the completed CP10 logging audit unless new production logging/error boundaries appear.
 5. Do not run tests, builds, typechecks, database validation suites, GitHub Actions, or cloud CI as a worker under the current task policy.
@@ -108,6 +109,7 @@ Post-baseline:
 - `delete-account` version 2 previously reported ACTIVE with JWT verification enabled; no destructive end-to-end deletion validation is claimed.
 - Premium-reference/residual CP9 changes and focused policy specifications, including What If RTL range, Onboarding final-domain affordance, Today RTL meters, Life Map RTL meters, Today account-switch fencing, and the Invisible Wins/Life Seasons/Experiments raw-date fallback hardening, remain static implementation/specification evidence until owner validation; the focused policy specifications were not worker-run.
 - Render-time/account-owned state fencing changes `3a214f9d453e660e2a0072ce9d1e06f3168c678c`, `775f296b3d4ad6f28021db31bcab451730ed2133`, `94db2ccd5101ad0d07f4f55d6b151891bd18c856`, `64b8680a29e539b4db94f7697cfc24f82ad83360`, `186cffc217c91c85e6dc7aadde12abe8f2e555b2`, `a9a23c4adfe1de7be76b3b5372541d320645af42`, `d5545d0266ded23fb8f9023997fe5e43ecd963e4`, `e9674e3b665d63b1fb5b900564303ad9b3ded5ad`, `34562b81964ceae9d47471065d770e627d7c291d`, `ef6e046ee198f947dd411ea6d8f2a99c61edd6de`, `edbb1b45db7bfc6c8f5827d877e25e847dc0499f`, `8dda68b2cdad12e2c3968f282f0008291eda48b1`, `90a42eb9fa091b41ff734a0948a60e59f6a191bb`, and `85b6109696c6b58af43d73dd4e803f85264703a2`, plus focused specifications where present, are static implementation/specification evidence only and were not worker-run.
+- Capacity account-switch regression specification `d0ec5c1ac28cc078e4216d1cb570be8ccac20daf` records that User A snapshot data is hidden immediately when User B becomes active and remains hidden while User B loads; it was added but not worker-run under the active execution policy.
 
 ## Known blockers / risks
 - CP1/CP9: true phone/tablet/Web visual interaction evidence still needs an unlocked owner runtime; see `automation/HUMAN_REQUIRED.md`.
@@ -132,6 +134,7 @@ Post-baseline:
 - `apps/app/src/components/app-error-boundary.tsx`
 - `apps/app/src/app/today.tsx`
 - `apps/app/src/app/check-in.tsx`
+- `apps/app/src/app/capacity.tsx`
 - `apps/app/src/app/life-map.tsx`
 - `apps/app/src/app/one-move.tsx`
 - `apps/app/src/app/why.tsx`
@@ -154,6 +157,7 @@ Post-baseline:
 - `apps/app/__tests__/integrations-user-facing-language-policy-test.ts`
 - `apps/app/__tests__/recovery-rtl-layout-policy-test.ts`
 - `apps/app/__tests__/recovery-screen-session-fencing-test.tsx`
+- `apps/app/__tests__/capacity-screen-session-fencing-test.tsx`
 - `apps/app/__tests__/experiments-rtl-layout-policy-test.ts`
 - `apps/app/__tests__/experiments-session-fencing-policy-test.ts`
 - `apps/app/__tests__/what-if-rtl-range-layout-policy-test.ts`
