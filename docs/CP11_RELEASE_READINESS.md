@@ -83,7 +83,7 @@ npm run test:e2e:performance
 
 `tests/e2e/performance-live.spec.ts` runs only in `desktop-light` and does not mutate product data. It records authenticated Home readiness and successive Home → Life Map → One Move → Insights → More route-readiness durations, captures browser navigation/resource timing plus observed long-task durations, applies deliberately broad regression tripwires (15 s authenticated readiness, 5 s per primary route transition, 1 s maximum observed long task), checks overflow and critical browser diagnostics, and attaches a structured `performance-sanity.json` report.
 
-These ceilings are **not product SLOs** and a passing run is not production performance proof. The Playwright command uses the controlled Expo E2E runtime; CP11 still requires owner inspection of the production Web export, real startup/common-interaction measurements, and investigation of any pathological rerender or bundle regression before release.
+These ceilings are **not product SLOs** and a passing run is not production performance proof. The command above uses the controlled Expo E2E runtime and is useful for repeatable regression comparison before the heavier production-export check.
 
 ### 8. Production Web static-export smoke and size evidence
 The normal Playwright matrix intentionally uses the Expo development server. CP11 also has a separate production-export path:
@@ -98,7 +98,18 @@ npm run test:e2e:production
 
 The signed-out production smoke directly requests `/today`, requires the shipped route guard to land on the bilingual Auth surface, verifies locale switching and overflow, and applies the shared page/console/network/5xx diagnostics. When the normal live Supabase and persisted-English completed-account variables are supplied, the same command also verifies authenticated direct `/life-map` hydration, persisted session continuity across a document navigation, primary shell routes, a direct WHY route, selected-tab semantics, overflow, and critical browser diagnostics.
 
-The harness is static readiness only until it is actually executed. It does not replace the broader responsive development-server matrix, production interaction/startup performance review, or native release validation.
+The harness is static readiness only until it is actually executed. It does not replace the broader responsive development-server matrix or native release validation.
+
+### 9. Production Web performance sanity
+CP11 also has an opt-in performance probe against the **actual static export**, using the same production Playwright server/configuration as the smoke test:
+
+```bash
+npm run test:e2e:production:performance
+```
+
+This command requires `MIZAN_E2E_PERFORMANCE=1`, the public Supabase client variables, and the persisted-English completed-account credentials. `tests/e2e/production-performance.spec.ts` runs once in `production-desktop-dark`, records exported-runtime authenticated Home readiness and Home → Life Map → One Move → Insights → More transition durations, captures navigation/resource timing and browser long tasks from the served `apps/app/dist` output, checks horizontal overflow plus the shared page/console/network/5xx diagnostics, and attaches `production-performance-sanity.json`.
+
+It deliberately uses the same broad 15 s authenticated-readiness, 5 s route-transition, and 1 s long-task tripwires as the development-runtime probe so an obviously blocked production export is caught without pretending those values are product SLOs. Owner review should compare the development and production reports, retain the production report with the Web size output, and investigate material regressions or pathological main-thread work before release.
 
 ## Shared static guards
 
@@ -122,8 +133,9 @@ The harness is static readiness only until it is actually executed. It does not 
 | Premium reference evidence surfaces | `tests/e2e/product-live.spec.ts` | WHY, Personal Learning, Experiments, Integrations read-only localized/overflow coverage |
 | CP9 visual evidence | `tests/e2e/visual-evidence-live.spec.ts` | locale-verified, load-settled, font-settled Today/Life Map/WHY/Check-in screenshots across the responsive/light-dark matrix |
 | Browser diagnostics / keyboard | `tests/e2e/browser-assertions.ts` | shared page/console/network/5xx guard plus bounded real Tab traversal |
-| Performance sanity | `tests/e2e/performance-live.spec.ts` | opt-in read-only desktop sample of authenticated readiness, primary route latency, resource timing, long tasks, overflow, and critical diagnostics |
+| Development-runtime performance | `tests/e2e/performance-live.spec.ts` | opt-in read-only desktop sample of authenticated readiness, primary route latency, resource timing, long tasks, overflow, and critical diagnostics |
 | Production Web export | `playwright.production.config.ts` + `tests/e2e/production-web.spec.ts` + `scripts/report-expo-static-size.mjs` | actual static export, bundle/static-asset size measurement, direct-route serving/hydration, auth guard/locale, optional authenticated direct routes and shell on representative phone-light/desktop-dark projects |
+| Production-export performance | `tests/e2e/production-performance.spec.ts` | opt-in read-only performance sample against served `apps/app/dist`, including authenticated readiness, primary route latency, production resource timing, long tasks, overflow, and critical diagnostics |
 | Daily loop | `tests/e2e/product-live.spec.ts` | live check-in write behind mutation opt-in in `desktop-light` |
 | Feedback learning | `tests/e2e/product-live.spec.ts` | evidence → One Move accept → explicit usefulness → Personal Learning |
 | Recovery / What If | `tests/e2e/product-live.spec.ts` | recovery step interaction and scenario switch/assumption visibility |
@@ -133,7 +145,7 @@ The harness is static readiness only until it is actually executed. It does not 
 | Privacy deletion | `tests/e2e/account-deletion-live.spec.ts` | dedicated irreversible account, two-step confirmation, local cache cleanup, post-delete credential rejection |
 | Responsive Web | Playwright projects | 320×568, 390×844, 834×1194, 1194×834, 1440×900; each in light and dark |
 
-The ten main Web projects use the same Chromium engine with explicit viewport and color-scheme variation so layout/theme regressions are comparable without adding a browser-engine variable. Native Android/iOS remains a separate owner/runtime gate. Shared-account mutations, performance sampling, and irreversible deletion run once in `desktop-light`; read-only visual evidence intentionally uses the full matrix. Production static-export smoke has its own two-project config so build/export behavior is verified without multiplying that heavier gate ten times.
+The ten main Web projects use the same Chromium engine with explicit viewport and color-scheme variation so layout/theme regressions are comparable without adding a browser-engine variable. Native Android/iOS remains a separate owner/runtime gate. Shared-account mutations, development-runtime performance sampling, and irreversible deletion run once in `desktop-light`; read-only visual evidence intentionally uses the full matrix. Production static-export smoke has its own two-project config; production-export performance is isolated to one production desktop project so the heavier build/runtime measurement is not multiplied unnecessarily.
 
 ## Release documentation
 
@@ -149,13 +161,13 @@ The ten main Web projects use the same Chromium engine with explicit viewport an
 - Run `npm run test:e2e:visual` with the persisted-English and persisted-Arabic completed fixtures, inspect all Today/Life Map/WHY/Check-in attachments, and retain reviewed evidence.
 - Run `npm run test:e2e:mutations` only with dedicated/disposable fixtures, including notification preference persistence/restoration.
 - Run the prepared destructive deletion journey only with its dedicated disposable account.
-- Execute `npm run test:e2e:performance`, inspect its attached measurements and any budget failure.
-- Execute `npm run test:e2e:production`, inspect the static-export browser diagnostics/direct-route behavior, retain the emitted Web size report as a baseline, and investigate material bundle/static-asset growth separately from interaction/startup performance.
+- Execute `npm run test:e2e:performance` and inspect the controlled-runtime measurements and any broad-budget failure.
+- Execute `npm run test:e2e:production`, inspect the static-export browser diagnostics/direct-route behavior, and retain the emitted Web size report as a baseline.
+- Execute `npm run test:e2e:production:performance`, retain the attached production performance report, compare it with the controlled-runtime sample, and investigate material regressions or pathological main-thread work.
 - Execute Expo diagnostics plus Android/iOS export checks available in the owner environment.
-- Investigate blocking startup work or pathological rerenders if runtime measurements or profiling indicate them.
 - Validate Arabic RTL and English across representative device classes/light-dark states; screenshots do not replace interaction validation or the deliberate CP9 design-swap proof.
 - Perform a clean-checkout setup run using the documented README flow and correct any missing prerequisite/configuration/test/export step.
-- Record exact commands, versions, results, failures/fixes, Web size evidence, and owner release actions in `docs/PROJECT_STATE.md` before claiming CP11 complete.
+- Record exact commands, versions, results, failures/fixes, Web size evidence, both performance reports, and owner release actions in `docs/PROJECT_STATE.md` before claiming CP11 complete.
 
 ## Policy note
 
